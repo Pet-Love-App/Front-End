@@ -12,11 +12,17 @@ type IconSymbolName = keyof typeof MAPPING;
  * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
  */
 const MAPPING = {
+  // 底部tabs
   'doc.text.fill': 'document-text-outline',
   'bubble.left.and.bubble.right.fill': 'chatbubbles-outline',
   'viewfinder.circle.fill': 'scan-outline',
   'cart.fill': 'cart-outline',
-  'person.fill': 'person-outline'
+  'person.fill': 'person-outline',
+  // 相机
+  'camera.fill': 'camera',                             
+  'xmark': 'close',                                    
+  'arrow.triangle.2.circlepath.camera': 'camera-reverse', 
+  'photo.fill.on.rectangle.fill': 'image-outline'
 } as IconMapping;
 
 /**

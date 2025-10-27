@@ -14,8 +14,8 @@ export default function TabLayout() {
       initialRouteName="collect" 
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
         tabBarButton: HapticTab,
+        headerShown: false  
       }}>
       <Tabs.Screen
         name="collect"
@@ -52,6 +52,11 @@ export default function TabLayout() {
                 name="viewfinder.circle.fill" 
                 color="#fff" 
               />
+              {/* <LottieAnimation 
+                source={require('@/assets/animations/scan_face.json')}
+                width={80}
+                height={80}
+              /> */}
             </View>
           ),
         }}

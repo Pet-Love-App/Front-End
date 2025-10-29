@@ -8,16 +8,16 @@
 import { CollectCard } from '@/src/components/collect-card';
 import { ThemedText } from '@/src/components/themed-text';
 import { ThemedView } from '@/src/components/themed-view';
-import { CatFoodCollectItem } from '@/src/types/collect';
 import { useCollectDatabase } from '@/src/database/useCollectDatabase';
+import { CatFoodCollectItem } from '@/src/types/collect';
 import { useEffect, useState } from 'react';
 import {
-  Alert,
-  Button,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  View,
+    Alert,
+    Button,
+    ScrollView,
+    StyleSheet,
+    TextInput,
+    View,
 } from 'react-native';
 
 /**

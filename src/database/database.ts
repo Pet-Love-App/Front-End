@@ -91,23 +91,24 @@ async function initDatabase(db: SQLite.SQLiteDatabase): Promise<void> {
     }
     console.log('✅ 索引已创建');
     
-    // 保存数据库版本
+    // 保存数据库版本（使用 INSERT OR IGNORE 避免重复插入）
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS db_version (
         version INTEGER PRIMARY KEY
       );
     `);
     
+    // 使用 INSERT OR IGNORE 避免重复插入错误
+    await db.execAsync(`
+      INSERT OR IGNORE INTO db_version (version) VALUES (${DATABASE_VERSION});
+    `);
+    
     const result = await db.getFirstAsync<{ version: number }>(
       'SELECT version FROM db_version LIMIT 1'
     );
     
-    if (!result) {
-      await db.runAsync(
-        'INSERT INTO db_version (version) VALUES (?)',
-        [DATABASE_VERSION]
-      );
-      console.log('✅ 数据库版本已设置:', DATABASE_VERSION);
+    if (result) {
+      console.log('✅ 数据库版本:', result.version);
     }
     
     console.log('✅ 数据库初始化完成');

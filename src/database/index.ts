@@ -12,11 +12,7 @@ export * as CollectService from './collectService';
 
 // 数据库配置（高级用法）
 export {
-  getDatabase,
-  closeDatabase,
-  clearCollectTable,
-  deleteDatabase,
-  getDatabaseStats,
+    clearCollectTable, closeDatabase, deleteDatabase, getDatabase, getDatabaseStats
 } from './database';
 
 // 类型定义

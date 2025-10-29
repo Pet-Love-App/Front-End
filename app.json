@@ -41,7 +41,8 @@
           "cameraPermission": "允许 $(PRODUCT_NAME) 访问你的相机，用于拍摄照片和视频。"
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,

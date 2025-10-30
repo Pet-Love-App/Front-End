@@ -84,3 +84,77 @@ export interface CollectStatistics {
     count: number;
   }>;
 }
+
+/**
+ * 添加剂信息
+ */
+export interface Additive {
+  /** 自增主键 */
+  id?: number;
+  /** 关联的猫粮ID */
+  foodId: string;
+  /** 添加剂名称 */
+  name: string;
+  /** 添加剂类别（如：防腐剂、色素、增稠剂等） */
+  category?: string;
+  /** 添加剂描述/说明 */
+  description?: string;
+  /** 创建时间 */
+  createdAt?: number;
+}
+
+/**
+ * 营养成分信息
+ */
+export interface Nutrition {
+  /** 自增主键 */
+  id?: number;
+  /** 关联的猫粮ID */
+  foodId: string;
+  /** 营养成分名称（如：蛋白质、脂肪、粗纤维等） */
+  name: string;
+  /** 营养成分值 */
+  value: number;
+  /** 单位（如：g、mg、%等） */
+  unit?: string;
+  /** 百分比（如：38.5 表示 38.5%） */
+  percentage?: number;
+  /** 创建时间 */
+  createdAt?: number;
+}
+
+/**
+ * 高赞评论信息
+ */
+export interface TopComment {
+  /** 自增主键 */
+  id?: number;
+  /** 关联的猫粮ID */
+  foodId: string;
+  /** 用户名 */
+  userName: string;
+  /** 用户头像URL */
+  userAvatar?: string;
+  /** 评论内容 */
+  content: string;
+  /** 点赞数 */
+  likes: number;
+  /** 评分（0-5） */
+  rating?: number;
+  /** 评论时间戳 */
+  commentTime: number;
+  /** 创建时间 */
+  createdAt?: number;
+}
+
+/**
+ * 猫粮详情项（包含收藏项+扩展信息）
+ */
+export interface CatFoodDetailItem extends CatFoodCollectItem {
+  /** 添加剂列表 */
+  additives?: Additive[];
+  /** 营养成分列表 */
+  nutrition?: Nutrition[];
+  /** 高赞评论列表（最多3条） */
+  topComments?: TopComment[];
+}

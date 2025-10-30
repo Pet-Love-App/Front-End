@@ -4,6 +4,7 @@ import { ThemedText } from '@/src/components/themed-text';
 import { ThemedView } from '@/src/components/themed-view';
 import { useCollectDatabase } from '@/src/database/useCollectDatabase';
 import { CatFoodCollectItem } from '@/src/types/collect';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Button, Image, ScrollView, StyleSheet, View } from 'react-native';
 
@@ -11,6 +12,7 @@ import { Alert, Button, Image, ScrollView, StyleSheet, View } from 'react-native
 export default function CollectScreen() {
     const [searchText, setSearchText] = useState('');
     const {collects, loadCollects, deleteCollect, addCollect} = useCollectDatabase();
+    const router = useRouter();
     
     // 初始加载数据
     useEffect(() => {
@@ -87,6 +89,15 @@ export default function CollectScreen() {
                             name={item.name}
                             description={item.description}
                             collectCount={item.collectCount}
+                            onPress={() => {
+                                router.push({
+                                    pathname: '/report/[id]',
+                                    params: {
+                                        id: item.id,
+                                        data: JSON.stringify(item)
+                                    }
+                                });
+                            }}
                             onLongPress={() => {
                                 Alert.alert(
                                     '删除',

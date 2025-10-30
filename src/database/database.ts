@@ -7,6 +7,8 @@
  * 3. 提供数据库实例
  */
 
+//TODO: 优化本地数据库容量问题（当缓存使用而不能超过一定限额时，只记录到总数据库的映射）
+
 import * as SQLite from 'expo-sqlite';
 
 // 数据库名称
@@ -37,13 +39,71 @@ const CREATE_COLLECT_TABLE = `
 `;
 
 /**
+ * 添加剂表结构
+ */
+const CREATE_ADDITIVES_TABLE = `
+  CREATE TABLE IF NOT EXISTS cat_food_additives (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    foodId TEXT NOT NULL,
+    name TEXT NOT NULL,
+    category TEXT,
+    description TEXT,
+    createdAt INTEGER NOT NULL,
+    FOREIGN KEY (foodId) REFERENCES cat_food_collect(id) ON DELETE CASCADE
+  );
+`;
+
+/**
+ * 营养成分表结构
+ */
+const CREATE_NUTRITION_TABLE = `
+  CREATE TABLE IF NOT EXISTS cat_food_nutrition (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    foodId TEXT NOT NULL,
+    name TEXT NOT NULL,
+    value REAL NOT NULL,
+    unit TEXT,
+    percentage REAL,
+    createdAt INTEGER NOT NULL,
+    FOREIGN KEY (foodId) REFERENCES cat_food_collect(id) ON DELETE CASCADE
+  );
+`;
+
+/**
+ * 高赞评论表结构
+ */
+const CREATE_COMMENTS_TABLE = `
+  CREATE TABLE IF NOT EXISTS cat_food_comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    foodId TEXT NOT NULL,
+    userName TEXT NOT NULL,
+    userAvatar TEXT,
+    content TEXT NOT NULL,
+    likes INTEGER NOT NULL DEFAULT 0,
+    rating REAL,
+    commentTime INTEGER NOT NULL,
+    createdAt INTEGER NOT NULL,
+    FOREIGN KEY (foodId) REFERENCES cat_food_collect(id) ON DELETE CASCADE
+  );
+`;
+
+/**
  * 创建索引以提高查询性能
  */
 const CREATE_INDEXES = [
+  // 收藏表索引
   'CREATE INDEX IF NOT EXISTS idx_collect_time ON cat_food_collect(collectTime DESC);',
   'CREATE INDEX IF NOT EXISTS idx_name ON cat_food_collect(name);',
   'CREATE INDEX IF NOT EXISTS idx_tag1 ON cat_food_collect(tag1);',
   'CREATE INDEX IF NOT EXISTS idx_tag2 ON cat_food_collect(tag2);',
+  // 添加剂表索引
+  'CREATE INDEX IF NOT EXISTS idx_additives_foodId ON cat_food_additives(foodId);',
+  'CREATE INDEX IF NOT EXISTS idx_additives_category ON cat_food_additives(category);',
+  // 营养成分表索引
+  'CREATE INDEX IF NOT EXISTS idx_nutrition_foodId ON cat_food_nutrition(foodId);',
+  // 评论表索引
+  'CREATE INDEX IF NOT EXISTS idx_comments_foodId ON cat_food_comments(foodId);',
+  'CREATE INDEX IF NOT EXISTS idx_comments_likes ON cat_food_comments(likes DESC);',
 ];
 
 /**
@@ -84,6 +144,18 @@ async function initDatabase(db: SQLite.SQLiteDatabase): Promise<void> {
     // 创建收藏表
     await db.execAsync(CREATE_COLLECT_TABLE);
     console.log('✅ 收藏表已创建');
+    
+    // 创建添加剂表
+    await db.execAsync(CREATE_ADDITIVES_TABLE);
+    console.log('✅ 添加剂表已创建');
+    
+    // 创建营养成分表
+    await db.execAsync(CREATE_NUTRITION_TABLE);
+    console.log('✅ 营养成分表已创建');
+    
+    // 创建评论表
+    await db.execAsync(CREATE_COMMENTS_TABLE);
+    console.log('✅ 评论表已创建');
     
     // 创建索引
     for (const indexSql of CREATE_INDEXES) {

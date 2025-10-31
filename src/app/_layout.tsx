@@ -1,9 +1,9 @@
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
-import { ClerkProvider } from "@clerk/clerk-expo";
-import { tokenCache } from '@clerk/clerk-expo/token-cache';
+import { config } from '@/tamagui.config';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { TamaguiProvider } from '@tamagui/core';
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen'; // ← 添加
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
@@ -30,13 +30,13 @@ export default function RootLayout() {
   }
 
   return (
-    <ClerkProvider tokenCache={tokenCache}>
+      <TamaguiProvider config={config}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
-    </ClerkProvider>
+      </TamaguiProvider>
   );
 }

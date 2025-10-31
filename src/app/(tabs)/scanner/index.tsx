@@ -99,9 +99,9 @@ export default function ScannerScreen() {
             </ThemedText>
 
             <LottieAnimation 
-            source={require('@/assets/animations/cat_thinking_animation.json')}
-            width={100}
-            height={100}
+                source={require('@/assets/animations/cat_thinking_animation.json')}
+                width={100}
+                height={100}
             />
             <ThemedText style={styles.query}>
             你买的猫粮到底安不安全？
@@ -110,9 +110,9 @@ export default function ScannerScreen() {
             {photo && (
                 <View style={styles.photoContainer}>
                 <Image 
-                source={{ uri: photo.uri }} 
-                style={styles.photo} 
-                resizeMode="cover"  // 裁剪填充
+                    source={{ uri: photo.uri }} 
+                    style={styles.photo} 
+                    resizeMode="cover"  // 裁剪填充
                 />
                 
                 {/* 照片信息 */}
@@ -124,9 +124,9 @@ export default function ScannerScreen() {
             
             {/* ===== 拍照按钮 ===== */}
             <TouchableOpacity 
-            style={styles.button} 
-            onPress={photo ? retakePhoto : openCamera}
-            activeOpacity={0.8}
+                style={styles.button} 
+                onPress={photo ? retakePhoto : openCamera}
+                activeOpacity={0.8}
             >
             <ThemedText style={styles.buttonText}>
             {photo ? '🔄 重新拍照' : '📷 开始拍照'}
@@ -136,9 +136,9 @@ export default function ScannerScreen() {
             {/* ===== 识别按钮（只有拍照后才显示） ===== */}
             {photo && (
                 <TouchableOpacity 
-                style={[styles.button, styles.identifyButton]} 
-                onPress={identifyPet}
-                activeOpacity={0.8}
+                    style={[styles.button, styles.identifyButton]} 
+                    onPress={identifyPet}
+                    activeOpacity={0.8}
                 >
                 <ThemedText style={styles.buttonText}>
                 🤖 识别品种

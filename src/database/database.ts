@@ -15,7 +15,7 @@ import * as SQLite from 'expo-sqlite';
 const DATABASE_NAME = 'petlove.db';
 
 // 数据库版本（用于迁移管理）
-const DATABASE_VERSION = 1;
+const DATABASE_VERSION = 2;
 
 /**
  * 猫粮收藏表结构
@@ -39,17 +39,19 @@ const CREATE_COLLECT_TABLE = `
 `;
 
 /**
- * 添加剂表结构
+ * 添加剂表结构（链接猫粮与主数据，保留本地备用字段）
  */
 const CREATE_ADDITIVES_TABLE = `
   CREATE TABLE IF NOT EXISTS cat_food_additives (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     foodId TEXT NOT NULL,
+    additiveId INTEGER, -- 对应 additives_master.id（可为空以兼容旧数据）
     name TEXT NOT NULL,
     category TEXT,
     description TEXT,
     createdAt INTEGER NOT NULL,
-    FOREIGN KEY (foodId) REFERENCES cat_food_collect(id) ON DELETE CASCADE
+    FOREIGN KEY (foodId) REFERENCES cat_food_collect(id) ON DELETE CASCADE,
+    FOREIGN KEY (additiveId) REFERENCES additives_master(id)
   );
 `;
 
@@ -88,6 +90,22 @@ const CREATE_COMMENTS_TABLE = `
 `;
 
 /**
+ * 添加剂主数据表结构（与后端 API 字段对齐）
+ */
+const CREATE_ADDITIVES_MASTER_TABLE = `
+  CREATE TABLE IF NOT EXISTS additives_master (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    en_name TEXT,
+    type TEXT,
+    applicable_range TEXT,
+    raw_json TEXT,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL
+  );
+`;
+
+/**
  * 创建索引以提高查询性能
  */
 const CREATE_INDEXES = [
@@ -96,9 +114,12 @@ const CREATE_INDEXES = [
   'CREATE INDEX IF NOT EXISTS idx_name ON cat_food_collect(name);',
   'CREATE INDEX IF NOT EXISTS idx_tag1 ON cat_food_collect(tag1);',
   'CREATE INDEX IF NOT EXISTS idx_tag2 ON cat_food_collect(tag2);',
+  // 添加剂主数据索引
+  'CREATE INDEX IF NOT EXISTS idx_additives_master_name ON additives_master(name);',
   // 添加剂表索引
   'CREATE INDEX IF NOT EXISTS idx_additives_foodId ON cat_food_additives(foodId);',
   'CREATE INDEX IF NOT EXISTS idx_additives_category ON cat_food_additives(category);',
+  'CREATE INDEX IF NOT EXISTS idx_additives_additiveId ON cat_food_additives(additiveId);',
   // 营养成分表索引
   'CREATE INDEX IF NOT EXISTS idx_nutrition_foodId ON cat_food_nutrition(foodId);',
   // 评论表索引
@@ -144,8 +165,12 @@ async function initDatabase(db: SQLite.SQLiteDatabase): Promise<void> {
     // 创建收藏表
     await db.execAsync(CREATE_COLLECT_TABLE);
     console.log('✅ 收藏表已创建');
+
+    // 创建添加剂主数据表（与后端对齐）
+    await db.execAsync(CREATE_ADDITIVES_MASTER_TABLE);
+    console.log('✅ 添加剂主数据表已创建');
     
-    // 创建添加剂表
+    // 创建添加剂表（链接表）
     await db.execAsync(CREATE_ADDITIVES_TABLE);
     console.log('✅ 添加剂表已创建');
     
@@ -169,20 +194,49 @@ async function initDatabase(db: SQLite.SQLiteDatabase): Promise<void> {
         version INTEGER PRIMARY KEY
       );
     `);
-    
-    // 使用 INSERT OR IGNORE 避免重复插入错误
-    await db.execAsync(`
-      INSERT OR IGNORE INTO db_version (version) VALUES (${DATABASE_VERSION});
-    `);
-    
-    const result = await db.getFirstAsync<{ version: number }>(
+
+    // 读取当前版本
+    const verRow = await db.getFirstAsync<{ version: number }>(
       'SELECT version FROM db_version LIMIT 1'
     );
-    
-    if (result) {
-      console.log('✅ 数据库版本:', result.version);
+    let currentVersion = verRow?.version ?? 0;
+
+    // 辅助：确保 cat_food_additives.additiveId 列存在（处理历史库无版本记录的情况）
+    const ensureAdditiveIdColumn = async () => {
+      const cols = await db.getAllAsync<{ name: string }>('PRAGMA table_info(cat_food_additives)');
+      const hasCol = Array.isArray(cols) && cols.some(c => c.name === 'additiveId');
+      if (!hasCol) {
+        try {
+          await db.execAsync('ALTER TABLE cat_food_additives ADD COLUMN additiveId INTEGER');
+          await db.execAsync('CREATE INDEX IF NOT EXISTS idx_additives_additiveId ON cat_food_additives(additiveId)');
+          console.log('✅ 已为历史数据库补充 additiveId 列及索引');
+        } catch (e) {
+          console.warn('⚠️ 添加 additiveId 列失败或已存在:', e);
+        }
+      }
+    };
+
+    // 初始安装或历史库（无版本记录）
+    if (currentVersion === 0) {
+      // 历史库可能缺少 additiveId，先自检修复
+      await ensureAdditiveIdColumn();
+      // 设置为最新版本
+      await db.execAsync('DELETE FROM db_version');
+      await db.execAsync(`INSERT INTO db_version (version) VALUES (${DATABASE_VERSION})`);
+      currentVersion = DATABASE_VERSION;
+      console.log('✅ 初始化/修复历史数据库并设置版本为:', DATABASE_VERSION);
     }
-    
+
+    // 迁移到 v2：添加 cat_food_additives.additiveId 列和索引
+    if (currentVersion < 2) {
+      await ensureAdditiveIdColumn();
+      await db.execAsync('DELETE FROM db_version');
+      await db.execAsync('INSERT INTO db_version (version) VALUES (2)');
+      currentVersion = 2;
+      console.log('✅ 数据库已迁移到版本 2');
+    }
+
+    console.log('✅ 数据库版本:', currentVersion);
     console.log('✅ 数据库初始化完成');
   } catch (error) {
     console.error('❌ 初始化数据库失败:', error);

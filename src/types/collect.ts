@@ -93,6 +93,8 @@ export interface Additive {
   id?: number;
   /** 关联的猫粮ID */
   foodId: string;
+  /** 关联的添加剂主数据ID（additives_master.id） */
+  additiveId?: number;
   /** 添加剂名称 */
   name: string;
   /** 添加剂类别（如：防腐剂、色素、增稠剂等） */

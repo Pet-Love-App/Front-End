@@ -1,16 +1,12 @@
-import { defaultConfig } from '@tamagui/config/v4'
-import { createTamagui } from 'tamagui'
+import { config } from '@tamagui/config/v3';
+import { createTamagui } from 'tamagui';
 
-export const config = createTamagui({
-  ...defaultConfig,
-  media: {
-    ...defaultConfig.media,
-    // add your own media queries here, if wanted
-  },
-})
+export const tamaguiConfig = createTamagui(config);
 
-type OurConfig = typeof config
+type AppConfig = typeof tamaguiConfig;
 
 declare module 'tamagui' {
-  interface TamaguiCustomConfig extends OurConfig {}
+  interface TamaguiCustomConfig extends AppConfig {}
 }
+
+export default tamaguiConfig;

@@ -53,9 +53,10 @@ export const changePasswordSchema = z
 export const userSchema = z.object({
   id: z.number(),
   username: z.string(),
-  email: z.string().email().optional(),
-  first_name: z.string().optional(),
-  last_name: z.string().optional(),
+  // email 可以是空字符串、有效邮箱、null 或 undefined
+  email: z.union([z.string().email(), z.literal(''), z.null(), z.undefined()]).optional(),
+  first_name: z.union([z.string(), z.literal(''), z.null(), z.undefined()]).optional(),
+  last_name: z.union([z.string(), z.literal(''), z.null(), z.undefined()]).optional(),
 });
 
 // JWT 响应类型

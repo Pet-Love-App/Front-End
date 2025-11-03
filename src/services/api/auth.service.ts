@@ -29,11 +29,40 @@ export class ApiError extends Error {
 async function handleResponse<T>(response: Response, schema?: any): Promise<T> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new ApiError(
-      errorData.detail || errorData.message || `请求失败: ${response.status}`,
-      response.status,
-      errorData
-    );
+
+    // 提取详细的错误信息
+    let errorMessage = `请求失败: ${response.status}`;
+
+    if (errorData.detail) {
+      errorMessage = errorData.detail;
+    } else if (errorData.message) {
+      errorMessage = errorData.message;
+    } else if (errorData.username) {
+      // Django 返回的字段级错误
+      const usernameError = Array.isArray(errorData.username)
+        ? errorData.username[0]
+        : errorData.username;
+      // 翻译常见的英文错误信息
+      if (usernameError.includes('already exists')) {
+        errorMessage = '该用户名已被注册，请使用其他用户名';
+      } else {
+        errorMessage = `用户名: ${usernameError}`;
+      }
+    } else if (errorData.password) {
+      const passwordError = Array.isArray(errorData.password)
+        ? errorData.password[0]
+        : errorData.password;
+      errorMessage = `密码: ${passwordError}`;
+    } else if (errorData.non_field_errors) {
+      errorMessage = Array.isArray(errorData.non_field_errors)
+        ? errorData.non_field_errors[0]
+        : errorData.non_field_errors;
+    }
+
+    // 打印完整的错误数据用于调试
+    console.error('API 错误详情:', JSON.stringify(errorData, null, 2));
+
+    throw new ApiError(errorMessage, response.status, errorData);
   }
 
   const data = await response.json();

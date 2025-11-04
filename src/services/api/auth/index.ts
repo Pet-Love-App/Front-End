@@ -8,23 +8,10 @@ import {
   type RegisterInput,
   type User,
 } from '@/src/schemas/auth.schema';
+import { ApiError } from './types';
 
 /**
- * API 错误类
- */
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    public status?: number,
-    public data?: any
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
-}
-
-/**
- * 处理 API 响应
+ * 处理 API 响应（用于不使用 BaseApi 的特殊情况）
  */
 async function handleResponse<T>(response: Response, schema?: any): Promise<T> {
   if (!response.ok) {
@@ -81,9 +68,9 @@ async function handleResponse<T>(response: Response, schema?: any): Promise<T> {
 }
 
 /**
- * 认证服务
+ * 认证服务类
  */
-export const authService = {
+class AuthService {
   /**
    * 用户注册
    */
@@ -97,7 +84,7 @@ export const authService = {
     });
 
     return handleResponse<User>(response, userSchema);
-  },
+  }
 
   /**
    * 用户登录
@@ -112,7 +99,7 @@ export const authService = {
     });
 
     return handleResponse<JWTResponse>(response, jwtResponseSchema);
-  },
+  }
 
   /**
    * 刷新 Token
@@ -127,7 +114,7 @@ export const authService = {
     });
 
     return handleResponse<JWTResponse>(response, jwtResponseSchema);
-  },
+  }
 
   /**
    * 验证 Token
@@ -146,7 +133,7 @@ export const authService = {
     } catch {
       return false;
     }
-  },
+  }
 
   /**
    * 获取当前用户信息
@@ -161,7 +148,7 @@ export const authService = {
     });
 
     return handleResponse<User>(response, userSchema);
-  },
+  }
 
   /**
    * 修改密码
@@ -180,5 +167,12 @@ export const authService = {
     });
 
     await handleResponse(response);
-  },
-};
+  }
+}
+
+// 导出单例
+export const authService = new AuthService();
+
+// 重新导出类型
+export { ApiError } from './types';
+export type { JWTResponse, LoginInput, RefreshTokenInput, RegisterInput, User } from './types';

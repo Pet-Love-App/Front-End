@@ -1,5 +1,3 @@
-import { useUserStore } from '@/src/store/userStore';
-
 /**
  * API 客户端基类
  * 自动从 Zustand store 获取 token 并添加到请求头
@@ -13,8 +11,11 @@ class BaseApi {
 
   /**
    * 从 Zustand store 获取 access token
+   * 使用延迟导入避免循环依赖
    */
   private getToken(): string | null {
+    // 延迟导入避免循环依赖
+    const { useUserStore } = require('@/src/store/userStore');
     return useUserStore.getState().accessToken;
   }
 
@@ -49,6 +50,8 @@ class BaseApi {
 
         // 调用 Zustand 的刷新方法
         try {
+          // 延迟导入避免循环依赖
+          const { useUserStore } = require('@/src/store/userStore');
           await useUserStore.getState().refreshAccessToken();
 
           // 获取新的 token
@@ -75,6 +78,8 @@ class BaseApi {
         } catch (error) {
           // 刷新失败，需要重新登录
           console.error('❌ Token 刷新失败，需要重新登录');
+          // 延迟导入避免循环依赖
+          const { useUserStore } = require('@/src/store/userStore');
           await useUserStore.getState().logout();
           throw new Error('认证失败，请重新登录');
         }

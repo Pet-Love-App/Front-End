@@ -1,12 +1,15 @@
 import type { User } from '@/src/schemas/auth.schema';
 import { loginSchema, registerSchema } from '@/src/schemas/auth.schema';
-import { ApiError, authService } from '@/src/services/api/auth.service';
+import type { UserDetail } from '@/src/schemas/user.schema';
+import { ApiError, authService } from '@/src/services/api/auth';
+import { userService } from '@/src/services/api/user';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 interface UserState {
   user: User | null;
+  userDetail: UserDetail | null; // 完整的用户信息（含头像、宠物）
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
@@ -18,7 +21,10 @@ interface UserState {
   logout: () => Promise<void>;
   refreshAccessToken: () => Promise<void>;
   fetchCurrentUser: () => Promise<void>;
+  uploadAvatar: (imageUri: string) => Promise<void>;
+  deleteAvatar: () => Promise<void>;
   setUser: (user: User | null) => void;
+  setUserDetail: (userDetail: UserDetail | null) => void;
   setTokens: (accessToken: string | null, refreshToken: string | null) => void;
   setLoading: (loading: boolean) => void;
   setHasHydrated: (hasHydrated: boolean) => void;
@@ -29,6 +35,7 @@ export const useUserStore = create<UserState>()(
     (set, get) => ({
       // 初始状态
       user: null,
+      userDetail: null,
       accessToken: null,
       refreshToken: null,
       isAuthenticated: false,
@@ -46,18 +53,26 @@ export const useUserStore = create<UserState>()(
           // 调用登录 API
           const { access, refresh } = await authService.login(validatedData);
 
-          // 获取用户信息
-          const user = await authService.getCurrentUser(access);
-
+          // 保存 tokens
           set({
-            user,
             accessToken: access,
             refreshToken: refresh,
             isAuthenticated: true,
+          });
+
+          // 获取用户完整信息（含头像、宠物）
+          const userDetail = await userService.getCurrentUser();
+
+          set({
+            user: {
+              id: userDetail.id,
+              username: userDetail.username,
+            },
+            userDetail,
             isLoading: false,
           });
 
-          console.log('✅ 登录成功:', user);
+          console.log('✅ 登录成功:', userDetail);
         } catch (error) {
           set({ isLoading: false });
           console.error('❌ 登录失败:', error);
@@ -133,11 +148,58 @@ export const useUserStore = create<UserState>()(
             throw new Error('未登录');
           }
 
-          const user = await authService.getCurrentUser(accessToken);
-          set({ user });
-          console.log('✅ 用户信息获取成功:', user);
+          // 获取完整用户信息（含头像、宠物）
+          const userDetail = await userService.getCurrentUser();
+
+          set({
+            user: {
+              id: userDetail.id,
+              username: userDetail.username,
+            },
+            userDetail,
+          });
+
+          console.log('✅ 用户信息获取成功:', userDetail);
         } catch (error) {
           console.error('❌ 用户信息获取失败:', error);
+          throw error;
+        }
+      },
+
+      // 上传头像
+      uploadAvatar: async (imageUri: string) => {
+        try {
+          set({ isLoading: true });
+
+          const response = await userService.uploadAvatar(imageUri);
+          console.log('✅ 头像上传成功:', response.avatar);
+
+          // 刷新用户信息
+          await get().fetchCurrentUser();
+
+          set({ isLoading: false });
+        } catch (error) {
+          set({ isLoading: false });
+          console.error('❌ 头像上传失败:', error);
+          throw error;
+        }
+      },
+
+      // 删除头像
+      deleteAvatar: async () => {
+        try {
+          set({ isLoading: true });
+
+          await userService.deleteAvatar();
+          console.log('✅ 头像删除成功');
+
+          // 刷新用户信息
+          await get().fetchCurrentUser();
+
+          set({ isLoading: false });
+        } catch (error) {
+          set({ isLoading: false });
+          console.error('❌ 头像删除失败:', error);
           throw error;
         }
       },
@@ -147,6 +209,7 @@ export const useUserStore = create<UserState>()(
         try {
           set({
             user: null,
+            userDetail: null,
             accessToken: null,
             refreshToken: null,
             isAuthenticated: false,
@@ -162,6 +225,11 @@ export const useUserStore = create<UserState>()(
       // 设置用户
       setUser: (user: User | null) => {
         set({ user, isAuthenticated: !!user });
+      },
+
+      // 设置用户详情
+      setUserDetail: (userDetail: UserDetail | null) => {
+        set({ userDetail });
       },
 
       // 设置 tokens
@@ -185,6 +253,7 @@ export const useUserStore = create<UserState>()(
       // 只持久化这些字段
       partialize: (state) => ({
         user: state.user,
+        userDetail: state.userDetail,
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,

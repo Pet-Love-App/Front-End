@@ -1,31 +1,17 @@
-import {
-    Nunito_400Regular,
-    Nunito_700Bold
-} from '@expo-google-fonts/nunito';
-import {
-    Poppins_300Light,
-    Poppins_700Bold
-} from '@expo-google-fonts/poppins';
 import { useFonts } from 'expo-font';
 
 /**
  * 自定义 Hook：加载 Google Fonts
- * 
+ *
  * 使用的字体：
- * - Poppins: 现代、简洁、几何风格，适合标题和按钮
- * - Nunito: 友好、圆润、可读性好，适合正文
- * 
+ * - MaoKen: 猫啃字体，适合标题（iOS/Android 兼容）
+ *
  * @returns {boolean} fontsLoaded - 字体是否加载完成
  */
 export function useCustomFonts() {
   const [fontsLoaded] = useFonts({
-    'Poppins-Light': Poppins_300Light,
-    'Poppins-Bold': Poppins_700Bold,
-    
-    'Nunito-Regular': Nunito_400Regular,
-    'Nunito-Bold': Nunito_700Bold,
-
-    'MaoKen': require('@/assets/fonts/MaoKen.ttf'),
+    // 使用小写和连字符，Android 兼容
+    maoKen: require('@/assets/fonts/MaoKen.ttf'),
   });
 
   return fontsLoaded;
@@ -45,4 +31,3 @@ export const FontFamily = {
     bold: 'Nunito-Bold',
   },
 } as const;
-

@@ -1,19 +1,20 @@
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
-import { ClerkProvider } from "@clerk/clerk-expo";
-import { tokenCache } from '@clerk/clerk-expo/token-cache';
+import { tamaguiConfig } from '@/tamagui.config';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { TamaguiProvider } from '@tamagui/core';
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen'; // ← 添加
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import { useCustomFonts } from "../hooks/use-fonts";
+import { useCustomFonts } from '../hooks/use-fonts';
 
 SplashScreen.preventAutoHideAsync();
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+// 移除默认锚点，让应用从 index 开始
+// export const unstable_settings = {
+//   anchor: '(tabs)',
+// };
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -30,13 +31,17 @@ export default function RootLayout() {
   }
 
   return (
-    <ClerkProvider tokenCache={tokenCache}>
+    <TamaguiProvider config={tamaguiConfig}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="login" options={{ headerShown: false }} />
+          <Stack.Screen name="register" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
-    </ClerkProvider>
+    </TamaguiProvider>
   );
 }

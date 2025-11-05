@@ -53,7 +53,6 @@ export default function ProfileIndex() {
   const [details, setDetails] = useState<string>('点击编辑用户详细资料');
   const [detailsModalVisible, setDetailsModalVisible] = useState<boolean>(false);
   const [tempDetails, setTempDetails] = useState<string>('');
-  const [themeModalVisible, setThemeModalVisible] = useState<boolean>(false);
 
   async function pickFromCamera() {
     try {
@@ -121,8 +120,11 @@ export default function ProfileIndex() {
   }
 
   const onPressAvatar = () => {
-    // simple flow: try camera first, if permission denied fallback to library
-    pickFromCamera();
+    Alert.alert('选择头像', '请选择图片来源', [
+      { text: '取消', style: 'cancel' },
+      { text: '从相册选择', onPress: () => pickFromLibrary() },
+      { text: '拍照', onPress: () => pickFromCamera() },
+    ]);
   };
 
   const onPressUsername = () => {
@@ -185,25 +187,19 @@ export default function ProfileIndex() {
   };
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 40 }]}
-    >
+    <View style={styles.container}>
       <View style={styles.headerDecor}>
         <View style={styles.topRightAnim} pointerEvents="none">
           <BlackCatAnimation />
         </View>
+
+        <View style={percentToSquareStyle(0.38, 0.14, 0.26)}>
+          <PawAnimation />
+        </View>
       </View>
 
       <View style={styles.avatarSection}>
-        <TouchableOpacity
-          onPress={onPressAvatar}
-          style={[
-            styles.avatarButton,
-            { borderColor: colors.icon, backgroundColor: colors.background },
-          ]}
-          activeOpacity={0.8}
-        >
+        <TouchableOpacity onPress={onPressAvatar} style={styles.avatarButton} activeOpacity={0.8}>
           {avatar ? (
             <Image source={{ uri: avatar }} style={styles.avatarImage} />
           ) : (
@@ -212,21 +208,18 @@ export default function ProfileIndex() {
             </View>
           )}
         </TouchableOpacity>
-
-        <View style={styles.animBelow} pointerEvents="none">
-          <PawAnimation />
-        </View>
       </View>
 
-      <View style={styles.infoSection}>
-        <TouchableOpacity onPress={onPressUsername} activeOpacity={0.7}>
+      {/* Username box positioned by percent. Change (0.5, 0.45) to move it. */}
+      <View style={percentToBoxStyle(0.5, 0.25, 0.7, 48)}>
+        <TouchableOpacity onPress={onPressUsername} activeOpacity={0.7} style={{ width: '100%' }}>
           {editingName ? (
             <TextInput
               value={username}
               onChangeText={setUsername}
               onBlur={saveUsername}
               onSubmitEditing={saveUsername}
-              style={[styles.usernameInput, { color: colors.text, borderBottomColor: colors.icon }]}
+              style={styles.usernameInput}
               placeholder="输入用户名"
               placeholderTextColor={colors.icon}
               autoFocus
@@ -235,15 +228,10 @@ export default function ProfileIndex() {
             <Text style={[styles.usernameText, { color: colors.text }]}>{username}</Text>
           )}
         </TouchableOpacity>
+      </View>
 
-        <TouchableOpacity
-          onPress={openDetailsModal}
-          style={[
-            styles.detailsButton,
-            { backgroundColor: colors.background, borderColor: colors.icon },
-          ]}
-        >
-          <Text numberOfLines={3} style={[styles.detailsText, { color: colors.text }]}>
+        <TouchableOpacity onPress={openDetailsModal} style={styles.detailsButton}>
+          <Text numberOfLines={3} style={styles.detailsText}>
             {details}
           </Text>
         </TouchableOpacity>
@@ -392,25 +380,7 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     paddingBottom: 30,
   },
-  headerDecor: {
-    width: '100%',
-    alignItems: 'flex-end',
-    paddingRight: 20,
-  },
-  topRightAnim: {
-    width: 80,
-    height: 80,
-    opacity: 0.9,
-  },
-  avatarSection: {
-    marginTop: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   avatarButton: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
     borderWidth: 2,
     // borderColor 和 backgroundColor 动态设置
     alignItems: 'center',
@@ -432,11 +402,6 @@ const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'cover',
   },
-  animBelow: {
-    marginTop: -20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   infoSection: {
     width: '90%',
     marginTop: 20,
@@ -447,10 +412,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     // color 动态设置
     marginBottom: 12,
+    textAlign: 'center',
   },
   usernameInput: {
     fontSize: 20,
-    width: 240,
+    width: '100%',
     textAlign: 'center',
     borderBottomWidth: 1,
     // color 和 borderBottomColor 动态设置

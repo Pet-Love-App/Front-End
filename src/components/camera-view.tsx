@@ -12,6 +12,7 @@ interface CameraViewComponentProps {
     onToggleFacing: () => void;
     onClose?: () => void;
     onCameraReady?: () => void;
+    onPickFromLibrary?: () => void;
 }
 
 export function CameraViewComponent({
@@ -21,68 +22,70 @@ export function CameraViewComponent({
     onToggleFacing,
     onClose,
     onCameraReady,
+    onPickFromLibrary,
 }: CameraViewComponentProps) {
     return (
-        <View style={styles.container}> 
-            <LottieAnimation 
+        <View style={styles.container}>
+            <LottieAnimation
                 source={require('@/assets/animations/orange_cat_peeping.json')}  // json文件路径
                 width={200}
                 height={200}
             />
             <CameraView
-                ref={cameraRef}             
-                style={styles.camera}        
-                facing={facing}              
-                onCameraReady={onCameraReady} 
+                ref={cameraRef}
+                style={styles.camera}
+                facing={facing}
+                onCameraReady={onCameraReady}
             >
                 <View style={styles.topBar}>
                     {onClose && (
-                        <TouchableOpacity 
-                            style={styles.iconButton} 
+                        <TouchableOpacity
+                            style={styles.iconButton}
                             onPress={onClose}
-                            activeOpacity={0.7}  
+                            activeOpacity={0.7}
                         >
-                            <IconSymbol 
-                                name="xmark"      
-                                size={28} 
-                                color="#fff"     
+                            <IconSymbol
+                                name="xmark"
+                                size={28}
+                                color="#fff"
                             />
                         </TouchableOpacity>
                     )}
                 </View>
-                
+
                 <View style={styles.bottomBar}>
-                    <TouchableOpacity 
-                        style={styles.iconButton} 
-                        onPress={onToggleFacing}
+                    <TouchableOpacity
+                        style={styles.iconButton}
+                        // left button should open photo library when provided
+                        onPress={onPickFromLibrary ?? onToggleFacing}
                         activeOpacity={0.7}
                     >
-                        <IconSymbol 
-                        name="photo.fill.on.rectangle.fill" 
-                        size={32} 
-                        color="#fff" 
+                        <IconSymbol
+                        name="photo.fill.on.rectangle.fill"
+                        size={32}
+                        color="#fff"
                         />
-                    </TouchableOpacity> 
-                    
-                    <TouchableOpacity 
-                        style={styles.captureButton} 
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.captureButton}
                         onPress={onCapture}
                         activeOpacity={0.8}
                     >
                         <View style={styles.captureButtonInner} />
                     </TouchableOpacity>
-                    
-                    <TouchableOpacity 
-                        style={styles.iconButton} 
+
+                    <TouchableOpacity
+                        style={styles.iconButton}
                         onPress={onToggleFacing}
                         activeOpacity={0.7}
                     >
-                        <IconSymbol 
-                        name="arrow.triangle.2.circlepath.camera" 
-                        size={32} 
-                        color="#fff" 
+                        <IconSymbol
+                        name="arrow.triangle.2.circlepath.camera"
+                        size={32}
+                        color="#fff"
                         />
-                    </TouchableOpacity>        
+                    </TouchableOpacity>
                 </View>
             </CameraView>
         </View>
@@ -93,7 +96,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1
     },
-    
+
     camera: {
         flex: 0.7,
         backgroundColor: '#000',
@@ -106,34 +109,34 @@ const styles = StyleSheet.create({
         borderWidth: 10,
         borderColor: '#FEBE98'
     },
-    
+
     topBar: {
         flexDirection: 'row',
-        justifyContent: 'flex-end',  
-        padding: "7%", 
+        justifyContent: 'flex-end',
+        padding: "7%",
     },
-    
+
     bottomBar: {
         flexDirection: 'row',
-        justifyContent: 'space-between',  
-        alignItems: 'center',          
-        paddingHorizontal: "8%",            
-        paddingBottom: "7%",              
-        position: 'absolute',            
-        bottom: 0,                    
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: "8%",
+        paddingBottom: "7%",
+        position: 'absolute',
+        bottom: 0,
         left: 0,
         right: 0,
     },
-    
+
     iconButton: {
         width: 50,
         height: 50,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',  
-        borderRadius: 25,  
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        borderRadius: 25,
     },
-    
+
     captureButton: {
         width: 70,
         height: 70,
@@ -144,7 +147,7 @@ const styles = StyleSheet.create({
         borderWidth: 4,
         borderColor: 'rgba(255, 255, 255, 0.3)',
     },
-    
+
     captureButtonInner: {
         width: 60,
         height: 60,

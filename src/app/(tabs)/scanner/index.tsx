@@ -5,6 +5,7 @@ import { ThemedText } from '@/src/components/themed-text';
 import { ThemedView } from '@/src/components/themed-view';
 import { useCamera } from '@/src/hooks/use-camera';
 import type { CameraPhoto } from '@/src/types/camera';
+import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { Alert, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 
@@ -27,6 +28,49 @@ export default function ScannerScreen() {
       Alert.alert('拍照失败', '请重试', [{ text: '确定' }]);
     }
   };
+
+  // 从相册选择图片
+  async function pickFromLibrary() {
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (perm.status !== 'granted') {
+        Alert.alert('需要权限', '请允许访问相册以选择图片');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+        allowsEditing: true,
+        aspect: [1, 1],
+      });
+
+      let uri: string | null = null;
+      let w = 0,
+        h = 0;
+      if ('canceled' in result) {
+        if (!result.canceled && result.assets?.length) {
+          uri = result.assets[0].uri;
+          w = result.assets[0].width ?? 0;
+          h = result.assets[0].height ?? 0;
+        }
+      } else {
+        // 旧版结果结构
+        // @ts-ignore
+        if (!(result as any).cancelled && (result as any).uri) {
+          // @ts-ignore
+          uri = (result as any).uri;
+        }
+      }
+
+      if (uri) {
+        setPhoto({ uri, width: w, height: h } as unknown as CameraPhoto);
+        setShowCamera(false);
+      }
+    } catch (e) {
+      console.warn('pickFromLibrary error', e);
+    }
+  }
 
   const openCamera = () => {
     if (state.hasPermission) {
@@ -63,6 +107,7 @@ export default function ScannerScreen() {
         onToggleFacing={toggleFacing}
         onClose={closeCamera}
         onCameraReady={onCameraReady}
+        onPickFromLibrary={pickFromLibrary}
       />
     );
   }
@@ -104,6 +149,17 @@ export default function ScannerScreen() {
       >
         <ThemedText style={styles.buttonText}>{photo ? '🔄 重新拍照' : '📷 开始拍照'}</ThemedText>
       </TouchableOpacity>
+
+      {/* ===== 从相册选择（无照片时显示） ===== */}
+      {!photo && (
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: '#6b21a8' }]}
+          onPress={pickFromLibrary}
+          activeOpacity={0.8}
+        >
+          <ThemedText style={styles.buttonText}>📁 从相册选择</ThemedText>
+        </TouchableOpacity>
+      )}
 
       {/* ===== 识别按钮（只有拍照后才显示） ===== */}
       {photo && (

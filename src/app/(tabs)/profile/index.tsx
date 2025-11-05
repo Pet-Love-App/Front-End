@@ -2,14 +2,15 @@ import { LottieAnimation } from '@/src/components/lottie-animation';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
 import {
-    Alert,
-    Image,
-    Modal,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
 } from 'react-native';
 
 export function PawAnimation() {
@@ -39,6 +40,42 @@ export default function ProfileIndex() {
   const [details, setDetails] = useState<string>('点击编辑用户详细资料');
   const [detailsModalVisible, setDetailsModalVisible] = useState<boolean>(false);
   const [tempDetails, setTempDetails] = useState<string>('');
+
+  // screen dimensions used to compute percentage-based positions
+  const { width: screenW, height: screenH } = useWindowDimensions();
+
+  // Helpers: pass percent values in 0..1 (e.g. 0.5 = 50%)
+  const percentToSquareStyle = (pctX: number, pctY: number, sizeRatio = 0.25) => {
+    const size = Math.round(Math.min(screenW, screenH) * sizeRatio);
+    const left = Math.round(screenW * pctX - size / 2);
+    const top = Math.round(screenH * pctY - size / 2);
+    return {
+      position: 'absolute' as const,
+      left,
+      top,
+      width: size,
+      height: size,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      zIndex: 2,
+    } as any;
+  };
+
+  const percentToBoxStyle = (pctX: number, pctY: number, boxWidthPct = 0.6, boxHeight = 56) => {
+    const boxW = Math.round(screenW * boxWidthPct);
+    const left = Math.round(screenW * pctX - boxW / 2);
+    const top = Math.round(screenH * pctY - boxHeight / 2);
+    return {
+      position: 'absolute' as const,
+      left,
+      top,
+      width: boxW,
+      height: boxHeight,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      zIndex: 2,
+    } as any;
+  };
 
   async function pickFromCamera() {
     try {
@@ -106,8 +143,11 @@ export default function ProfileIndex() {
   }
 
   const onPressAvatar = () => {
-    // simple flow: try camera first, if permission denied fallback to library
-    pickFromCamera();
+    Alert.alert('选择头像', '请选择图片来源', [
+      { text: '取消', style: 'cancel' },
+      { text: '从相册选择', onPress: () => pickFromLibrary() },
+      { text: '拍照', onPress: () => pickFromCamera() },
+    ]);
   };
 
   const onPressUsername = () => {
@@ -133,14 +173,24 @@ export default function ProfileIndex() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerDecor}>
-        <View style={styles.topRightAnim} pointerEvents="none">
+      {/* Full-screen absolute overlay for percent-based placement. Modify percentages below. */}
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <View style={percentToSquareStyle(0.6, 0.21, 0.3)}>
           <BlackCatAnimation />
+        </View>
+
+        <View style={percentToSquareStyle(0.38, 0.14, 0.26)}>
+          <PawAnimation />
         </View>
       </View>
 
-      <View style={styles.avatarSection}>
-        <TouchableOpacity onPress={onPressAvatar} style={styles.avatarButton} activeOpacity={0.8}>
+      {/* Avatar positioned by percent of screen. Change (0.5, 0.25) to move it. */}
+      <View style={percentToSquareStyle(0.5, 0.15, 0.28)} pointerEvents="box-none">
+        <TouchableOpacity
+          onPress={onPressAvatar}
+          style={[styles.avatarButton, { width: '100%', height: '100%', borderRadius: 999 }]}
+          activeOpacity={0.8}
+        >
           {avatar ? (
             <Image source={{ uri: avatar }} style={styles.avatarImage} />
           ) : (
@@ -149,21 +199,18 @@ export default function ProfileIndex() {
             </View>
           )}
         </TouchableOpacity>
-
-        <View style={styles.animBelow} pointerEvents="none">
-          <PawAnimation />
-        </View>
       </View>
 
-      <View style={styles.infoSection}>
-        <TouchableOpacity onPress={onPressUsername} activeOpacity={0.7}>
+      {/* Username box positioned by percent. Change (0.5, 0.45) to move it. */}
+      <View style={percentToBoxStyle(0.5, 0.25, 0.7, 48)}>
+        <TouchableOpacity onPress={onPressUsername} activeOpacity={0.7} style={{ width: '100%' }}>
           {editingName ? (
             <TextInput
               value={username}
               onChangeText={setUsername}
               onBlur={saveUsername}
               onSubmitEditing={saveUsername}
-              style={styles.usernameInput}
+              style={[styles.usernameInput, { width: '100%' }]}
               placeholder="输入用户名"
               autoFocus
             />
@@ -171,8 +218,11 @@ export default function ProfileIndex() {
             <Text style={styles.usernameText}>{username}</Text>
           )}
         </TouchableOpacity>
+      </View>
 
-        <TouchableOpacity onPress={openDetailsModal} style={styles.detailsButton}>
+      {/* Details button positioned by percent. Change (0.5, 0.55) to move it. */}
+      <View style={percentToBoxStyle(0.5, 0.33, 0.84, 80)}>
+        <TouchableOpacity onPress={openDetailsModal} style={[styles.detailsButton, { width: '100%', height: '100%', justifyContent: 'center' }]}>
           <Text numberOfLines={3} style={styles.detailsText}>
             {details}
           </Text>
@@ -219,25 +269,7 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     backgroundColor: '#fff',
   },
-  headerDecor: {
-    width: '100%',
-    alignItems: 'flex-end',
-    paddingRight: 20,
-  },
-  topRightAnim: {
-    width: 80,
-    height: 80,
-    opacity: 0.9,
-  },
-  avatarSection: {
-    marginTop: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   avatarButton: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
     borderWidth: 2,
     borderColor: '#ddd',
     alignItems: 'center',
@@ -260,11 +292,6 @@ const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'cover',
   },
-  animBelow: {
-    marginTop: -20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   infoSection: {
     width: '90%',
     marginTop: 20,
@@ -275,10 +302,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#222',
     marginBottom: 12,
+    textAlign: 'center',
   },
   usernameInput: {
     fontSize: 20,
-    width: 240,
+    width: '100%',
     textAlign: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',

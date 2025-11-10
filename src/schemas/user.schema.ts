@@ -1,42 +1,15 @@
 import { z } from 'zod';
+import { petSchema } from './pet.schema';
 
 /**
- * 宠物 Schema
+ * 用户信息 Schema
+ * 包含用户基础信息、头像和宠物列表
  */
-export const petSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  species: z.string(), // 'dog' | 'cat' | 'bird' | 'other'
-  species_display: z.string().optional(), // 中文显示名称
-  breed: z.string().optional(),
-  age: z.number().nullable().optional(),
-  photo: z.string().nullable().optional(),
-  description: z.string().optional(),
-  created_at: z.string(),
-  updated_at: z.string(),
-});
-
-/**
- * 用户完整信息 Schema（含头像和宠物）
- */
-export const userDetailSchema = z.object({
+export const userSchema = z.object({
   id: z.number(),
   username: z.string(),
   avatar: z.string().nullable().optional(), // 头像 URL
   pets: z.array(petSchema).optional(), // 用户的宠物列表
-});
-
-/**
- * 创建/更新宠物的输入 Schema
- */
-export const petInputSchema = z.object({
-  name: z.string().min(1, '请输入宠物名称').max(100, '宠物名称最多100个字符'),
-  species: z.enum(['dog', 'cat', 'bird', 'other'], {
-    errorMap: () => ({ message: '请选择宠物种类' }),
-  }),
-  breed: z.string().max(100, '品种最多100个字符').optional(),
-  age: z.number().int().min(0, '年龄不能为负数').max(100, '年龄过大').nullable().optional(),
-  description: z.string().max(500, '描述最多500个字符').optional(),
 });
 
 /**
@@ -55,9 +28,9 @@ export const deleteResponseSchema = z.object({
 });
 
 // 类型导出
-export type Pet = z.infer<typeof petSchema>;
-export type UserDetail = z.infer<typeof userDetailSchema>;
-export type PetInput = z.infer<typeof petInputSchema>;
+export type User = z.infer<typeof userSchema>;
 export type AvatarUploadResponse = z.infer<typeof avatarUploadResponseSchema>;
 export type DeleteResponse = z.infer<typeof deleteResponseSchema>;
 
+// 重新导出宠物相关类型，方便统一导入
+export type { Pet, PetInput } from './pet.schema';

@@ -17,4 +17,4 @@ export type { Pet, PetInput } from './pet';
 
 // 添加剂服务
 export { additiveService, searchAdditive, searchIngredient } from './additive';
-export type { Additive, SearchResponse } from './additive';
+export type { Additive, Ingredient } from './additive';

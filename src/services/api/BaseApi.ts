@@ -118,13 +118,64 @@ class BaseApi {
 
   /**
    * POST 请求
+   * 自动处理 JSON 和 FormData
    */
   async post<T = any>(endpoint: string, data?: any, options: RequestInit = {}): Promise<T> {
-    return this.request<T>(endpoint, {
+    // 如果 data 是 FormData，直接使用；否则序列化为 JSON
+    const isFormData = data instanceof FormData;
+
+    const requestOptions: RequestInit = {
       ...options,
       method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+      body: isFormData ? data : data ? JSON.stringify(data) : undefined,
+    };
+
+    // 如果是 FormData，需要移除 Content-Type 让浏览器自动设置
+    if (isFormData) {
+      const token = this.getToken();
+      const headers: Record<string, string> = {
+        ...(options.headers as Record<string, string>),
+      };
+
+      // 删除 Content-Type，让浏览器自动添加 multipart/form-data
+      if (headers['Content-Type']) {
+        delete headers['Content-Type'];
+      }
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      return this.requestWithCustomHeaders<T>(endpoint, requestOptions, headers);
+    }
+
+    return this.request<T>(endpoint, requestOptions);
+  }
+
+  /**
+   * 使用自定义 headers 的请求（用于 FormData）
+   */
+  private async requestWithCustomHeaders<T = any>(
+    endpoint: string,
+    options: RequestInit,
+    headers: Record<string, string>
+  ): Promise<T> {
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        ...options,
+        headers,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || error.detail || '请求失败');
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('API 请求错误:', error);
+      throw error;
+    }
   }
 
   /**

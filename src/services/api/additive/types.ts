@@ -6,23 +6,51 @@
  * 添加剂类型
  */
 export interface Additive {
-  /** 添加剂适用范围 */
-  applicable_range: string;
-  /** 添加剂英文名 */
-  en_name: string;
-  id: number;
+  id?: number;
   /** 添加剂名称 */
   name: string;
+  /** 添加剂英文名 */
+  en_name: string;
   /** 添加剂类型 */
   type: string;
+  /** 添加剂适用范围 */
+  applicable_range: string;
   [property: string]: any;
+}
+
+/**
+ * 添加添加剂的请求参数
+ */
+export interface AddAdditiveParams {
+  /** 添加剂名称 */
+  name: string;
+  /** 添加剂英文名 */
+  en_name: string;
+  /** 添加剂类型 */
+  type: string;
+  /** 添加剂适用范围 */
+  applicable_range: string;
 }
 
 /**
  * 营养成分类型
  */
 export interface Ingredient {
-  id: number;
+  id?: number;
+  /** 营养成分名称 */
+  name: string;
+  /** 营养成分类型 */
+  type: string;
+  /** 营养成分标签 */
+  label: string;
+  /** 营养成分详细描述 */
+  desc: string;
+}
+
+/**
+ * 添加营养成分的请求参数
+ */
+export interface AddIngredientParams {
   /** 营养成分名称 */
   name: string;
   /** 营养成分类型 */

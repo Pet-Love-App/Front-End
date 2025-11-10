@@ -49,16 +49,6 @@ export const changePasswordSchema = z
     path: ['re_new_password'],
   });
 
-// 用户响应类型
-export const userSchema = z.object({
-  id: z.number(),
-  username: z.string(),
-  // email 可以是空字符串、有效邮箱、null 或 undefined
-  email: z.union([z.string().email(), z.literal(''), z.null(), z.undefined()]).optional(),
-  first_name: z.union([z.string(), z.literal(''), z.null(), z.undefined()]).optional(),
-  last_name: z.union([z.string(), z.literal(''), z.null(), z.undefined()]).optional(),
-});
-
 // JWT 响应类型
 export const jwtResponseSchema = z.object({
   access: z.string(),
@@ -74,6 +64,5 @@ export const refreshTokenSchema = z.object({
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
-export type User = z.infer<typeof userSchema>;
 export type JWTResponse = z.infer<typeof jwtResponseSchema>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;

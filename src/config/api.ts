@@ -1,7 +1,4 @@
-// 根据环境选择 API 地址
-const API_BASE_URL = __DEV__
-  ? 'http://82.157.255.92' // 生产服务器地址
-  : 'https://82.157.255.92';
+import { API_BASE_URL } from '@/src/config/env';
 
 export const API_ENDPOINTS = {
   // 认证相关（Djoser）
@@ -23,4 +20,4 @@ export const API_ENDPOINTS = {
   MY_PETS: '/api/user/pets/my_pets/', // 获取我的宠物列表
 };
 
-export default API_BASE_URL;
+export default API_ENDPOINTS;

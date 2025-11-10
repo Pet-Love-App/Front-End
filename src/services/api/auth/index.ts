@@ -1,15 +1,14 @@
 import { API_ENDPOINTS } from '@/src/config/api';
 import {
   jwtResponseSchema,
-  userSchema,
   type JWTResponse,
   type LoginInput,
   type RefreshTokenInput,
   type RegisterInput,
-  type User,
 } from '@/src/schemas/auth.schema';
 import { ApiError } from './types';
 
+import { userSchema, type User } from '@/src/schemas/user.schema';
 /**
  * 处理 API 响应（用于不使用 BaseApi 的特殊情况）
  */

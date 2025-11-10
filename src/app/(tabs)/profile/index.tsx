@@ -286,11 +286,11 @@ export default function ProfileIndex() {
     try {
       setSubmittingPet(true);
       const payload = petInputSchema.parse(petForm);
-      const created = await petService.createPet(payload);
+      const created = await petService.createPetWithPhoto(payload, petPhotoUri);
 
       let createdForView: Pet = created;
-      // 若选择了图片，则继续上传宠物照片
-      if (petPhotoUri) {
+      // 若选择了图片且后端不支持一次创建带图，会 fallback 继续单独上传（保持兼容）
+      if (petPhotoUri && !created.photo) {
         try {
           createdForView = await petService.uploadPetPhoto(created.id, petPhotoUri);
         } catch (e) {
@@ -424,17 +424,30 @@ export default function ProfileIndex() {
             ) : (
               <ScrollView contentContainerStyle={styles.petList}>
                 {userDetail?.pets?.map((p) => (
-                  <View key={p.id} style={styles.petCard}>
+                  <TouchableOpacity
+                    key={p.id}
+                    style={styles.petCard}
+                    activeOpacity={0.75}
+                    onPress={() => setSelectedPet(p)}
+                  >
                     {p.photo ? (
-                      <Image source={{ uri: p.photo }} style={styles.petPhoto} />
+                      <Image
+                        source={{ uri: p.photo.includes('?') ? p.photo : `${p.photo}` }}
+                        style={styles.petPhoto}
+                      />
                     ) : (
-                      <View style={[styles.petPhoto, styles.petPhotoEmpty]}><Text style={{ color: '#bbb' }}>无图</Text></View>
+                      <View style={[styles.petPhoto, styles.petPhotoEmpty]}>
+                        <Text style={{ color: '#bbb' }}>无图</Text>
+                      </View>
                     )}
                     <View style={{ flex: 1 }}>
                       <Text style={styles.petName}>{p.name}</Text>
-                      <Text style={styles.petMeta}>{p.species_display ?? p.species}{p.age != null ? ` · ${p.age}岁` : ''}</Text>
+                      <Text style={styles.petMeta}>
+                        {p.species_display ?? p.species}
+                        {p.age != null ? ` · ${p.age}岁` : ''}
+                      </Text>
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 ))}
               </ScrollView>
             )}

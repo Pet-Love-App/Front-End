@@ -1,16 +1,16 @@
-import { LottieAnimation } from '@/src/components/LottieAnimation';
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { Colors } from '@/src/constants/theme';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import { useThemeStore, type ThemeMode } from '@/src/store/themeStore';
+import { LottieAnimation } from '@/src/components/lottie-animation';
+import { petInputSchema, type Pet, type PetInput } from '@/src/schemas/user.schema';
+import { petService } from '@/src/services/api/user';
 import { useUserStore } from '@/src/store/userStore';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Modal,
+  ScrollView,
   ScrollView,
   StyleSheet,
   Text,
@@ -41,25 +41,93 @@ export function BlackCatAnimation() {
 }
 
 export default function ProfileIndex() {
+  // 从全局 Store 获取用户与动作
+  const {
+    user,
+    userDetail,
+    isLoading,
+    fetchCurrentUser,
+    uploadAvatar,
+    deleteAvatar,
+    isAuthenticated,
+    _hasHydrated,
+    logout,
+  } = useUserStore();
+
   const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const colorScheme = useThemeAwareColorScheme();
-  const colors = Colors[colorScheme];
-  const { themeMode, setThemeMode } = useThemeStore();
-  const { logout } = useUserStore();
-  const [avatar, setAvatar] = useState<string | null>(null);
-  const [username, setUsername] = useState<string>('点击设置用户名');
+
+  // 本地 UI 状态
   const [editingName, setEditingName] = useState<boolean>(false);
   const [details, setDetails] = useState<string>('点击编辑用户详细资料');
   const [detailsModalVisible, setDetailsModalVisible] = useState<boolean>(false);
   const [tempDetails, setTempDetails] = useState<string>('');
+
+  // 添加宠物相关状态
+  const [petModalVisible, setPetModalVisible] = useState(false);
+  const [petForm, setPetForm] = useState<PetInput>({ name: '', species: 'cat' });
+  const [submittingPet, setSubmittingPet] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarCacheBuster, setAvatarCacheBuster] = useState(0);
+  // 新增：创建宠物时选择的图片、本次查看的宠物
+  const [petPhotoUri, setPetPhotoUri] = useState<string | null>(null);
+  const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
+
+  // screen dimensions used to compute percentage-based positions
+  const { width: screenW, height: screenH } = useWindowDimensions();
+
+  // Helpers: pass percent values in 0..1 (e.g. 0.5 = 50%)
+  const percentToSquareStyle = (pctX: number, pctY: number, sizeRatio = 0.25) => {
+    const size = Math.round(Math.min(screenW, screenH) * sizeRatio);
+    const left = Math.round(screenW * pctX - size / 2);
+    const top = Math.round(screenH * pctY - size / 2);
+    return {
+      position: 'absolute' as const,
+      left,
+      top,
+      width: size,
+      height: size,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      zIndex: 2,
+    } as any;
+  };
+
+  const percentToBoxStyle = (pctX: number, pctY: number, boxWidthPct = 0.6, boxHeight = 56) => {
+    const boxW = Math.round(screenW * boxWidthPct);
+    const left = Math.round(screenW * pctX - boxW / 2);
+    const top = Math.round(screenH * pctY - boxHeight / 2);
+    return {
+      position: 'absolute' as const,
+      left,
+      top,
+      width: boxW,
+      height: boxHeight,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      zIndex: 2,
+    } as any;
+  };
+
+  // 初次进入加载当前用户
+  useEffect(() => {
+    if (!_hasHydrated) return;
+    if (!isAuthenticated) return; // 未登录不请求
+    if (!userDetail) {
+      fetchCurrentUser().catch((e) => {
+        console.warn('获取用户信息失败', e);
+      });
+    }
+  }, [userDetail, fetchCurrentUser, isAuthenticated, _hasHydrated]);
+
+  const avatarUrl = userDetail?.avatar ?? null;
+  const username = user?.username ?? '未登录';
+  const avatarSrc = React.useMemo(() => (avatarUrl ? `${avatarUrl}?v=${avatarCacheBuster}` : null), [avatarUrl, avatarCacheBuster]);
 
   async function pickFromCamera() {
     try {
       const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
       if (cameraPerm.status !== 'granted') {
         Alert.alert('需要权限', '请允许相机权限或从相册选择图片');
-        // fall back to library
         return pickFromLibrary();
       }
 
@@ -69,17 +137,15 @@ export default function ProfileIndex() {
         aspect: [1, 1],
       });
 
-      // handle both new and old result shapes from expo-image-picker
       if ('canceled' in result) {
         if (!result.canceled && result.assets && result.assets.length > 0) {
-          setAvatar(result.assets[0].uri);
+          await doUploadAvatar(result.assets[0].uri);
         }
       } else {
-        // older versions used 'cancelled' and 'uri'
-        // @ts-ignore
+        // @ts-ignore 兼容旧版本
         if (!result.cancelled && (result as any).uri) {
           // @ts-ignore
-          setAvatar((result as any).uri);
+          await doUploadAvatar((result as any).uri);
         }
       }
     } catch (e) {
@@ -101,17 +167,15 @@ export default function ProfileIndex() {
         aspect: [1, 1],
       });
 
-      // handle both new and old result shapes from expo-image-picker
       if ('canceled' in result) {
         if (!result.canceled && result.assets && result.assets.length > 0) {
-          setAvatar(result.assets[0].uri);
+          await doUploadAvatar(result.assets[0].uri);
         }
       } else {
-        // older versions used 'cancelled' and 'uri'
-        // @ts-ignore
+        // @ts-ignore 兼容旧版本
         if (!result.cancelled && (result as any).uri) {
           // @ts-ignore
-          setAvatar((result as any).uri);
+          await doUploadAvatar((result as any).uri);
         }
       }
     } catch (e) {
@@ -119,23 +183,46 @@ export default function ProfileIndex() {
     }
   }
 
+  const doUploadAvatar = async (uri: string) => {
+    try {
+      setUploadingAvatar(true);
+      await uploadAvatar(uri);
+      // 移除多余的 fetch，避免重复日志；由 store 内部负责刷新用户信息
+      setAvatarCacheBuster((v) => v + 1); // 强制刷新 Image 缓存
+      Alert.alert('成功', '头像已更新');
+    } catch (e: any) {
+      Alert.alert('上传失败', e?.message ?? '请稍后再试');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   const onPressAvatar = () => {
-    Alert.alert('选择头像', '请选择图片来源', [
+    const actions: any[] = [
       { text: '取消', style: 'cancel' },
       { text: '从相册选择', onPress: () => pickFromLibrary() },
       { text: '拍照', onPress: () => pickFromCamera() },
-    ]);
-  };
-
-  const onPressUsername = () => {
-    setEditingName(true);
-  };
-
-  const saveUsername = () => {
-    if (!username || username.trim().length === 0) {
-      setUsername('未命名用户');
+    ];
+    if (avatarUrl) {
+      actions.push({
+        text: '删除头像',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            setUploadingAvatar(true);
+            await deleteAvatar();
+            // 移除多余的 fetch，store 会刷新；并刷新 Image 缓存
+            setAvatarCacheBuster((v) => v + 1);
+          } catch (e: any) {
+            Alert.alert('删除失败', e?.message ?? '请稍后再试');
+          } finally {
+            setUploadingAvatar(false);
+          }
+        },
+      });
     }
-    setEditingName(false);
+
+    Alert.alert('选择头像', '请选择图片来源', actions);
   };
 
   const openDetailsModal = () => {
@@ -148,43 +235,112 @@ export default function ProfileIndex() {
     setDetailsModalVisible(false);
   };
 
-  const handleLogout = () => {
-    Alert.alert('确认登出', '确定要退出登录吗？', [
+  // 设置按钮 -> 退出登录
+  const onPressGear = () => {
+    Alert.alert('设置', '请选择操作', [
+      { text: '取消', style: 'cancel' },
       {
-        text: '取消',
-        style: 'cancel',
-      },
-      {
-        text: '确定',
+        text: '退出登录',
         style: 'destructive',
         onPress: async () => {
           try {
-            await logout();
+            await logout?.();
+          } finally {
             router.replace('/login');
-          } catch (error) {
-            console.error('登出失败:', error);
-            Alert.alert('错误', '登出失败，请重试');
           }
         },
       },
     ]);
   };
 
-  const getThemeLabel = (mode: ThemeMode) => {
-    switch (mode) {
-      case 'light':
-        return '浅色';
-      case 'dark':
-        return '深色';
-      case 'system':
-        return '跟随系统';
+  // 选择宠物图片（相册）
+  const pickPetImage = async () => {
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (perm.status !== 'granted') {
+        Alert.alert('需要权限', '请允许访问相册以选择宠物图片');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        quality: 0.7,
+        allowsEditing: true,
+        aspect: [1, 1],
+      });
+      if ('canceled' in result) {
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+          setPetPhotoUri(result.assets[0].uri);
+        }
+      } else {
+        // @ts-ignore 兼容旧版本
+        if (!result.cancelled && (result as any).uri) {
+          // @ts-ignore
+          setPetPhotoUri((result as any).uri);
+        }
+      }
+    } catch (e) {
+      console.warn(e);
     }
   };
 
-  const handleThemeChange = (mode: ThemeMode) => {
-    setThemeMode(mode);
-    setThemeModalVisible(false);
+  // 提交新增宠物
+  const submitPet = async () => {
+    try {
+      setSubmittingPet(true);
+      const payload = petInputSchema.parse(petForm);
+      const created = await petService.createPet(payload);
+
+      let createdForView: Pet = created;
+      // 若选择了图片，则继续上传宠物照片
+      if (petPhotoUri) {
+        try {
+          createdForView = await petService.uploadPetPhoto(created.id, petPhotoUri);
+        } catch (e) {
+          console.warn('宠物照片上传失败', e);
+        }
+      }
+
+      await fetchCurrentUser();
+      setPetModalVisible(false);
+      // 重置表单
+      setPetForm({ name: '', species: 'cat' });
+      setPetPhotoUri(null);
+      Alert.alert('成功', '已创建宠物');
+
+      // 打开宠物详情小弹窗
+      setSelectedPet(createdForView);
+    } catch (e: any) {
+      Alert.alert('创建失败', e?.message ?? '请检查表单后重试');
+    } finally {
+      setSubmittingPet(false);
+    }
   };
+
+  // 物种选项
+  const speciesOptions = useMemo(() => (
+    [
+      { key: 'cat', label: '猫咪' },
+      { key: 'dog', label: '狗狗' },
+      { key: 'bird', label: '鸟类' },
+      { key: 'other', label: '其他' },
+    ] as const
+  ), []);
+
+  // 未登录/会话过期：展示重新登录入口
+  if (_hasHydrated && !isAuthenticated) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center' }]}>
+        <View style={{ alignItems: 'center', paddingHorizontal: 24 }}>
+          <Text style={{ fontSize: 20, fontWeight: '700', color: '#222', marginBottom: 8 }}>会话已过期</Text>
+          <Text style={{ color: '#666', textAlign: 'center', marginBottom: 16 }}>
+            您的登录状态已失效，请重新登录以继续查看个人资料与宠物信息。
+          </Text>
+          <TouchableOpacity style={styles.addPetBtn} onPress={() => router.replace('/login')}>
+            <Text style={styles.addPetBtnText}>前往登录</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -198,10 +354,25 @@ export default function ProfileIndex() {
         </View>
       </View>
 
-      <View style={styles.avatarSection}>
-        <TouchableOpacity onPress={onPressAvatar} style={styles.avatarButton} activeOpacity={0.8}>
-          {avatar ? (
-            <Image source={{ uri: avatar }} style={styles.avatarImage} />
+      {/* 顶部右侧设置（登出）按钮 */}
+      <TouchableOpacity onPress={onPressGear} style={styles.gearBtn} hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}>
+        <Text style={styles.gearIcon}>⚙️</Text>
+      </TouchableOpacity>
+
+      {/* 头像右上角增加登出按钮“⚙️” */}
+
+      <View style={percentToSquareStyle(0.5, 0.15, 0.28)} pointerEvents="box-none">
+        <TouchableOpacity
+          onPress={onPressAvatar}
+          style={[styles.avatarButton, { width: '100%', height: '100%', borderRadius: 999 }]}
+          activeOpacity={0.8}
+        >
+          {uploadingAvatar || isLoading ? (
+            <View style={styles.emptyAvatar}>
+              <ActivityIndicator />
+            </View>
+          ) : avatarSrc ? (
+            <Image source={{ uri: avatarSrc }} style={styles.avatarImage} />
           ) : (
             <View style={styles.emptyAvatar}>
               <Text style={[styles.emptyAvatarText, { color: colors.icon }]}>+</Text>
@@ -212,22 +383,19 @@ export default function ProfileIndex() {
 
       {/* Username box positioned by percent. Change (0.5, 0.45) to move it. */}
       <View style={percentToBoxStyle(0.5, 0.25, 0.7, 48)}>
-        <TouchableOpacity onPress={onPressUsername} activeOpacity={0.7} style={{ width: '100%' }}>
+        <View style={{ width: '100%' }}>
           {editingName ? (
             <TextInput
               value={username}
-              onChangeText={setUsername}
-              onBlur={saveUsername}
-              onSubmitEditing={saveUsername}
-              style={styles.usernameInput}
-              placeholder="输入用户名"
-              placeholderTextColor={colors.icon}
-              autoFocus
+              onBlur={() => setEditingName(false)}
+              style={[styles.usernameInput, { width: '100%' }]}
+              editable={false}
+              placeholder="用户名"
             />
           ) : (
             <Text style={[styles.usernameText, { color: colors.text }]}>{username}</Text>
           )}
-        </TouchableOpacity>
+        </View>
       </View>
 
         <TouchableOpacity onPress={openDetailsModal} style={styles.detailsButton}>
@@ -237,40 +405,42 @@ export default function ProfileIndex() {
         </TouchableOpacity>
       </View>
 
-      {/* ===== 设置区域 ===== */}
-      <View style={styles.settingsSection}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>外观设置</Text>
-
-        {/* 主题切换按钮 */}
-        <TouchableOpacity
-          onPress={() => setThemeModalVisible(true)}
-          style={[
-            styles.settingItem,
-            { backgroundColor: colors.background, borderColor: colors.icon },
-          ]}
-          activeOpacity={0.7}
-        >
-          <View style={styles.settingLeft}>
-            <IconSymbol name="moon.fill" size={24} color={colors.icon} />
-            <Text style={[styles.settingLabel, { color: colors.text }]}>主题模式</Text>
+      {/* Pets list area */}
+      <View style={percentToBoxStyle(0.5, 0.68, 0.9, Math.min(360, Math.round(screenH * 0.45)))} pointerEvents="box-none">
+        <View style={[styles.petPanel, { width: '100%', height: '100%' }]}>
+          <View style={styles.petHeader}>
+            <Text style={styles.petTitle}>我的宠物</Text>
+            <TouchableOpacity style={styles.addPetBtn} onPress={() => setPetModalVisible(true)}>
+              <Text style={styles.addPetBtnText}>＋ 添加宠物</Text>
+            </TouchableOpacity>
           </View>
-          <View style={styles.settingRight}>
-            <Text style={[styles.settingValue, { color: colors.icon }]}>
-              {getThemeLabel(themeMode)}
-            </Text>
-            <IconSymbol name="chevron.right" size={20} color={colors.icon} />
+          <View style={{ flex: 1 }}>
+            {isLoading && !userDetail ? (
+              <View style={styles.petEmpty}><ActivityIndicator /></View>
+            ) : (userDetail?.pets?.length ?? 0) === 0 ? (
+              <View style={styles.petEmpty}><Text style={{ color: '#777' }}>还没有宠物，点击上方“添加宠物”</Text></View>
+            ) : (
+              <ScrollView contentContainerStyle={styles.petList}>
+                {userDetail?.pets?.map((p) => (
+                  <View key={p.id} style={styles.petCard}>
+                    {p.photo ? (
+                      <Image source={{ uri: p.photo }} style={styles.petPhoto} />
+                    ) : (
+                      <View style={[styles.petPhoto, styles.petPhotoEmpty]}><Text style={{ color: '#bbb' }}>无图</Text></View>
+                    )}
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.petName}>{p.name}</Text>
+                      <Text style={styles.petMeta}>{p.species_display ?? p.species}{p.age != null ? ` · ${p.age}岁` : ''}</Text>
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
           </View>
-        </TouchableOpacity>
+        </View>
       </View>
 
-      {/* 登出按钮 */}
-      <View style={styles.logoutSection}>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton} activeOpacity={0.8}>
-          <Text style={styles.logoutButtonText}>退出登录</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* ===== 编辑详细资料模态框 ===== */}
+      {/* 资料编辑 Modal */}
       <Modal visible={detailsModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
@@ -309,64 +479,106 @@ export default function ProfileIndex() {
         </View>
       </Modal>
 
-      {/* ===== 主题切换模态框 ===== */}
-      <Modal visible={themeModalVisible} animationType="slide" transparent>
+      {/* 新增宠物 Modal */}
+      <Modal visible={petModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>选择主题</Text>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>添加宠物</Text>
+            <TextInput
+              placeholder="宠物名称"
+              value={petForm.name}
+              onChangeText={(t) => setPetForm((s) => ({ ...s, name: t }))}
+              style={styles.modalInput}
+            />
 
-            <View style={styles.themeOptions}>
-              {(['light', 'dark', 'system'] as ThemeMode[]).map((mode) => (
+            {/* 选择宠物图片 + 预览 */}
+            <TouchableOpacity style={styles.petPickBtn} onPress={pickPetImage}>
+              <Text style={styles.petPickBtnText}>{petPhotoUri ? '更换图片' : '选择宠物图片（可选）'}</Text>
+            </TouchableOpacity>
+            {petPhotoUri ? (
+              <Image source={{ uri: petPhotoUri }} style={styles.petImagePreview} />
+            ) : null}
+
+            <View style={styles.speciesRow}>
+              {speciesOptions.map((opt) => (
                 <TouchableOpacity
-                  key={mode}
-                  onPress={() => handleThemeChange(mode)}
-                  style={[
-                    styles.themeOption,
-                    themeMode === mode && styles.themeOptionSelected,
-                    { borderColor: themeMode === mode ? colors.tint : colors.icon },
-                  ]}
-                  activeOpacity={0.7}
+                  key={opt.key}
+                  onPress={() => setPetForm((s) => ({ ...s, species: opt.key }))}
+                  style={[styles.speciesChip, petForm.species === opt.key && styles.speciesChipActive]}
                 >
-                  <View style={styles.themeOptionContent}>
-                    <IconSymbol
-                      name={
-                        mode === 'light'
-                          ? 'sun.max.fill'
-                          : mode === 'dark'
-                            ? 'moon.fill'
-                            : 'circle.lefthalf.filled'
-                      }
-                      size={28}
-                      color={themeMode === mode ? colors.tint : colors.icon}
-                    />
-                    <Text
-                      style={[
-                        styles.themeOptionText,
-                        { color: themeMode === mode ? colors.tint : colors.text },
-                      ]}
-                    >
-                      {getThemeLabel(mode)}
-                    </Text>
-                  </View>
-                  {themeMode === mode && (
-                    <IconSymbol name="checkmark.circle.fill" size={24} color={colors.tint} />
-                  )}
+                  <Text style={[styles.speciesChipText, petForm.species === opt.key && styles.speciesChipTextActive]}>{opt.label}</Text>
                 </TouchableOpacity>
               ))}
             </View>
 
+            <TextInput
+              placeholder="品种（可选）"
+              value={petForm.breed ?? ''}
+              onChangeText={(t) => setPetForm((s) => ({ ...s, breed: t || undefined }))}
+              style={styles.modalInput}
+            />
+
+            <TextInput
+              placeholder="年龄（数字，可选）"
+              keyboardType="number-pad"
+              value={petForm.age != null ? String(petForm.age) : ''}
+              onChangeText={(t) => setPetForm((s) => ({ ...s, age: t ? Number(t) : undefined }))}
+              style={styles.modalInput}
+            />
+
+            <TextInput
+              placeholder="描述（可选）"
+              value={petForm.description ?? ''}
+              onChangeText={(t) => setPetForm((s) => ({ ...s, description: t || undefined }))}
+              style={[styles.modalInput, { minHeight: 80 }]} multiline
+            />
+
             <View style={styles.modalActions}>
-              <TouchableOpacity
-                onPress={() => setThemeModalVisible(false)}
-                style={[styles.modalButton, styles.saveButton]}
-              >
-                <Text style={[styles.modalButtonText, styles.saveButtonText]}>完成</Text>
+              <TouchableOpacity onPress={() => setPetModalVisible(false)} style={styles.modalButton}>
+                <Text style={styles.modalButtonText}>取消</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={submitPet} style={[styles.modalButton, styles.saveButton]} disabled={submittingPet}>
+                {submittingPet ? <ActivityIndicator color="#fff" /> : (
+                  <Text style={[styles.modalButtonText, styles.saveButtonText]}>保存</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
-    </ScrollView>
+
+      {/* 宠物详情小弹窗（点击卡片或创建后显示） */}
+      <Modal visible={!!selectedPet} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {selectedPet ? (
+              <>
+                <Text style={styles.modalTitle}>{selectedPet.name}</Text>
+                {selectedPet.photo ? (
+                  <Image source={{ uri: selectedPet.photo }} style={styles.petImagePreview} />
+                ) : null}
+                <Text style={{ marginTop: 6, color: '#444' }}>
+                  {selectedPet.species_display ?? selectedPet.species}
+                  {selectedPet.age != null ? ` · ${selectedPet.age}岁` : ''}
+                </Text>
+                {selectedPet.breed ? (
+                  <Text style={{ marginTop: 4, color: '#666' }}>品种：{selectedPet.breed}</Text>
+                ) : null}
+                {selectedPet.description ? (
+                  <Text style={{ marginTop: 4, color: '#666' }}>简介：{selectedPet.description}</Text>
+                ) : null}
+
+                <View style={styles.modalActions}>
+                  <TouchableOpacity onPress={() => setSelectedPet(null)} style={styles.modalButton}>
+                    <Text style={styles.modalButtonText}>关闭</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : null}
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 }
 
@@ -431,70 +643,81 @@ const styles = StyleSheet.create({
     // backgroundColor 和 borderColor 动态设置
   },
   detailsText: {
-    // color 动态设置
+    color: '#444',
   },
 
-  // 设置区域
-  settingsSection: {
-    width: '90%',
-    marginTop: 30,
+  // 宠物面板
+  petPanel: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#eee',
+    padding: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-    paddingLeft: 8,
-    // color 动态设置
-  },
-  settingItem: {
+  petHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    borderRadius: 12,
     marginBottom: 8,
-    borderWidth: 1,
-    // backgroundColor 和 borderColor 动态设置
   },
-  settingLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  settingLabel: {
+  petTitle: {
     fontSize: 16,
-    // color 动态设置
+    fontWeight: '600',
+    color: '#222',
   },
-  settingRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  settingValue: {
-    fontSize: 14,
-    // color 动态设置
-  },
-  logoutSection: {
-    width: '90%',
-    marginTop: 30,
-    alignItems: 'center',
-  },
-  logoutButton: {
-    width: '100%',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    backgroundColor: '#ef4444',
+  addPetBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
     borderRadius: 8,
+    backgroundColor: '#3b82f6',
+  },
+  addPetBtnText: {
+    color: '#fff',
+  },
+  petEmpty: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logoutButtonText: {
-    color: '#fff',
+  petList: {
+    gap: 10,
+    paddingBottom: 8,
+  },
+  petCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#eee',
+    borderRadius: 10,
+    padding: 10,
+  },
+  petPhoto: {
+    width: 56,
+    height: 56,
+    borderRadius: 8,
+    marginRight: 8,
+    backgroundColor: '#f2f2f2',
+  },
+  petPhotoEmpty: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  petName: {
     fontSize: 16,
     fontWeight: '600',
+    color: '#222',
+  },
+  petMeta: {
+    marginTop: 2,
+    color: '#666',
   },
 
-  // 模态框
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -516,12 +739,14 @@ const styles = StyleSheet.create({
     // color 动态设置
   },
   modalInput: {
-    minHeight: 100,
+    minHeight: 44,
     borderWidth: 1,
     // color, borderColor, backgroundColor 动态设置
     borderRadius: 8,
     padding: 8,
     textAlignVertical: 'top',
+    backgroundColor: '#fff',
+    marginBottom: 8,
   },
   modalActions: {
     flexDirection: 'row',
@@ -543,32 +768,63 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#fff',
   },
-
-  // 主题选项
-  themeOptions: {
-    gap: 12,
-    marginBottom: 16,
-  },
-  themeOption: {
+  // 新增：物种选择样式
+  speciesRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 2,
-    // borderColor 动态设置
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 8,
   },
-  themeOptionSelected: {
-    // borderColor 动态设置
+  speciesChip: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#fafafa',
   },
-  themeOptionContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  speciesChipActive: {
+    backgroundColor: '#3b82f6',
+    borderColor: '#3b82f6',
   },
-  themeOptionText: {
-    fontSize: 16,
-    fontWeight: '500',
-    // color 动态设置
+  speciesChipText: {
+    color: '#444',
+    fontSize: 14,
+  },
+  speciesChipTextActive: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  gearBtn: {
+    position: 'absolute',
+    top: "10%",
+    right: 12,
+    zIndex: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+  },
+  gearIcon: {
+    fontSize: 18,
+  },
+  petPickBtn: {
+    alignSelf: 'flex-start',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: '#f0f4ff',
+    marginBottom: 8,
+  },
+  petPickBtnText: {
+    color: '#3b82f6',
+  },
+  petImagePreview: {
+    width: 120,
+    height: 120,
+    borderRadius: 10,
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+    backgroundColor: '#eee',
   },
 });

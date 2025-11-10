@@ -1,3 +1,5 @@
+import API_BASE_URL from '@/src/config/api';
+
 /**
  * API 客户端基类
  * 自动从 Zustand store 获取 token 并添加到请求头
@@ -204,9 +206,6 @@ class BaseApi {
     }
   }
 }
-
-// 根据环境选择 API 地址
-const API_BASE_URL = __DEV__ ? 'http://localhost:8081' : 'https://82.157.255.92';
 
 // 导出单例
 export const apiClient = new BaseApi(API_BASE_URL);

@@ -29,6 +29,7 @@
     "@react-navigation/native": "^7.1.8",
     "@tamagui/card": "^1.137.0",
     "@tamagui/config": "^1.135.7",
+    "@tamagui/tabs": "^1.137.0",
     "@tamagui/text": "^1.135.7",
     "@ui-kitten/components": "^5.3.1",
     "expo": "^54.0.22",

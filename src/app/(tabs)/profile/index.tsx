@@ -1,5 +1,7 @@
 import { LottieAnimation } from '@/src/components/lottie-animation';
+import { useUserStore } from '@/src/store/userStore';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Alert,
@@ -33,6 +35,8 @@ export function BlackCatAnimation() {
 }
 
 export default function ProfileIndex() {
+  const router = useRouter();
+  const { logout } = useUserStore();
   const [avatar, setAvatar] = useState<string | null>(null);
   const [username, setUsername] = useState<string>('点击设置用户名');
   const [editingName, setEditingName] = useState<boolean>(false);
@@ -131,6 +135,28 @@ export default function ProfileIndex() {
     setDetailsModalVisible(false);
   };
 
+  const handleLogout = () => {
+    Alert.alert('确认登出', '确定要退出登录吗？', [
+      {
+        text: '取消',
+        style: 'cancel',
+      },
+      {
+        text: '确定',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await logout();
+            router.replace('/login');
+          } catch (error) {
+            console.error('登出失败:', error);
+            Alert.alert('错误', '登出失败，请重试');
+          }
+        },
+      },
+    ]);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.headerDecor}>
@@ -176,6 +202,13 @@ export default function ProfileIndex() {
           <Text numberOfLines={3} style={styles.detailsText}>
             {details}
           </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* 登出按钮 */}
+      <View style={styles.logoutSection}>
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton} activeOpacity={0.8}>
+          <Text style={styles.logoutButtonText}>退出登录</Text>
         </TouchableOpacity>
       </View>
 
@@ -293,6 +326,26 @@ const styles = StyleSheet.create({
   },
   detailsText: {
     color: '#444',
+  },
+
+  logoutSection: {
+    width: '90%',
+    marginTop: 30,
+    alignItems: 'center',
+  },
+  logoutButton: {
+    width: '100%',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    backgroundColor: '#ef4444',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 
   modalOverlay: {

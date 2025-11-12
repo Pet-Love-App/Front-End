@@ -1,6 +1,6 @@
 /**
  * 数据库模块统一导出
- * 
+ *
  * 从这个文件导入所有数据库相关的功能
  */
 
@@ -12,8 +12,12 @@ export * as CollectService from './collectService';
 
 // 数据库配置（高级用法）
 export {
-    clearCollectTable, closeDatabase, deleteDatabase, getDatabase, getDatabaseStats
+  clearCollectTable,
+  closeDatabase,
+  deleteDatabase,
+  getDatabase,
+  getDatabaseStats,
 } from './database';
 
 // 类型定义
-export type { CatFoodCollectItem } from '@/src/types/collect';
+export type { CatFoodCollectItem } from '@/src/types/catFood';

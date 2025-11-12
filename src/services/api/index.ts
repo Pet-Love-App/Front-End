@@ -58,3 +58,12 @@ export type {
   GetCommentsResponse,
   UpdateCommentRequest,
 } from './comment';
+
+// 收藏服务
+export { collectApi } from './collect';
+export type {
+  CheckFavoriteResponse,
+  CreateFavoriteRequest,
+  Favorite,
+  ToggleFavoriteResponse,
+} from './collect/types';

@@ -1,5 +1,11 @@
-import { Stack } from "expo-router";
+import { Stack } from 'expo-router';
 
 export default function ForumScreen() {
-    return <Stack />
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    />
+  );
 }

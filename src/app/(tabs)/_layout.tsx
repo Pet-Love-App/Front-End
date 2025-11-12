@@ -11,12 +11,13 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      initialRouteName="collect" 
+      initialRouteName="collect"
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         tabBarButton: HapticTab,
-        headerShown: false  
-      }}>
+        headerShown: false,
+      }}
+    >
       <Tabs.Screen
         name="collect"
         options={{
@@ -28,7 +29,9 @@ export default function TabLayout() {
         name="forum"
         options={{
           title: '论坛',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="bubble.left.and.bubble.right.fill" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="bubble.left.and.bubble.right.fill" color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -36,23 +39,21 @@ export default function TabLayout() {
         options={{
           title: '',
           tabBarIcon: ({ color, focused }) => (
-            <View style={{
-              width: 60,
-              height: 60,
-              borderRadius: 30,
-              backgroundColor: Colors[colorScheme ?? 'light'].tint,
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginBottom: 30, 
-              borderWidth: 3,
-              borderColor: '#fff',
-            }}>
-              <IconSymbol 
-                size={35} 
-                name="viewfinder.circle.fill" 
-                color="#fff" 
-              />
-              {/* <LottieAnimation 
+            <View
+              style={{
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                backgroundColor: Colors[colorScheme ?? 'light'].tint,
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginBottom: 30,
+                borderWidth: 3,
+                borderColor: '#fff',
+              }}
+            >
+              <IconSymbol size={35} name="viewfinder.circle.fill" color="#fff" />
+              {/* <LottieAnimation
                 source={require('@/assets/animations/scan_face.json')}
                 width={80}
                 height={80}

@@ -23,7 +23,7 @@ class PetService {
    * 获取我的宠物列表
    */
   async getMyPets(): Promise<Pet[]> {
-    const data = await apiClient.get(API_ENDPOINTS.MY_PETS);
+    const data = await apiClient.get(API_ENDPOINTS.PET.MY_PETS);
     return data.map((pet: any) => validateResponse<Pet>(pet, petSchema));
   }
 
@@ -31,7 +31,7 @@ class PetService {
    * 获取所有宠物列表
    */
   async getPets(): Promise<Pet[]> {
-    const data = await apiClient.get(API_ENDPOINTS.PETS);
+    const data = await apiClient.get(API_ENDPOINTS.PET.LIST);
     return data.map((pet: any) => validateResponse<Pet>(pet, petSchema));
   }
 
@@ -39,7 +39,7 @@ class PetService {
    * 获取宠物详情
    */
   async getPet(petId: number): Promise<Pet> {
-    const data = await apiClient.get(API_ENDPOINTS.PET_DETAIL(petId));
+    const data = await apiClient.get(API_ENDPOINTS.PET.DETAIL(petId));
     return validateResponse<Pet>(data, petSchema);
   }
 
@@ -47,7 +47,7 @@ class PetService {
    * 创建宠物
    */
   async createPet(petData: PetInput): Promise<Pet> {
-    const data = await apiClient.post(API_ENDPOINTS.PETS, petData);
+    const data = await apiClient.post(API_ENDPOINTS.PET.CREATE, petData);
     return validateResponse<Pet>(data, petSchema);
   }
 
@@ -55,7 +55,7 @@ class PetService {
    * 更新宠物信息
    */
   async updatePet(petId: number, petData: Partial<PetInput>): Promise<Pet> {
-    const data = await apiClient.put(API_ENDPOINTS.PET_DETAIL(petId), petData);
+    const data = await apiClient.put(API_ENDPOINTS.PET.DETAIL(petId), petData);
     return validateResponse<Pet>(data, petSchema);
   }
 
@@ -63,7 +63,7 @@ class PetService {
    * 删除宠物
    */
   async deletePet(petId: number): Promise<DeleteResponse> {
-    const data = await apiClient.delete(API_ENDPOINTS.PET_DETAIL(petId));
+    const data = await apiClient.delete(API_ENDPOINTS.PET.DETAIL(petId));
     return validateResponse<DeleteResponse>(data, deleteResponseSchema);
   }
 
@@ -84,7 +84,7 @@ class PetService {
       type: `image/${fileType}`,
     } as any);
 
-    const data = await apiClient.upload(API_ENDPOINTS.PET_DETAIL(petId), formData);
+    const data = await apiClient.upload(API_ENDPOINTS.PET.DETAIL(petId), formData);
     return validateResponse<Pet>(data, petSchema);
   }
 }

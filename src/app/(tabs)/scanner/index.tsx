@@ -9,8 +9,10 @@ import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { CameraPhoto } from '@/src/types/camera';
 import { useState } from 'react';
 import { Alert, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ScannerScreen() {
+  const insets = useSafeAreaInsets();
   const { state, cameraRef, takePicture, toggleFacing, requestPermission, onCameraReady } =
     useCamera();
   const colorScheme = useThemeAwareColorScheme();
@@ -72,8 +74,8 @@ export default function ScannerScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title" style={styles.title}>
+    <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
+      <ThemedText type="title" style={[styles.title, { top: insets.top + 20 }]}>
         猫粮成分智能分析
       </ThemedText>
       <ThemedText style={styles.description}>拍照即可获得专业的添加剂成分分析报告</ThemedText>

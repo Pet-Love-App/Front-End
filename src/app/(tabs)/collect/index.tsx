@@ -5,9 +5,11 @@ import { useCollectDatabase } from '@/src/database/useCollectDatabase';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Button, Image, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 //顶部的搜索栏，支持输入文字
 export default function CollectScreen() {
+  const insets = useSafeAreaInsets();
   const [searchText, setSearchText] = useState('');
   const { collects, loadCollects, deleteCollect, addCollect } = useCollectDatabase();
   const router = useRouter();
@@ -342,7 +344,7 @@ export default function CollectScreen() {
   return (
     <ThemedView style={styles.container}>
       {/* 搜索框区域 */}
-      <View style={styles.searchContainer}>
+      <View style={[styles.searchContainer, { paddingTop: insets.top + 16 }]}>
         <Image source={require('@/assets/appIcon.png')} style={styles.logo} />
         <View style={styles.searchBox}>
           <Image source={require('@/assets/appIcon.png')} style={styles.searchIcon} />

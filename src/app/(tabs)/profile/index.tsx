@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function PawAnimation() {
   return (
@@ -38,6 +39,7 @@ export function BlackCatAnimation() {
 }
 
 export default function ProfileIndex() {
+  const insets = useSafeAreaInsets();
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
   const { themeMode, setThemeMode } = useThemeStore();
@@ -160,7 +162,7 @@ export default function ProfileIndex() {
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.scrollContent}
+      contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 40 }]}
     >
       <View style={styles.headerDecor}>
         <View style={styles.topRightAnim} pointerEvents="none">

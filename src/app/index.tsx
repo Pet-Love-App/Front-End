@@ -1,9 +1,11 @@
 import { useUserStore } from '@/src/store/userStore';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spinner, YStack } from 'tamagui';
 
 export default function Index() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { isAuthenticated, _hasHydrated } = useUserStore();
 
@@ -25,7 +27,14 @@ export default function Index() {
   }, [isAuthenticated, _hasHydrated, router]);
 
   return (
-    <YStack flex={1} justifyContent="center" alignItems="center" backgroundColor="$background">
+    <YStack
+      flex={1}
+      justifyContent="center"
+      alignItems="center"
+      backgroundColor="$background"
+      paddingTop={insets.top}
+      paddingBottom={insets.bottom}
+    >
       <Spinner size="large" color="$blue10" />
     </YStack>
   );

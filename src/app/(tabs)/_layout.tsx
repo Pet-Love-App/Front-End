@@ -1,22 +1,23 @@
-import { HapticTab } from '@/src/components/haptic-tab';
-import { IconSymbol } from '@/src/components/ui/icon-symbol';
+import { HapticTab } from '@/src/components/HapticTab';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
-import { useColorScheme } from '@/src/hooks/use-color-scheme';
+import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useThemeAwareColorScheme();
 
   return (
     <Tabs
-      initialRouteName="collect" 
+      initialRouteName="collect"
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         tabBarButton: HapticTab,
-        headerShown: false  
-      }}>
+        headerShown: false,
+      }}
+    >
       <Tabs.Screen
         name="collect"
         options={{
@@ -28,7 +29,9 @@ export default function TabLayout() {
         name="forum"
         options={{
           title: '论坛',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="bubble.left.and.bubble.right.fill" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="bubble.left.and.bubble.right.fill" color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -36,23 +39,25 @@ export default function TabLayout() {
         options={{
           title: '',
           tabBarIcon: ({ color, focused }) => (
-            <View style={{
-              width: 60,
-              height: 60,
-              borderRadius: 30,
-              backgroundColor: Colors[colorScheme ?? 'light'].tint,
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginBottom: 30, 
-              borderWidth: 3,
-              borderColor: '#fff',
-            }}>
-              <IconSymbol 
-                size={35} 
-                name="viewfinder.circle.fill" 
-                color="#fff" 
+            <View
+              style={{
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                backgroundColor: Colors[colorScheme ?? 'light'].scanButtonBackground,
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginBottom: 30,
+                borderWidth: 3,
+                borderColor: Colors[colorScheme ?? 'light'].scanButtonBorder,
+              }}
+            >
+              <IconSymbol
+                size={35}
+                name="viewfinder.circle.fill"
+                color={Colors[colorScheme ?? 'light'].scanButtonIcon}
               />
-              {/* <LottieAnimation 
+              {/* <LottieAnimation
                 source={require('@/assets/animations/scan_face.json')}
                 width={80}
                 height={80}

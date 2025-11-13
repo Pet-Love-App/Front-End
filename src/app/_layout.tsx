@@ -1,4 +1,3 @@
-import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { tamaguiConfig } from '@/tamagui.config';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { TamaguiProvider } from '@tamagui/core';
@@ -7,7 +6,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import { useCustomFonts } from '../hooks/use-fonts';
+import { useCustomFonts } from '../hooks/useFonts';
+import { useThemeAwareColorScheme } from '../hooks/useThemeAwareColorScheme';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -17,7 +17,7 @@ SplashScreen.preventAutoHideAsync();
 // };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useThemeAwareColorScheme();
   const fontsLoaded = useCustomFonts();
 
   useEffect(() => {

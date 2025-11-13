@@ -1,9 +1,11 @@
-import { CameraPermission } from '@/src/components/camera-permission';
-import { CameraViewComponent } from '@/src/components/camera-view';
-import { LottieAnimation } from '@/src/components/lottie-animation';
-import { ThemedText } from '@/src/components/themed-text';
-import { ThemedView } from '@/src/components/themed-view';
-import { useCamera } from '@/src/hooks/use-camera';
+import { CameraPermission } from '@/src/components/CameraPermission';
+import { CameraViewComponent } from '@/src/components/CameraView';
+import { LottieAnimation } from '@/src/components/LottieAnimation';
+import { ThemedText } from '@/src/components/ThemedText';
+import { ThemedView } from '@/src/components/ThemedView';
+import { Colors } from '@/src/constants/theme';
+import { useCamera } from '@/src/hooks/useCamera';
+import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { CameraPhoto } from '@/src/types/camera';
 import { useState } from 'react';
 import { Alert, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -11,6 +13,8 @@ import { Alert, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 export default function ScannerScreen() {
   const { state, cameraRef, takePicture, toggleFacing, requestPermission, onCameraReady } =
     useCamera();
+  const colorScheme = useThemeAwareColorScheme();
+  const colors = Colors[colorScheme];
 
   const [photo, setPhoto] = useState<CameraPhoto | null>(null);
   const [showCamera, setShowCamera] = useState(false);
@@ -98,11 +102,13 @@ export default function ScannerScreen() {
 
       {/* ===== 拍照按钮 ===== */}
       <TouchableOpacity
-        style={styles.button}
+        style={[styles.button, { backgroundColor: colors.buttonBackground }]}
         onPress={photo ? retakePhoto : openCamera}
         activeOpacity={0.8}
       >
-        <ThemedText style={styles.buttonText}>{photo ? '🔄 重新拍照' : '📷 开始拍照'}</ThemedText>
+        <ThemedText style={[styles.buttonText, { color: colors.buttonText }]}>
+          {photo ? '🔄 重新拍照' : '📷 开始拍照'}
+        </ThemedText>
       </TouchableOpacity>
 
       {/* ===== 识别按钮（只有拍照后才显示） ===== */}
@@ -112,7 +118,9 @@ export default function ScannerScreen() {
           onPress={identifyPet}
           activeOpacity={0.8}
         >
-          <ThemedText style={styles.buttonText}>🤖 识别品种</ThemedText>
+          <ThemedText style={[styles.buttonText, { color: colors.buttonText }]}>
+            🤖 识别品种
+          </ThemedText>
         </TouchableOpacity>
       )}
 
@@ -176,10 +184,10 @@ const styles = StyleSheet.create({
   },
 
   /**
-   * 按钮：蓝色背景，圆角，固定宽度
+   * 按钮：圆角，固定宽度（backgroundColor 动态设置）
    */
   button: {
-    backgroundColor: '#0a7ea4',
+    // backgroundColor 动态设置
     paddingHorizontal: 40,
     paddingVertical: 15,
     borderRadius: 10,
@@ -205,10 +213,10 @@ const styles = StyleSheet.create({
   },
 
   /**
-   * 按钮文字：白色，粗体
+   * 按钮文字：粗体（color 动态设置）
    */
   buttonText: {
-    color: '#fff',
+    // color 动态设置
     fontSize: 18,
     fontWeight: '600',
   },

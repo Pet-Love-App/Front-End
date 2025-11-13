@@ -1,6 +1,6 @@
-import { CollectCard } from '@/src/components/collect-card';
-import { ThemedText } from '@/src/components/themed-text';
-import { ThemedView } from '@/src/components/themed-view';
+import { CollectCard } from '@/src/components/CollectCard';
+import { ThemedText } from '@/src/components/ThemedText';
+import { ThemedView } from '@/src/components/ThemedView';
 import { useCollectDatabase } from '@/src/database/useCollectDatabase';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';

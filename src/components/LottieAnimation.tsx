@@ -1,7 +1,6 @@
-import { ThemedText } from '@/src/components/themed-text';
+import { ThemedText } from '@/src/components/ThemedText';
 import LottieView from 'lottie-react-native';
 import { StyleSheet, View, ViewStyle } from 'react-native';
-
 
 interface LottieAnimationProps {
   source: any;
@@ -17,9 +16,9 @@ interface LottieAnimationProps {
 
 /**
  * Lottie 动画组件
- * 
+ *
  * 可重用的动画组件，支持自定义大小、速度、文字等
- * <LottieAnimation 
+ * <LottieAnimation
  *   source={require('@/assets/animations/cat_loader.json')}
  *   width={150}
  *   height={150}
@@ -52,12 +51,8 @@ export function LottieAnimation({
           animationStyle,
         ]}
       />
-      
-      {message && (
-        <ThemedText style={styles.message}>
-          {message}
-        </ThemedText>
-      )}
+
+      {message && <ThemedText style={styles.message}>{message}</ThemedText>}
     </View>
   );
 }

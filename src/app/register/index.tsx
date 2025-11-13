@@ -1,4 +1,4 @@
-import { LottieAnimation } from '@/src/components/lottie-animation';
+import { LottieAnimation } from '@/src/components/LottieAnimation';
 import { registerSchema } from '@/src/schemas/auth.schema';
 import { useUserStore } from '@/src/store/userStore';
 import { useRouter } from 'expo-router';

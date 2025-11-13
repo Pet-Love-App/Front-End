@@ -1,16 +1,22 @@
-import { LottieAnimation } from '@/src/components/lottie-animation';
+import { LottieAnimation } from '@/src/components/LottieAnimation';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { Colors } from '@/src/constants/theme';
+import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
+import { useThemeStore, type ThemeMode } from '@/src/store/themeStore';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
 import {
   Alert,
   Image,
   Modal,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export function PawAnimation() {
   return (
@@ -33,12 +39,18 @@ export function BlackCatAnimation() {
 }
 
 export default function ProfileIndex() {
+  const insets = useSafeAreaInsets();
+  const colorScheme = useThemeAwareColorScheme();
+  const colors = Colors[colorScheme];
+  const { themeMode, setThemeMode } = useThemeStore();
+
   const [avatar, setAvatar] = useState<string | null>(null);
   const [username, setUsername] = useState<string>('点击设置用户名');
   const [editingName, setEditingName] = useState<boolean>(false);
   const [details, setDetails] = useState<string>('点击编辑用户详细资料');
   const [detailsModalVisible, setDetailsModalVisible] = useState<boolean>(false);
   const [tempDetails, setTempDetails] = useState<string>('');
+  const [themeModalVisible, setThemeModalVisible] = useState<boolean>(false);
 
   async function pickFromCamera() {
     try {
@@ -131,8 +143,27 @@ export default function ProfileIndex() {
     setDetailsModalVisible(false);
   };
 
+  const getThemeLabel = (mode: ThemeMode) => {
+    switch (mode) {
+      case 'light':
+        return '浅色';
+      case 'dark':
+        return '深色';
+      case 'system':
+        return '跟随系统';
+    }
+  };
+
+  const handleThemeChange = (mode: ThemeMode) => {
+    setThemeMode(mode);
+    setThemeModalVisible(false);
+  };
+
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 40 }]}
+    >
       <View style={styles.headerDecor}>
         <View style={styles.topRightAnim} pointerEvents="none">
           <BlackCatAnimation />
@@ -140,12 +171,19 @@ export default function ProfileIndex() {
       </View>
 
       <View style={styles.avatarSection}>
-        <TouchableOpacity onPress={onPressAvatar} style={styles.avatarButton} activeOpacity={0.8}>
+        <TouchableOpacity
+          onPress={onPressAvatar}
+          style={[
+            styles.avatarButton,
+            { borderColor: colors.icon, backgroundColor: colors.background },
+          ]}
+          activeOpacity={0.8}
+        >
           {avatar ? (
             <Image source={{ uri: avatar }} style={styles.avatarImage} />
           ) : (
             <View style={styles.emptyAvatar}>
-              <Text style={styles.emptyAvatarText}>+</Text>
+              <Text style={[styles.emptyAvatarText, { color: colors.icon }]}>+</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -163,32 +201,74 @@ export default function ProfileIndex() {
               onChangeText={setUsername}
               onBlur={saveUsername}
               onSubmitEditing={saveUsername}
-              style={styles.usernameInput}
+              style={[styles.usernameInput, { color: colors.text, borderBottomColor: colors.icon }]}
               placeholder="输入用户名"
+              placeholderTextColor={colors.icon}
               autoFocus
             />
           ) : (
-            <Text style={styles.usernameText}>{username}</Text>
+            <Text style={[styles.usernameText, { color: colors.text }]}>{username}</Text>
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={openDetailsModal} style={styles.detailsButton}>
-          <Text numberOfLines={3} style={styles.detailsText}>
+        <TouchableOpacity
+          onPress={openDetailsModal}
+          style={[
+            styles.detailsButton,
+            { backgroundColor: colors.background, borderColor: colors.icon },
+          ]}
+        >
+          <Text numberOfLines={3} style={[styles.detailsText, { color: colors.text }]}>
             {details}
           </Text>
         </TouchableOpacity>
       </View>
 
+      {/* ===== 设置区域 ===== */}
+      <View style={styles.settingsSection}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>外观设置</Text>
+
+        {/* 主题切换按钮 */}
+        <TouchableOpacity
+          onPress={() => setThemeModalVisible(true)}
+          style={[
+            styles.settingItem,
+            { backgroundColor: colors.background, borderColor: colors.icon },
+          ]}
+          activeOpacity={0.7}
+        >
+          <View style={styles.settingLeft}>
+            <IconSymbol name="moon.fill" size={24} color={colors.icon} />
+            <Text style={[styles.settingLabel, { color: colors.text }]}>主题模式</Text>
+          </View>
+          <View style={styles.settingRight}>
+            <Text style={[styles.settingValue, { color: colors.icon }]}>
+              {getThemeLabel(themeMode)}
+            </Text>
+            <IconSymbol name="chevron.right" size={20} color={colors.icon} />
+          </View>
+        </TouchableOpacity>
+      </View>
+
+      {/* ===== 编辑详细资料模态框 ===== */}
       <Modal visible={detailsModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>编辑用户详细资料</Text>
+          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>编辑用户详细资料</Text>
             <TextInput
               value={tempDetails}
               onChangeText={setTempDetails}
-              style={styles.modalInput}
+              style={[
+                styles.modalInput,
+                {
+                  color: colors.text,
+                  borderColor: colors.icon,
+                  backgroundColor: colors.background,
+                },
+              ]}
               multiline
               placeholder="在这里输入用户详细信息"
+              placeholderTextColor={colors.icon}
             />
 
             <View style={styles.modalActions}>
@@ -196,7 +276,7 @@ export default function ProfileIndex() {
                 onPress={() => setDetailsModalVisible(false)}
                 style={styles.modalButton}
               >
-                <Text style={styles.modalButtonText}>取消</Text>
+                <Text style={[styles.modalButtonText, { color: colors.text }]}>取消</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={saveDetails}
@@ -208,16 +288,77 @@ export default function ProfileIndex() {
           </View>
         </View>
       </Modal>
-    </View>
+
+      {/* ===== 主题切换模态框 ===== */}
+      <Modal visible={themeModalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>选择主题</Text>
+
+            <View style={styles.themeOptions}>
+              {(['light', 'dark', 'system'] as ThemeMode[]).map((mode) => (
+                <TouchableOpacity
+                  key={mode}
+                  onPress={() => handleThemeChange(mode)}
+                  style={[
+                    styles.themeOption,
+                    themeMode === mode && styles.themeOptionSelected,
+                    { borderColor: themeMode === mode ? colors.tint : colors.icon },
+                  ]}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.themeOptionContent}>
+                    <IconSymbol
+                      name={
+                        mode === 'light'
+                          ? 'sun.max.fill'
+                          : mode === 'dark'
+                            ? 'moon.fill'
+                            : 'circle.lefthalf.filled'
+                      }
+                      size={28}
+                      color={themeMode === mode ? colors.tint : colors.icon}
+                    />
+                    <Text
+                      style={[
+                        styles.themeOptionText,
+                        { color: themeMode === mode ? colors.tint : colors.text },
+                      ]}
+                    >
+                      {getThemeLabel(mode)}
+                    </Text>
+                  </View>
+                  {themeMode === mode && (
+                    <IconSymbol name="checkmark.circle.fill" size={24} color={colors.tint} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                onPress={() => setThemeModalVisible(false)}
+                style={[styles.modalButton, styles.saveButton]}
+              >
+                <Text style={[styles.modalButtonText, styles.saveButtonText]}>完成</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    // backgroundColor 动态设置
+  },
+  scrollContent: {
     alignItems: 'center',
     paddingTop: 40,
-    backgroundColor: '#fff',
+    paddingBottom: 30,
   },
   headerDecor: {
     width: '100%',
@@ -239,11 +380,10 @@ const styles = StyleSheet.create({
     height: 140,
     borderRadius: 70,
     borderWidth: 2,
-    borderColor: '#ddd',
+    // borderColor 和 backgroundColor 动态设置
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    backgroundColor: '#fafafa',
   },
   emptyAvatar: {
     width: '100%',
@@ -253,7 +393,7 @@ const styles = StyleSheet.create({
   },
   emptyAvatarText: {
     fontSize: 48,
-    color: '#bbb',
+    // color 动态设置
   },
   avatarImage: {
     width: '100%',
@@ -273,7 +413,7 @@ const styles = StyleSheet.create({
   usernameText: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#222',
+    // color 动态设置
     marginBottom: 12,
   },
   usernameInput: {
@@ -281,7 +421,7 @@ const styles = StyleSheet.create({
     width: 240,
     textAlign: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    // color 和 borderBottomColor 动态设置
     padding: 4,
     marginBottom: 12,
   },
@@ -289,12 +429,55 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 12,
     borderRadius: 8,
-    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    // backgroundColor 和 borderColor 动态设置
   },
   detailsText: {
-    color: '#444',
+    // color 动态设置
   },
 
+  // 设置区域
+  settingsSection: {
+    width: '90%',
+    marginTop: 30,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    paddingLeft: 8,
+    // color 动态设置
+  },
+  settingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    // backgroundColor 和 borderColor 动态设置
+  },
+  settingLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  settingLabel: {
+    fontSize: 16,
+    // color 动态设置
+  },
+  settingRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  settingValue: {
+    fontSize: 14,
+    // color 动态设置
+  },
+
+  // 模态框
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -305,23 +488,23 @@ const styles = StyleSheet.create({
   modalContent: {
     width: '100%',
     maxWidth: 560,
-    backgroundColor: '#fff',
+    // backgroundColor 动态设置
     borderRadius: 12,
     padding: 16,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 16,
+    // color 动态设置
   },
   modalInput: {
     minHeight: 100,
     borderWidth: 1,
-    borderColor: '#eee',
+    // color, borderColor, backgroundColor 动态设置
     borderRadius: 8,
     padding: 8,
     textAlignVertical: 'top',
-    backgroundColor: '#fff',
   },
   modalActions: {
     flexDirection: 'row',
@@ -338,9 +521,37 @@ const styles = StyleSheet.create({
     backgroundColor: '#3b82f6',
   },
   modalButtonText: {
-    color: '#444',
+    // color 动态设置
   },
   saveButtonText: {
     color: '#fff',
+  },
+
+  // 主题选项
+  themeOptions: {
+    gap: 12,
+    marginBottom: 16,
+  },
+  themeOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    // borderColor 动态设置
+  },
+  themeOptionSelected: {
+    // borderColor 动态设置
+  },
+  themeOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  themeOptionText: {
+    fontSize: 16,
+    fontWeight: '500',
+    // color 动态设置
   },
 });

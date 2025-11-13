@@ -1,14 +1,9 @@
-import { ThemedText } from '@/src/components/themed-text';
+import { ThemedText } from '@/src/components/ThemedText';
 import { Colors } from '@/src/constants/theme';
+import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { CatFoodCollectItem } from '@/src/types/collect';
 import React from 'react';
-import {
-    Pressable,
-    StyleSheet,
-    useColorScheme,
-    View,
-    ViewStyle,
-} from 'react-native';
+import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
 
 export interface CollectCardProps {
   /** 标签1 */
@@ -32,7 +27,10 @@ export interface CollectCardProps {
 /**
  * 从 CatFoodCollectItem 创建 CollectCardProps
  */
-export type CollectCardPropsFromItem = Omit<CatFoodCollectItem, 'id' | 'collectTime' | 'imageUrl' | 'brand' | 'price' | 'rating'> & {
+export type CollectCardPropsFromItem = Omit<
+  CatFoodCollectItem,
+  'id' | 'collectTime' | 'imageUrl' | 'brand' | 'price' | 'rating'
+> & {
   onPress?: () => void;
   onLongPress?: () => void;
   style?: ViewStyle;
@@ -40,9 +38,9 @@ export type CollectCardPropsFromItem = Omit<CatFoodCollectItem, 'id' | 'collectT
 
 /**
  * 收藏卡片组件
- * 
+ *
  * 用于展示收藏的猫粮信息，包含标签、名称、简介和收藏人数
- * 
+ *
  * @example
  * ```tsx
  * <CollectCard
@@ -65,9 +63,9 @@ export function CollectCard({
   onLongPress,
   style,
 }: CollectCardProps) {
-  const colorScheme = useColorScheme();
+  const colorScheme = useThemeAwareColorScheme();
   const isDark = colorScheme === 'dark';
-  
+
   const [isPressed, setIsPressed] = React.useState(false);
 
   const cardBackgroundColor = isDark ? '#1E1E1E' : '#FFFFFF';
@@ -97,21 +95,15 @@ export function CollectCard({
       {/* 标签区域 */}
       <View style={styles.tagsContainer}>
         <View style={[styles.tag, { backgroundColor: tagBackgroundColor }]}>
-          <ThemedText style={[styles.tagText, { color: tagTextColor }]}>
-            {tag1}
-          </ThemedText>
+          <ThemedText style={[styles.tagText, { color: tagTextColor }]}>{tag1}</ThemedText>
         </View>
         <View style={[styles.tag, { backgroundColor: tagBackgroundColor }]}>
-          <ThemedText style={[styles.tagText, { color: tagTextColor }]}>
-            {tag2}
-          </ThemedText>
+          <ThemedText style={[styles.tagText, { color: tagTextColor }]}>{tag2}</ThemedText>
         </View>
       </View>
 
       {/* 猫粮名称 */}
-      <ThemedText style={[styles.name, { color: textColor }]}>
-        {name}
-      </ThemedText>
+      <ThemedText style={[styles.name, { color: textColor }]}>{name}</ThemedText>
 
       {/* 猫粮简介 */}
       <ThemedText
@@ -124,9 +116,7 @@ export function CollectCard({
 
       {/* 收藏人数 */}
       <View style={styles.collectContainer}>
-        <ThemedText style={[styles.collectIcon, { color: collectIconColor }]}>
-          ❤️
-        </ThemedText>
+        <ThemedText style={[styles.collectIcon, { color: collectIconColor }]}>❤️</ThemedText>
         <ThemedText style={[styles.collectText, { color: descriptionColor }]}>
           {formatCollectCount(collectCount)} 人收藏
         </ThemedText>

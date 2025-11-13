@@ -1,14 +1,16 @@
-import { LottieAnimation } from '@/src/components/lottie-animation';
+import { LottieAnimation } from '@/src/components/LottieAnimation';
 import { loginSchema } from '@/src/schemas/auth.schema';
 import { useUserStore } from '@/src/store/userStore';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Input, Spinner, Text, YStack } from 'tamagui';
 import { ZodError } from 'zod';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
@@ -53,8 +55,8 @@ export default function LoginScreen() {
       justifyContent="center"
       alignItems="center"
       paddingHorizontal="$8"
-      paddingTop="$4"
-      paddingBottom="$20"
+      paddingTop={insets.top + 16}
+      paddingBottom={insets.bottom + 80}
       backgroundColor="$background"
     >
       <LottieAnimation

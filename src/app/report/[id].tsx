@@ -1,5 +1,5 @@
-import { ThemedText } from '@/src/components/themed-text';
-import { ThemedView } from '@/src/components/themed-view';
+import { ThemedText } from '@/src/components/ThemedText';
+import { ThemedView } from '@/src/components/ThemedView';
 import { CatFoodCollectItem } from '@/src/types/collect';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -10,7 +10,7 @@ import Animated, {
   useSharedValue,
   withRepeat,
   withSequence,
-  withSpring
+  withSpring,
 } from 'react-native-reanimated';
 
 // 添加剂气泡组件
@@ -18,20 +18,20 @@ function AdditiveBubble({ additive, index, total, onPress }: any) {
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
-  
+
   // 随机颜色（橙黄色调）
   const colors = ['#FFB347', '#FFA500', '#FF8C42', '#FFD700', '#FDB45C', '#FF9966', '#FFAA33'];
   const color = colors[index % colors.length];
-  
+
   // 随机大小
   const size = 60 + Math.random() * 40;
-  
+
   // 计算气泡位置（圆形排列，避免重叠）
   const angle = (index / total) * Math.PI * 2;
   const radius = 80 + Math.random() * 30;
   const x = Math.cos(angle) * radius;
   const y = Math.sin(angle) * radius;
-  
+
   useEffect(() => {
     // 轻微碰撞动画
     scale.value = withRepeat(
@@ -43,7 +43,7 @@ function AdditiveBubble({ additive, index, total, onPress }: any) {
       -1,
       true
     );
-    
+
     translateX.value = withRepeat(
       withSequence(
         withSpring(Math.random() * 10 - 5, { damping: 5 }),
@@ -52,7 +52,7 @@ function AdditiveBubble({ additive, index, total, onPress }: any) {
       -1,
       true
     );
-    
+
     translateY.value = withRepeat(
       withSequence(
         withSpring(Math.random() * 10 - 5, { damping: 5 }),
@@ -62,18 +62,20 @@ function AdditiveBubble({ additive, index, total, onPress }: any) {
       true
     );
   }, []);
-  
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
       { translateX: x + translateX.value },
       { translateY: y + translateY.value },
-      { scale: scale.value }
+      { scale: scale.value },
     ],
   }));
-  
+
   return (
-    <Animated.View style={[styles.bubble, animatedStyle, { backgroundColor: color, width: size, height: size }]}>
-      <TouchableOpacity 
+    <Animated.View
+      style={[styles.bubble, animatedStyle, { backgroundColor: color, width: size, height: size }]}
+    >
+      <TouchableOpacity
         style={styles.bubbleContent}
         onPress={() => onPress(additive)}
         activeOpacity={0.7}
@@ -92,11 +94,9 @@ export default function ReportScreen() {
   const [detailData, setDetailData] = useState<any>(null);
   const [selectedAdditive, setSelectedAdditive] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  
+
   // 解析传递过来的数据
-  const item: CatFoodCollectItem = params.data 
-    ? JSON.parse(params.data as string)
-    : null;
+  const item: CatFoodCollectItem = params.data ? JSON.parse(params.data as string) : null;
 
   useEffect(() => {
     if (item) {
@@ -134,22 +134,25 @@ export default function ReportScreen() {
     if (!detailData?.nutrition || detailData.nutrition.length === 0) {
       return [];
     }
-  //color设置10个对比度较大的颜色
-  // 柔和版高对比度颜色
-const colors = [
-  '#E74C3C', // 红色
-  '#2ECC71', // 绿色
-  '#3498DB', // 蓝色
-  '#F1C40F', // 黄色
-  '#9B59B6', // 紫色
-  '#1ABC9C', // 青绿色
-  '#E67E22', // 橙色
-  '#34495E', // 深蓝色
-  '#95A5A6', // 灰色
-  '#2C3E50'  // 深灰色
-];
+    //color设置10个对比度较大的颜色
+    // 柔和版高对比度颜色
+    const colors = [
+      '#E74C3C', // 红色
+      '#2ECC71', // 绿色
+      '#3498DB', // 蓝色
+      '#F1C40F', // 黄色
+      '#9B59B6', // 紫色
+      '#1ABC9C', // 青绿色
+      '#E67E22', // 橙色
+      '#34495E', // 深蓝色
+      '#95A5A6', // 灰色
+      '#2C3E50', // 深灰色
+    ];
     //这里处理一下百分比加起来不等于100的问题，如果不到100，可以用“其它”来表示
-    const totalPercentage = detailData.nutrition.reduce((sum: number, item: any) => sum + item.percentage, 0);
+    const totalPercentage = detailData.nutrition.reduce(
+      (sum: number, item: any) => sum + item.percentage,
+      0
+    );
     if (totalPercentage < 100) {
       const otherPercentage = 100 - totalPercentage;
       detailData.nutrition.push({
@@ -157,17 +160,17 @@ const colors = [
         percentage: otherPercentage,
         color: '#CCCCCC',
         legendFontColor: '#666',
-        legendFontSize: 12
+        legendFontSize: 12,
       });
     }
 
     return detailData.nutrition.map((item: any, index: number) => ({
       name: item.name,
       //这里全部取成小数点后一位
-      population: parseFloat(item.percentage.toFixed(1)), 
+      population: parseFloat(item.percentage.toFixed(1)),
       color: colors[index % colors.length],
       legendFontColor: '#666',
-      legendFontSize: 12
+      legendFontSize: 12,
     }));
   };
 
@@ -175,13 +178,13 @@ const colors = [
 
   return (
     <>
-      <Stack.Screen 
+      <Stack.Screen
         options={{
           title: '综合报告',
           headerBackTitle: '返回',
-        }} 
+        }}
       />
-      
+
       <ThemedView style={styles.container}>
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* 头部信息卡片 */}
@@ -270,7 +273,10 @@ const colors = [
                 {detailData.nutrition.map((item: any, index: number) => (
                   <View key={index} style={styles.nutritionItem}>
                     <ThemedText style={styles.nutritionName}>{item.name}</ThemedText>
-                    <ThemedText style={styles.nutritionValue}>{item.percentage}{item.unit}</ThemedText>
+                    <ThemedText style={styles.nutritionValue}>
+                      {item.percentage}
+                      {item.unit}
+                    </ThemedText>
                   </View>
                 ))}
               </View>
@@ -320,7 +326,7 @@ const colors = [
           visible={modalVisible}
           onRequestClose={() => setModalVisible(false)}
         >
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.modalOverlay}
             activeOpacity={1}
             onPress={() => setModalVisible(false)}
@@ -328,9 +334,7 @@ const colors = [
             <View style={styles.modalContent}>
               {selectedAdditive && (
                 <>
-                  <ThemedText style={styles.modalTitle}>
-                    {selectedAdditive.name}
-                  </ThemedText>
+                  <ThemedText style={styles.modalTitle}>{selectedAdditive.name}</ThemedText>
                   <View style={styles.modalInfo}>
                     <ThemedText style={styles.modalLabel}>类别：</ThemedText>
                     <ThemedText style={styles.modalValue}>
@@ -343,7 +347,7 @@ const colors = [
                       {selectedAdditive.description || '暂无说明'}
                     </ThemedText>
                   </View>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.closeButton}
                     onPress={() => setModalVisible(false)}
                   >

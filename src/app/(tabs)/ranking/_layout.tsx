@@ -1,5 +1,12 @@
-import { Stack } from "expo-router";
+import { Stack } from 'expo-router';
 
 export default function RankingScreen() {
-    return <Stack />
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: true,
+        title: '榜单',
+      }}
+    />
+  );
 }

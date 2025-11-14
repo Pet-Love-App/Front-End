@@ -27,8 +27,8 @@ export default function CollectScreen() {
       addNutritionBatch,
       addCommentsBatch,
     } = require('@/src/database/collectExtendedService');
-    // 引入后端搜索 API（文件名为 addictive.ts，所以使用 addictive 路径）
-    const { searchAdditive, searchIngredient } = require('@/src/api/addictive');
+    // 引入后端搜索 API
+    const { searchAdditive, searchIngredient } = require('@/src/services/api');
     // 引入主数据 upsert 方法
     const { upsertAdditiveMaster } = require('@/src/database/collectExtendedService');
 

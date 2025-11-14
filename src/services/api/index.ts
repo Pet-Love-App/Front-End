@@ -19,6 +19,26 @@ export type { Pet, PetInput } from './pet';
 export { additiveService, searchAdditive, searchIngredient } from './additive';
 export type { Additive, Ingredient } from './additive';
 
+// 收藏服务
+export { collectApi } from './collect';
+export type {
+  CheckFavoriteResponse,
+  Favorite,
+  GetFavoritesResponse,
+  ToggleFavoriteResponse,
+} from './collect';
+
+// 评论服务
+export { commentService } from './comment';
+export type {
+  Comment,
+  CommentAuthor,
+  CreateCommentRequest,
+  DeleteCommentResponse,
+  GetCommentsResponse,
+  UpdateCommentRequest,
+} from './comment';
+
 // 猫粮服务
 export { catFoodService, getCatFood, getCatFoods, searchCatFood } from './catfood';
 export type { CatFood, GetCatFoodsResponse, SearchCatFoodParams } from './catfood';

@@ -45,12 +45,15 @@ export const useCollectStore = create<CollectState>()(
 
           const favorites = await collectApi.getFavorites();
 
+          // 确保 favorites 始终是数组
+          const validFavorites = Array.isArray(favorites) ? favorites : [];
+
           set({
-            favorites,
+            favorites: validFavorites,
             isLoading: false,
           });
 
-          console.log('✅ 收藏列表获取成功:', favorites.length);
+          console.log('✅ 收藏列表获取成功:', validFavorites.length);
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : '获取收藏列表失败';
           set({

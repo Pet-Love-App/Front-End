@@ -35,3 +35,13 @@ export interface ToggleFavoriteResponse {
 export interface CheckFavoriteResponse {
   is_favorited: boolean;
 }
+
+/**
+ * 获取收藏列表的响应（分页格式）
+ */
+export interface GetFavoritesResponse {
+  results: Favorite[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+}

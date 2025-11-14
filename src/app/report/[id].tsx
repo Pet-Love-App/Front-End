@@ -1,9 +1,19 @@
 import { ThemedText } from '@/src/components/ThemedText';
 import { ThemedView } from '@/src/components/ThemedView';
-import { CatFoodCollectItem } from '@/src/types/collect';
+import { catFoodService } from '@/src/services/api/catfood';
+import type { CatFood } from '@/src/types/catFood';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Dimensions, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import Animated, {
   useAnimatedStyle,
@@ -91,27 +101,31 @@ function AdditiveBubble({ additive, index, total, onPress }: any) {
 export default function ReportScreen() {
   const params = useLocalSearchParams();
   const router = useRouter();
-  const [detailData, setDetailData] = useState<any>(null);
+  const [catFood, setCatFood] = useState<CatFood | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedAdditive, setSelectedAdditive] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  // 解析传递过来的数据
-  const item: CatFoodCollectItem = params.data ? JSON.parse(params.data as string) : null;
+  // 从路由参数获取猫粮 ID
+  const catfoodId = params.id ? Number(params.id) : null;
 
   useEffect(() => {
-    if (item) {
-      loadDetailData();
+    if (catfoodId) {
+      loadCatFoodDetail();
     }
-  }, [item]);
+  }, [catfoodId]);
 
-  // 加载详细数据（添加剂、营养成分、评论）
-  const loadDetailData = async () => {
+  // 加载猫粮详细数据
+  const loadCatFoodDetail = async () => {
     try {
-      const { getFoodDetail } = require('@/src/database/collectExtendedService');
-      const detail = await getFoodDetail(item.id);
-      setDetailData(detail);
+      setIsLoading(true);
+      const data = await catFoodService.getCatFood(catfoodId!);
+      setCatFood(data);
     } catch (error) {
-      console.error('加载详情失败:', error);
+      console.error('加载猫粮详情失败:', error);
+      Alert.alert('加载失败', '无法获取猫粮详情，请稍后重试');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -121,20 +135,35 @@ export default function ReportScreen() {
     setModalVisible(true);
   };
 
-  if (!item) {
+  if (isLoading) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedText>数据加载失败</ThemedText>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6B6B" />
+          <ThemedText style={styles.loadingText}>加载中...</ThemedText>
+        </View>
+      </ThemedView>
+    );
+  }
+
+  if (!catFood) {
+    return (
+      <ThemedView style={styles.container}>
+        <View style={styles.emptyContainer}>
+          <ThemedText style={styles.emptyText}>数据加载失败</ThemedText>
+        </View>
       </ThemedView>
     );
   }
 
   // 准备饼图数据
   const preparePieChartData = () => {
-    if (!detailData?.nutrition || detailData.nutrition.length === 0) {
+    // 使用百分比数据来构建饼图
+    const percentData = catFood.percentData;
+    if (!percentData || !catFood.percentage) {
       return [];
     }
-    //color设置10个对比度较大的颜色
+
     // 柔和版高对比度颜色
     const colors = [
       '#E74C3C', // 红色
@@ -148,26 +177,31 @@ export default function ReportScreen() {
       '#95A5A6', // 灰色
       '#2C3E50', // 深灰色
     ];
-    //这里处理一下百分比加起来不等于100的问题，如果不到100，可以用“其它”来表示
-    const totalPercentage = detailData.nutrition.reduce(
-      (sum: number, item: any) => sum + item.percentage,
-      0
-    );
-    if (totalPercentage < 100) {
-      const otherPercentage = 100 - totalPercentage;
-      detailData.nutrition.push({
-        name: '其它',
-        percentage: otherPercentage,
-        color: '#CCCCCC',
-        legendFontColor: '#666',
-        legendFontSize: 12,
-      });
-    }
 
-    return detailData.nutrition.map((item: any, index: number) => ({
+    // 构建数据数组
+    const data: Array<{ name: string; value: number }> = [];
+    const fields = [
+      { key: 'crude_protein', name: '粗蛋白' },
+      { key: 'crude_fat', name: '粗脂肪' },
+      { key: 'carbohydrates', name: '碳水化合物' },
+      { key: 'crude_fiber', name: '粗纤维' },
+      { key: 'crude_ash', name: '粗灰分' },
+      { key: 'others', name: '其它' },
+    ];
+
+    fields.forEach((field) => {
+      const value = percentData[field.key as keyof typeof percentData];
+      if (value !== null && value > 0) {
+        data.push({
+          name: field.name,
+          value,
+        });
+      }
+    });
+
+    return data.map((item, index) => ({
       name: item.name,
-      //这里全部取成小数点后一位
-      population: parseFloat(item.percentage.toFixed(1)),
+      population: parseFloat(item.value.toFixed(1)),
       color: colors[index % colors.length],
       legendFontColor: '#666',
       legendFontSize: 12,
@@ -189,14 +223,13 @@ export default function ReportScreen() {
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* 头部信息卡片 */}
           <View style={styles.headerCard}>
-            <ThemedText style={styles.title}>{item.name}</ThemedText>
+            <ThemedText style={styles.title}>{catFood.name}</ThemedText>
             <View style={styles.tagsContainer}>
-              <View style={styles.tag}>
-                <ThemedText style={styles.tagText}>{item.tag1}</ThemedText>
-              </View>
-              <View style={styles.tag}>
-                <ThemedText style={styles.tagText}>{item.tag2}</ThemedText>
-              </View>
+              {catFood.tags.map((tag, index) => (
+                <View key={index} style={styles.tag}>
+                  <ThemedText style={styles.tagText}>{tag}</ThemedText>
+                </View>
+              ))}
             </View>
           </View>
 
@@ -205,44 +238,48 @@ export default function ReportScreen() {
             <ThemedText style={styles.sectionTitle}>基本信息</ThemedText>
             <View style={styles.infoRow}>
               <ThemedText style={styles.infoLabel}>品牌：</ThemedText>
-              <ThemedText style={styles.infoValue}>{item.brand || '暂无'}</ThemedText>
-            </View>
-            <View style={styles.infoRow}>
-              <ThemedText style={styles.infoLabel}>价格：</ThemedText>
-              <ThemedText style={styles.infoValue}>
-                {item.price ? `¥${item.price}` : '暂无'}
-              </ThemedText>
+              <ThemedText style={styles.infoValue}>{catFood.brand || '暂无'}</ThemedText>
             </View>
             <View style={styles.infoRow}>
               <ThemedText style={styles.infoLabel}>评分：</ThemedText>
               <ThemedText style={styles.infoValue}>
-                {item.rating ? `${item.rating}分` : '暂无'}
+                {catFood.score ? `${catFood.score}分` : '暂无'}
               </ThemedText>
             </View>
             <View style={styles.infoRow}>
-              <ThemedText style={styles.infoLabel}>收藏人数：</ThemedText>
-              <ThemedText style={styles.infoValue}>{item.collectCount}</ThemedText>
+              <ThemedText style={styles.infoLabel}>评分人数：</ThemedText>
+              <ThemedText style={styles.infoValue}>{catFood.countNum || 0}人</ThemedText>
             </View>
           </View>
 
-          {/* 产品描述 */}
-          <View style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>产品描述</ThemedText>
-            <ThemedText style={styles.description}>{item.description}</ThemedText>
-          </View>
+          {/* 安全性分析 */}
+          {catFood.safety && (
+            <View style={styles.section}>
+              <ThemedText style={styles.sectionTitle}>安全性分析</ThemedText>
+              <ThemedText style={styles.description}>{catFood.safety}</ThemedText>
+            </View>
+          )}
+
+          {/* 营养分析 */}
+          {catFood.nutrient && (
+            <View style={styles.section}>
+              <ThemedText style={styles.sectionTitle}>营养分析</ThemedText>
+              <ThemedText style={styles.description}>{catFood.nutrient}</ThemedText>
+            </View>
+          )}
 
           {/* 添加剂气泡图 */}
-          {detailData?.additives && detailData.additives.length > 0 && (
+          {catFood.additive && catFood.additive.length > 0 && (
             <View style={styles.section}>
               <ThemedText style={styles.sectionTitle}>添加剂成分</ThemedText>
               <ThemedText style={styles.sectionSubtitle}>点击气泡查看详情</ThemedText>
               <View style={styles.bubblesContainer}>
-                {detailData.additives.map((additive: any, index: number) => (
+                {catFood.additive.map((additive: any, index: number) => (
                   <AdditiveBubble
                     key={index}
                     additive={additive}
                     index={index}
-                    total={detailData.additives.length}
+                    total={catFood.additive.length}
                     onPress={showAdditiveDetail}
                   />
                 ))}
@@ -251,7 +288,7 @@ export default function ReportScreen() {
           )}
 
           {/* 营养成分饼图 */}
-          {detailData?.nutrition && detailData.nutrition.length > 0 && (
+          {catFood.percentage && catFood.percentData && (
             <View style={styles.section}>
               <ThemedText style={styles.sectionTitle}>营养成分分析</ThemedText>
               <View style={styles.chartContainer}>
@@ -269,50 +306,24 @@ export default function ReportScreen() {
                   absolute
                 />
               </View>
+            </View>
+          )}
+
+          {/* 营养成分列表 */}
+          {catFood.ingredient && catFood.ingredient.length > 0 && (
+            <View style={styles.section}>
+              <ThemedText style={styles.sectionTitle}>营养成分详情</ThemedText>
               <View style={styles.nutritionList}>
-                {detailData.nutrition.map((item: any, index: number) => (
+                {catFood.ingredient.map((item: any, index: number) => (
                   <View key={index} style={styles.nutritionItem}>
                     <ThemedText style={styles.nutritionName}>{item.name}</ThemedText>
                     <ThemedText style={styles.nutritionValue}>
-                      {item.percentage}
+                      {item.amount}
                       {item.unit}
                     </ThemedText>
                   </View>
                 ))}
               </View>
-            </View>
-          )}
-
-          {/* 高赞评论 */}
-          {detailData?.topComments && detailData.topComments.length > 0 && (
-            <View style={styles.section}>
-              <ThemedText style={styles.sectionTitle}>高赞评论</ThemedText>
-              {detailData.topComments.map((comment: any, index: number) => (
-                <View key={index} style={styles.commentCard}>
-                  <View style={styles.commentHeader}>
-                    <View style={styles.commentUserInfo}>
-                      <View style={styles.avatar}>
-                        <ThemedText style={styles.avatarText}>
-                          {comment.userName.charAt(0)}
-                        </ThemedText>
-                      </View>
-                      <View>
-                        <ThemedText style={styles.userName}>{comment.userName}</ThemedText>
-                        <ThemedText style={styles.commentTime}>
-                          {new Date(comment.commentTime).toLocaleDateString('zh-CN')}
-                        </ThemedText>
-                      </View>
-                    </View>
-                    <View style={styles.commentStats}>
-                      <ThemedText style={styles.likes}>👍 {comment.likeCount}</ThemedText>
-                      {comment.rating && (
-                        <ThemedText style={styles.rating}>⭐ {comment.rating}</ThemedText>
-                      )}
-                    </View>
-                  </View>
-                  <ThemedText style={styles.commentContent}>{comment.content}</ThemedText>
-                </View>
-              ))}
             </View>
           )}
 
@@ -335,16 +346,22 @@ export default function ReportScreen() {
               {selectedAdditive && (
                 <>
                   <ThemedText style={styles.modalTitle}>{selectedAdditive.name}</ThemedText>
+                  {selectedAdditive.en_name && (
+                    <View style={styles.modalInfo}>
+                      <ThemedText style={styles.modalLabel}>英文名：</ThemedText>
+                      <ThemedText style={styles.modalValue}>{selectedAdditive.en_name}</ThemedText>
+                    </View>
+                  )}
                   <View style={styles.modalInfo}>
                     <ThemedText style={styles.modalLabel}>类别：</ThemedText>
                     <ThemedText style={styles.modalValue}>
-                      {selectedAdditive.category || '未分类'}
+                      {selectedAdditive.type || '未分类'}
                     </ThemedText>
                   </View>
                   <View style={styles.modalInfo}>
-                    <ThemedText style={styles.modalLabel}>说明：</ThemedText>
+                    <ThemedText style={styles.modalLabel}>适用范围：</ThemedText>
                     <ThemedText style={styles.modalDescription}>
-                      {selectedAdditive.description || '暂无说明'}
+                      {selectedAdditive.applicable_range || '暂无说明'}
                     </ThemedText>
                   </View>
                   <TouchableOpacity
@@ -366,6 +383,28 @@ export default function ReportScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#999',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
+    textAlign: 'center',
   },
   headerCard: {
     padding: 20,

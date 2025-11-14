@@ -74,7 +74,7 @@ class AuthService {
    * 用户注册
    */
   async register(data: RegisterInput): Promise<User> {
-    const response = await fetch(API_ENDPOINTS.REGISTER, {
+    const response = await fetch(API_ENDPOINTS.AUTH.REGISTER, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -89,7 +89,7 @@ class AuthService {
    * 用户登录
    */
   async login(data: LoginInput): Promise<JWTResponse> {
-    const response = await fetch(API_ENDPOINTS.LOGIN, {
+    const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ class AuthService {
    * 刷新 Token
    */
   async refreshToken(data: RefreshTokenInput): Promise<JWTResponse> {
-    const response = await fetch(API_ENDPOINTS.REFRESH_TOKEN, {
+    const response = await fetch(API_ENDPOINTS.AUTH.REFRESH_TOKEN, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ class AuthService {
    */
   async verifyToken(token: string): Promise<boolean> {
     try {
-      const response = await fetch(API_ENDPOINTS.VERIFY_TOKEN, {
+      const response = await fetch(API_ENDPOINTS.AUTH.VERIFY_TOKEN, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -138,7 +138,7 @@ class AuthService {
    * 获取当前用户信息
    */
   async getCurrentUser(token: string): Promise<User> {
-    const response = await fetch(API_ENDPOINTS.USER_ME, {
+    const response = await fetch(API_ENDPOINTS.USER.ME, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -153,7 +153,7 @@ class AuthService {
    * 修改密码
    */
   async changePassword(token: string, currentPassword: string, newPassword: string): Promise<void> {
-    const response = await fetch(API_ENDPOINTS.SET_PASSWORD, {
+    const response = await fetch(API_ENDPOINTS.AUTH.SET_PASSWORD, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

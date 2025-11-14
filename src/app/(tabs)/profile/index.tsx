@@ -3,7 +3,9 @@ import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { useThemeStore, type ThemeMode } from '@/src/store/themeStore';
+import { useUserStore } from '@/src/store/userStore';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Alert,
@@ -39,11 +41,12 @@ export function BlackCatAnimation() {
 }
 
 export default function ProfileIndex() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
   const { themeMode, setThemeMode } = useThemeStore();
-
+  const { logout } = useUserStore();
   const [avatar, setAvatar] = useState<string | null>(null);
   const [username, setUsername] = useState<string>('点击设置用户名');
   const [editingName, setEditingName] = useState<boolean>(false);
@@ -141,6 +144,28 @@ export default function ProfileIndex() {
   const saveDetails = () => {
     setDetails(tempDetails.trim().length ? tempDetails : '未填写详细资料');
     setDetailsModalVisible(false);
+  };
+
+  const handleLogout = () => {
+    Alert.alert('确认登出', '确定要退出登录吗？', [
+      {
+        text: '取消',
+        style: 'cancel',
+      },
+      {
+        text: '确定',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await logout();
+            router.replace('/login');
+          } catch (error) {
+            console.error('登出失败:', error);
+            Alert.alert('错误', '登出失败，请重试');
+          }
+        },
+      },
+    ]);
   };
 
   const getThemeLabel = (mode: ThemeMode) => {
@@ -247,6 +272,13 @@ export default function ProfileIndex() {
             </Text>
             <IconSymbol name="chevron.right" size={20} color={colors.icon} />
           </View>
+        </TouchableOpacity>
+      </View>
+
+      {/* 登出按钮 */}
+      <View style={styles.logoutSection}>
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton} activeOpacity={0.8}>
+          <Text style={styles.logoutButtonText}>退出登录</Text>
         </TouchableOpacity>
       </View>
 
@@ -475,6 +507,25 @@ const styles = StyleSheet.create({
   settingValue: {
     fontSize: 14,
     // color 动态设置
+  },
+  logoutSection: {
+    width: '90%',
+    marginTop: 30,
+    alignItems: 'center',
+  },
+  logoutButton: {
+    width: '100%',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    backgroundColor: '#ef4444',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 
   // 模态框

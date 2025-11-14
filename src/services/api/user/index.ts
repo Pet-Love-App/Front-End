@@ -29,7 +29,7 @@ class UserService {
    * 获取当前用户完整信息（含头像、宠物）
    */
   async getCurrentUser(): Promise<User> {
-    const data = await apiClient.get(API_ENDPOINTS.USER_ME);
+    const data = await apiClient.get(API_ENDPOINTS.USER.ME);
     return validateResponse<User>(data, userSchema);
   }
 
@@ -37,7 +37,7 @@ class UserService {
    * 获取指定用户信息
    */
   async getUser(userId: number): Promise<User> {
-    const data = await apiClient.get(API_ENDPOINTS.USER_DETAIL(userId));
+    const data = await apiClient.get(API_ENDPOINTS.USER.DETAIL(userId));
     return validateResponse<User>(data, userSchema);
   }
 
@@ -58,7 +58,7 @@ class UserService {
       type: `image/${fileType}`,
     } as any);
 
-    const data = await apiClient.upload(API_ENDPOINTS.USER_AVATAR, formData);
+    const data = await apiClient.upload(API_ENDPOINTS.USER.AVATAR, formData);
     return validateResponse<AvatarUploadResponse>(data, avatarUploadResponseSchema);
   }
 
@@ -66,7 +66,7 @@ class UserService {
    * 删除头像
    */
   async deleteAvatar(): Promise<DeleteResponse> {
-    const data = await apiClient.delete(API_ENDPOINTS.USER_AVATAR);
+    const data = await apiClient.delete(API_ENDPOINTS.USER.AVATAR);
     return validateResponse<DeleteResponse>(data, deleteResponseSchema);
   }
 }

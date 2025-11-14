@@ -4,7 +4,8 @@ export default function RankingScreen() {
   return (
     <Stack
       screenOptions={{
-        headerShown: false,
+        headerShown: true,
+        title: '榜单',
       }}
     />
   );

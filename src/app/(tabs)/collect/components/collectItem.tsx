@@ -7,7 +7,7 @@ interface CollectListItemProps {
   onDelete?: (favoriteId: number) => void;
 }
 
-export function CollectListItem({ favorite, onDelete }: CollectListItemProps) {
+export default function CollectListItem({ favorite, onDelete }: CollectListItemProps) {
   const { catfood } = favorite;
 
   // 格式化日期
@@ -44,11 +44,6 @@ export function CollectListItem({ favorite, onDelete }: CollectListItemProps) {
             {catfood.brand && (
               <Text fontSize="$3" color="$gray10" numberOfLines={1}>
                 {catfood.brand}
-              </Text>
-            )}
-            {catfood.desc && (
-              <Text fontSize="$3" color="$gray10" numberOfLines={1}>
-                {catfood.desc}
               </Text>
             )}
             <Text fontSize="$2" color="$gray9" marginTop="$1">

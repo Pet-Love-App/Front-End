@@ -1,5 +1,3 @@
-import { CameraPermission } from '@/src/components/CameraPermission';
-import { CameraViewComponent } from '@/src/components/CameraView';
 import { LottieAnimation } from '@/src/components/LottieAnimation';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useCamera } from '@/src/hooks/useCamera';
@@ -15,6 +13,8 @@ import React, { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Card, Image, ScrollView, Separator, Spinner, Text, XStack, YStack } from 'tamagui';
+import { CameraPermission } from './components/CameraPermission';
+import { CameraViewComponent } from './components/CameraView';
 import { CatFoodSearchModal } from './components/CatFoodSearchModal';
 import { PhotoPreview } from './components/PhotoPreview';
 import { ScanModeModal, type ScanMode } from './components/ScanModeModal';

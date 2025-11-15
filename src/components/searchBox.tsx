@@ -1,5 +1,4 @@
-import type { SizeTokens } from 'tamagui';
-import { Button, Input, XStack } from 'tamagui';
+import { Button, Input, XStack, type SizeTokens } from 'tamagui';
 
 interface SearchBoxProps {
   size: SizeTokens;

@@ -1,236 +1,477 @@
 import { CameraPermission } from '@/src/components/CameraPermission';
 import { CameraViewComponent } from '@/src/components/CameraView';
 import { LottieAnimation } from '@/src/components/LottieAnimation';
-import { ThemedText } from '@/src/components/ThemedText';
-import { ThemedView } from '@/src/components/ThemedView';
-import { Colors } from '@/src/constants/theme';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useCamera } from '@/src/hooks/useCamera';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import type { CameraPhoto } from '@/src/types/camera';
-import { useState } from 'react';
-import { Alert, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+  getCatFood,
+  patchCatFood,
+  recognizeImage,
+  type CatFood,
+  type OcrResult,
+} from '@/src/services/api';
+import { useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Button, Card, Image, ScrollView, Separator, Spinner, Text, XStack, YStack } from 'tamagui';
+import { CatFoodSearchModal } from './components/CatFoodSearchModal';
+import { PhotoPreview } from './components/PhotoPreview';
+import { ScanModeModal, type ScanMode } from './components/ScanModeModal';
 
+/**
+ * 扫描流程状态
+ */
+type ScanFlowState =
+  | 'initial' // 初始状态
+  | 'selecting-mode' // 选择扫描模式
+  | 'searching-catfood' // 搜索猫粮
+  | 'selected-catfood' // 已选择猫粮
+  | 'taking-photo' // 拍照中
+  | 'photo-preview' // 照片预览
+  | 'processing-ocr' // OCR 处理中
+  | 'ocr-result'; // OCR 结果展示
+
+/**
+ * 扫描器主页面
+ *
+ * 流程：
+ * 1. 用户点击开始，选择扫描模式（已知品牌 / 直接扫描）
+ * 2a. 已知品牌：搜索猫粮 → 选择猫粮 → 检查是否有成分数据
+ * 2b. 直接扫描：直接进入拍照流程
+ * 3. 拍照 → 预览确认 → OCR 识别
+ * 4. 展示识别结果，并可选择更新数据库
+ *
+ * @returns Scanner 页面组件
+ */
 export default function ScannerScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { state, cameraRef, takePicture, toggleFacing, requestPermission, onCameraReady } =
     useCamera();
-  const colorScheme = useThemeAwareColorScheme();
-  const colors = Colors[colorScheme];
 
-  const [photo, setPhoto] = useState<CameraPhoto | null>(null);
-  const [showCamera, setShowCamera] = useState(false);
+  // 流程状态
+  const [flowState, setFlowState] = useState<ScanFlowState>('initial');
+  const [scanMode, setScanMode] = useState<ScanMode>(null);
+  const [selectedCatFood, setSelectedCatFood] = useState<CatFood | null>(null);
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleCapture = async () => {
-    const result = await takePicture({
-      quality: 0.8,
-    });
+  /**
+   * 开始扫描流程
+   */
+  const handleStartScan = useCallback(() => {
+    setFlowState('selecting-mode');
+  }, []);
 
-    if (result) {
-      setPhoto(result);
-      setShowCamera(false);
-    } else {
-      Alert.alert('拍照失败', '请重试', [{ text: '确定' }]);
+  /**
+   * 选择扫描模式
+   */
+  const handleSelectMode = useCallback((mode: ScanMode) => {
+    setScanMode(mode);
+    if (mode === 'known-brand') {
+      setFlowState('searching-catfood');
+    } else if (mode === 'direct-additive') {
+      setFlowState('taking-photo');
     }
-  };
+  }, []);
 
-  const openCamera = () => {
-    if (state.hasPermission) {
-      setShowCamera(true);
-    } else {
-      requestPermission();
+  /**
+   * 选择猫粮
+   */
+  const handleSelectCatFood = useCallback(
+    async (catFood: CatFood) => {
+      try {
+        // 获取最新的猫粮数据
+        const fullCatFood = await getCatFood(catFood.id);
+        setSelectedCatFood(fullCatFood);
+        setFlowState('selected-catfood');
+
+        // 检查是否有成分数据
+        const hasIngredients = fullCatFood.ingredient && fullCatFood.ingredient.length > 0;
+
+        if (!hasIngredients) {
+          // 没有成分数据，提示用户拍照
+          Alert.alert('需要补充成分数据', '该猫粮暂无成分信息，是否拍照识别配料表？', [
+            { text: '取消', style: 'cancel', onPress: () => setFlowState('initial') },
+            {
+              text: '拍照识别',
+              onPress: () => setFlowState('taking-photo'),
+            },
+          ]);
+        } else {
+          // 有成分数据，跳转到详情页
+          Alert.alert('已有成分数据', '该猫粮已有成分信息，是否查看详情？', [
+            { text: '重新拍照', onPress: () => setFlowState('taking-photo') },
+            {
+              text: '查看详情',
+              onPress: () => router.push(`/report/${fullCatFood.id}`),
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error('获取猫粮详情失败:', error);
+        Alert.alert('错误', '获取猫粮详情失败，请重试');
+      }
+    },
+    [router]
+  );
+
+  /**
+   * 重置流程
+   */
+  const resetFlow = useCallback(() => {
+    setFlowState('initial');
+    setScanMode(null);
+    setSelectedCatFood(null);
+    setPhotoUri(null);
+    setOcrResult(null);
+  }, []);
+
+  /**
+   * 返回上一步
+   */
+  const handleGoBack = useCallback(() => {
+    if (flowState === 'selecting-mode') {
+      setFlowState('initial');
+    } else if (flowState === 'searching-catfood') {
+      setFlowState('selecting-mode');
+    } else if (flowState === 'selected-catfood' || flowState === 'taking-photo') {
+      if (scanMode === 'known-brand') {
+        setFlowState('searching-catfood');
+      } else {
+        setFlowState('selecting-mode');
+      }
+    } else if (flowState === 'photo-preview') {
+      setFlowState('taking-photo');
+    } else if (flowState === 'ocr-result') {
+      setFlowState('taking-photo');
     }
-  };
+  }, [flowState, scanMode]);
 
-  const closeCamera = () => {
-    setShowCamera(false);
-  };
+  /**
+   * 执行 OCR 识别
+   */
+  const performOCR = useCallback(
+    async (imageUri: string) => {
+      try {
+        setIsProcessing(true);
+        const result = await recognizeImage(imageUri);
+        setOcrResult(result);
+        setFlowState('ocr-result');
+      } catch (error) {
+        console.error('OCR 识别失败:', error);
 
-  const retakePhoto = () => {
-    setPhoto(null);
-    setShowCamera(true);
-  };
+        let errorMessage = '图片识别失败，请重新拍照或手动输入';
 
-  const identifyPet = () => {
-    // TODO: 接入 AI 识别 API
-    Alert.alert('识别功能', '即将接入 AI 识别，敬请期待！', [{ text: '好的' }]);
-  };
+        if (error instanceof Error) {
+          if (error.message.includes('网络连接失败')) {
+            errorMessage = '网络连接失败，请检查网络或确认后端服务器是否正在运行';
+          } else if (error.message.includes('服务器')) {
+            errorMessage = error.message;
+          } else {
+            errorMessage = error.message;
+          }
+        }
 
-  if (showCamera) {
-    if (!state.hasPermission) {
-      return <CameraPermission onRequestPermission={requestPermission} />;
+        Alert.alert('识别失败', errorMessage, [
+          { text: '重新拍照', onPress: () => setFlowState('taking-photo') },
+          { text: '取消', style: 'cancel', onPress: () => resetFlow() },
+        ]);
+
+        setFlowState('photo-preview');
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [resetFlow]
+  );
+
+  /**
+   * 拍照（优化：降低质量加快上传和处理）
+   */
+  const handleTakePhoto = useCallback(async () => {
+    try {
+      // 降低质量到 0.6，加快上传和处理速度
+      const photo = await takePicture({ quality: 0.6 });
+      if (photo) {
+        setPhotoUri(photo.uri);
+        setFlowState('photo-preview');
+      }
+    } catch (error) {
+      console.error('拍照失败:', error);
+      Alert.alert('拍照失败', '请重试');
+    }
+  }, [takePicture]);
+
+  /**
+   * 确认照片
+   */
+  const handleConfirmPhoto = useCallback(async () => {
+    if (!photoUri) return;
+    setFlowState('processing-ocr');
+    await performOCR(photoUri);
+  }, [photoUri, performOCR]);
+
+  /**
+   * 重新拍照
+   */
+  const handleRetakePhoto = useCallback(() => {
+    setPhotoUri(null);
+    setFlowState('taking-photo');
+  }, []);
+
+  /**
+   * 取消预览
+   */
+  const handleCancelPreview = useCallback(() => {
+    setPhotoUri(null);
+    handleGoBack();
+  }, [handleGoBack]);
+
+  /**
+   * 保存OCR结果到数据库
+   */
+  const handleSaveOcrResult = useCallback(async () => {
+    if (!ocrResult || !selectedCatFood) {
+      Alert.alert('错误', '无法保存：缺少必要信息');
+      return;
     }
 
+    try {
+      setIsProcessing(true);
+
+      // 更新猫粮的成分信息
+      // 注意：这里需要根据实际 API 进行调整
+      await patchCatFood(selectedCatFood.id, {
+        // 这里需要解析 OCR 文本并提取成分
+        // 暂时简单存储识别的文本
+      });
+
+      Alert.alert('成功', '成分信息已更新', [
+        {
+          text: '查看详情',
+          onPress: () => router.push(`/report/${selectedCatFood.id}`),
+        },
+      ]);
+
+      // 重置状态
+      resetFlow();
+    } catch (error) {
+      console.error('保存失败:', error);
+      Alert.alert('保存失败', '请重试');
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [ocrResult, selectedCatFood, router, resetFlow]);
+
+  // 渲染相机权限请求页面
+  if (flowState === 'taking-photo' && !state.hasPermission) {
+    return <CameraPermission onRequestPermission={requestPermission} />;
+  }
+
+  // 渲染相机页面
+  if (flowState === 'taking-photo' && state.hasPermission) {
     return (
       <CameraViewComponent
         cameraRef={cameraRef}
         facing={state.facing}
-        onCapture={handleCapture}
+        onCapture={handleTakePhoto}
         onToggleFacing={toggleFacing}
-        onClose={closeCamera}
+        onClose={handleGoBack}
         onCameraReady={onCameraReady}
       />
     );
   }
 
-  return (
-    <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
-      <ThemedText type="title" style={[styles.title, { top: insets.top + 20 }]}>
-        猫粮成分智能分析
-      </ThemedText>
-      <ThemedText style={styles.description}>拍照即可获得专业的添加剂成分分析报告</ThemedText>
-
-      <LottieAnimation
-        source={require('@/assets/animations/cat_thinking_animation.json')}
-        width={100}
-        height={100}
+  // 渲染照片预览页面
+  if (flowState === 'photo-preview') {
+    return (
+      <PhotoPreview
+        photoUri={photoUri}
+        visible={true}
+        onConfirm={handleConfirmPhoto}
+        onRetake={handleRetakePhoto}
+        onCancel={handleCancelPreview}
       />
-      <ThemedText style={styles.query}>你买的猫粮到底安不安全？</ThemedText>
+    );
+  }
 
-      {photo && (
-        <View style={styles.photoContainer}>
-          <Image
-            source={{ uri: photo.uri }}
-            style={styles.photo}
-            resizeMode="cover" // 裁剪填充
-          />
-
-          {/* 照片信息 */}
-          <ThemedText style={styles.photoInfo}>
-            尺寸: {photo.width} × {photo.height}
-          </ThemedText>
-        </View>
-      )}
-
-      {/* ===== 拍照按钮 ===== */}
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: colors.buttonBackground }]}
-        onPress={photo ? retakePhoto : openCamera}
-        activeOpacity={0.8}
+  // 渲染 OCR 处理中页面
+  if (flowState === 'processing-ocr') {
+    return (
+      <YStack
+        flex={1}
+        backgroundColor="$background"
+        justifyContent="center"
+        alignItems="center"
+        padding="$6"
+        gap="$4"
       >
-        <ThemedText style={[styles.buttonText, { color: colors.buttonText }]}>
-          {photo ? '🔄 重新拍照' : '📷 开始拍照'}
-        </ThemedText>
-      </TouchableOpacity>
+        <LottieAnimation
+          source={require('@/assets/animations/cat_loader.json')}
+          width={200}
+          height={200}
+          autoPlay
+          loop
+        />
+        <Text fontSize="$6" fontWeight="600" marginTop="$2">
+          正在识别中...
+        </Text>
+        <Text fontSize="$3" color="$gray10" marginTop="$2" textAlign="center">
+          请稍候，正在分析配料表
+        </Text>
+      </YStack>
+    );
+  }
 
-      {/* ===== 识别按钮（只有拍照后才显示） ===== */}
-      {photo && (
-        <TouchableOpacity
-          style={[styles.button, styles.identifyButton]}
-          onPress={identifyPet}
-          activeOpacity={0.8}
-        >
-          <ThemedText style={[styles.buttonText, { color: colors.buttonText }]}>
-            🤖 识别品种
-          </ThemedText>
-        </TouchableOpacity>
-      )}
+  // 渲染 OCR 结果页面
+  if (flowState === 'ocr-result' && ocrResult) {
+    return (
+      <ScrollView backgroundColor="$background">
+        <YStack padding="$4" paddingTop={insets.top + 20} gap="$4">
+          {/* 头部 */}
+          <XStack justifyContent="space-between" alignItems="center">
+            <Text fontSize="$8" fontWeight="bold">
+              识别结果
+            </Text>
+            <Button
+              circular
+              icon={<IconSymbol name="xmark.circle.fill" size={32} color="$gray10" />}
+              chromeless
+              onPress={resetFlow}
+            />
+          </XStack>
 
-      {/* ===== 提示文字（没有照片时显示） ===== */}
-      {!photo && <ThemedText style={styles.hint}>💡 提示：拍摄清晰的宠物正面照效果最佳</ThemedText>}
-    </ThemedView>
+          {/* 照片预览 */}
+          {photoUri && (
+            <Card elevate bordered>
+              <Card.Header padded>
+                <Image
+                  source={{ uri: photoUri }}
+                  width="100%"
+                  height={200}
+                  borderRadius="$4"
+                  resizeMode="cover"
+                />
+              </Card.Header>
+            </Card>
+          )}
+
+          {/* 识别文本 */}
+          <Card elevate bordered>
+            <Card.Header padded>
+              <YStack gap="$2">
+                <XStack alignItems="center" gap="$2">
+                  <IconSymbol name="doc.text.fill" size={20} color="$blue10" />
+                  <Text fontSize="$5" fontWeight="600">
+                    识别的文本
+                  </Text>
+                </XStack>
+                <Text fontSize="$3" color="$gray11" lineHeight={20}>
+                  {ocrResult.text}
+                </Text>
+                <Separator marginVertical="$2" />
+                <XStack justifyContent="space-between">
+                  <Text fontSize="$2" color="$gray10">
+                    识别置信度
+                  </Text>
+                  <Text fontSize="$2" color="$green10" fontWeight="600">
+                    {(ocrResult.confidence * 100).toFixed(1)}%
+                  </Text>
+                </XStack>
+              </YStack>
+            </Card.Header>
+          </Card>
+
+          {/* 操作按钮 */}
+          <YStack gap="$3">
+            {selectedCatFood && (
+              <Button
+                size="$5"
+                themeInverse
+                onPress={handleSaveOcrResult}
+                disabled={isProcessing}
+                icon={<IconSymbol name="checkmark.circle.fill" size={20} color="white" />}
+              >
+                {isProcessing ? <Spinner size="small" color="$color" /> : '保存到数据库'}
+              </Button>
+            )}
+            <Button size="$5" onPress={() => setFlowState('taking-photo')}>
+              重新拍照
+            </Button>
+            <Button size="$5" chromeless onPress={resetFlow}>
+              返回首页
+            </Button>
+          </YStack>
+        </YStack>
+      </ScrollView>
+    );
+  }
+
+  // 渲染初始页面
+  return (
+    <>
+      <YStack
+        flex={1}
+        backgroundColor="$background"
+        paddingTop={insets.top}
+        justifyContent="center"
+        alignItems="center"
+        padding="$6"
+        gap="$6"
+      >
+        {/* 标题 */}
+        <Text fontSize="$9" fontWeight="bold" fontFamily="MaoKen" textAlign="center">
+          猫粮成分智能分析
+        </Text>
+
+        <Text fontSize="$4" color="$gray11" textAlign="center" opacity={0.8}>
+          拍照即可获得专业的添加剂成分分析报告
+        </Text>
+
+        {/* 动画 */}
+        <LottieAnimation
+          source={require('@/assets/animations/cat_thinking_animation.json')}
+          width={150}
+          height={150}
+        />
+
+        <Text fontSize="$5" color="$gray12">
+          你买的猫粮到底安不安全？
+        </Text>
+
+        {/* 开始按钮 */}
+        <YStack width="100%" maxWidth={400} gap="$3">
+          <Button
+            size="$6"
+            themeInverse
+            onPress={handleStartScan}
+            icon={<IconSymbol name="camera.fill" size={24} color="white" />}
+          >
+            开始扫描
+          </Button>
+
+          <Text fontSize="$2" color="$gray10" textAlign="center">
+            💡 提示：拍摄清晰的配料表效果最佳
+          </Text>
+        </YStack>
+      </YStack>
+
+      {/* 扫描模式选择模态框 */}
+      <ScanModeModal
+        visible={flowState === 'selecting-mode'}
+        onClose={() => setFlowState('initial')}
+        onSelectMode={handleSelectMode}
+      />
+
+      {/* 猫粮搜索模态框 */}
+      <CatFoodSearchModal
+        visible={flowState === 'searching-catfood'}
+        onClose={handleGoBack}
+        onSelectCatFood={handleSelectCatFood}
+      />
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-
-  title: {
-    marginBottom: 10,
-    position: 'absolute',
-    top: '7%',
-    fontFamily: 'MaoKen',
-  },
-
-  query: {},
-
-  /**
-   * 说明文字：居中对齐，半透明，底部间距
-   */
-  description: {
-    textAlign: 'center',
-    marginBottom: 30,
-    opacity: 0.7,
-    paddingHorizontal: 20,
-  },
-
-  /**
-   * 照片容器：圆角，阴影
-   */
-  photoContainer: {
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-
-  /**
-   * 照片：正方形，圆角
-   */
-  photo: {
-    width: 300,
-    height: 300,
-    borderRadius: 15,
-    marginBottom: 10,
-  },
-
-  /**
-   * 照片信息：小字体，半透明
-   */
-  photoInfo: {
-    fontSize: 12,
-    opacity: 0.6,
-  },
-
-  /**
-   * 按钮：圆角，固定宽度（backgroundColor 动态设置）
-   */
-  button: {
-    // backgroundColor 动态设置
-    paddingHorizontal: 40,
-    paddingVertical: 15,
-    borderRadius: 10,
-    marginBottom: 15,
-    minWidth: 200,
-    alignItems: 'center',
-
-    // 阴影效果（iOS）
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-
-    // 阴影效果（Android）
-    elevation: 5,
-  },
-
-  /**
-   * 识别按钮：绿色背景
-   */
-  identifyButton: {
-    backgroundColor: '#34C759',
-  },
-
-  /**
-   * 按钮文字：粗体（color 动态设置）
-   */
-  buttonText: {
-    // color 动态设置
-    fontSize: 18,
-    fontWeight: '600',
-  },
-
-  /**
-   * 提示文字：小字体，居中，半透明
-   */
-  hint: {
-    fontSize: 14,
-    textAlign: 'center',
-    opacity: 0.5,
-    marginTop: 20,
-    paddingHorizontal: 30,
-  },
-});

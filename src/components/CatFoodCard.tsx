@@ -10,6 +10,8 @@ interface CatFoodCardProps {
   index?: number;
   /** 点击回调 */
   onPress?: (catfood: CatFood) => void;
+  /** 图片点击回调 */
+  onImagePress?: (imageUrl: string) => void;
   /** 是否显示排名徽章 */
   showRank?: boolean;
   /** 是否显示营养信息 */
@@ -24,11 +26,20 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
   catfood,
   index = 0,
   onPress,
+  onImagePress,
   showRank = true,
   showNutritionInfo = true,
 }) => {
   const handlePress = () => {
     onPress?.(catfood);
+  };
+
+  const handleImagePress = (e: any) => {
+    // 阻止事件冒泡，避免触发卡片的 onPress
+    e.stopPropagation();
+    if (catfood.imageUrl && onImagePress) {
+      onImagePress(catfood.imageUrl);
+    }
   };
 
   // 获取排名徽章背景色
@@ -58,7 +69,7 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
       onPress={handlePress}
     >
       <Card.Header padded>
-        <XStack space="$3" alignItems="center">
+        <XStack gap="$3" alignItems="center">
           {/* 排名徽章 */}
           {showRank && (
             <YStack
@@ -77,13 +88,20 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
 
           {/* 猫粮图片 */}
           {catfood.imageUrl ? (
-            <Image
-              source={{ uri: catfood.imageUrl }}
-              width={80}
-              height={80}
-              borderRadius="$3"
-              backgroundColor="$gray3"
-            />
+            <YStack
+              onPress={handleImagePress}
+              cursor="pointer"
+              hoverStyle={{ opacity: 0.8 }}
+              pressStyle={{ opacity: 0.6 }}
+            >
+              <Image
+                source={{ uri: catfood.imageUrl }}
+                width={80}
+                height={80}
+                borderRadius="$3"
+                backgroundColor="$gray3"
+              />
+            </YStack>
           ) : (
             <YStack
               width={80}
@@ -100,22 +118,22 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
           )}
 
           {/* 猫粮信息 */}
-          <YStack flex={1} space="$2">
+          <YStack flex={1} gap="$2">
             {/* 名称 */}
             <Text fontSize="$5" fontWeight="bold" numberOfLines={2}>
               {catfood.name}
             </Text>
 
             {/* 品牌 */}
-            <XStack alignItems="center" space="$2">
+            <XStack alignItems="center" gap="$2">
               <Text fontSize="$3" color="$gray10">
                 {catfood.brand || '未知品牌'}
               </Text>
             </XStack>
 
             {/* 评分 */}
-            <XStack alignItems="center" space="$2">
-              <XStack alignItems="center" space="$1">
+            <XStack alignItems="center" gap="$2">
+              <XStack alignItems="center" gap="$1">
                 <IconSymbol name="star.fill" size={14} color="$yellow9" />
                 <Text fontSize="$3" fontWeight="600">
                   {catfood.score.toFixed(1)}
@@ -128,7 +146,7 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
 
             {/* 标签 */}
             {catfood.tags && catfood.tags.length > 0 && (
-              <XStack space="$2" flexWrap="wrap">
+              <XStack gap="$2" flexWrap="wrap">
                 {catfood.tags.slice(0, 3).map((tag, idx) => (
                   <YStack
                     key={idx}
@@ -153,9 +171,9 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
         <>
           <Separator />
           <Card.Footer padded>
-            <XStack space="$3" alignItems="center">
+            <XStack gap="$3" alignItems="center">
               {catfood.ingredient.length > 0 && (
-                <XStack alignItems="center" space="$1">
+                <XStack alignItems="center" gap="$1">
                   <IconSymbol name="checkmark.seal.fill" size={14} color="$green10" />
                   <Text fontSize="$2" color="$green10">
                     已录入营养成分
@@ -163,7 +181,7 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
                 </XStack>
               )}
               {catfood.percentage && (
-                <XStack alignItems="center" space="$1">
+                <XStack alignItems="center" gap="$1">
                   <IconSymbol name="chart.line.uptrend.xyaxis" size={14} color="$blue10" />
                   <Text fontSize="$2" color="$blue10">
                     可查看营养分析

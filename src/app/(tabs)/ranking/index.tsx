@@ -3,8 +3,8 @@ import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { getCatFoods, type CatFood } from '@/src/services/api';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl } from 'react-native';
-import { ScrollView, Separator, Tabs, Text, YStack } from 'tamagui';
+import { ActivityIndicator, FlatList, Modal, RefreshControl } from 'react-native';
+import { Button, Image, ScrollView, Separator, Tabs, Text, XStack, YStack } from 'tamagui';
 
 export default function RankingScreen() {
   const router = useRouter();
@@ -14,6 +14,10 @@ export default function RankingScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+
+  // 图片预览相关状态
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
 
   // 加载猫粮数据
   const loadCatFoods = async (pageNum: number = 1, refresh: boolean = false) => {
@@ -80,9 +84,26 @@ export default function RankingScreen() {
     console.log('查看猫粮详情:', catfood.name);
   };
 
+  // 处理图片点击
+  const handleImagePress = (imageUrl: string) => {
+    setPreviewImageUrl(imageUrl);
+    setPreviewVisible(true);
+  };
+
+  // 关闭图片预览
+  const closePreview = () => {
+    setPreviewVisible(false);
+    setPreviewImageUrl('');
+  };
+
   // 渲染猫粮卡片
   const renderCatFoodCard = ({ item, index }: { item: CatFood; index: number }) => (
-    <CatFoodCard catfood={item} index={index} onPress={handleCatFoodPress} />
+    <CatFoodCard
+      catfood={item}
+      index={index}
+      onPress={handleCatFoodPress}
+      onImagePress={handleImagePress}
+    />
   );
 
   // 渲染列表底部
@@ -116,6 +137,52 @@ export default function RankingScreen() {
 
   return (
     <YStack flex={1} backgroundColor="$background">
+      {/* 图片预览 Modal */}
+      <Modal
+        visible={previewVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closePreview}
+        statusBarTranslucent
+      >
+        <YStack
+          flex={1}
+          backgroundColor="rgba(0, 0, 0, 0.95)"
+          justifyContent="center"
+          alignItems="center"
+          onPress={closePreview}
+        >
+          {/* 关闭按钮 */}
+          <XStack position="absolute" top={50} right={20} zIndex={10}>
+            <Button
+              size="$4"
+              circular
+              icon={<IconSymbol name="xmark" size={24} color="white" />}
+              backgroundColor="rgba(0, 0, 0, 0.6)"
+              borderWidth={0}
+              chromeless
+              pressStyle={{
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                scale: 0.95,
+              }}
+              onPress={closePreview}
+            />
+          </XStack>
+
+          {/* 预览图片 */}
+          {previewImageUrl && (
+            <YStack flex={1} width="100%" justifyContent="center" alignItems="center" padding="$6">
+              <Image
+                source={{ uri: previewImageUrl }}
+                width="100%"
+                height="100%"
+                resizeMode="contain"
+              />
+            </YStack>
+          )}
+        </YStack>
+      </Modal>
+
       {/* Tabs */}
       <Tabs
         defaultValue="all"

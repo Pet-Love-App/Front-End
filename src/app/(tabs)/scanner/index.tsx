@@ -37,7 +37,9 @@ type ScanFlowState =
  *
  * 流程：
  * 1. 用户点击开始，选择扫描模式（已知品牌 / 直接扫描）
- * 2a. 已知品牌：搜索猫粮 → 选择猫粮 → 检查是否有成分数据
+ * 2a. 已知品牌：搜索猫粮 → 选择猫粮 → 自动判断：
+ *     - 无成分数据：直接进入拍照界面录入成分
+ *     - 有成分数据：直接跳转到详情页查看
  * 2b. 直接扫描：直接进入拍照流程
  * 3. 拍照 → 预览确认 → OCR 识别
  * 4. 展示识别结果，并可选择更新数据库
@@ -92,23 +94,11 @@ export default function ScannerScreen() {
         const hasIngredients = fullCatFood.ingredient && fullCatFood.ingredient.length > 0;
 
         if (!hasIngredients) {
-          // 没有成分数据，提示用户拍照
-          Alert.alert('需要补充成分数据', '该猫粮暂无成分信息，是否拍照识别配料表？', [
-            { text: '取消', style: 'cancel', onPress: () => setFlowState('initial') },
-            {
-              text: '拍照识别',
-              onPress: () => setFlowState('taking-photo'),
-            },
-          ]);
+          // 没有成分数据，直接进入拍照界面
+          setFlowState('taking-photo');
         } else {
-          // 有成分数据，跳转到详情页
-          Alert.alert('已有成分数据', '该猫粮已有成分信息，是否查看详情？', [
-            { text: '重新拍照', onPress: () => setFlowState('taking-photo') },
-            {
-              text: '查看详情',
-              onPress: () => router.push(`/report/${fullCatFood.id}`),
-            },
-          ]);
+          // 有成分数据，直接跳转到详情页
+          router.push(`/report/${fullCatFood.id}`);
         }
       } catch (error) {
         console.error('获取猫粮详情失败:', error);
@@ -266,6 +256,14 @@ export default function ScannerScreen() {
     }
   }, [ocrResult, selectedCatFood, router, resetFlow]);
 
+  /**
+   * 处理从相册选择的图片
+   */
+  const handleImageSelected = useCallback((uri: string) => {
+    setPhotoUri(uri);
+    setFlowState('photo-preview');
+  }, []);
+
   // 渲染相机权限请求页面
   if (flowState === 'taking-photo' && !state.hasPermission) {
     return <CameraPermission onRequestPermission={requestPermission} />;
@@ -281,6 +279,7 @@ export default function ScannerScreen() {
         onToggleFacing={toggleFacing}
         onClose={handleGoBack}
         onCameraReady={onCameraReady}
+        onImageSelected={handleImageSelected}
       />
     );
   }

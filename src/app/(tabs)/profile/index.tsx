@@ -94,13 +94,13 @@ export default function ProfileIndex() {
       flex={1}
       backgroundColor={colors.background}
       contentContainerStyle={{
-        paddingTop: insets.top + 40,
+        paddingTop: insets.top + 20,
         paddingBottom: insets.bottom + 30,
       }}
     >
-      <YStack flex={1} alignItems="center">
+      <YStack flex={1} alignItems="center" position="relative">
         {/* Settings Button - Fixed Top Right */}
-        <YStack width="90%" alignItems="flex-end" marginBottom="$2">
+        <YStack width="90%" alignItems="flex-end" marginBottom="$4" marginTop={-10}>
           <TouchableOpacity
             onPress={() => router.push('/profile/settings' as any)}
             activeOpacity={0.7}
@@ -111,6 +111,10 @@ export default function ProfileIndex() {
               backgroundColor={colors.background}
               borderWidth={1}
               borderColor={colors.icon + '40'}
+              shadowColor="$shadowColor"
+              shadowOffset={{ width: 0, height: 2 }}
+              shadowOpacity={0.1}
+              shadowRadius={4}
             >
               <Ionicons name="settings-outline" size={24} color={colors.icon} />
             </YStack>

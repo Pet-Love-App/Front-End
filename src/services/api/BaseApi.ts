@@ -1,4 +1,4 @@
-import API_BASE_URL from '@/src/config/api';
+import { API_BASE_URL } from '@/src/config/env';
 
 /**
  * API 客户端基类

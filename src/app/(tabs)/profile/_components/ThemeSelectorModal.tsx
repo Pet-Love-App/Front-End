@@ -69,13 +69,15 @@ export function ThemeSelectorModal({
           exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
           gap="$4"
           backgroundColor={colors.background}
-          maxWidth={450}
+          width="90%"
+          maxWidth={600}
         >
-          <Dialog.Title fontSize={20} fontWeight="600" color={colors.text}>
+          <Dialog.Title fontSize={20} fontWeight="600" color={colors.text} textAlign="center">
             选择主题
           </Dialog.Title>
 
-          <YStack gap="$3">
+          {/* 横向排列的主题选项 */}
+          <XStack gap="$3" justifyContent="center" flexWrap="wrap">
             {THEME_OPTIONS.map((option) => (
               <Card
                 key={option.mode}
@@ -83,42 +85,44 @@ export function ThemeSelectorModal({
                 borderWidth={2}
                 borderColor={currentTheme === option.mode ? colors.tint : colors.icon + '40'}
                 backgroundColor={colors.background}
-                pressStyle={{ scale: 0.98, opacity: 0.9 }}
+                pressStyle={{ scale: 0.95, opacity: 0.9 }}
                 onPress={() => handleThemeSelect(option.mode)}
                 animation="quick"
+                flex={1}
+                minWidth={150}
+                maxWidth={180}
               >
-                <XStack justifyContent="space-between" alignItems="center">
-                  <XStack gap="$3" alignItems="center" flex={1}>
-                    <IconSymbol
-                      name={option.icon as any}
-                      size={32}
-                      color={currentTheme === option.mode ? colors.tint : colors.icon}
-                    />
-                    <YStack flex={1}>
-                      <Text
-                        fontSize={18}
-                        fontWeight="600"
-                        color={currentTheme === option.mode ? colors.tint : colors.text}
-                      >
-                        {option.label}
-                      </Text>
-                      <Text fontSize={13} color={colors.icon} marginTop="$1">
-                        {option.description}
-                      </Text>
-                    </YStack>
-                  </XStack>
+                <YStack alignItems="center" gap="$2">
+                  <IconSymbol
+                    name={option.icon as any}
+                    size={40}
+                    color={currentTheme === option.mode ? colors.tint : colors.icon}
+                  />
+                  <Text
+                    fontSize={16}
+                    fontWeight="600"
+                    color={currentTheme === option.mode ? colors.tint : colors.text}
+                    textAlign="center"
+                  >
+                    {option.label}
+                  </Text>
+                  <Text fontSize={12} color={colors.icon} textAlign="center" numberOfLines={1}>
+                    {option.description}
+                  </Text>
 
                   {currentTheme === option.mode && (
-                    <IconSymbol name="checkmark.circle.fill" size={24} color={colors.tint} />
+                    <IconSymbol name="checkmark.circle.fill" size={20} color={colors.tint} />
                   )}
-                </XStack>
+                </YStack>
               </Card>
             ))}
-          </YStack>
+          </XStack>
 
-          <XStack justifyContent="flex-end">
+          <XStack justifyContent="center" marginTop="$2">
             <Dialog.Close displayWhenAdapted asChild>
-              <Button onPress={() => onOpenChange(false)}>完成</Button>
+              <Button onPress={() => onOpenChange(false)} size="$4" minWidth={120}>
+                完成
+              </Button>
             </Dialog.Close>
           </XStack>
         </Dialog.Content>

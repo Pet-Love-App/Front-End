@@ -10,14 +10,14 @@ import {
 } from '@/src/services/api';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Card, Image, ScrollView, Separator, Spinner, Text, XStack, YStack } from 'tamagui';
-import { CameraPermission } from './components/CameraPermission';
-import { CameraViewComponent } from './components/CameraView';
-import { CatFoodSearchModal } from './components/CatFoodSearchModal';
-import { PhotoPreview } from './components/PhotoPreview';
-import { ScanModeModal, type ScanMode } from './components/ScanModeModal';
+import { Button, Card, ScrollView, Separator, Spinner, Text, XStack, YStack } from 'tamagui';
+import { CameraPermission } from './_components/CameraPermission';
+import { CameraViewComponent } from './_components/CameraView';
+import { CatFoodSearchModal } from './_components/CatFoodSearchModal';
+import { PhotoPreview } from './_components/PhotoPreview';
+import { ScanModeModal, type ScanMode } from './_components/ScanModeModal';
 
 /**
  * 扫描流程状态
@@ -349,9 +349,7 @@ export default function ScannerScreen() {
               <Card.Header padded>
                 <Image
                   source={{ uri: photoUri }}
-                  width="100%"
-                  height={200}
-                  borderRadius="$4"
+                  style={{ width: '100%', height: 200, borderRadius: 8 }}
                   resizeMode="cover"
                 />
               </Card.Header>

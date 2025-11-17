@@ -3,8 +3,8 @@ import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { getCatFoods, type CatFood } from '@/src/services/api';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Modal, RefreshControl } from 'react-native';
-import { Button, Image, ScrollView, Separator, Tabs, Text, XStack, YStack } from 'tamagui';
+import { ActivityIndicator, FlatList, Image, Modal, RefreshControl } from 'react-native';
+import { Button, ScrollView, Separator, Tabs, Text, XStack, YStack } from 'tamagui';
 
 export default function RankingScreen() {
   const router = useRouter();

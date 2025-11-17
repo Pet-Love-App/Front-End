@@ -40,5 +40,9 @@ export type {
 } from './comment';
 
 // 猫粮服务
-export { catFoodService, getCatFood, getCatFoods, searchCatFood } from './catfood';
+export { catFoodService, getCatFood, getCatFoods, patchCatFood, searchCatFood } from './catfood';
 export type { CatFood, GetCatFoodsResponse, SearchCatFoodParams } from './catfood';
+
+// OCR 服务
+export { ocrService, recognizeImage } from './ocr';
+export type { OcrRecognizeResponse, OcrResult } from './ocr';

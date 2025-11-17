@@ -9,8 +9,10 @@ export type {
   LoginInput,
   RefreshTokenInput,
   RegisterInput,
-  User,
 } from '@/src/schemas/auth.schema';
+
+// User 类型从 user.schema 导出
+export type { User } from '@/src/schemas/user.schema';
 
 /**
  * API 错误类

@@ -46,3 +46,12 @@ export type { CatFood, GetCatFoodsResponse, SearchCatFoodParams } from './catfoo
 // OCR 服务
 export { ocrService, recognizeImage } from './ocr';
 export type { OcrRecognizeResponse, OcrResult } from './ocr';
+
+// AI 报告服务
+export { aiReportService } from './ai_report';
+export type {
+  GenerateReportRequest,
+  GenerateReportResponse,
+  IngredientInfoRequest,
+  IngredientInfoResponse,
+} from './ai_report';

@@ -2,17 +2,20 @@ import { LottieAnimation } from '@/src/components/LottieAnimation';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useCamera } from '@/src/hooks/useCamera';
 import {
-  getCatFood,
+  aiReportService,
   patchCatFood,
   recognizeImage,
-  type CatFood,
+  type GenerateReportResponse,
   type OcrResult,
 } from '@/src/services/api';
+import { useCatFoodStore } from '@/src/store/catFoodStore';
+import type { CatFood } from '@/src/types/catFood';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { Alert, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Card, ScrollView, Separator, Spinner, Text, XStack, YStack } from 'tamagui';
+import { AiReportDetail } from './_components/AiReport';
 import { CameraPermission } from './_components/CameraPermission';
 import { CameraViewComponent } from './_components/CameraView';
 import { CatFoodSearchModal } from './_components/CatFoodSearchModal';
@@ -30,7 +33,8 @@ type ScanFlowState =
   | 'taking-photo' // 拍照中
   | 'photo-preview' // 照片预览
   | 'processing-ocr' // OCR 处理中
-  | 'ocr-result'; // OCR 结果展示
+  | 'ocr-result' // OCR 结果展示
+  | 'ai-report-detail'; // AI报告详情页面
 
 /**
  * 扫描器主页面
@@ -52,13 +56,18 @@ export default function ScannerScreen() {
   const { state, cameraRef, takePicture, toggleFacing, requestPermission, onCameraReady } =
     useCamera();
 
+  // 使用 catFoodStore - 使用选择器避免不必要的重渲染
+  const fetchCatFoodById = useCatFoodStore((state) => state.fetchCatFoodById);
+
   // 流程状态
   const [flowState, setFlowState] = useState<ScanFlowState>('initial');
   const [scanMode, setScanMode] = useState<ScanMode>(null);
   const [selectedCatFood, setSelectedCatFood] = useState<CatFood | null>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
+  const [aiReport, setAiReport] = useState<GenerateReportResponse | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
   /**
    * 开始扫描流程
@@ -86,7 +95,7 @@ export default function ScannerScreen() {
     async (catFood: CatFood) => {
       try {
         // 获取最新的猫粮数据
-        const fullCatFood = await getCatFood(catFood.id);
+        const fullCatFood = await fetchCatFoodById(catFood.id);
         setSelectedCatFood(fullCatFood);
         setFlowState('selected-catfood');
 
@@ -105,7 +114,7 @@ export default function ScannerScreen() {
         Alert.alert('错误', '获取猫粮详情失败，请重试');
       }
     },
-    [router]
+    [router, fetchCatFoodById]
   );
 
   /**
@@ -117,6 +126,7 @@ export default function ScannerScreen() {
     setSelectedCatFood(null);
     setPhotoUri(null);
     setOcrResult(null);
+    setAiReport(null);
   }, []);
 
   /**
@@ -209,6 +219,8 @@ export default function ScannerScreen() {
    */
   const handleRetakePhoto = useCallback(() => {
     setPhotoUri(null);
+    setOcrResult(null);
+    setAiReport(null);
     setFlowState('taking-photo');
   }, []);
 
@@ -221,11 +233,53 @@ export default function ScannerScreen() {
   }, [handleGoBack]);
 
   /**
-   * 保存OCR结果到数据库
+   * 生成AI报告
    */
-  const handleSaveOcrResult = useCallback(async () => {
-    if (!ocrResult || !selectedCatFood) {
-      Alert.alert('错误', '无法保存：缺少必要信息');
+  const handleGenerateReport = useCallback(async () => {
+    if (!ocrResult) {
+      Alert.alert('错误', 'OCR识别结果为空');
+      return;
+    }
+
+    try {
+      setIsGeneratingReport(true);
+      console.log('🤖 开始生成AI报告...');
+
+      // 调用AI服务生成报告
+      const report = await aiReportService.generateReport({
+        ingredients: ocrResult.text,
+        max_tokens: 2048,
+      });
+
+      console.log('✅ AI报告生成成功:', report);
+      setAiReport(report);
+
+      // 跳转到AI报告详情页面
+      setFlowState('ai-report-detail');
+    } catch (error) {
+      console.error('❌ 生成AI报告失败:', error);
+      let errorMessage = '生成报告失败，请重试';
+
+      if (error instanceof Error) {
+        if (error.message.includes('网络')) {
+          errorMessage = '网络连接失败，请检查网络连接';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      Alert.alert('生成失败', errorMessage);
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  }, [ocrResult]);
+
+  /**
+   * 保存报告到数据库（更新猫粮信息）
+   */
+  const handleSaveReport = useCallback(async () => {
+    if (!aiReport || !selectedCatFood) {
+      Alert.alert('错误', '请先生成AI报告');
       return;
     }
 
@@ -233,13 +287,21 @@ export default function ScannerScreen() {
       setIsProcessing(true);
 
       // 更新猫粮的成分信息
-      // 注意：这里需要根据实际 API 进行调整
       await patchCatFood(selectedCatFood.id, {
-        // 这里需要解析 OCR 文本并提取成分
-        // 暂时简单存储识别的文本
+        safety: aiReport.safety,
+        nutrient: aiReport.nutrient,
+        percentage: aiReport.percentage || false,
+        percentData: {
+          crude_protein: aiReport.crude_protein,
+          crude_fat: aiReport.crude_fat,
+          carbohydrates: aiReport.carbohydrates,
+          crude_fiber: aiReport.crude_fiber,
+          crude_ash: aiReport.crude_ash,
+          others: aiReport.others,
+        },
       });
 
-      Alert.alert('成功', '成分信息已更新', [
+      Alert.alert('成功', '报告已保存到猫粮数据库', [
         {
           text: '查看详情',
           onPress: () => router.push(`/report/${selectedCatFood.id}`),
@@ -254,7 +316,7 @@ export default function ScannerScreen() {
     } finally {
       setIsProcessing(false);
     }
-  }, [ocrResult, selectedCatFood, router, resetFlow]);
+  }, [aiReport, selectedCatFood, router, resetFlow]);
 
   /**
    * 处理从相册选择的图片
@@ -382,19 +444,169 @@ export default function ScannerScreen() {
             </Card.Header>
           </Card>
 
+          {/* AI 报告结果 */}
+          {aiReport && (
+            <Card elevate bordered>
+              <Card.Header padded>
+                <YStack gap="$3">
+                  <XStack alignItems="center" gap="$2">
+                    <IconSymbol name="sparkles" size={20} color="$orange10" />
+                    <Text fontSize="$5" fontWeight="600">
+                      AI 分析报告
+                    </Text>
+                  </XStack>
+
+                  {/* 安全性分析 */}
+                  {aiReport.safety && (
+                    <YStack gap="$2">
+                      <Text fontSize="$3" fontWeight="600" color="$blue10">
+                        🛡️ 安全性分析
+                      </Text>
+                      <Text fontSize="$3" color="$gray11" lineHeight={20}>
+                        {aiReport.safety}
+                      </Text>
+                    </YStack>
+                  )}
+
+                  {/* 营养分析 */}
+                  {aiReport.nutrient && (
+                    <YStack gap="$2">
+                      <Text fontSize="$3" fontWeight="600" color="$green10">
+                        🌿 营养分析
+                      </Text>
+                      <Text fontSize="$3" color="$gray11" lineHeight={20}>
+                        {aiReport.nutrient}
+                      </Text>
+                    </YStack>
+                  )}
+
+                  {/* 识别的添加剂 */}
+                  {aiReport.additives && aiReport.additives.length > 0 && (
+                    <YStack gap="$2">
+                      <Text fontSize="$3" fontWeight="600" color="$orange10">
+                        🧪 识别的添加剂 ({aiReport.additives.length})
+                      </Text>
+                      <XStack flexWrap="wrap" gap="$2">
+                        {aiReport.additives.map((additive, index) => (
+                          <Text
+                            key={index}
+                            fontSize="$2"
+                            backgroundColor="$orange3"
+                            color="$orange11"
+                            paddingHorizontal="$2"
+                            paddingVertical="$1"
+                            borderRadius="$2"
+                          >
+                            {additive}
+                          </Text>
+                        ))}
+                      </XStack>
+                    </YStack>
+                  )}
+
+                  {/* 营养成分百分比 */}
+                  {aiReport.percentage && (
+                    <YStack gap="$2">
+                      <Text fontSize="$3" fontWeight="600" color="$purple10">
+                        📊 营养成分占比
+                      </Text>
+                      <YStack gap="$1">
+                        {aiReport.crude_protein !== null && (
+                          <XStack justifyContent="space-between">
+                            <Text fontSize="$2" color="$gray11">
+                              粗蛋白
+                            </Text>
+                            <Text fontSize="$2" fontWeight="600" color="$blue10">
+                              {aiReport.crude_protein.toFixed(1)}%
+                            </Text>
+                          </XStack>
+                        )}
+                        {aiReport.crude_fat !== null && (
+                          <XStack justifyContent="space-between">
+                            <Text fontSize="$2" color="$gray11">
+                              粗脂肪
+                            </Text>
+                            <Text fontSize="$2" fontWeight="600" color="$orange10">
+                              {aiReport.crude_fat.toFixed(1)}%
+                            </Text>
+                          </XStack>
+                        )}
+                        {aiReport.carbohydrates !== null && (
+                          <XStack justifyContent="space-between">
+                            <Text fontSize="$2" color="$gray11">
+                              碳水化合物
+                            </Text>
+                            <Text fontSize="$2" fontWeight="600" color="$green10">
+                              {aiReport.carbohydrates.toFixed(1)}%
+                            </Text>
+                          </XStack>
+                        )}
+                        {aiReport.crude_fiber !== null && (
+                          <XStack justifyContent="space-between">
+                            <Text fontSize="$2" color="$gray11">
+                              粗纤维
+                            </Text>
+                            <Text fontSize="$2" fontWeight="600" color="$yellow10">
+                              {aiReport.crude_fiber.toFixed(1)}%
+                            </Text>
+                          </XStack>
+                        )}
+                        {aiReport.crude_ash !== null && (
+                          <XStack justifyContent="space-between">
+                            <Text fontSize="$2" color="$gray11">
+                              粗灰分
+                            </Text>
+                            <Text fontSize="$2" fontWeight="600" color="$gray10">
+                              {aiReport.crude_ash.toFixed(1)}%
+                            </Text>
+                          </XStack>
+                        )}
+                        {aiReport.others !== null && (
+                          <XStack justifyContent="space-between">
+                            <Text fontSize="$2" color="$gray11">
+                              其他
+                            </Text>
+                            <Text fontSize="$2" fontWeight="600" color="$purple10">
+                              {aiReport.others.toFixed(1)}%
+                            </Text>
+                          </XStack>
+                        )}
+                      </YStack>
+                    </YStack>
+                  )}
+                </YStack>
+              </Card.Header>
+            </Card>
+          )}
+
           {/* 操作按钮 */}
           <YStack gap="$3">
-            {selectedCatFood && (
+            {/* 生成AI报告按钮 */}
+            {!aiReport && (
               <Button
                 size="$5"
                 themeInverse
-                onPress={handleSaveOcrResult}
+                onPress={handleGenerateReport}
+                disabled={isGeneratingReport}
+                icon={<IconSymbol name="sparkles" size={20} color="white" />}
+              >
+                {isGeneratingReport ? <Spinner size="small" color="$color" /> : '🤖 生成AI报告'}
+              </Button>
+            )}
+
+            {/* 保存到数据库按钮 */}
+            {aiReport && selectedCatFood && (
+              <Button
+                size="$5"
+                themeInverse
+                onPress={handleSaveReport}
                 disabled={isProcessing}
                 icon={<IconSymbol name="checkmark.circle.fill" size={20} color="white" />}
               >
                 {isProcessing ? <Spinner size="small" color="$color" /> : '保存到数据库'}
               </Button>
             )}
+
             <Button size="$5" onPress={() => setFlowState('taking-photo')}>
               重新拍照
             </Button>
@@ -404,6 +616,19 @@ export default function ScannerScreen() {
           </YStack>
         </YStack>
       </ScrollView>
+    );
+  }
+
+  // 渲染 AI 报告详情页面
+  if (flowState === 'ai-report-detail' && aiReport) {
+    return (
+      <AiReportDetail
+        report={aiReport}
+        onSave={selectedCatFood ? handleSaveReport : undefined}
+        onRetake={handleRetakePhoto}
+        onClose={resetFlow}
+        isSaving={isProcessing}
+      />
     );
   }
 

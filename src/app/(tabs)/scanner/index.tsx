@@ -1,13 +1,9 @@
 import { LottieAnimation } from '@/src/components/LottieAnimation';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useCamera } from '@/src/hooks/useCamera';
-import {
-  getCatFood,
-  patchCatFood,
-  recognizeImage,
-  type CatFood,
-  type OcrResult,
-} from '@/src/services/api';
+import { patchCatFood, recognizeImage, type OcrResult } from '@/src/services/api';
+import { useCatFoodStore } from '@/src/store/catFoodStore';
+import type { CatFood } from '@/src/types/catFood';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { Alert, Image } from 'react-native';
@@ -52,6 +48,9 @@ export default function ScannerScreen() {
   const { state, cameraRef, takePicture, toggleFacing, requestPermission, onCameraReady } =
     useCamera();
 
+  // 使用 catFoodStore
+  const { fetchCatFoodById } = useCatFoodStore();
+
   // 流程状态
   const [flowState, setFlowState] = useState<ScanFlowState>('initial');
   const [scanMode, setScanMode] = useState<ScanMode>(null);
@@ -86,7 +85,7 @@ export default function ScannerScreen() {
     async (catFood: CatFood) => {
       try {
         // 获取最新的猫粮数据
-        const fullCatFood = await getCatFood(catFood.id);
+        const fullCatFood = await fetchCatFoodById(catFood.id);
         setSelectedCatFood(fullCatFood);
         setFlowState('selected-catfood');
 
@@ -105,7 +104,7 @@ export default function ScannerScreen() {
         Alert.alert('错误', '获取猫粮详情失败，请重试');
       }
     },
-    [router]
+    [router, fetchCatFoodById]
   );
 
   /**

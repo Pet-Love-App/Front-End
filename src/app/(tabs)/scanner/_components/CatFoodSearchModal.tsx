@@ -1,5 +1,6 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { searchCatFood, type CatFood } from '@/src/services/api';
+import { useCatFoodStore, useSearchResults } from '@/src/store/catFoodStore';
+import type { CatFood } from '@/src/types/catFood';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, Image, Modal } from 'react-native';
 import { Button, Input, Separator, Spinner, Text, XStack, YStack } from 'tamagui';
@@ -62,35 +63,34 @@ interface CatFoodSearchModalProps {
  */
 export function CatFoodSearchModal({ visible, onClose, onSelectCatFood }: CatFoodSearchModalProps) {
   const [searchText, setSearchText] = useState('');
-  const [catFoods, setCatFoods] = useState<CatFood[]>([]);
-  const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 使用 catFoodStore
+  const { results: catFoods, isLoading: loading } = useSearchResults();
+  const { searchCatFoods } = useCatFoodStore();
 
   /**
    * 搜索猫粮
    */
-  const handleSearch = useCallback(async (text: string) => {
-    const trimmedText = text.trim();
-    if (!trimmedText) {
-      setCatFoods([]);
-      setSearched(false);
-      return;
-    }
+  const handleSearch = useCallback(
+    async (text: string) => {
+      const trimmedText = text.trim();
+      if (!trimmedText) {
+        setSearched(false);
+        return;
+      }
 
-    try {
-      setLoading(true);
-      const response = await searchCatFood({ name: trimmedText });
-      setCatFoods(response.results || []);
-      setSearched(true);
-    } catch (error) {
-      console.error('搜索失败:', error);
-      setCatFoods([]);
-      setSearched(true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      try {
+        await searchCatFoods(trimmedText);
+        setSearched(true);
+      } catch (error) {
+        console.error('搜索失败:', error);
+        setSearched(true);
+      }
+    },
+    [searchCatFoods]
+  );
 
   /**
    * 实时搜索 - 使用防抖避免频繁请求
@@ -103,7 +103,6 @@ export function CatFoodSearchModal({ visible, onClose, onSelectCatFood }: CatFoo
 
     // 如果搜索框为空，立即清空结果
     if (!searchText.trim()) {
-      setCatFoods([]);
       setSearched(false);
       return;
     }
@@ -138,7 +137,6 @@ export function CatFoodSearchModal({ visible, onClose, onSelectCatFood }: CatFoo
    */
   const resetState = useCallback(() => {
     setSearchText('');
-    setCatFoods([]);
     setSearched(false);
   }, []);
 

@@ -1,6 +1,5 @@
 import { ThemedText } from '@/src/components/ThemedText';
 import { ThemedView } from '@/src/components/ThemedView';
-import { catFoodService } from '@/src/services/api/catfood';
 import type { CatFood } from '@/src/types/catFood';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';

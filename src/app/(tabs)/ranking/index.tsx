@@ -1,6 +1,7 @@
 import { CatFoodCard } from '@/src/components/CatFoodCard';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { getCatFoods, type CatFood } from '@/src/services/api';
+import { useAllCatFoods, useCatFoodStore } from '@/src/store/catFoodStore';
+import type { CatFood } from '@/src/types/catFood';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Modal, RefreshControl } from 'react-native';
@@ -9,72 +10,33 @@ import { Button, ScrollView, Separator, Tabs, Text, XStack, YStack } from 'tamag
 export default function RankingScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('all');
-  const [catfoods, setCatfoods] = useState<CatFood[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+
+  // 使用 catFoodStore
+  const { catfoods, isLoading, hasMore } = useAllCatFoods();
+  const { fetchCatFoods, isRefreshing, isLoadingMore, pagination, error } = useCatFoodStore();
 
   // 图片预览相关状态
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
 
-  // 加载猫粮数据
-  const loadCatFoods = async (pageNum: number = 1, refresh: boolean = false) => {
-    if (loading) return;
-
-    try {
-      if (refresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
-
-      const response = await getCatFoods(pageNum, 20);
-
-      // 确保响应数据有效
-      if (response && Array.isArray(response.results)) {
-        if (refresh || pageNum === 1) {
-          setCatfoods(response.results);
-        } else {
-          setCatfoods((prev) => [...prev, ...response.results]);
-        }
-
-        setHasMore(response.next !== null);
-        setPage(pageNum);
-      } else {
-        console.warn('响应数据格式异常:', response);
-        // 如果是第一页或刷新，设置为空数组
-        if (refresh || pageNum === 1) {
-          setCatfoods([]);
-        }
-      }
-    } catch (error) {
-      console.error('加载猫粮失败:', error);
-      // 出错时，如果是第一页或刷新，设置为空数组
-      if (refresh || pageNum === 1) {
-        setCatfoods([]);
-      }
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
   // 初始加载
   useEffect(() => {
-    loadCatFoods(1);
+    // 如果没有数据，则加载
+    if (catfoods.length === 0) {
+      fetchCatFoods(1, true);
+    }
   }, []);
 
   // 下拉刷新
-  const handleRefresh = () => {
-    loadCatFoods(1, true);
+  const handleRefresh = async () => {
+    await fetchCatFoods(1, true);
   };
 
   // 加载更多
   const handleLoadMore = () => {
-    if (hasMore && !loading) {
-      loadCatFoods(page + 1);
+    if (hasMore && !isLoadingMore) {
+      const nextPage = pagination.all.page + 1;
+      fetchCatFoods(nextPage, false);
     }
   };
 
@@ -108,7 +70,7 @@ export default function RankingScreen() {
 
   // 渲染列表底部
   const renderFooter = () => {
-    if (!loading) return null;
+    if (!isLoadingMore) return null;
     return (
       <YStack padding="$4" alignItems="center">
         <ActivityIndicator size="small" color="#666" />
@@ -121,7 +83,7 @@ export default function RankingScreen() {
 
   // 渲染空状态
   const renderEmpty = () => {
-    if (loading) return null;
+    if (isLoading) return null;
     return (
       <YStack flex={1} alignItems="center" justifyContent="center" padding="$6">
         <IconSymbol name="magnifyingglass" size={64} color="$gray9" />
@@ -216,7 +178,7 @@ export default function RankingScreen() {
             renderItem={renderCatFoodCard}
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={{ paddingTop: 10, paddingBottom: 10 }}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+            refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.5}
             ListFooterComponent={renderFooter}

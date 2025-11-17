@@ -4,7 +4,7 @@ export default function ScannerLayout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         title: '我的报告库',
       }}
     />

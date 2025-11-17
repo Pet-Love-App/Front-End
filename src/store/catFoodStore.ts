@@ -16,6 +16,7 @@
 import { catFoodService } from '@/src/services/api/catfood';
 import type { CatFood } from '@/src/types/catFood';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useMemo } from 'react';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -726,11 +727,22 @@ export const useCatFoodStore = create<CatFoodState>()(
 
 /**
  * 获取全部猫粮列表
+ * 使用 ID 字符串作为稳定的依赖
  */
 export const useAllCatFoods = () => {
-  const catfoods = useCatFoodStore((state) => state.getCatFoodsByList('all'));
+  // 订阅 IDs 数组
+  const allIds = useCatFoodStore((state) => state.lists.all);
   const isLoading = useCatFoodStore((state) => state.isLoading);
   const hasMore = useCatFoodStore((state) => state.pagination.all.hasMore);
+
+  // 使用 ID 字符串作为稳定依赖，并通过 useCatFoodStore 获取实际数据
+  const idsKey = allIds.join(',');
+
+  const catfoods = useMemo(() => {
+    const state = useCatFoodStore.getState();
+    return allIds.map((id) => state.entities[id]).filter(Boolean);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idsKey]);
 
   return { catfoods, isLoading, hasMore };
 };
@@ -739,16 +751,27 @@ export const useAllCatFoods = () => {
  * 根据ID获取猫粮
  */
 export const useCatFood = (id: number) => {
-  return useCatFoodStore((state) => state.getCatFoodById(id));
+  return useCatFoodStore((state) => state.entities[id]);
 };
 
 /**
  * 获取搜索结果
+ * 使用 ID 字符串作为稳定的依赖
  */
 export const useSearchResults = () => {
-  const results = useCatFoodStore((state) => state.getCatFoodsByList('search'));
+  // 订阅 IDs 数组
+  const searchIds = useCatFoodStore((state) => state.lists.search);
   const isLoading = useCatFoodStore((state) => state.isLoading);
   const hasMore = useCatFoodStore((state) => state.pagination.search.hasMore);
+
+  // 使用 ID 字符串作为稳定依赖，并通过 useCatFoodStore 获取实际数据
+  const idsKey = searchIds.join(',');
+
+  const results = useMemo(() => {
+    const state = useCatFoodStore.getState();
+    return searchIds.map((id) => state.entities[id]).filter(Boolean);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idsKey]);
 
   return { results, isLoading, hasMore };
 };

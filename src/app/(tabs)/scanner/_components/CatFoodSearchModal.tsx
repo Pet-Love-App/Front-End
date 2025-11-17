@@ -66,9 +66,9 @@ export function CatFoodSearchModal({ visible, onClose, onSelectCatFood }: CatFoo
   const [searched, setSearched] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 使用 catFoodStore
+  // 使用 catFoodStore - 使用选择器避免不必要的重渲染
   const { results: catFoods, isLoading: loading } = useSearchResults();
-  const { searchCatFoods } = useCatFoodStore();
+  const searchCatFoods = useCatFoodStore((state) => state.searchCatFoods);
 
   /**
    * 搜索猫粮

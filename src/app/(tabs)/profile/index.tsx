@@ -12,7 +12,12 @@ import { Button, ScrollView, Text, YStack } from 'tamagui';
 import { AddPetModal, PetDetailModal, PetList, ProfileHeader } from './_components';
 
 export default function ProfileIndex() {
-  const { user, isLoading, fetchCurrentUser, isAuthenticated, _hasHydrated } = useUserStore();
+  // 使用 userStore - 使用选择器避免不必要的重渲染
+  const user = useUserStore((state) => state.user);
+  const isLoading = useUserStore((state) => state.isLoading);
+  const fetchCurrentUser = useUserStore((state) => state.fetchCurrentUser);
+  const isAuthenticated = useUserStore((state) => state.isAuthenticated);
+  const _hasHydrated = useUserStore((state) => state._hasHydrated);
 
   const router = useRouter();
   const insets = useSafeAreaInsets();

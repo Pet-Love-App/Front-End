@@ -20,15 +20,19 @@ export default function CollectScreen() {
   const [searchText, setSearchText] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
-  // 使用 collectStore
-  const { favorites, isLoading, error, fetchFavorites, removeFavorite } = useCollectStore();
+  // 使用 collectStore - 使用选择器避免不必要的重渲染
+  const favorites = useCollectStore((state) => state.favorites);
+  const isLoading = useCollectStore((state) => state.isLoading);
+  const error = useCollectStore((state) => state.error);
+  const fetchFavorites = useCollectStore((state) => state.fetchFavorites);
+  const removeFavorite = useCollectStore((state) => state.removeFavorite);
 
   // 初始加载数据
   useEffect(() => {
     fetchFavorites().catch((err) => {
       console.error('获取收藏列表失败:', err);
     });
-  }, []);
+  }, [fetchFavorites]);
 
   // 下拉刷新
   const handleRefresh = async () => {

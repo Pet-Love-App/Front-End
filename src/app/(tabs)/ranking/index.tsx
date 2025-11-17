@@ -5,15 +5,20 @@ import type { CatFood } from '@/src/types/catFood';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Modal, RefreshControl } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Separator, Tabs, Text, XStack, YStack } from 'tamagui';
 
 export default function RankingScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('all');
 
-  // 使用 catFoodStore
+  // 使用 catFoodStore - 使用选择器避免不必要的重渲染
   const { catfoods, isLoading, hasMore } = useAllCatFoods();
-  const { fetchCatFoods, isRefreshing, isLoadingMore, pagination, error } = useCatFoodStore();
+  const fetchCatFoods = useCatFoodStore((state) => state.fetchCatFoods);
+  const isRefreshing = useCatFoodStore((state) => state.isRefreshing);
+  const isLoadingMore = useCatFoodStore((state) => state.isLoadingMore);
+  const pagination = useCatFoodStore((state) => state.pagination);
 
   // 图片预览相关状态
   const [previewVisible, setPreviewVisible] = useState(false);
@@ -22,10 +27,10 @@ export default function RankingScreen() {
   // 初始加载
   useEffect(() => {
     // 如果没有数据，则加载
-    if (catfoods.length === 0) {
+    if (catfoods.length === 0 && !isLoading) {
       fetchCatFoods(1, true);
     }
-  }, []);
+  }, [catfoods.length, isLoading, fetchCatFoods]);
 
   // 下拉刷新
   const handleRefresh = async () => {
@@ -42,8 +47,7 @@ export default function RankingScreen() {
 
   // 跳转到详情页
   const handleCatFoodPress = (catfood: CatFood) => {
-    // router.push(`/catfood/${catfood.id}`);
-    console.log('查看猫粮详情:', catfood.name);
+    router.push(`/report/${catfood.id}`);
   };
 
   // 处理图片点击
@@ -136,8 +140,7 @@ export default function RankingScreen() {
             <YStack flex={1} width="100%" justifyContent="center" alignItems="center" padding="$6">
               <Image
                 source={{ uri: previewImageUrl }}
-                width="100%"
-                height="100%"
+                style={{ width: '100%', height: '100%' }}
                 resizeMode="contain"
               />
             </YStack>
@@ -177,7 +180,7 @@ export default function RankingScreen() {
             data={catfoods}
             renderItem={renderCatFoodCard}
             keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={{ paddingTop: 10, paddingBottom: 10 }}
+            contentContainerStyle={{ paddingTop: 10, paddingBottom: Math.max(10, insets.bottom) }}
             refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.5}

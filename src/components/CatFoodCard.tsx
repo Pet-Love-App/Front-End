@@ -1,7 +1,8 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import type { CatFood } from '@/src/types/catFood';
 import React from 'react';
-import { Card, Image, Separator, Text, XStack, YStack } from 'tamagui';
+import { Image } from 'react-native';
+import { Card, Separator, Text, XStack, YStack } from 'tamagui';
 
 interface CatFoodCardProps {
   /** 猫粮数据 */
@@ -96,10 +97,11 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
             >
               <Image
                 source={{ uri: catfood.imageUrl }}
-                width={80}
-                height={80}
-                borderRadius="$3"
-                backgroundColor="$gray3"
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 8,
+                }}
               />
             </YStack>
           ) : (

@@ -107,7 +107,10 @@ export default function ScannerScreen() {
           setFlowState('taking-photo');
         } else {
           // 有成分数据，直接跳转到详情页
-          router.push(`/report/${fullCatFood.id}`);
+          router.push({
+            pathname: '/detail',
+            params: { id: fullCatFood.id },
+          });
         }
       } catch (error) {
         console.error('获取猫粮详情失败:', error);
@@ -304,7 +307,11 @@ export default function ScannerScreen() {
       Alert.alert('成功', '报告已保存到猫粮数据库', [
         {
           text: '查看详情',
-          onPress: () => router.push(`/report/${selectedCatFood.id}`),
+          onPress: () =>
+            router.push({
+              pathname: '/detail',
+              params: { id: selectedCatFood.id },
+            }),
         },
       ]);
 

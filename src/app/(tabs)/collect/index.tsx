@@ -69,7 +69,7 @@ export default function CollectScreen() {
   // 点击收藏项，跳转到详情页
   const handlePress = (catfoodId: number) => {
     router.push({
-      pathname: '/report/[id]',
+      pathname: '/detail',
       params: { id: catfoodId },
     });
   };

@@ -47,7 +47,10 @@ export default function RankingScreen() {
 
   // 跳转到详情页
   const handleCatFoodPress = (catfood: CatFood) => {
-    router.push(`/report/${catfood.id}`);
+    router.push({
+      pathname: '/detail',
+      params: { id: catfood.id },
+    });
   };
 
   // 处理图片点击
@@ -156,11 +159,7 @@ export default function RankingScreen() {
         flex={1}
         onValueChange={setActiveTab}
       >
-        <Tabs.List
-          separator={<Separator vertical />}
-          paddingHorizontal="$4"
-          backgroundColor="$background"
-        >
+        <Tabs.List paddingHorizontal="$4" backgroundColor="$background">
           <Tabs.Tab flex={1} value="all">
             <Text>全部猫粮</Text>
           </Tabs.Tab>

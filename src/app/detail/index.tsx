@@ -78,7 +78,13 @@ export default function ReportScreen() {
     }
 
     return (
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingLeft: Math.max(16, insets.left),
+          paddingRight: Math.max(16, insets.right),
+        }}
+      >
         {/* 头部信息 */}
         <ReportHeader name={catFood.name} tags={catFood.tags || []} imageUrl={catFood.imageUrl} />
 
@@ -107,7 +113,7 @@ export default function ReportScreen() {
         )}
 
         {/* 底部安全区间距 */}
-        <YStack height={Math.max(24, insets.bottom)} />
+        <YStack height={Math.max(24, insets.bottom + 16)} />
       </ScrollView>
     );
   };
@@ -116,8 +122,7 @@ export default function ReportScreen() {
     <>
       <Stack.Screen
         options={{
-          title: '综合报告',
-          headerBackTitle: '返回',
+          title: '猫粮详情',
         }}
       />
 

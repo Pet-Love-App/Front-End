@@ -1,14 +1,13 @@
 /**
  * AI 报告详情页面 - 主组件
  *
- * 复用report页面现有组件，保持一致性
+ * 复用detail页面现有组件，保持一致性
  */
 import {
   AdditiveDetailModal,
   NutrientAnalysisSection,
-  NutritionChartSection,
   SafetyAnalysisSection,
-} from '@/src/app/report/_components';
+} from '@/src/app/detail/_components';
 import { searchAdditive, searchIngredient, type GenerateReportResponse } from '@/src/services/api';
 import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
@@ -16,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 import { ActionButtons } from './ActionButtons';
 import { IdentifiedItemsSection } from './IdentifiedItemsSection';
+import { NutritionAnalysisCharts } from './NutritionAnalysisCharts';
 
 export interface AiReportDetailProps {
   report: GenerateReportResponse;
@@ -85,8 +85,16 @@ export function AiReportDetail({
     }
   }, []);
 
-  // 转换percentData格式
-  const percentData = report.percentage
+  // 转换percentData格式 - 只要有任何营养数据就显示图表
+  const hasAnyNutritionData =
+    report.crude_protein !== null ||
+    report.crude_fat !== null ||
+    report.carbohydrates !== null ||
+    report.crude_fiber !== null ||
+    report.crude_ash !== null ||
+    report.others !== null;
+
+  const percentData = hasAnyNutritionData
     ? {
         crude_protein: report.crude_protein,
         crude_fat: report.crude_fat,
@@ -96,6 +104,18 @@ export function AiReportDetail({
         others: report.others,
       }
     : null;
+
+  // 调试信息
+  console.log('📊 营养数据检查:', {
+    hasAnyNutritionData,
+    crude_protein: report.crude_protein,
+    crude_fat: report.crude_fat,
+    carbohydrates: report.carbohydrates,
+    crude_fiber: report.crude_fiber,
+    crude_ash: report.crude_ash,
+    others: report.others,
+    percentage: report.percentage,
+  });
 
   return (
     <>
@@ -148,8 +168,8 @@ export function AiReportDetail({
               onItemClick={handleIngredientClick}
             />
 
-            {/* 营养成分饼状图 */}
-            {percentData && <NutritionChartSection percentData={percentData} />}
+            {/* 营养成分分析图表（饼状图 + 柱状图 + 数据表格） */}
+            {percentData && <NutritionAnalysisCharts data={percentData} />}
 
             {/* 操作按钮 */}
             <YStack paddingHorizontal="$4" marginTop="$4">

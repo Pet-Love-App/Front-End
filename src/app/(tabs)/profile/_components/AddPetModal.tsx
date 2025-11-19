@@ -4,15 +4,7 @@ import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { PetInput } from '@/src/schemas/pet.schema';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useRef, useState } from 'react';
-import {
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-} from 'react-native';
+import { Alert, Dimensions, Image, ScrollView, StyleSheet, TextInput } from 'react-native';
 import { Button, Dialog, Text, XStack, YStack } from 'tamagui';
 
 interface AddPetModalProps {
@@ -108,6 +100,9 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
     }
   };
 
+  const screenWidth = Dimensions.get('window').width;
+  const dialogWidth = Math.min(screenWidth - 48, 500);
+
   return (
     <Dialog modal open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -124,18 +119,12 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
           elevate
           key="content"
           animateOnly={['transform', 'opacity']}
-          animation={[
-            'quick',
-            {
-              opacity: {
-                overshootClamping: true,
-              },
-            },
-          ]}
+          animation="quick"
           enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
           exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
           backgroundColor={colors.background}
-          maxWidth={500}
+          width={dialogWidth}
+          maxHeight="85%"
           padding="$0"
           pointerEvents="auto"
         >
@@ -156,199 +145,191 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
           </YStack>
 
           {/* Scrollable Form */}
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={100}
+          <ScrollView
+            style={{ maxHeight: 450 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled={true}
           >
-            <ScrollView
-              style={{ maxHeight: 500 }}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              <YStack padding="$5" gap="$4">
-                {/* Photo Section */}
-                <YStack gap="$3" alignItems="center">
-                  {photoUri ? (
-                    <YStack alignItems="center" gap="$3">
-                      <Image
-                        source={{ uri: photoUri }}
-                        style={styles.petPhoto}
-                        resizeMode="cover"
-                      />
-                      <Button
-                        size="$3"
-                        variant="outlined"
-                        icon={
-                          <IconSymbol
-                            name="arrow.triangle.2.circlepath"
-                            size={18}
-                            color={colors.tint}
-                          />
-                        }
-                        onPress={pickPetImage}
-                        borderColor={colors.tint}
-                        color={colors.tint}
-                        backgroundColor="transparent"
-                      >
-                        更换图片
-                      </Button>
-                    </YStack>
-                  ) : (
+            <YStack padding="$5" gap="$4">
+              {/* Photo Section */}
+              <YStack gap="$3" alignItems="center">
+                {photoUri ? (
+                  <YStack alignItems="center" gap="$3">
+                    <Image source={{ uri: photoUri }} style={styles.petPhoto} resizeMode="cover" />
                     <Button
-                      size="$4"
-                      width="100%"
-                      icon={<IconSymbol name="photo.badge.plus" size={24} color={colors.tint} />}
+                      size="$3"
+                      variant="outlined"
+                      icon={
+                        <IconSymbol
+                          name="arrow.triangle.2.circlepath"
+                          size={18}
+                          color={colors.tint}
+                        />
+                      }
                       onPress={pickPetImage}
-                      borderColor={colors.icon}
-                      borderWidth={2}
-                      borderStyle="dashed"
-                      color={colors.text}
-                      backgroundColor="$gray2"
-                      paddingVertical="$5"
+                      borderColor={colors.tint}
+                      color={colors.tint}
+                      backgroundColor="transparent"
                     >
-                      选择宠物图片（可选）
+                      更换图片
                     </Button>
-                  )}
-                </YStack>
-
-                {/* Pet Name */}
-                <YStack gap="$2">
-                  <Text fontSize="$4" fontWeight="600" color={colors.text}>
-                    宠物名称 <Text color="$red10">*</Text>
-                  </Text>
-                  <TextInput
-                    ref={nameRef}
-                    placeholder="给你的宠物取个名字吧"
-                    placeholderTextColor={colors.icon}
-                    value={nameValue}
-                    onChangeText={setNameValue}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    returnKeyType="done"
-                    style={[
-                      styles.input,
-                      {
-                        color: colors.text,
-                        borderColor: colors.icon,
-                        backgroundColor: colors.background,
-                      },
-                    ]}
-                  />
-                </YStack>
-
-                {/* Species Selection */}
-                <YStack gap="$2">
-                  <Text fontSize="$4" fontWeight="600" color={colors.text}>
-                    宠物类型 <Text color="$red10">*</Text>
-                  </Text>
-                  <XStack gap="$2" flexWrap="wrap">
-                    {SPECIES_OPTIONS.map((opt) => (
-                      <Button
-                        key={opt.key}
-                        size="$3"
-                        flex={1}
-                        minWidth={100}
-                        onPress={() => setSpecies(opt.key)}
-                        backgroundColor={species === opt.key ? '$blue9' : '$gray2'}
-                        color={species === opt.key ? 'white' : colors.text}
-                        borderColor={species === opt.key ? '$blue9' : colors.icon}
-                        borderWidth={species === opt.key ? 0 : 1}
-                        pressStyle={{ scale: 0.97 }}
-                        animation="quick"
-                      >
-                        <Text fontSize="$5">{opt.emoji}</Text>
-                        <Text
-                          fontSize="$3"
-                          color={species === opt.key ? 'white' : colors.text}
-                          marginLeft="$1"
-                        >
-                          {opt.label}
-                        </Text>
-                      </Button>
-                    ))}
-                  </XStack>
-                </YStack>
-
-                {/* Breed */}
-                <YStack gap="$2">
-                  <Text fontSize="$4" fontWeight="600" color={colors.text}>
-                    品种
-                  </Text>
-                  <TextInput
-                    ref={breedRef}
-                    placeholder="例如：英短、金毛"
-                    placeholderTextColor={colors.icon}
-                    value={breedValue}
-                    onChangeText={setBreedValue}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    returnKeyType="done"
-                    style={[
-                      styles.input,
-                      {
-                        color: colors.text,
-                        borderColor: colors.icon,
-                        backgroundColor: colors.background,
-                      },
-                    ]}
-                  />
-                </YStack>
-
-                {/* Age */}
-                <YStack gap="$2">
-                  <Text fontSize="$4" fontWeight="600" color={colors.text}>
-                    年龄（岁）
-                  </Text>
-                  <TextInput
-                    ref={ageRef}
-                    placeholder="输入年龄"
-                    placeholderTextColor={colors.icon}
-                    keyboardType="numeric"
-                    value={ageValue}
-                    onChangeText={setAgeValue}
-                    returnKeyType="done"
-                    style={[
-                      styles.input,
-                      {
-                        color: colors.text,
-                        borderColor: colors.icon,
-                        backgroundColor: colors.background,
-                      },
-                    ]}
-                  />
-                </YStack>
-
-                {/* Description */}
-                <YStack gap="$2">
-                  <Text fontSize="$4" fontWeight="600" color={colors.text}>
-                    描述
-                  </Text>
-                  <TextInput
-                    ref={descriptionRef}
-                    placeholder="介绍一下你的宠物吧～"
-                    placeholderTextColor={colors.icon}
-                    value={descriptionValue}
-                    onChangeText={setDescriptionValue}
-                    multiline
-                    numberOfLines={4}
-                    textAlignVertical="top"
-                    autoCapitalize="sentences"
-                    autoCorrect={false}
-                    returnKeyType="default"
-                    blurOnSubmit={false}
-                    style={[
-                      styles.textArea,
-                      {
-                        color: colors.text,
-                        borderColor: colors.icon,
-                        backgroundColor: colors.background,
-                      },
-                    ]}
-                  />
-                </YStack>
+                  </YStack>
+                ) : (
+                  <Button
+                    size="$4"
+                    width="100%"
+                    icon={<IconSymbol name="photo.badge.plus" size={24} color={colors.tint} />}
+                    onPress={pickPetImage}
+                    borderColor={colors.icon}
+                    borderWidth={2}
+                    borderStyle="dashed"
+                    color={colors.text}
+                    backgroundColor="$gray2"
+                    paddingVertical="$5"
+                  >
+                    选择宠物图片（可选）
+                  </Button>
+                )}
               </YStack>
-            </ScrollView>
-          </KeyboardAvoidingView>
+
+              {/* Pet Name */}
+              <YStack gap="$2">
+                <Text fontSize="$4" fontWeight="600" color={colors.text}>
+                  宠物名称 <Text color="$red10">*</Text>
+                </Text>
+                <TextInput
+                  ref={nameRef}
+                  placeholder="给你的宠物取个名字吧"
+                  placeholderTextColor={colors.icon}
+                  value={nameValue}
+                  onChangeText={setNameValue}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="done"
+                  style={[
+                    styles.input,
+                    {
+                      color: colors.text,
+                      borderColor: colors.icon,
+                      backgroundColor: colors.background,
+                    },
+                  ]}
+                />
+              </YStack>
+
+              {/* Species Selection */}
+              <YStack gap="$2">
+                <Text fontSize="$4" fontWeight="600" color={colors.text}>
+                  宠物类型 <Text color="$red10">*</Text>
+                </Text>
+                <XStack gap="$2" flexWrap="wrap">
+                  {SPECIES_OPTIONS.map((opt) => (
+                    <Button
+                      key={opt.key}
+                      size="$3"
+                      flex={1}
+                      minWidth={100}
+                      onPress={() => setSpecies(opt.key)}
+                      backgroundColor={species === opt.key ? '$blue9' : '$gray2'}
+                      color={species === opt.key ? 'white' : colors.text}
+                      borderColor={species === opt.key ? '$blue9' : colors.icon}
+                      borderWidth={species === opt.key ? 0 : 1}
+                      pressStyle={{ scale: 0.97 }}
+                      animation="quick"
+                    >
+                      <Text fontSize="$5">{opt.emoji}</Text>
+                      <Text
+                        fontSize="$3"
+                        color={species === opt.key ? 'white' : colors.text}
+                        marginLeft="$1"
+                      >
+                        {opt.label}
+                      </Text>
+                    </Button>
+                  ))}
+                </XStack>
+              </YStack>
+
+              {/* Breed */}
+              <YStack gap="$2">
+                <Text fontSize="$4" fontWeight="600" color={colors.text}>
+                  品种
+                </Text>
+                <TextInput
+                  ref={breedRef}
+                  placeholder="例如：英短、金毛"
+                  placeholderTextColor={colors.icon}
+                  value={breedValue}
+                  onChangeText={setBreedValue}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="done"
+                  style={[
+                    styles.input,
+                    {
+                      color: colors.text,
+                      borderColor: colors.icon,
+                      backgroundColor: colors.background,
+                    },
+                  ]}
+                />
+              </YStack>
+
+              {/* Age */}
+              <YStack gap="$2">
+                <Text fontSize="$4" fontWeight="600" color={colors.text}>
+                  年龄（岁）
+                </Text>
+                <TextInput
+                  ref={ageRef}
+                  placeholder="输入年龄"
+                  placeholderTextColor={colors.icon}
+                  keyboardType="numeric"
+                  value={ageValue}
+                  onChangeText={setAgeValue}
+                  returnKeyType="done"
+                  style={[
+                    styles.input,
+                    {
+                      color: colors.text,
+                      borderColor: colors.icon,
+                      backgroundColor: colors.background,
+                    },
+                  ]}
+                />
+              </YStack>
+
+              {/* Description */}
+              <YStack gap="$2">
+                <Text fontSize="$4" fontWeight="600" color={colors.text}>
+                  描述
+                </Text>
+                <TextInput
+                  ref={descriptionRef}
+                  placeholder="介绍一下你的宠物吧～"
+                  placeholderTextColor={colors.icon}
+                  value={descriptionValue}
+                  onChangeText={setDescriptionValue}
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                  autoCapitalize="sentences"
+                  autoCorrect={false}
+                  returnKeyType="default"
+                  blurOnSubmit={false}
+                  style={[
+                    styles.textArea,
+                    {
+                      color: colors.text,
+                      borderColor: colors.icon,
+                      backgroundColor: colors.background,
+                    },
+                  ]}
+                />
+              </YStack>
+            </YStack>
+          </ScrollView>
 
           {/* Footer Buttons */}
           <XStack

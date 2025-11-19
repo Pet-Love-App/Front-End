@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card, ScrollView, Separator, Text, XStack, YStack } from 'tamagui';
-import { EditDetailsModal } from '../_components/EditDetailsModal';
+import { EditProfileModal } from '../_components/EditProfileModal';
 import { LogoutButton } from '../_components/LogoutButton';
 import { SettingItem } from '../_components/SettingItem';
 import { ThemeSelectorModal } from '../_components/ThemeSelectorModal';
@@ -22,8 +22,7 @@ export default function SettingsPage() {
   const { user } = useUserStore();
 
   const [themeModalVisible, setThemeModalVisible] = useState(false);
-  const [detailsModalVisible, setDetailsModalVisible] = useState(false);
-  const [details, setDetails] = useState('点击编辑用户详细资料');
+  const [profileModalVisible, setProfileModalVisible] = useState(false);
 
   const getThemeLabel = () => {
     switch (themeMode) {
@@ -100,8 +99,9 @@ export default function SettingsPage() {
 
           <SettingItem
             icon="person.fill"
-            label="个人资料"
-            onPress={() => setDetailsModalVisible(true)}
+            label="编辑个人资料"
+            value="用户名/密码"
+            onPress={() => setProfileModalVisible(true)}
           />
         </YStack>
 
@@ -174,12 +174,7 @@ export default function SettingsPage() {
         onThemeChange={setThemeMode}
       />
 
-      <EditDetailsModal
-        open={detailsModalVisible}
-        onOpenChange={setDetailsModalVisible}
-        initialDetails={details}
-        onSave={setDetails}
-      />
+      <EditProfileModal open={profileModalVisible} onOpenChange={setProfileModalVisible} />
     </ScrollView>
   );
 }

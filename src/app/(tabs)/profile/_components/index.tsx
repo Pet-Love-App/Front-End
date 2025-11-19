@@ -1,5 +1,6 @@
 export { AddPetModal } from './AddPetModal';
 export { EditDetailsModal } from './EditDetailsModal';
+export { EditProfileModal } from './EditProfileModal';
 export { LogoutButton } from './LogoutButton';
 export { PetCard } from './PetCard';
 export { PetDetailModal } from './PetDetailModal';

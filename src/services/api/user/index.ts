@@ -2,9 +2,13 @@ import { API_ENDPOINTS } from '@/src/config/api';
 import {
   avatarUploadResponseSchema,
   deleteResponseSchema,
+  successResponseSchema,
   userSchema,
   type AvatarUploadResponse,
+  type ChangePasswordInput,
   type DeleteResponse,
+  type SuccessResponse,
+  type UpdateUsernameInput,
   type User,
 } from '@/src/schemas/user.schema';
 import { apiClient } from '../BaseApi';
@@ -69,10 +73,34 @@ class UserService {
     const data = await apiClient.delete(API_ENDPOINTS.USER.AVATAR);
     return validateResponse<DeleteResponse>(data, deleteResponseSchema);
   }
+
+  /**
+   * 更新用户名
+   */
+  async updateUsername(username: string): Promise<User> {
+    const payload: UpdateUsernameInput = { username };
+    const data = await apiClient.patch(API_ENDPOINTS.USER.UPDATE_PROFILE, payload);
+    return validateResponse<User>(data, userSchema);
+  }
+
+  /**
+   * 修改密码
+   */
+  async changePassword(passwordData: ChangePasswordInput): Promise<SuccessResponse> {
+    const data = await apiClient.post(API_ENDPOINTS.AUTH.SET_PASSWORD, passwordData);
+    return validateResponse<SuccessResponse>(data, successResponseSchema);
+  }
 }
 
 // 导出单例
 export const userService = new UserService();
 
 // 重新导出类型
-export type { AvatarUploadResponse, DeleteResponse, User } from './types';
+export type {
+  AvatarUploadResponse,
+  ChangePasswordInput,
+  DeleteResponse,
+  SuccessResponse,
+  UpdateUsernameInput,
+  User,
+} from './types';

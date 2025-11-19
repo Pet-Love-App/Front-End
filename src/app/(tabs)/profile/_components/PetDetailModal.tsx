@@ -1,7 +1,7 @@
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Pet } from '@/src/schemas/pet.schema';
-import { Image } from 'react-native';
+import { Dimensions, Image } from 'react-native';
 import { Button, Dialog, Text, XStack, YStack } from 'tamagui';
 
 interface PetDetailModalProps {
@@ -15,6 +15,9 @@ export function PetDetailModal({ pet, open, onOpenChange }: PetDetailModalProps)
   const colors = Colors[colorScheme];
 
   if (!pet) return null;
+
+  const screenWidth = Dimensions.get('window').width;
+  const dialogWidth = Math.min(screenWidth - 48, 400);
 
   return (
     <Dialog modal open={open} onOpenChange={onOpenChange}>
@@ -43,8 +46,9 @@ export function PetDetailModal({ pet, open, onOpenChange }: PetDetailModalProps)
           enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
           exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
           gap="$4"
+          padding="$4"
           backgroundColor={colors.background}
-          maxWidth={400}
+          width={dialogWidth}
         >
           <Dialog.Title fontSize={22} fontWeight="700" color={colors.text}>
             {pet.name}

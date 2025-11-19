@@ -5,9 +5,11 @@ import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
   const colorScheme = useThemeAwareColorScheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -20,8 +22,8 @@ export default function TabLayout() {
           backgroundColor: colorScheme === 'dark' ? '#1a1a1a' : '#ffffff',
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
-          height: 85,
-          paddingBottom: 20,
+          height: 65 + insets.bottom,
+          paddingBottom: insets.bottom,
           paddingTop: 10,
           borderTopWidth: 0,
           shadowColor: '#000',

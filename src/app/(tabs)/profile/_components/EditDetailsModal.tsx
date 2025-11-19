@@ -1,7 +1,8 @@
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { useEffect, useState } from 'react';
-import { Button, Dialog, TextArea, XStack } from 'tamagui';
+import { Dimensions } from 'react-native';
+import { Button, Dialog, TextArea, XStack, YStack } from 'tamagui';
 
 interface EditDetailsModalProps {
   open: boolean;
@@ -31,8 +32,11 @@ export function EditDetailsModal({
     onOpenChange(false);
   };
 
+  const screenWidth = Dimensions.get('window').width;
+  const dialogWidth = Math.min(screenWidth - 48, 500);
+
   return (
-    <Dialog modal open={open} onOpenChange={onOpenChange}>
+    <Dialog modal={false} open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay
           key="overlay"
@@ -57,39 +61,41 @@ export function EditDetailsModal({
           ]}
           enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
           exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-          gap="$4"
+          padding="$4"
           backgroundColor={colors.background}
-          maxWidth={500}
+          width={dialogWidth}
         >
-          <Dialog.Title fontSize={20} fontWeight="600" color={colors.text}>
-            编辑用户详细资料
-          </Dialog.Title>
+          <YStack gap="$4">
+            <Dialog.Title fontSize={20} fontWeight="600" color={colors.text}>
+              编辑用户详细资料
+            </Dialog.Title>
 
-          <TextArea
-            value={tempDetails}
-            onChangeText={setTempDetails}
-            placeholder="在这里输入用户详细信息"
-            placeholderTextColor={colors.icon}
-            size="$4"
-            minHeight={120}
-            color={colors.text}
-            borderColor={colors.icon}
-            backgroundColor={colors.background}
-            focusStyle={{ borderColor: colors.tint }}
-            numberOfLines={5}
-          />
+            <TextArea
+              value={tempDetails}
+              onChangeText={setTempDetails}
+              placeholder="在这里输入用户详细信息"
+              placeholderTextColor={colors.icon}
+              size="$4"
+              minHeight={120}
+              color={colors.text}
+              borderColor={colors.icon}
+              backgroundColor={colors.background}
+              focusStyle={{ borderColor: colors.tint }}
+              numberOfLines={5}
+            />
 
-          <XStack gap="$3" justifyContent="flex-end">
-            <Dialog.Close displayWhenAdapted asChild>
-              <Button variant="outlined" onPress={() => onOpenChange(false)}>
-                取消
+            <XStack gap="$3" justifyContent="flex-end">
+              <Dialog.Close displayWhenAdapted asChild>
+                <Button variant="outlined" onPress={() => onOpenChange(false)}>
+                  取消
+                </Button>
+              </Dialog.Close>
+
+              <Button backgroundColor="$blue10" color="white" onPress={handleSave}>
+                保存
               </Button>
-            </Dialog.Close>
-
-            <Button backgroundColor="$blue10" color="white" onPress={handleSave}>
-              保存
-            </Button>
-          </XStack>
+            </XStack>
+          </YStack>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog>

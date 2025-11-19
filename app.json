@@ -26,6 +26,13 @@
       [
         "expo-splash-screen",
         {
+          "exclude": [
+            "**/_components/**/*", // 忽略所有 _components 目录下的文件
+            "**/*.ts", // 忽略纯 ts 文件（如 index.ts 导出文件）
+            "**/*.d.ts" // 忽略类型声明文件
+          ]
+        },
+        {
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",

@@ -8,6 +8,7 @@ import {
   AdditiveDetailModal,
   AdditiveSection,
   BasicInfoSection,
+  CommentSection,
   EmptyState,
   LoadingState,
   NutrientAnalysisSection,
@@ -16,7 +17,6 @@ import {
   ReportHeader,
   SafetyAnalysisSection,
 } from './_components';
-
 interface Additive {
   name: string;
   type?: string;
@@ -111,6 +111,9 @@ export default function ReportScreen() {
         {catFood.ingredient && catFood.ingredient.length > 0 && (
           <NutritionListSection ingredients={catFood.ingredient} />
         )}
+
+        {/* 评论区 */}
+        {catFood && <CommentSection catfoodId={catFood.id} />}
 
         {/* 底部安全区间距 */}
         <YStack height={Math.max(24, insets.bottom + 16)} />

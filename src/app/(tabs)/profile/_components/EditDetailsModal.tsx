@@ -36,7 +36,7 @@ export function EditDetailsModal({
   const dialogWidth = Math.min(screenWidth - 48, 500);
 
   return (
-    <Dialog modal open={open} onOpenChange={onOpenChange}>
+    <Dialog modal={false} open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay
           key="overlay"

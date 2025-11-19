@@ -128,7 +128,7 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
   };
 
   return (
-    <Dialog modal open={open} onOpenChange={onOpenChange}>
+    <Dialog modal={false} open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay
           key="overlay"
@@ -136,6 +136,7 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
           opacity={0.5}
           enterStyle={{ opacity: 0 }}
           exitStyle={{ opacity: 0 }}
+          style={{ pointerEvents: 'auto' }}
         />
 
         <Dialog.Content
@@ -168,7 +169,13 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
           </YStack>
 
           {/* Content */}
-          <ScrollView style={{ maxHeight: 500 }} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={{ maxHeight: 500 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="always"
+            nestedScrollEnabled={true}
+            scrollEnabled={true}
+          >
             <YStack padding="$4" gap="$5">
               {/* 用户名部分 */}
               <YStack gap="$3">

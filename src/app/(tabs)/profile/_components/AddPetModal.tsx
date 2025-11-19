@@ -112,6 +112,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
           opacity={0.5}
           enterStyle={{ opacity: 0 }}
           exitStyle={{ opacity: 0 }}
+          style={{ pointerEvents: 'auto' }}
         />
 
         <Dialog.Content
@@ -126,7 +127,6 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
           width={dialogWidth}
           maxHeight="85%"
           padding="$0"
-          pointerEvents="auto"
         >
           {/* Header */}
           <YStack
@@ -148,8 +148,9 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
           <ScrollView
             style={{ maxHeight: 450 }}
             showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
+            keyboardShouldPersistTaps="always"
             nestedScrollEnabled={true}
+            scrollEnabled={true}
           >
             <YStack padding="$5" gap="$4">
               {/* Photo Section */}
@@ -207,6 +208,8 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                   autoCapitalize="none"
                   autoCorrect={false}
                   returnKeyType="done"
+                  editable={true}
+                  selectTextOnFocus={true}
                   style={[
                     styles.input,
                     {

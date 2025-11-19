@@ -6,6 +6,8 @@ export default function DetailLayout() {
       screenOptions={{
         headerShown: true,
         headerBackTitle: '返回',
+        presentation: 'card',
+        animation: 'slide_from_right',
       }}
     />
   );

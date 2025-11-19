@@ -123,6 +123,8 @@ export default function ReportScreen() {
       <Stack.Screen
         options={{
           title: '猫粮详情',
+          headerBackTitle: '返回',
+          headerBackVisible: true,
         }}
       />
 

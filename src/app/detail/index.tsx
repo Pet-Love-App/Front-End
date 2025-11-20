@@ -90,7 +90,12 @@ export default function ReportScreen() {
         <ReportHeader name={catFood.name} tags={catFood.tags || []} imageUrl={catFood.imageUrl} />
 
         {/* 基本信息 */}
-        <BasicInfoSection brand={catFood.brand} score={catFood.score} countNum={catFood.countNum} />
+        <BasicInfoSection
+          brand={catFood.brand}
+          score={catFood.score}
+          countNum={catFood.countNum}
+          catfoodId={catFood.id}
+        />
 
         {/* 安全性分析 */}
         {catFood.safety && <SafetyAnalysisSection safety={catFood.safety} />}

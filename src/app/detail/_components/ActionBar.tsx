@@ -191,18 +191,18 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
         borderTopWidth={1}
         borderColor="$borderColor"
         shadowColor="$shadowColor"
-        shadowOffset={{ width: 0, height: -2 }}
-        shadowOpacity={0.1}
-        shadowRadius={8}
-        elevation={8}
+        shadowOffset={{ width: 0, height: -4 }}
+        shadowOpacity={0.15}
+        shadowRadius={12}
+        elevation={10}
         paddingBottom={Math.max(insets.bottom, 16)}
       >
         <Separator />
 
         <XStack
-          paddingHorizontal="$4"
+          paddingHorizontal="$5"
           paddingTop="$4"
-          gap="$3"
+          gap="$4"
           alignItems="center"
           justifyContent="space-evenly"
         >
@@ -210,26 +210,31 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
           <YStack flex={1}>
             <Button
               size="$5"
-              backgroundColor={localFavorited ? '$yellow9' : '$gray4'}
-              borderWidth={1}
-              borderColor={localFavorited ? '$yellow10' : '$gray7'}
+              backgroundColor={localFavorited ? '$yellow9' : 'transparent'}
+              borderWidth={2}
+              borderColor={localFavorited ? '$yellow9' : '$gray7'}
               onPress={handleFavorite}
               disabled={favoriteLoading}
               pressStyle={{
-                scale: 0.95,
-                backgroundColor: localFavorited ? '$yellow10' : '$gray5',
+                scale: 0.97,
+                backgroundColor: localFavorited ? '$yellow10' : '$gray3',
               }}
+              shadowColor={localFavorited ? '$yellow9' : 'transparent'}
+              shadowOffset={{ width: 0, height: 2 }}
+              shadowOpacity={0.3}
+              shadowRadius={4}
+              elevation={localFavorited ? 4 : 0}
               icon={
                 <Animated.View style={{ transform: [{ scale: favoriteScale }] }}>
                   <IconSymbol
                     name={localFavorited ? 'star.fill' : 'star'}
-                    size={24}
+                    size={22}
                     color={localFavorited ? 'white' : '$gray11'}
                   />
                 </Animated.View>
               }
             >
-              <Text color={localFavorited ? 'white' : '$gray11'} fontSize="$4" fontWeight="600">
+              <Text color={localFavorited ? 'white' : '$gray11'} fontSize="$4" fontWeight="700">
                 {favoriteLoading ? '处理中...' : localFavorited ? '已收藏' : '收藏'}
               </Text>
             </Button>
@@ -239,33 +244,45 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
           <YStack flex={1}>
             <Button
               size="$5"
-              backgroundColor={localLiked ? '$red9' : '$gray4'}
-              borderWidth={1}
-              borderColor={localLiked ? '$red10' : '$gray7'}
+              backgroundColor={localLiked ? '$red9' : 'transparent'}
+              borderWidth={2}
+              borderColor={localLiked ? '$red9' : '$gray7'}
               onPress={handleLike}
               disabled={likeLoading}
               pressStyle={{
-                scale: 0.95,
-                backgroundColor: localLiked ? '$red10' : '$gray5',
+                scale: 0.97,
+                backgroundColor: localLiked ? '$red10' : '$gray3',
               }}
+              shadowColor={localLiked ? '$red9' : 'transparent'}
+              shadowOffset={{ width: 0, height: 2 }}
+              shadowOpacity={0.3}
+              shadowRadius={4}
+              elevation={localLiked ? 4 : 0}
               icon={
                 <Animated.View style={{ transform: [{ scale: likeScale }] }}>
                   <IconSymbol
                     name={localLiked ? 'heart.fill' : 'heart'}
-                    size={24}
+                    size={22}
                     color={localLiked ? 'white' : '$gray11'}
                   />
                 </Animated.View>
               }
             >
               <XStack alignItems="center" gap="$2">
-                <Text color={localLiked ? 'white' : '$gray11'} fontSize="$4" fontWeight="600">
-                  {localLiked ? '已点赞' : '点赞'}
+                <Text color={localLiked ? 'white' : '$gray11'} fontSize="$4" fontWeight="700">
+                  {likeLoading ? '处理中...' : localLiked ? '已点赞' : '点赞'}
                 </Text>
                 {localLikeCount > 0 && (
-                  <Text color={localLiked ? 'white' : '$gray10'} fontSize="$3">
-                    {localLikeCount}
-                  </Text>
+                  <YStack
+                    paddingHorizontal="$2"
+                    paddingVertical="$1"
+                    backgroundColor={localLiked ? 'rgba(255,255,255,0.2)' : '$gray4'}
+                    borderRadius="$10"
+                  >
+                    <Text color={localLiked ? 'white' : '$gray11'} fontSize="$2" fontWeight="bold">
+                      {localLikeCount}
+                    </Text>
+                  </YStack>
                 )}
               </XStack>
             </Button>

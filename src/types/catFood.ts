@@ -35,6 +35,8 @@ export interface CatFood {
   score: number;
   /** 打分人数（只读） */
   countNum: number;
+  /** 点赞数量（只读） */
+  like_count: number;
   /** 猫粮图片URL */
   imageUrl: string | null;
   /** 标签列表 - 字符串数组 */

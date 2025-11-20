@@ -13,6 +13,7 @@ export default function RankingScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('all');
+  const [sortBy, setSortBy] = useState<'score' | 'likes'>('score'); // 排序方式
 
   // 使用 catFoodStore - 使用选择器避免不必要的重渲染
   const { catfoods, isLoading, hasMore } = useAllCatFoods();
@@ -28,29 +29,41 @@ export default function RankingScreen() {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
 
-  // 搜索过滤逻辑 - 使用 useMemo 优化性能
+  // 搜索和排序逻辑 - 使用 useMemo 优化性能
   const filteredCatFoods = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return catfoods;
+    let result = catfoods;
+
+    // 搜索过滤
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter((catfood) => {
+        // 搜索猫粮名称
+        if (catfood.name.toLowerCase().includes(query)) {
+          return true;
+        }
+        // 搜索品牌
+        if (catfood.brand.toLowerCase().includes(query)) {
+          return true;
+        }
+        // 搜索标签
+        if (catfood.tags && catfood.tags.some((tag) => tag.toLowerCase().includes(query))) {
+          return true;
+        }
+        return false;
+      });
     }
 
-    const query = searchQuery.toLowerCase().trim();
-    return catfoods.filter((catfood) => {
-      // 搜索猫粮名称
-      if (catfood.name.toLowerCase().includes(query)) {
-        return true;
+    // 排序
+    return [...result].sort((a, b) => {
+      if (sortBy === 'likes') {
+        // 按点赞数排序（降序）
+        return (b.like_count || 0) - (a.like_count || 0);
+      } else {
+        // 按评分排序（降序）
+        return b.score - a.score;
       }
-      // 搜索品牌
-      if (catfood.brand.toLowerCase().includes(query)) {
-        return true;
-      }
-      // 搜索标签
-      if (catfood.tags && catfood.tags.some((tag) => tag.toLowerCase().includes(query))) {
-        return true;
-      }
-      return false;
     });
-  }, [catfoods, searchQuery]);
+  }, [catfoods, searchQuery, sortBy]);
 
   // 处理搜索输入
   const handleSearchChange = useCallback((text: string) => {
@@ -161,7 +174,7 @@ export default function RankingScreen() {
 
   return (
     <YStack flex={1} backgroundColor="$background">
-      {/* 搜索框 */}
+      {/* 搜索框和排序 */}
       <YStack
         paddingHorizontal="$4"
         paddingTop="$3"
@@ -175,19 +188,82 @@ export default function RankingScreen() {
           placeholder="搜索猫粮名称、品牌或标签..."
           size="$4"
         />
-        {/* 搜索结果统计 */}
-        {searchQuery.trim() && (
-          <XStack marginTop="$2" alignItems="center" gap="$2">
-            <Text fontSize="$2" color="$gray10">
-              找到 {filteredCatFoods.length} 个结果
-            </Text>
-            {filteredCatFoods.length > 0 && catfoods.length > 0 && (
-              <Text fontSize="$2" color="$gray9">
-                / 共 {catfoods.length} 个
+
+        {/* 排序和统计 */}
+        <XStack marginTop="$3" alignItems="center" justifyContent="space-between">
+          {/* 搜索结果统计 */}
+          <XStack alignItems="center" gap="$2">
+            {searchQuery.trim() ? (
+              <>
+                <Text fontSize="$2" color="$gray10">
+                  找到 {filteredCatFoods.length} 个结果
+                </Text>
+                {filteredCatFoods.length > 0 && catfoods.length > 0 && (
+                  <Text fontSize="$2" color="$gray9">
+                    / 共 {catfoods.length} 个
+                  </Text>
+                )}
+              </>
+            ) : (
+              <Text fontSize="$2" color="$gray10">
+                共 {filteredCatFoods.length} 个猫粮
               </Text>
             )}
           </XStack>
-        )}
+
+          {/* 排序切换 */}
+          <XStack gap="$2" alignItems="center">
+            <Text fontSize="$2" color="$gray10">
+              排序:
+            </Text>
+            <Button
+              size="$2"
+              paddingHorizontal="$3"
+              backgroundColor={sortBy === 'score' ? '$blue9' : '$gray4'}
+              borderWidth={0}
+              onPress={() => setSortBy('score')}
+              pressStyle={{ scale: 0.95 }}
+            >
+              <XStack alignItems="center" gap="$1">
+                <IconSymbol
+                  name="star.fill"
+                  size={12}
+                  color={sortBy === 'score' ? 'white' : '$gray10'}
+                />
+                <Text
+                  fontSize="$2"
+                  color={sortBy === 'score' ? 'white' : '$gray11'}
+                  fontWeight={sortBy === 'score' ? '600' : '400'}
+                >
+                  评分
+                </Text>
+              </XStack>
+            </Button>
+            <Button
+              size="$2"
+              paddingHorizontal="$3"
+              backgroundColor={sortBy === 'likes' ? '$red9' : '$gray4'}
+              borderWidth={0}
+              onPress={() => setSortBy('likes')}
+              pressStyle={{ scale: 0.95 }}
+            >
+              <XStack alignItems="center" gap="$1">
+                <IconSymbol
+                  name="heart.fill"
+                  size={12}
+                  color={sortBy === 'likes' ? 'white' : '$gray10'}
+                />
+                <Text
+                  fontSize="$2"
+                  color={sortBy === 'likes' ? 'white' : '$gray11'}
+                  fontWeight={sortBy === 'likes' ? '600' : '400'}
+                >
+                  点赞
+                </Text>
+              </XStack>
+            </Button>
+          </XStack>
+        </XStack>
       </YStack>
 
       {/* 图片预览 Modal */}

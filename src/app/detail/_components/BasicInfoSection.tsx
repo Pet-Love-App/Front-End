@@ -1,34 +1,62 @@
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { useLikeStore } from '@/src/store/likeStore';
+import { useEffect, useState } from 'react';
 import { Card, Separator, Text, XStack, YStack } from 'tamagui';
 
 interface BasicInfoSectionProps {
   brand: string;
   score: number | null;
   countNum: number;
+  catfoodId: number;
 }
 
-interface InfoRowProps {
+interface StatItemProps {
+  icon: any;
+  iconColor: string;
   label: string;
   value: string;
-  isLast?: boolean;
+  backgroundColor: string;
 }
 
-function InfoRow({ label, value, isLast = false }: InfoRowProps) {
+function StatItem({ icon, iconColor, label, value, backgroundColor }: StatItemProps) {
   return (
-    <>
-      <XStack paddingVertical="$2" justifyContent="space-between" alignItems="center">
-        <Text fontSize="$3" color="$gray11" width={100}>
-          {label}
-        </Text>
-        <Text fontSize="$3" fontWeight="500" color="$color" flex={1}>
-          {value}
-        </Text>
-      </XStack>
-      {!isLast && <Separator />}
-    </>
+    <YStack
+      flex={1}
+      padding="$3"
+      backgroundColor={backgroundColor}
+      borderRadius="$4"
+      alignItems="center"
+      gap="$2"
+      borderWidth={1}
+      borderColor="$borderColor"
+    >
+      <IconSymbol name={icon} size={24} color={iconColor} />
+      <Text fontSize="$2" color="$gray10" textAlign="center">
+        {label}
+      </Text>
+      <Text fontSize="$6" fontWeight="bold" color="$color">
+        {value}
+      </Text>
+    </YStack>
   );
 }
 
-export function BasicInfoSection({ brand, score, countNum }: BasicInfoSectionProps) {
+export function BasicInfoSection({ brand, score, countNum, catfoodId }: BasicInfoSectionProps) {
+  const getLikeCount = useLikeStore((state) => state.getLikeCount);
+  const [likeCount, setLikeCount] = useState(0);
+
+  useEffect(() => {
+    const fetchLikeCount = async () => {
+      try {
+        const count = await getLikeCount(catfoodId);
+        setLikeCount(count);
+      } catch (error) {
+        console.error('获取点赞数失败:', error);
+      }
+    };
+    fetchLikeCount();
+  }, [catfoodId, getLikeCount]);
+
   return (
     <Card
       elevate
@@ -36,15 +64,65 @@ export function BasicInfoSection({ brand, score, countNum }: BasicInfoSectionPro
       marginHorizontal="$4"
       marginBottom="$3"
       backgroundColor="$background"
-      borderRadius="$4"
+      borderRadius="$5"
     >
-      <YStack space="$2">
-        <Text fontSize="$6" fontWeight="600" marginBottom="$2" color="$color">
-          基本信息
-        </Text>
-        <InfoRow label="品牌：" value={brand || '暂无'} />
-        <InfoRow label="评分：" value={score ? `${score}分` : '暂无'} />
-        <InfoRow label="评分人数：" value={`${countNum || 0}人`} isLast />
+      <YStack gap="$3">
+        {/* 标题 */}
+        <XStack alignItems="center" gap="$2" marginBottom="$2">
+          <IconSymbol name="info.circle.fill" size={20} color="$blue10" />
+          <Text fontSize="$6" fontWeight="bold" color="$color">
+            基本信息
+          </Text>
+        </XStack>
+
+        {/* 品牌信息 */}
+        <XStack
+          padding="$3"
+          backgroundColor="$gray2"
+          borderRadius="$3"
+          alignItems="center"
+          gap="$2"
+        >
+          <IconSymbol name="building.2.fill" size={18} color="$gray11" />
+          <Text fontSize="$3" color="$gray11">
+            品牌：
+          </Text>
+          <Text fontSize="$4" fontWeight="600" color="$color">
+            {brand || '未知品牌'}
+          </Text>
+        </XStack>
+
+        <Separator />
+
+        {/* 统计信息卡片 */}
+        <XStack gap="$3">
+          {/* 评分 */}
+          <StatItem
+            icon="star.fill"
+            iconColor="$yellow9"
+            label="评分"
+            value={score ? score.toFixed(1) : '0.0'}
+            backgroundColor="$yellow2"
+          />
+
+          {/* 评价人数 */}
+          <StatItem
+            icon="person.2.fill"
+            iconColor="$blue9"
+            label="评价人数"
+            value={`${countNum || 0}`}
+            backgroundColor="$blue2"
+          />
+
+          {/* 点赞数 */}
+          <StatItem
+            icon="heart.fill"
+            iconColor="$red9"
+            label="点赞数"
+            value={`${likeCount}`}
+            backgroundColor="$red2"
+          />
+        </XStack>
       </YStack>
     </Card>
   );

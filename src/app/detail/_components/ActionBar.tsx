@@ -5,6 +5,7 @@
 
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useCollectStore } from '@/src/store/collectStore';
+import { useLikeStore } from '@/src/store/likeStore';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,12 +14,6 @@ import { Button, Separator, Text, XStack, YStack } from 'tamagui';
 interface ActionBarProps {
   /** 猫粮 ID */
   catfoodId: number;
-  /** 当前点赞状态（预留） */
-  isLiked?: boolean;
-  /** 点赞数量（预留） */
-  likeCount?: number;
-  /** 点赞回调（预留） */
-  onLike?: () => void;
 }
 
 /**
@@ -26,13 +21,13 @@ interface ActionBarProps {
  *
  * 特性：
  * - 收藏功能（已接入后端）
- * - 点赞功能（预留接口）
+ * - 点赞功能（已接入后端）
  * - 固定在底部
  * - 动画效果
  * - 状态管理
  * - 错误处理
  */
-export function ActionBar({ catfoodId, isLiked = false, likeCount = 0, onLike }: ActionBarProps) {
+export function ActionBar({ catfoodId }: ActionBarProps) {
   const insets = useSafeAreaInsets();
 
   // 收藏状态管理
@@ -41,9 +36,12 @@ export function ActionBar({ catfoodId, isLiked = false, likeCount = 0, onLike }:
   const [localFavorited, setLocalFavorited] = useState(isFavorited);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
 
-  // 点赞状态管理（预留）
+  // 点赞状态管理
+  const toggleLike = useLikeStore((state) => state.toggleLike);
+  const isLiked = useLikeStore((state) => state.isLiked(catfoodId));
+  const getLikeCount = useLikeStore((state) => state.getLikeCount);
   const [localLiked, setLocalLiked] = useState(isLiked);
-  const [localLikeCount, setLocalLikeCount] = useState(likeCount);
+  const [localLikeCount, setLocalLikeCount] = useState(0);
   const [likeLoading, setLikeLoading] = useState(false);
 
   // 动画值
@@ -54,6 +52,24 @@ export function ActionBar({ catfoodId, isLiked = false, likeCount = 0, onLike }:
   useEffect(() => {
     setLocalFavorited(isFavorited);
   }, [isFavorited]);
+
+  // 同步点赞状态
+  useEffect(() => {
+    setLocalLiked(isLiked);
+  }, [isLiked]);
+
+  // 初始化点赞数量
+  useEffect(() => {
+    const fetchLikeCount = async () => {
+      try {
+        const count = await getLikeCount(catfoodId);
+        setLocalLikeCount(count);
+      } catch (error) {
+        console.error('获取点赞数量失败:', error);
+      }
+    };
+    fetchLikeCount();
+  }, [catfoodId, getLikeCount]);
 
   // 收藏动画
   const animateFavorite = useCallback(() => {
@@ -122,29 +138,43 @@ export function ActionBar({ catfoodId, isLiked = false, likeCount = 0, onLike }:
     }
   }, [catfoodId, localFavorited, favoriteLoading, toggleFavorite, animateFavorite]);
 
-  // 处理点赞（预留）
-  const handleLike = useCallback(() => {
+  // 处理点赞
+  const handleLike = useCallback(async () => {
     if (likeLoading) return;
 
-    // 乐观更新
-    const newLikedState = !localLiked;
-    setLocalLiked(newLikedState);
-    setLocalLikeCount((prev) => (newLikedState ? prev + 1 : prev - 1));
-    animateLike();
+    try {
+      setLikeLoading(true);
 
-    // TODO: 调用点赞 API
-    if (onLike) {
-      onLike();
-    } else {
-      // 暂未实现后端接口的提示
-      setTimeout(() => {
-        Alert.alert('提示', '点赞功能即将上线');
-        // 回滚状态
-        setLocalLiked(!newLikedState);
-        setLocalLikeCount((prev) => (newLikedState ? prev - 1 : prev + 1));
-      }, 300);
+      // 乐观更新
+      const newLikedState = !localLiked;
+      setLocalLiked(newLikedState);
+      setLocalLikeCount((prev) => (newLikedState ? prev + 1 : prev - 1));
+      animateLike();
+
+      // 调用 API
+      const result = await toggleLike(catfoodId);
+
+      // 同步实际状态
+      if (result.isLiked !== newLikedState) {
+        setLocalLiked(result.isLiked);
+      }
+      setLocalLikeCount(result.likeCount);
+
+      // 成功提示
+      const message = result.isLiked ? '点赞成功' : '已取消点赞';
+      Alert.alert('提示', message);
+    } catch (error) {
+      console.error('点赞操作失败:', error);
+
+      // 回滚状态
+      setLocalLiked(!localLiked);
+      setLocalLikeCount((prev) => (localLiked ? prev + 1 : prev - 1));
+
+      Alert.alert('操作失败', '点赞操作失败，请稍后重试');
+    } finally {
+      setLikeLoading(false);
     }
-  }, [localLiked, likeLoading, onLike, animateLike]);
+  }, [catfoodId, localLiked, likeLoading, toggleLike, animateLike]);
 
   return (
     <>

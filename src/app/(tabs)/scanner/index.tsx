@@ -17,11 +17,12 @@ import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Card, ScrollView, Spinner, Text, YStack } from 'tamagui';
+import { Button, Card, Text, YStack } from 'tamagui';
 import { AiReportDetail } from './_components/AiReport';
 import { CameraPermission } from './_components/CameraPermission';
 import { CatFoodSearchModal } from './_components/CatFoodSearchModal';
 import { ExpoCameraView } from './_components/ExpoCameraView'; // 3. 导入 ExpoCameraView
+import { OcrResultView } from './_components/OcrResultView';
 import { PhotoPreview } from './_components/PhotoPreview';
 import { ScanModeModal, type ScanMode } from './_components/ScanModeModal';
 
@@ -50,7 +51,7 @@ export default function ScannerScreen() {
     setScanType,
     requestPermission,
     onCameraReady,
-    resetBarcodeScan
+    resetBarcodeScan,
   } = useCamera(ScanType.BARCODE);
 
   const fetchCatFoodById = useCatFoodStore((state) => state.fetchCatFoodById);
@@ -70,23 +71,29 @@ export default function ScannerScreen() {
     setFlowState('selecting-mode');
   }, []);
 
-  const handleSelectMode = useCallback((mode: ScanMode) => {
-    setScanMode(mode);
-    if (mode === 'known-brand') {
-      setFlowState('searching-catfood');
-    } else if (mode === 'direct-additive') {
-      setScanType(ScanType.OCR);
-      setFlowState('taking-photo');
-    }
-  }, [setScanType]);
+  const handleSelectMode = useCallback(
+    (mode: ScanMode) => {
+      setScanMode(mode);
+      if (mode === 'known-brand') {
+        setFlowState('searching-catfood');
+      } else if (mode === 'direct-additive') {
+        setScanType(ScanType.OCR);
+        setFlowState('taking-photo');
+      }
+    },
+    [setScanType]
+  );
 
-  const handleBarCodeScannedCallback = useCallback((result: ExpoBarcodeResult) => {
-    if (flowState !== 'taking-photo') return;
+  const handleBarCodeScannedCallback = useCallback(
+    (result: ExpoBarcodeResult) => {
+      if (flowState !== 'taking-photo') return;
 
-    console.log("ScannerScreen: Scanned", result.data);
-    setScannedCode(result.data);
-    setFlowState('barcode-result');
-  }, [flowState]);
+      console.log('ScannerScreen: Scanned', result.data);
+      setScannedCode(result.data);
+      setFlowState('barcode-result');
+    },
+    [flowState]
+  );
 
   const handleSelectCatFood = useCallback(
     async (catFood: CatFood) => {
@@ -134,11 +141,11 @@ export default function ScannerScreen() {
     } else if (flowState === 'searching-catfood') {
       setFlowState('selecting-mode');
     } else if (flowState === 'taking-photo') {
-        if (scanMode === 'direct-additive') {
-            setFlowState('selecting-mode');
-        } else {
-            setFlowState('selecting-mode');
-        }
+      if (scanMode === 'direct-additive') {
+        setFlowState('selecting-mode');
+      } else {
+        setFlowState('selecting-mode');
+      }
     } else if (flowState === 'photo-preview') {
       setFlowState('taking-photo');
     } else if (flowState === 'ocr-result') {
@@ -152,7 +159,8 @@ export default function ScannerScreen() {
   // ... performOCR, handleTakePhoto, handleConfirmPhoto, handleRetakePhoto, handleCancelPreview, handleGenerateReport 保持不变 ...
   // 为了节省篇幅，这里省略中间未修改的函数，请保持原样
 
-  const performOCR = useCallback(async (imageUri: string) => {
+  const performOCR = useCallback(
+    async (imageUri: string) => {
       // ... 原有代码 ...
       try {
         setIsProcessing(true);
@@ -160,13 +168,15 @@ export default function ScannerScreen() {
         setOcrResult(result);
         setFlowState('ocr-result');
       } catch (error) {
-         // ... 错误处理 ...
-         Alert.alert('识别失败', '请重试');
-         setFlowState('photo-preview');
+        // ... 错误处理 ...
+        Alert.alert('识别失败', '请重试');
+        setFlowState('photo-preview');
       } finally {
         setIsProcessing(false);
       }
-  }, [resetFlow]);
+    },
+    [resetFlow]
+  );
 
   const handleTakePhoto = useCallback(async () => {
     try {
@@ -200,21 +210,21 @@ export default function ScannerScreen() {
   }, [handleGoBack]);
 
   const handleGenerateReport = useCallback(async () => {
-      // ... 原有代码 ...
-      if (!ocrResult) return;
-      try {
-          setIsGeneratingReport(true);
-          const report = await aiReportService.generateReport({
-            ingredients: ocrResult.text,
-            max_tokens: 2048,
-          });
-          setAiReport(report);
-          setFlowState('ai-report-detail');
-      } catch(e) {
-          Alert.alert('错误', '生成报告失败');
-      } finally {
-          setIsGeneratingReport(false);
-      }
+    // ... 原有代码 ...
+    if (!ocrResult) return;
+    try {
+      setIsGeneratingReport(true);
+      const report = await aiReportService.generateReport({
+        ingredients: ocrResult.text,
+        max_tokens: 2048,
+      });
+      setAiReport(report);
+      setFlowState('ai-report-detail');
+    } catch (e) {
+      Alert.alert('错误', '生成报告失败');
+    } finally {
+      setIsGeneratingReport(false);
+    }
   }, [ocrResult]);
 
   const handleSaveReport = useCallback(async () => {
@@ -281,46 +291,59 @@ export default function ScannerScreen() {
 
   if (flowState === 'barcode-result' && scannedCode) {
     return (
-      <YStack flex={1} backgroundColor="$background" padding="$6" justifyContent="center" alignItems="center" gap="$5">
+      <YStack
+        flex={1}
+        backgroundColor="$background"
+        padding="$6"
+        justifyContent="center"
+        alignItems="center"
+        gap="$5"
+      >
         <IconSymbol name="barcode.viewfinder" size={64} color="$blue10" />
 
-        <Text fontSize="$8" fontWeight="bold">扫描成功</Text>
+        <Text fontSize="$8" fontWeight="bold">
+          扫描成功
+        </Text>
 
         <Card bordered elevate padding="$4" width="100%">
-            <YStack gap="$2" alignItems="center">
-                <Text fontSize="$3" color="$gray10">条形码内容</Text>
-                <Text fontSize="$7" fontFamily="monospace" fontWeight="600">{scannedCode}</Text>
-            </YStack>
+          <YStack gap="$2" alignItems="center">
+            <Text fontSize="$3" color="$gray10">
+              条形码内容
+            </Text>
+            <Text fontSize="$7" fontFamily="monospace" fontWeight="600">
+              {scannedCode}
+            </Text>
+          </YStack>
         </Card>
 
         <YStack width="100%" gap="$3">
-            <Button
-                size="$5"
-                themeInverse
-                icon={<IconSymbol name="magnifyingglass" size={20} color="white"/>}
-                onPress={() => {
-                    Alert.alert("功能开发中", `正在搜索条码: ${scannedCode}`);
-                }}
-            >
-                搜索此商品
-            </Button>
+          <Button
+            size="$5"
+            themeInverse
+            icon={<IconSymbol name="magnifyingglass" size={20} color="white" />}
+            onPress={() => {
+              Alert.alert('功能开发中', `正在搜索条码: ${scannedCode}`);
+            }}
+          >
+            搜索此商品
+          </Button>
 
-            <Button
-                size="$5"
-                // 5. 修复 IconSymbol 缺少 color 属性
-                icon={<IconSymbol name="doc.on.doc" size={20} color="black" />}
-                onPress={async () => {
-                    // 6. 修复 Clipboard.setString 报错
-                    await Clipboard.setStringAsync(scannedCode);
-                    Alert.alert("已复制", "条码已复制到剪贴板");
-                }}
-            >
-                复制条码
-            </Button>
+          <Button
+            size="$5"
+            // 5. 修复 IconSymbol 缺少 color 属性
+            icon={<IconSymbol name="doc.on.doc" size={20} color="black" />}
+            onPress={async () => {
+              // 6. 修复 Clipboard.setString 报错
+              await Clipboard.setStringAsync(scannedCode);
+              Alert.alert('已复制', '条码已复制到剪贴板');
+            }}
+          >
+            复制条码
+          </Button>
 
-            <Button size="$5" chromeless onPress={handleGoBack}>
-                重新扫描
-            </Button>
+          <Button size="$5" chromeless onPress={handleGoBack}>
+            重新扫描
+          </Button>
         </YStack>
       </YStack>
     );
@@ -339,26 +362,38 @@ export default function ScannerScreen() {
     );
   }
 
-  // 简化的渲染返回，确保其他状态正常工作
+  // 处理中状态
   if (flowState === 'processing-ocr') {
-      // ... 你的 Lottie 代码
-      return <YStack flex={1} justifyContent="center" alignItems="center"><Spinner size="large" /><Text>识别中...</Text></YStack>;
+    return (
+      <YStack
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+        backgroundColor="$background"
+        gap="$4"
+      >
+        <LottieAnimation
+          source={require('@/assets/animations/cat_loader.json')}
+          width={200}
+          height={200}
+          message="正在识别文字..."
+        />
+      </YStack>
+    );
   }
 
+  // OCR 结果展示
   if (flowState === 'ocr-result' && ocrResult) {
-      // ... 你的 OCR 结果页面代码
-      // 确保这里的 Button IconSymbol 也加上了 color
-      return (
-          <ScrollView backgroundColor="$background" paddingTop={insets.top}>
-             <YStack padding="$4" gap="$4">
-                <Text>识别结果</Text>
-                <Text>{ocrResult.text}</Text>
-                {!aiReport && <Button onPress={handleGenerateReport}>生成AI报告</Button>}
-                {aiReport && <Button onPress={handleSaveReport}>保存</Button>}
-                <Button onPress={resetFlow}>返回</Button>
-             </YStack>
-          </ScrollView>
-      )
+    return (
+      <OcrResultView
+        ocrResult={ocrResult}
+        photoUri={photoUri}
+        isGeneratingReport={isGeneratingReport}
+        onGenerateReport={handleGenerateReport}
+        onRetake={handleRetakePhoto}
+        onClose={resetFlow}
+      />
+    );
   }
 
   if (flowState === 'ai-report-detail' && aiReport) {

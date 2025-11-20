@@ -33,8 +33,11 @@ export const CommentList = memo(function CommentList({
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
 
+  // 防御性编程：确保 comments 是数组
+  const safeComments = Array.isArray(comments) ? comments : [];
+
   // 加载中状态
-  if (isLoading && comments.length === 0) {
+  if (isLoading && safeComments.length === 0) {
     return (
       <YStack alignItems="center" paddingVertical="$6">
         <ActivityIndicator size="large" color={colors.tint} />
@@ -46,7 +49,7 @@ export const CommentList = memo(function CommentList({
   }
 
   // 空状态
-  if (comments.length === 0) {
+  if (safeComments.length === 0) {
     return (
       <YStack alignItems="center" paddingVertical="$6" gap="$2">
         <IconSymbol name="bubble.left" size={48} color={colors.icon + '40'} />
@@ -63,7 +66,7 @@ export const CommentList = memo(function CommentList({
   // 评论列表
   return (
     <YStack>
-      {comments.map((comment) => (
+      {safeComments.map((comment) => (
         <CommentItem
           key={comment.id}
           comment={comment}

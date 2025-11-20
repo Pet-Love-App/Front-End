@@ -132,9 +132,7 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
         setLocalFavorited(isFavoritedResult);
       }
 
-      // 成功提示
-      const message = isFavoritedResult ? '已添加到收藏' : '已取消收藏';
-      Alert.alert('提示', message);
+      // 静默更新，不弹窗提示
     } catch (error) {
       console.error('收藏操作失败:', error);
 
@@ -169,9 +167,7 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
       }
       setLocalLikeCount(result.likeCount);
 
-      // 成功提示
-      const message = result.isLiked ? '点赞成功' : '已取消点赞';
-      Alert.alert('提示', message);
+      // 静默更新，不弹窗提示
     } catch (error) {
       console.error('点赞操作失败:', error);
 

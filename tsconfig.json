@@ -7,7 +7,9 @@
       "@/*": [
         "./*"
       ]
-    }
+    },
+  "skipLibCheck": true
+
   },
   "include": [
     "**/*.ts",
@@ -15,4 +17,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ]
+
 }

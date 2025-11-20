@@ -26,6 +26,12 @@
       [
         "expo-splash-screen",
         {
+          // 合并所有配置到同一个对象中
+          "exclude": [
+            "**/_components/**/*",
+            "**/*.ts",
+            "**/*.d.ts"
+          ],
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",

@@ -78,7 +78,7 @@ export function PhotoPreview({
 
         {/* 照片预览区域 */}
         <YStack flex={1} justifyContent="center" alignItems="center" padding="$4">
-          <Image source={{ uri: photoUri }} width="100%" height="100%" resizeMode="contain" />
+          <Image source={{ uri: photoUri }} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
         </YStack>
 
         {/* 底部操作按钮 */}

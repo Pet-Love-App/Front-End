@@ -1,9 +1,10 @@
 import { CatFoodCard } from '@/src/components/CatFoodCard';
+import SearchBox from '@/src/components/searchBox';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useAllCatFoods, useCatFoodStore } from '@/src/store/catFoodStore';
 import type { CatFood } from '@/src/types/catFood';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Modal, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Separator, Tabs, Text, XStack, YStack } from 'tamagui';
@@ -20,9 +21,46 @@ export default function RankingScreen() {
   const isLoadingMore = useCatFoodStore((state) => state.isLoadingMore);
   const pagination = useCatFoodStore((state) => state.pagination);
 
+  // 搜索相关状态
+  const [searchQuery, setSearchQuery] = useState('');
+
   // 图片预览相关状态
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
+
+  // 搜索过滤逻辑 - 使用 useMemo 优化性能
+  const filteredCatFoods = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return catfoods;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return catfoods.filter((catfood) => {
+      // 搜索猫粮名称
+      if (catfood.name.toLowerCase().includes(query)) {
+        return true;
+      }
+      // 搜索品牌
+      if (catfood.brand.toLowerCase().includes(query)) {
+        return true;
+      }
+      // 搜索标签
+      if (catfood.tags && catfood.tags.some((tag) => tag.toLowerCase().includes(query))) {
+        return true;
+      }
+      return false;
+    });
+  }, [catfoods, searchQuery]);
+
+  // 处理搜索输入
+  const handleSearchChange = useCallback((text: string) => {
+    setSearchQuery(text);
+  }, []);
+
+  // 清除搜索
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('');
+  }, []);
 
   // 初始加载
   useEffect(() => {
@@ -91,9 +129,26 @@ export default function RankingScreen() {
   // 渲染空状态
   const renderEmpty = () => {
     if (isLoading) return null;
+
+    // 如果是搜索结果为空
+    if (searchQuery.trim()) {
+      return (
+        <YStack flex={1} alignItems="center" justifyContent="center" padding="$6">
+          <IconSymbol name="magnifyingglass" size={64} color="$gray9" />
+          <Text fontSize="$6" fontWeight="600" marginTop="$4" color="$gray11">
+            未找到相关结果
+          </Text>
+          <Text fontSize="$3" color="$gray10" marginTop="$2" textAlign="center">
+            试试其他关键词吧
+          </Text>
+        </YStack>
+      );
+    }
+
+    // 原始空状态
     return (
       <YStack flex={1} alignItems="center" justifyContent="center" padding="$6">
-        <IconSymbol name="magnifyingglass" size={64} color="$gray9" />
+        <IconSymbol name="tray.fill" size={64} color="$gray9" />
         <Text fontSize="$6" fontWeight="600" marginTop="$4" color="$gray11">
           暂无数据
         </Text>
@@ -106,6 +161,35 @@ export default function RankingScreen() {
 
   return (
     <YStack flex={1} backgroundColor="$background">
+      {/* 搜索框 */}
+      <YStack
+        paddingHorizontal="$4"
+        paddingTop="$3"
+        paddingBottom="$2"
+        backgroundColor="$background"
+      >
+        <SearchBox
+          value={searchQuery}
+          onChangeText={handleSearchChange}
+          onClear={handleClearSearch}
+          placeholder="搜索猫粮名称、品牌或标签..."
+          size="$4"
+        />
+        {/* 搜索结果统计 */}
+        {searchQuery.trim() && (
+          <XStack marginTop="$2" alignItems="center" gap="$2">
+            <Text fontSize="$2" color="$gray10">
+              找到 {filteredCatFoods.length} 个结果
+            </Text>
+            {filteredCatFoods.length > 0 && catfoods.length > 0 && (
+              <Text fontSize="$2" color="$gray9">
+                / 共 {catfoods.length} 个
+              </Text>
+            )}
+          </XStack>
+        )}
+      </YStack>
+
       {/* 图片预览 Modal */}
       <Modal
         visible={previewVisible}
@@ -176,14 +260,14 @@ export default function RankingScreen() {
         {/* 全部猫粮 Tab */}
         <Tabs.Content value="all" flex={1}>
           <FlatList
-            data={catfoods}
+            data={filteredCatFoods}
             renderItem={renderCatFoodCard}
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={{ paddingTop: 10, paddingBottom: Math.max(10, insets.bottom) }}
             refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
-            onEndReached={handleLoadMore}
+            onEndReached={searchQuery.trim() ? undefined : handleLoadMore}
             onEndReachedThreshold={0.5}
-            ListFooterComponent={renderFooter}
+            ListFooterComponent={searchQuery.trim() ? null : renderFooter}
             ListEmptyComponent={renderEmpty}
           />
         </Tabs.Content>

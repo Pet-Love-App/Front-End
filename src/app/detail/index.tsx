@@ -6,6 +6,7 @@ import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, YStack } from 'tamagui';
 import {
+  ActionBar,
   AdditiveDetailModal,
   AdditiveSection,
   BasicInfoSection,
@@ -140,6 +141,9 @@ export default function ReportScreen() {
           additive={selectedAdditive}
           onClose={handleCloseModal}
         />
+
+        {/* 底部操作栏：收藏和点赞 */}
+        {catfoodId && <ActionBar catfoodId={catfoodId} />}
       </YStack>
     </>
   );

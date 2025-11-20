@@ -55,17 +55,22 @@ export function useComments({
 
         const response = await commentService.getComments(targetType, targetId, pageNum, pageSize);
 
+        // 防御性编程：确保 results 是数组
+        const results = Array.isArray(response?.results) ? response.results : [];
+
         if (refresh || pageNum === 1) {
-          setComments(response.results);
+          setComments(results);
         } else {
-          setComments((prev) => [...prev, ...response.results]);
+          setComments((prev) => [...prev, ...results]);
         }
 
-        setHasMore(!!response.next);
+        setHasMore(!!response?.next);
         setPage(pageNum);
-        setTotalCount(response.count);
+        setTotalCount(response?.count || 0);
       } catch (error) {
         console.error('加载评论失败:', error);
+        // 出错时设置为空数组，避免 undefined
+        setComments([]);
         Alert.alert('加载失败', '无法加载评论列表');
       } finally {
         setIsLoading(false);
@@ -87,8 +92,7 @@ export function useComments({
           targetType,
         });
 
-        Alert.alert('✅ 成功', '评论已发表');
-        // 刷新评论列表
+        // 静默刷新评论列表，不弹窗提示
         await loadComments(1, true);
       } catch (error: any) {
         console.error('发表评论失败:', error);
@@ -106,7 +110,7 @@ export function useComments({
       await commentService.deleteComment(commentId);
       setComments((prev) => prev.filter((c) => c.id !== commentId));
       setTotalCount((prev) => Math.max(0, prev - 1));
-      Alert.alert('✅ 成功', '评论已删除');
+      // 静默删除，不弹窗提示
     } catch (error) {
       console.error('删除评论失败:', error);
       throw new Error('删除失败');

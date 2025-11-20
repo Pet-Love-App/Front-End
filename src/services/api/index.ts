@@ -28,6 +28,10 @@ export type {
   ToggleFavoriteResponse,
 } from './collect';
 
+// 点赞服务
+export { likeApi } from './like';
+export type { CheckLikeResponse, GetLikeCountResponse, Like, ToggleLikeResponse } from './like';
+
 // 评论服务
 export { commentService } from './comment';
 export type {
@@ -55,3 +59,7 @@ export type {
   IngredientInfoRequest,
   IngredientInfoResponse,
 } from './ai_report';
+
+// 评分服务
+export { ratingApi } from './rating';
+export type { CreateRatingRequest, Rating, RatingResponse } from './rating';

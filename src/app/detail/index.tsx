@@ -6,6 +6,7 @@ import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, YStack } from 'tamagui';
 import {
+  ActionBar,
   AdditiveDetailModal,
   AdditiveSection,
   BasicInfoSection,
@@ -14,6 +15,7 @@ import {
   NutrientAnalysisSection,
   NutritionChartSection,
   NutritionListSection,
+  RatingSection,
   ReportHeader,
   SafetyAnalysisSection,
 } from './_components';
@@ -89,7 +91,12 @@ export default function ReportScreen() {
         <ReportHeader name={catFood.name} tags={catFood.tags || []} imageUrl={catFood.imageUrl} />
 
         {/* 基本信息 */}
-        <BasicInfoSection brand={catFood.brand} score={catFood.score} countNum={catFood.countNum} />
+        <BasicInfoSection
+          brand={catFood.brand}
+          score={catFood.score}
+          countNum={catFood.countNum}
+          catfoodId={catFood.id}
+        />
 
         {/* 安全性分析 */}
         {catFood.safety && <SafetyAnalysisSection safety={catFood.safety} />}
@@ -111,6 +118,9 @@ export default function ReportScreen() {
         {catFood.ingredient && catFood.ingredient.length > 0 && (
           <NutritionListSection ingredients={catFood.ingredient} />
         )}
+
+        {/* 评分区 */}
+        {catFood && <RatingSection catfoodId={catFood.id} />}
 
         {/* 评论区 */}
         {catFood && <CommentSection targetType="catfood" targetId={catFood.id} />}
@@ -140,6 +150,9 @@ export default function ReportScreen() {
           additive={selectedAdditive}
           onClose={handleCloseModal}
         />
+
+        {/* 底部操作栏：收藏和点赞 */}
+        {catfoodId && <ActionBar catfoodId={catfoodId} />}
       </YStack>
     </>
   );

@@ -1,3 +1,4 @@
+export { ActionBar } from './ActionBar';
 export { AdditiveBubble } from './AdditiveBubble';
 export { AdditiveDetailModal } from './AdditiveDetailModal';
 export { AdditiveSection } from './AdditiveSection';
@@ -7,5 +8,6 @@ export { LoadingState } from './LoadingState';
 export { NutrientAnalysisSection } from './NutrientAnalysisSection';
 export { NutritionChartSection } from './NutritionChartSection';
 export { NutritionListSection } from './NutritionListSection';
+export { RatingSection } from './RatingSection';
 export { ReportHeader } from './ReportHeader';
 export { SafetyAnalysisSection } from './SafetyAnalysisSection';

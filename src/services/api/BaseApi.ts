@@ -102,15 +102,30 @@ class BaseApi {
           errorMessage = errorData.error;
         }
 
-        console.error('API 错误详情:', JSON.stringify(errorData, null, 2));
-        throw new Error(errorMessage);
+        // 只在非预期的错误时打印详细日志
+        // 404 可能是正常的业务逻辑（如"尚未评分"），由调用者决定是否记录
+        if (response.status !== 404) {
+          console.error('API 错误详情:', JSON.stringify(errorData, null, 2));
+        }
+
+        // 创建一个包含状态码的错误对象
+        const error: any = new Error(errorMessage);
+        error.response = {
+          status: response.status,
+          data: errorData,
+        };
+        throw error;
       }
 
       // 成功响应
       const data = await response.json();
       return data;
-    } catch (error) {
-      console.error('API 请求错误:', error);
+    } catch (error: any) {
+      // 只在非预期的错误时打印日志
+      // 404 等业务逻辑错误由调用者决定是否记录
+      if (!error.response || error.response.status !== 404) {
+        console.error('API 请求错误:', error);
+      }
       throw error;
     }
   }

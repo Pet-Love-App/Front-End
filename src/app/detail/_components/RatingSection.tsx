@@ -12,6 +12,7 @@ interface RatingSectionProps {
 export function RatingSection({ catfoodId }: RatingSectionProps) {
   const [myRating, setMyRating] = useState<number>(0);
   const [myComment, setMyComment] = useState<string>('');
+  const [myRatingId, setMyRatingId] = useState<number | null>(null);
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [loading, setLoading] = useState(false);
   const [hasRated, setHasRated] = useState(false);
@@ -28,6 +29,7 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
           console.log('✅ 加载到已有评分:', rating);
           setMyRating(rating.score);
           setMyComment(rating.comment);
+          setMyRatingId(rating.id);
           setHasRated(true);
         } else {
           console.log('ℹ️ 用户尚未评分');
@@ -145,6 +147,48 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
       setLoading(false);
     }
   }, [catfoodId, myRating, myComment, loading, hasRated, fetchCatFoodById]);
+
+  // 处理删除评分
+  const handleDelete = useCallback(async () => {
+    if (!myRatingId) {
+      Alert.alert('提示', '没有可删除的评分');
+      return;
+    }
+
+    Alert.alert('确认删除', '确定要删除您的评分吗？删除后猫粮的平均分会重新计算。', [
+      { text: '取消', style: 'cancel' },
+      {
+        text: '删除',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            setLoading(true);
+            console.log('🗑️ 开始删除评分，ID:', myRatingId);
+
+            await ratingApi.deleteRating(myRatingId);
+            console.log('✅ 评分删除成功');
+
+            // 重置状态
+            setMyRating(0);
+            setMyComment('');
+            setMyRatingId(null);
+            setHasRated(false);
+
+            // 刷新猫粮数据以更新平均分
+            await fetchCatFoodById(catfoodId);
+            console.log('✅ 数据刷新完成');
+
+            // 静默删除，不弹窗提示
+          } catch (error: any) {
+            console.error('❌ 删除评分失败:', error);
+            Alert.alert('删除失败', error.message || '删除评分失败，请稍后重试');
+          } finally {
+            setLoading(false);
+          }
+        },
+      },
+    ]);
+  }, [myRatingId, catfoodId, fetchCatFoodById]);
 
   return (
     <Card
@@ -295,19 +339,40 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
 
         {/* 提示信息 */}
         {hasRated && (
-          <YStack
-            padding="$2"
-            backgroundColor="$green2"
-            borderRadius="$3"
-            borderWidth={1}
-            borderColor="$green5"
-          >
-            <XStack alignItems="center" gap="$2">
-              <IconSymbol name="checkmark.circle.fill" size={16} color="$green10" />
-              <Text fontSize="$2" color="$green11">
-                您已评分，可以随时修改
+          <YStack gap="$2">
+            <YStack
+              padding="$2"
+              backgroundColor="$green2"
+              borderRadius="$3"
+              borderWidth={1}
+              borderColor="$green5"
+            >
+              <XStack alignItems="center" gap="$2">
+                <IconSymbol name="checkmark.circle.fill" size={16} color="$green10" />
+                <Text fontSize="$2" color="$green11">
+                  您已评分，可以随时修改或删除
+                </Text>
+              </XStack>
+            </YStack>
+
+            {/* 删除评分按钮 */}
+            <Button
+              size="$3"
+              backgroundColor="transparent"
+              borderWidth={1}
+              borderColor="$red7"
+              onPress={handleDelete}
+              disabled={loading}
+              pressStyle={{
+                scale: 0.98,
+                backgroundColor: '$red2',
+              }}
+              icon={<IconSymbol name="trash" size={16} color="$red10" />}
+            >
+              <Text color="$red10" fontSize="$3" fontWeight="600">
+                删除我的评分
               </Text>
-            </XStack>
+            </Button>
           </YStack>
         )}
       </YStack>

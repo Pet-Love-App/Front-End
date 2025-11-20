@@ -15,6 +15,7 @@ import {
   NutrientAnalysisSection,
   NutritionChartSection,
   NutritionListSection,
+  RatingSection,
   ReportHeader,
   SafetyAnalysisSection,
 } from './_components';
@@ -117,6 +118,9 @@ export default function ReportScreen() {
         {catFood.ingredient && catFood.ingredient.length > 0 && (
           <NutritionListSection ingredients={catFood.ingredient} />
         )}
+
+        {/* 评分区 */}
+        {catFood && <RatingSection catfoodId={catFood.id} />}
 
         {/* 评论区 */}
         {catFood && <CommentSection targetType="catfood" targetId={catFood.id} />}

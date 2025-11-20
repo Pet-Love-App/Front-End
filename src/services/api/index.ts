@@ -59,3 +59,7 @@ export type {
   IngredientInfoRequest,
   IngredientInfoResponse,
 } from './ai_report';
+
+// 评分服务
+export { ratingApi } from './rating';
+export type { CreateRatingRequest, Rating, RatingResponse } from './rating';

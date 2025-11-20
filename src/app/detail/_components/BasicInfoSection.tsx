@@ -43,8 +43,11 @@ function StatItem({ icon, iconColor, label, value, backgroundColor }: StatItemPr
 
 export function BasicInfoSection({ brand, score, countNum, catfoodId }: BasicInfoSectionProps) {
   const getLikeCount = useLikeStore((state) => state.getLikeCount);
-  const [likeCount, setLikeCount] = useState(0);
+  // 直接从 store 中读取缓存的点赞数（会自动响应变化）
+  const cachedLikeCount = useLikeStore((state) => state.likeCounts[catfoodId]);
+  const [likeCount, setLikeCount] = useState(cachedLikeCount || 0);
 
+  // 初始加载时获取点赞数
   useEffect(() => {
     const fetchLikeCount = async () => {
       try {
@@ -56,6 +59,13 @@ export function BasicInfoSection({ brand, score, countNum, catfoodId }: BasicInf
     };
     fetchLikeCount();
   }, [catfoodId, getLikeCount]);
+
+  // 监听 store 中的点赞数变化，自动更新
+  useEffect(() => {
+    if (cachedLikeCount !== undefined) {
+      setLikeCount(cachedLikeCount);
+    }
+  }, [cachedLikeCount]);
 
   return (
     <Card

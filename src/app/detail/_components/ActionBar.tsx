@@ -40,8 +40,10 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
   const toggleLike = useLikeStore((state) => state.toggleLike);
   const isLiked = useLikeStore((state) => state.isLiked(catfoodId));
   const getLikeCount = useLikeStore((state) => state.getLikeCount);
+  // 直接从 store 中读取缓存的点赞数（会自动响应变化）
+  const cachedLikeCount = useLikeStore((state) => state.likeCounts[catfoodId]);
   const [localLiked, setLocalLiked] = useState(isLiked);
-  const [localLikeCount, setLocalLikeCount] = useState(0);
+  const [localLikeCount, setLocalLikeCount] = useState(cachedLikeCount || 0);
   const [likeLoading, setLikeLoading] = useState(false);
 
   // 动画值
@@ -70,6 +72,13 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
     };
     fetchLikeCount();
   }, [catfoodId, getLikeCount]);
+
+  // 监听 store 中的点赞数变化，自动更新
+  useEffect(() => {
+    if (cachedLikeCount !== undefined) {
+      setLocalLikeCount(cachedLikeCount);
+    }
+  }, [cachedLikeCount]);
 
   // 收藏动画
   const animateFavorite = useCallback(() => {

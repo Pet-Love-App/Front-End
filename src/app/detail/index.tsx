@@ -1,3 +1,4 @@
+import { CommentSection } from '@/src/components/Comments';
 import { useCatFoodStore } from '@/src/store/catFoodStore';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -8,7 +9,6 @@ import {
   AdditiveDetailModal,
   AdditiveSection,
   BasicInfoSection,
-  CommentSection,
   EmptyState,
   LoadingState,
   NutrientAnalysisSection,
@@ -113,7 +113,7 @@ export default function ReportScreen() {
         )}
 
         {/* 评论区 */}
-        {catFood && <CommentSection catfoodId={catFood.id} />}
+        {catFood && <CommentSection targetType="catfood" targetId={catFood.id} />}
 
         {/* 底部安全区间距 */}
         <YStack height={Math.max(24, insets.bottom + 16)} />

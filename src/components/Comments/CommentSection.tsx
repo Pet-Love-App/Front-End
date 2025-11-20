@@ -15,15 +15,20 @@ import { CommentList } from './CommentList';
 import { useComments } from './useComments';
 
 interface CommentSectionProps {
-  /** 目标对象ID（猫粮ID） */
-  catfoodId: number;
+  /** 目标对象类型 */
+  targetType: 'catfood' | 'post' | 'report';
+  /** 目标对象ID */
+  targetId: number;
 }
 
 /**
  * 评论区组件
  * 展示评论列表、评论输入框，处理评论相关交互
  */
-export const CommentSection = memo(function CommentSection({ catfoodId }: CommentSectionProps) {
+export const CommentSection = memo(function CommentSection({
+  targetType,
+  targetId,
+}: CommentSectionProps) {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
   const router = useRouter();
@@ -41,8 +46,8 @@ export const CommentSection = memo(function CommentSection({ catfoodId }: Commen
     deleteComment,
     toggleLike,
   } = useComments({
-    targetType: 'catfood',
-    targetId: catfoodId,
+    targetType,
+    targetId,
   });
 
   /**

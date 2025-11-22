@@ -42,8 +42,8 @@ export default function CollectListItem({ favorite, onDelete }: CollectListItemP
     <Card
       size="$4"
       bordered
-      borderColor={colors.icon + '20'}
-      backgroundColor={colors.background}
+      borderColor="$gray4"
+      backgroundColor="white"
       pressStyle={{ scale: 0.98, opacity: 0.95 }}
       animation="quick"
     >

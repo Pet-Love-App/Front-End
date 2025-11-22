@@ -83,8 +83,9 @@ export default function ReportScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingLeft: Math.max(16, insets.left),
-          paddingRight: Math.max(16, insets.right),
+          paddingTop: 16,
+          paddingLeft: Math.max(12, insets.left),
+          paddingRight: Math.max(12, insets.right),
         }}
       >
         {/* 头部信息 */}
@@ -141,7 +142,7 @@ export default function ReportScreen() {
         }}
       />
 
-      <YStack flex={1} backgroundColor="$background">
+      <YStack flex={1} backgroundColor="$gray1">
         {renderContent()}
 
         {/* 添加剂详情弹窗 */}

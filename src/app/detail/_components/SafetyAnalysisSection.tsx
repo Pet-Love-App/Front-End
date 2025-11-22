@@ -11,9 +11,9 @@ export function SafetyAnalysisSection({ safety }: SafetyAnalysisSectionProps) {
   return (
     <Card
       padding="$4"
-      marginHorizontal="$4"
+      marginHorizontal="$3"
       marginBottom="$3"
-      backgroundColor="$background"
+      backgroundColor="white"
       borderRadius="$5"
       borderWidth={1}
       borderColor="$green5"

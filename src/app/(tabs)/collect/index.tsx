@@ -141,9 +141,14 @@ export default function CollectScreen() {
   };
 
   return (
-    <YStack flex={1} backgroundColor={colors.background}>
+    <YStack flex={1} backgroundColor="$gray1">
       {/* 整合的顶部区域 */}
-      <YStack paddingTop={insets.top} backgroundColor={colors.background}>
+      <YStack
+        paddingTop={insets.top}
+        backgroundColor="white"
+        borderBottomWidth={1}
+        borderBottomColor="$gray3"
+      >
         {/* 标题栏 */}
         <XStack
           alignItems="center"
@@ -248,7 +253,7 @@ export default function CollectScreen() {
       </YStack>
 
       {/* Tab 内容区域 */}
-      <YStack flex={1} backgroundColor={colors.background}>
+      <YStack flex={1} backgroundColor="$gray1">
         {currentTab === 'catfood' ? (
           <ScrollView
             flex={1}

@@ -212,13 +212,15 @@ export default function RankingScreen() {
   };
 
   return (
-    <YStack flex={1} backgroundColor="$background">
+    <YStack flex={1} backgroundColor="$gray1">
       {/* 搜索框和筛选 */}
       <YStack
         paddingHorizontal="$4"
         paddingTop="$3"
         paddingBottom="$2"
-        backgroundColor="$background"
+        backgroundColor="white"
+        borderBottomWidth={1}
+        borderBottomColor="$gray3"
       >
         <SearchBox
           value={searchQuery}
@@ -233,9 +235,9 @@ export default function RankingScreen() {
           {/* 品牌选择按钮 */}
           <Button
             size="$4"
-            backgroundColor="$background"
+            backgroundColor="white"
             borderWidth={1}
-            borderColor="$borderColor"
+            borderColor="$gray4"
             onPress={toggleBrandMenu}
             pressStyle={{ scale: 0.98, backgroundColor: '$gray2' }}
             icon={
@@ -276,9 +278,9 @@ export default function RankingScreen() {
           {/* 展开的品牌列表 */}
           {brandMenuExpanded && (
             <YStack
-              backgroundColor="$background"
+              backgroundColor="white"
               borderWidth={1}
-              borderColor="$borderColor"
+              borderColor="$gray4"
               borderRadius="$4"
               padding="$3"
               gap="$2"

@@ -60,12 +60,14 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
     <Card
       size="$3"
       bordered
+      borderColor="$gray4"
+      backgroundColor="white"
       animation="bouncy"
       scale={0.9}
       hoverStyle={{ scale: 0.925 }}
       pressStyle={{ scale: 0.875 }}
-      marginHorizontal="$1"
-      marginBottom="$0"
+      marginHorizontal="$2"
+      marginBottom="$3"
       onPress={handlePress}
     >
       <Card.Header padded>

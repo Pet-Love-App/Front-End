@@ -19,11 +19,13 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
   return (
     <Card
       padding="$0"
-      margin="$4"
-      backgroundColor="$background"
+      marginHorizontal="$3"
+      marginBottom="$3"
+      backgroundColor="white"
       borderRadius="$5"
       overflow="hidden"
       bordered
+      borderColor="$gray4"
     >
       {/* 渐变背景 */}
       <YStack position="absolute" width="100%" height="100%">

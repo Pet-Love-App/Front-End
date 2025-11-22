@@ -1,4 +1,5 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { useResponsiveLayout } from '@/src/hooks/useResponsiveLayout';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'react-native';
 import { Card, Text, XStack, YStack } from 'tamagui';
@@ -10,6 +11,11 @@ interface ReportHeaderProps {
 }
 
 export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
+  const { isExtraSmallScreen, isSmallScreen } = useResponsiveLayout();
+
+  // 响应式图片尺寸
+  const imageSize = isExtraSmallScreen ? 100 : isSmallScreen ? 110 : 130;
+
   return (
     <Card
       padding="$0"
@@ -32,12 +38,18 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
       <XStack padding="$5" gap="$4" alignItems="center">
         {/* 猫粮图片 */}
         {imageUrl ? (
-          <YStack borderRadius="$4" overflow="hidden" borderWidth={2} borderColor="$orange4">
+          <YStack
+            borderRadius="$4"
+            overflow="hidden"
+            borderWidth={2}
+            borderColor="$orange4"
+            flexShrink={0}
+          >
             <Image
               source={{ uri: imageUrl }}
               style={{
-                width: 130,
-                height: 130,
+                width: imageSize,
+                height: imageSize,
                 backgroundColor: '#f5f5f5',
               }}
               resizeMode="cover"
@@ -45,16 +57,17 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
           </YStack>
         ) : (
           <YStack
-            width={130}
-            height={130}
+            width={imageSize}
+            height={imageSize}
             borderRadius="$4"
             backgroundColor="$gray3"
             alignItems="center"
             justifyContent="center"
             borderWidth={2}
             borderColor="$gray5"
+            flexShrink={0}
           >
-            <IconSymbol name="photo" size={48} color="$gray9" />
+            <IconSymbol name="photo" size={imageSize * 0.37} color="$gray9" />
             <Text fontSize="$2" color="$gray9" marginTop="$2">
               暂无图片
             </Text>

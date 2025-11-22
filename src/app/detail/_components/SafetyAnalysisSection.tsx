@@ -10,7 +10,6 @@ export function SafetyAnalysisSection({ safety }: SafetyAnalysisSectionProps) {
 
   return (
     <Card
-      elevate
       padding="$4"
       marginHorizontal="$4"
       marginBottom="$3"
@@ -18,6 +17,7 @@ export function SafetyAnalysisSection({ safety }: SafetyAnalysisSectionProps) {
       borderRadius="$5"
       borderWidth={1}
       borderColor="$green5"
+      bordered
     >
       <YStack gap="$3">
         {/* 标题 */}

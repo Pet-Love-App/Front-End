@@ -14,10 +14,10 @@ interface AddPetModalProps {
 }
 
 const SPECIES_OPTIONS = [
-  { key: 'cat' as const, label: '猫咪', emoji: '🐱' },
-  { key: 'dog' as const, label: '狗狗', emoji: '🐶' },
-  { key: 'bird' as const, label: '鸟类', emoji: '🐦' },
-  { key: 'other' as const, label: '其他', emoji: '🐾' },
+  { key: 'cat' as const, label: '猫咪', icon: 'pawprint.fill' },
+  { key: 'dog' as const, label: '狗狗', icon: 'pawprint.circle.fill' },
+  { key: 'bird' as const, label: '鸟类', icon: 'bird.fill' },
+  { key: 'other' as const, label: '其他', icon: 'questionmark.circle.fill' },
 ];
 
 export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) {
@@ -117,7 +117,6 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
 
         <Dialog.Content
           bordered
-          elevate
           key="content"
           animateOnly={['transform', 'opacity']}
           animation="quick"
@@ -136,9 +135,12 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
             borderBottomWidth={1}
             borderBottomColor="$borderColor"
           >
-            <Dialog.Title fontSize={22} fontWeight="bold" color={colors.text}>
-              添加宠物 🐾
-            </Dialog.Title>
+            <XStack alignItems="center" gap="$2">
+              <IconSymbol name="pawprint.fill" size={22} color={colors.tint} />
+              <Dialog.Title fontSize={22} fontWeight="bold" color={colors.text}>
+                添加宠物
+              </Dialog.Title>
+            </XStack>
             <Text fontSize="$3" color="$gray10" marginTop="$1">
               填写宠物信息，建立专属档案
             </Text>
@@ -240,13 +242,15 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                       borderWidth={species === opt.key ? 0 : 1}
                       pressStyle={{ scale: 0.97 }}
                       animation="quick"
+                      icon={
+                        <IconSymbol
+                          name={opt.icon as any}
+                          size={20}
+                          color={species === opt.key ? 'white' : colors.tint}
+                        />
+                      }
                     >
-                      <Text fontSize="$5">{opt.emoji}</Text>
-                      <Text
-                        fontSize="$3"
-                        color={species === opt.key ? 'white' : colors.text}
-                        marginLeft="$1"
-                      >
+                      <Text fontSize="$3" color={species === opt.key ? 'white' : colors.text}>
                         {opt.label}
                       </Text>
                     </Button>
@@ -401,10 +405,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     borderWidth: 4,
     borderColor: 'white',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
   },
 });

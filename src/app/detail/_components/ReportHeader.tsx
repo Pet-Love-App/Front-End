@@ -1,4 +1,5 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { useResponsiveLayout } from '@/src/hooks/useResponsiveLayout';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'react-native';
 import { Card, Text, XStack, YStack } from 'tamagui';
@@ -10,14 +11,19 @@ interface ReportHeaderProps {
 }
 
 export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
+  const { isExtraSmallScreen, isSmallScreen } = useResponsiveLayout();
+
+  // 响应式图片尺寸
+  const imageSize = isExtraSmallScreen ? 100 : isSmallScreen ? 110 : 130;
+
   return (
     <Card
-      elevate
       padding="$0"
       margin="$4"
       backgroundColor="$background"
       borderRadius="$5"
       overflow="hidden"
+      bordered
     >
       {/* 渐变背景 */}
       <YStack position="absolute" width="100%" height="100%">
@@ -37,17 +43,13 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
             overflow="hidden"
             borderWidth={2}
             borderColor="$orange4"
-            shadowColor="$shadowColor"
-            shadowOffset={{ width: 0, height: 4 }}
-            shadowOpacity={0.2}
-            shadowRadius={8}
-            elevation={5}
+            flexShrink={0}
           >
             <Image
               source={{ uri: imageUrl }}
               style={{
-                width: 130,
-                height: 130,
+                width: imageSize,
+                height: imageSize,
                 backgroundColor: '#f5f5f5',
               }}
               resizeMode="cover"
@@ -55,16 +57,17 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
           </YStack>
         ) : (
           <YStack
-            width={130}
-            height={130}
+            width={imageSize}
+            height={imageSize}
             borderRadius="$4"
             backgroundColor="$gray3"
             alignItems="center"
             justifyContent="center"
             borderWidth={2}
             borderColor="$gray5"
+            flexShrink={0}
           >
-            <IconSymbol name="photo" size={48} color="$gray9" />
+            <IconSymbol name="photo" size={imageSize * 0.37} color="$gray9" />
             <Text fontSize="$2" color="$gray9" marginTop="$2">
               暂无图片
             </Text>

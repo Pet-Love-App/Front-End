@@ -1,6 +1,6 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import React from 'react';
-import { Modal, Pressable, StyleSheet } from 'react-native';
+import { Modal, Pressable, StyleSheet, TouchableOpacity } from 'react-native';
 import { Button, Card, Text, XStack, YStack } from 'tamagui';
 
 /**
@@ -94,10 +94,6 @@ export function ScanModeModal({ visible, onClose, onSelectMode }: ScanModeModalP
             gap="$4"
             maxWidth={500}
             width="90%"
-            elevation="$6"
-            shadowColor="$shadowColor"
-            shadowRadius="$6"
-            shadowOffset={{ width: 0, height: 4 }}
           >
             {/* 标题栏 */}
             <XStack justifyContent="space-between" alignItems="center">
@@ -122,9 +118,12 @@ export function ScanModeModal({ visible, onClose, onSelectMode }: ScanModeModalP
 
             {/* 提示信息 */}
             <YStack backgroundColor="$blue2" padding="$3" borderRadius="$4">
-              <Text fontSize="$3" color="$blue11" textAlign="center">
-                💡 提示：已知品牌可以查看详细的成分数据库信息
-              </Text>
+              <XStack alignItems="center" justifyContent="center" gap="$2">
+                <IconSymbol name="lightbulb.fill" size={16} color="$blue11" />
+                <Text fontSize="$3" color="$blue11" textAlign="center">
+                  提示：已知品牌可以查看详细的成分数据库信息
+                </Text>
+              </XStack>
             </YStack>
           </YStack>
         </YStack>
@@ -142,55 +141,60 @@ interface ScanModeOptionCardProps {
 }
 
 function ScanModeOptionCard({ option, onSelect }: ScanModeOptionCardProps) {
-  const handlePress = () => {
+  const [isPressed, setIsPressed] = React.useState(false);
+
+  const handlePress = React.useCallback(() => {
+    // 防抖：如果正在处理中，忽略重复点击
+    if (isPressed) {
+      console.log('⚠️ 防抖：忽略重复点击');
+      return;
+    }
+
     console.log('Card pressed:', option.mode);
+    setIsPressed(true);
     onSelect(option.mode);
-  };
+
+    // 500ms 后重置状态
+    setTimeout(() => {
+      setIsPressed(false);
+    }, 500);
+  }, [option.mode, onSelect, isPressed]);
 
   return (
-    <Pressable onPress={handlePress}>
-      {({ pressed }) => (
-        <Card
-          elevate
-          size="$4"
-          bordered
-          animation="bouncy"
-          opacity={pressed ? 0.7 : 1}
-          scale={pressed ? 0.98 : 1}
-        >
-          <Card.Header padded>
-            <XStack gap="$3" alignItems="center">
-              {/* 图标 */}
-              <YStack
-                width={60}
-                height={60}
-                backgroundColor={option.iconColor}
-                borderRadius="$10"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <IconSymbol name={option.icon} size={32} color="white" />
-              </YStack>
+    <TouchableOpacity onPress={handlePress} activeOpacity={0.7} disabled={isPressed}>
+      <Card size="$4" bordered animation="bouncy" pointerEvents="none">
+        <Card.Header padded>
+          <XStack gap="$3" alignItems="center">
+            {/* 图标 */}
+            <YStack
+              width={60}
+              height={60}
+              backgroundColor={option.iconColor}
+              borderRadius="$10"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <IconSymbol name={option.icon} size={32} color="white" />
+            </YStack>
 
-              {/* 内容 */}
-              <YStack flex={1} gap="$2">
-                <Text fontSize="$6" fontWeight="600">
-                  {option.title}
+            {/* 内容 */}
+            <YStack flex={1} gap="$2">
+              <Text fontSize="$6" fontWeight="600">
+                {option.title}
+              </Text>
+              {option.description.map((desc, index) => (
+                <Text key={index} fontSize="$3" color="$gray11">
+                  {desc}
                 </Text>
-                {option.description.map((desc, index) => (
-                  <Text key={index} fontSize="$3" color="$gray11">
-                    {desc}
-                  </Text>
-                ))}
-              </YStack>
+              ))}
+            </YStack>
 
-              {/* 箭头 */}
-              <IconSymbol name="chevron.right" size={24} color="$gray10" />
-            </XStack>
-          </Card.Header>
-        </Card>
-      )}
-    </Pressable>
+            {/* 箭头 */}
+            <IconSymbol name="chevron.right" size={24} color="$gray10" />
+          </XStack>
+        </Card.Header>
+      </Card>
+    </TouchableOpacity>
   );
 }
 

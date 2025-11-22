@@ -21,11 +21,11 @@ interface DetailRowProps {
 
 function DetailRow({ label, value }: DetailRowProps) {
   return (
-    <XStack space="$2" marginBottom="$3">
-      <Text fontSize="$3" fontWeight="600" color="$gray11" width={80}>
+    <XStack space="$2" marginBottom="$3" flexWrap="wrap">
+      <Text fontSize="$3" fontWeight="600" color="$gray11" minWidth={70} flexShrink={0}>
         {label}
       </Text>
-      <Text fontSize="$3" color="$color" flex={1} lineHeight="$1">
+      <Text fontSize="$3" color="$color" flex={1} lineHeight="$1" flexShrink={1}>
         {value}
       </Text>
     </XStack>
@@ -54,7 +54,7 @@ export function AdditiveDetailModal({ visible, additive, onClose }: AdditiveDeta
         onPress={onClose}
       >
         <TouchableOpacity activeOpacity={1} style={{ width: '85%', maxWidth: 400 }}>
-          <Card elevate padding="$6" backgroundColor="$background" borderRadius="$5">
+          <Card padding="$6" backgroundColor="$background" borderRadius="$5" bordered>
             <YStack space="$4">
               {/* 标题 */}
               <Text

@@ -79,12 +79,12 @@ export const OcrResultView = memo(function OcrResultView({
         <YStack padding="$4" gap="$4">
           {/* 识别状态卡片 */}
           <Card
-            elevate
             padding="$4"
             backgroundColor={colors.tint + '10'}
             borderRadius="$4"
             borderWidth={1}
             borderColor={colors.tint + '30'}
+            bordered
           >
             <XStack alignItems="center" gap="$3">
               <YStack
@@ -109,7 +109,7 @@ export const OcrResultView = memo(function OcrResultView({
           </Card>
 
           {/* 识别文本内容 */}
-          <Card elevate padding="$4" backgroundColor={colors.background} borderRadius="$4">
+          <Card padding="$4" backgroundColor={colors.background} borderRadius="$4" bordered>
             <YStack gap="$3">
               <XStack alignItems="center" justifyContent="space-between">
                 <Text fontSize="$5" fontWeight="600" color={colors.text}>

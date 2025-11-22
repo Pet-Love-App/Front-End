@@ -341,11 +341,6 @@ export function CatFoodSearchModal({ visible, onClose, onSelectCatFood }: CatFoo
           backgroundColor="$background"
           borderRadius="$6"
           overflow="hidden"
-          elevation={5}
-          shadowColor="$shadowColor"
-          shadowOffset={{ width: 0, height: 2 }}
-          shadowOpacity={0.25}
-          shadowRadius={8}
           pressStyle={{ opacity: 1 }}
           onPress={(e) => e.stopPropagation()}
         >

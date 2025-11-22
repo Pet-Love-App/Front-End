@@ -124,12 +124,12 @@ export const CommentSection = memo(function CommentSection({
 
   return (
     <Card
-      elevate
       padding="$4"
       marginHorizontal="$4"
       marginBottom="$3"
       backgroundColor={colors.background}
       borderRadius="$4"
+      bordered
     >
       <YStack gap="$3">
         {/* 标题栏 */}

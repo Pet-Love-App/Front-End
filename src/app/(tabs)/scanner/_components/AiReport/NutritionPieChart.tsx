@@ -21,7 +21,7 @@ export function NutritionPieChart({ report }: NutritionPieChartProps) {
   const screenWidth = Dimensions.get('window').width;
 
   return (
-    <Card elevate bordered>
+    <Card bordered>
       <Card.Header padded>
         <YStack gap="$3">
           <XStack alignItems="center" gap="$2">

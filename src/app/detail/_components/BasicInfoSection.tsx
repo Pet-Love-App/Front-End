@@ -69,12 +69,12 @@ export function BasicInfoSection({ brand, score, countNum, catfoodId }: BasicInf
 
   return (
     <Card
-      elevate
       padding="$4"
       marginHorizontal="$4"
       marginBottom="$3"
       backgroundColor="$background"
       borderRadius="$5"
+      bordered
     >
       <YStack gap="$3">
         {/* 标题 */}

@@ -46,12 +46,12 @@ export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) 
     console.log('⚠️ 没有有效的营养数据，显示空状态');
     return (
       <Card
-        elevate
         padding="$4"
         marginHorizontal="$4"
         marginBottom="$3"
         backgroundColor="$background"
         borderRadius="$4"
+        bordered
       >
         <YStack gap="$3" alignItems="center" paddingVertical="$4">
           <IconSymbol name="chart.bar.xaxis" size={48} color="$gray9" />
@@ -92,11 +92,11 @@ export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) 
       {/* 饼状图卡片 - 只在有非零数据时显示 */}
       {pieData.length > 0 && (
         <Card
-          elevate
           padding="$4"
           marginHorizontal="$4"
           backgroundColor="$background"
           borderRadius="$4"
+          bordered
         >
           <YStack gap="$3">
             <XStack alignItems="center" gap="$2">
@@ -127,11 +127,11 @@ export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) 
 
       {/* 柱状图卡片 */}
       <Card
-        elevate
         padding="$4"
         marginHorizontal="$4"
         backgroundColor="$background"
         borderRadius="$4"
+        bordered
       >
         <YStack gap="$3">
           <XStack alignItems="center" gap="$2">
@@ -173,11 +173,11 @@ export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) 
 
       {/* 详细数据表格 */}
       <Card
-        elevate
         padding="$4"
         marginHorizontal="$4"
         backgroundColor="$background"
         borderRadius="$4"
+        bordered
       >
         <YStack gap="$3">
           <XStack alignItems="center" gap="$2">

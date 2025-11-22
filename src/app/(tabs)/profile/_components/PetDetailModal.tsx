@@ -32,7 +32,6 @@ export function PetDetailModal({ pet, open, onOpenChange }: PetDetailModalProps)
 
         <Dialog.Content
           bordered
-          elevate
           key="content"
           animateOnly={['transform', 'opacity']}
           animation={[

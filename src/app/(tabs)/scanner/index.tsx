@@ -5,6 +5,8 @@ import {
   aiReportService,
   patchCatFood,
   recognizeImage,
+  searchAdditive,
+  searchIngredient,
   type GenerateReportResponse,
   type OcrResult,
 } from '@/src/services/api';
@@ -73,6 +75,7 @@ export default function ScannerScreen() {
 
   const handleSelectMode = useCallback(
     (mode: ScanMode) => {
+      console.log('🎯 handleSelectMode called:', mode);
       setScanMode(mode);
       if (mode === 'known-brand') {
         setFlowState('searching-catfood');
@@ -231,6 +234,73 @@ export default function ScannerScreen() {
     if (!aiReport || !selectedCatFood) return;
     try {
       setIsProcessing(true);
+
+      // 1. 查询识别到的成分ID列表
+      const ingredientIds: number[] = [];
+      const notFoundIngredients: string[] = [];
+      if (aiReport.identified_nutrients && aiReport.identified_nutrients.length > 0) {
+        console.log('🔍 开始查询成分ID...', aiReport.identified_nutrients);
+        for (const nutrientName of aiReport.identified_nutrients) {
+          try {
+            const { ingredient } = await searchIngredient(nutrientName);
+            if (ingredient?.id) {
+              ingredientIds.push(ingredient.id);
+              console.log(`✅ 找到成分: ${nutrientName} -> ID: ${ingredient.id}`);
+            } else {
+              console.warn(`⚠️ 未找到成分: ${nutrientName}`);
+              notFoundIngredients.push(nutrientName);
+            }
+          } catch (error) {
+            console.warn(`⚠️ 查询成分失败: ${nutrientName}`, error);
+            notFoundIngredients.push(nutrientName);
+          }
+        }
+      }
+
+      // 2. 查询识别到的添加剂ID列表
+      const additiveIds: number[] = [];
+      const notFoundAdditives: string[] = [];
+      if (aiReport.additives && aiReport.additives.length > 0) {
+        console.log('🔍 开始查询添加剂ID...', aiReport.additives);
+        for (const additiveName of aiReport.additives) {
+          try {
+            const { additive } = await searchAdditive(additiveName);
+            if (additive?.id) {
+              additiveIds.push(additive.id);
+              console.log(`✅ 找到添加剂: ${additiveName} -> ID: ${additive.id}`);
+            } else {
+              console.warn(`⚠️ 未找到添加剂: ${additiveName}`);
+              notFoundAdditives.push(additiveName);
+            }
+          } catch (error) {
+            console.warn(`⚠️ 查询添加剂失败: ${additiveName}`, error);
+            notFoundAdditives.push(additiveName);
+          }
+        }
+      }
+
+      console.log('📦 准备保存数据:', {
+        ingredientIds,
+        additiveIds,
+        hasIngredients: ingredientIds.length > 0,
+        hasAdditives: additiveIds.length > 0,
+        notFoundIngredients,
+        notFoundAdditives,
+      });
+
+      // 如果有未找到的成分或添加剂，给出提示
+      if (notFoundIngredients.length > 0 || notFoundAdditives.length > 0) {
+        const messages = [];
+        if (notFoundIngredients.length > 0) {
+          messages.push(`部分成分在数据库中未找到：${notFoundIngredients.join('、')}`);
+        }
+        if (notFoundAdditives.length > 0) {
+          messages.push(`部分添加剂在数据库中未找到：${notFoundAdditives.join('、')}`);
+        }
+        console.warn('⚠️ ' + messages.join('\n'));
+      }
+
+      // 3. 保存到后端
       await patchCatFood(selectedCatFood.id, {
         safety: aiReport.safety,
         nutrient: aiReport.nutrient,
@@ -243,7 +313,22 @@ export default function ScannerScreen() {
           crude_ash: aiReport.crude_ash,
           others: aiReport.others,
         },
+        // 添加成分和添加剂ID列表
+        ingredient: ingredientIds.length > 0 ? ingredientIds : undefined,
+        additive: additiveIds.length > 0 ? additiveIds : undefined,
       });
+
+      console.log('✅ 报告保存成功');
+
+      // 4. 刷新猫粮数据（更新缓存）
+      try {
+        console.log('🔄 刷新猫粮数据...');
+        const updatedCatFood = await fetchCatFoodById(selectedCatFood.id);
+        console.log('✅ 猫粮数据已刷新，成分数量:', updatedCatFood.ingredient.length);
+        console.log('✅ 添加剂数量:', updatedCatFood.additive.length);
+      } catch (refreshError) {
+        console.warn('⚠️ 刷新猫粮数据失败（不影响保存）:', refreshError);
+      }
 
       Alert.alert('成功', '报告已保存', [
         {
@@ -257,11 +342,12 @@ export default function ScannerScreen() {
       ]);
       resetFlow();
     } catch (error) {
+      console.error('❌ 保存失败:', error);
       Alert.alert('保存失败', '请重试');
     } finally {
       setIsProcessing(false);
     }
-  }, [aiReport, selectedCatFood, router, resetFlow]);
+  }, [aiReport, selectedCatFood, router, resetFlow, fetchCatFoodById]);
 
   const handleImageSelected = useCallback((uri: string) => {
     setPhotoUri(uri);
@@ -305,7 +391,7 @@ export default function ScannerScreen() {
           扫描成功
         </Text>
 
-        <Card bordered elevate padding="$4" width="100%">
+        <Card bordered padding="$4" width="100%">
           <YStack gap="$2" alignItems="center">
             <Text fontSize="$3" color="$gray10">
               条形码内容

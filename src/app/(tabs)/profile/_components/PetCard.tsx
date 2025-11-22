@@ -43,10 +43,6 @@ export function PetCard({ pet, onPress }: PetCardProps) {
       onPress={onPress}
       animation="quick"
       borderRadius="$4"
-      shadowColor="$shadowColor"
-      shadowOffset={{ width: 0, height: 2 }}
-      shadowOpacity={0.1}
-      shadowRadius={4}
     >
       <XStack gap="$4" alignItems="center">
         {/* Pet Photo */}

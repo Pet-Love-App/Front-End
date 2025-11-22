@@ -116,10 +116,6 @@ export default function ProfileIndex() {
               backgroundColor={colors.background}
               borderWidth={1}
               borderColor={colors.icon + '40'}
-              shadowColor="$shadowColor"
-              shadowOffset={{ width: 0, height: 2 }}
-              shadowOpacity={0.1}
-              shadowRadius={4}
             >
               <Ionicons name="settings-outline" size={24} color={colors.icon} />
             </YStack>
@@ -129,7 +125,7 @@ export default function ProfileIndex() {
         {/* Profile Header - Integrated Avatar & User Info */}
         <ProfileHeader
           username={user?.username}
-          bio="宠物爱好者 🐾"
+          bio="宠物爱好者"
           onAvatarUpdate={fetchCurrentUser}
           onEditProfile={() => router.push('/profile/settings' as any)}
         />

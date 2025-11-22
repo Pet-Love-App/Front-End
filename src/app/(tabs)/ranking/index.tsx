@@ -283,11 +283,6 @@ export default function RankingScreen() {
               padding="$3"
               gap="$2"
               maxHeight={300}
-              shadowColor="$shadowColor"
-              shadowOffset={{ width: 0, height: 2 }}
-              shadowOpacity={0.1}
-              shadowRadius={4}
-              elevation={3}
             >
               <ScrollView showsVerticalScrollIndicator={true}>
                 <YStack gap="$2">

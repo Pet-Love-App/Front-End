@@ -1,3 +1,4 @@
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useRouter } from 'expo-router';
 import { Button, Text, YStack } from 'tamagui';
 
@@ -6,9 +7,9 @@ export default function NotFoundScreen() {
 
   return (
     <YStack f={1} jc="center" ai="center" bg="$background" p="$4">
-      <Text fontSize={80} mb="$4">
-        🐾
-      </Text>
+      <YStack mb="$4">
+        <IconSymbol name="questionmark.circle.fill" size={80} color="$gray9" />
+      </YStack>
       <Text fontSize="$8" fontWeight="bold" mb="$2">
         页面走丢了
       </Text>

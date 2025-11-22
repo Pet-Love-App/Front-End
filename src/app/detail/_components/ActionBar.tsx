@@ -195,11 +195,6 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
         backgroundColor="$background"
         borderTopWidth={1}
         borderColor="$borderColor"
-        shadowColor="$shadowColor"
-        shadowOffset={{ width: 0, height: -4 }}
-        shadowOpacity={0.15}
-        shadowRadius={12}
-        elevation={10}
         paddingBottom={Math.max(insets.bottom, 16)}
       >
         <Separator />
@@ -224,11 +219,6 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
                 scale: 0.97,
                 backgroundColor: localFavorited ? '$yellow10' : '$gray3',
               }}
-              shadowColor={localFavorited ? '$yellow9' : 'transparent'}
-              shadowOffset={{ width: 0, height: 2 }}
-              shadowOpacity={0.3}
-              shadowRadius={4}
-              elevation={localFavorited ? 4 : 0}
               icon={
                 <Animated.View style={{ transform: [{ scale: favoriteScale }] }}>
                   <IconSymbol
@@ -258,11 +248,6 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
                 scale: 0.97,
                 backgroundColor: localLiked ? '$red10' : '$gray3',
               }}
-              shadowColor={localLiked ? '$red9' : 'transparent'}
-              shadowOffset={{ width: 0, height: 2 }}
-              shadowOpacity={0.3}
-              shadowRadius={4}
-              elevation={localLiked ? 4 : 0}
               icon={
                 <Animated.View style={{ transform: [{ scale: likeScale }] }}>
                   <IconSymbol

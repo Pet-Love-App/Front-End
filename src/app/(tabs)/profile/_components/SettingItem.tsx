@@ -24,7 +24,7 @@ export function SettingItem({ icon, label, value, onPress }: SettingItemProps) {
       pressStyle={{ scale: 0.98, opacity: 0.9 }}
       onPress={onPress}
       animation="quick"
-      elevate
+      bordered
     >
       <XStack justifyContent="space-between" alignItems="center">
         <XStack gap="$3" alignItems="center">

@@ -140,17 +140,7 @@ export function ProfileHeader({
       <YStack alignItems="center" position="relative">
         <TouchableOpacity onPress={onPressAvatar} activeOpacity={0.85}>
           <YStack position="relative">
-            <Avatar
-              circular
-              size="$12"
-              borderWidth={4}
-              borderColor={colors.tint}
-              elevation="$4"
-              shadowColor="$shadowColor"
-              shadowOffset={{ width: 0, height: 4 }}
-              shadowOpacity={0.15}
-              shadowRadius={8}
-            >
+            <Avatar circular size="$12" borderWidth={4} borderColor={colors.tint}>
               {uploading ? (
                 <Avatar.Fallback
                   backgroundColor={colors.background}
@@ -186,10 +176,6 @@ export function ProfileHeader({
                 justifyContent="center"
                 borderWidth={3}
                 borderColor={colors.background}
-                shadowColor="$shadowColor"
-                shadowOffset={{ width: 0, height: 2 }}
-                shadowOpacity={0.2}
-                shadowRadius={4}
               >
                 <IconSymbol name="camera.fill" size={18} color="white" />
               </YStack>

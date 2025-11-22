@@ -35,11 +35,12 @@ export function NutritionListSection({ ingredients }: NutritionListSectionProps)
   return (
     <Card
       padding="$4"
-      marginHorizontal="$4"
+      marginHorizontal="$3"
       marginBottom="$3"
-      backgroundColor="$background"
-      borderRadius="$4"
+      backgroundColor="white"
+      borderRadius="$5"
       bordered
+      borderColor="$gray4"
     >
       <YStack space="$3">
         <Text fontSize="$6" fontWeight="600" marginBottom="$2" color="$color">

@@ -54,7 +54,7 @@ export function AdditiveDetailModal({ visible, additive, onClose }: AdditiveDeta
         onPress={onClose}
       >
         <TouchableOpacity activeOpacity={1} style={{ width: '85%', maxWidth: 400 }}>
-          <Card elevate padding="$6" backgroundColor="$background" borderRadius="$5">
+          <Card padding="$6" backgroundColor="$background" borderRadius="$5" bordered>
             <YStack space="$4">
               {/* 标题 */}
               <Text

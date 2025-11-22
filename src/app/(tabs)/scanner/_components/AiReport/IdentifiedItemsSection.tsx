@@ -26,12 +26,12 @@ export function IdentifiedItemsSection({
 
   return (
     <Card
-      elevate
       padding="$4"
       marginHorizontal="$4"
       marginBottom="$3"
       backgroundColor="$background"
       borderRadius="$4"
+      bordered
     >
       <YStack space="$3">
         <Text fontSize="$6" fontWeight="600" color="$color">

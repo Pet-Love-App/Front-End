@@ -192,7 +192,6 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
 
   return (
     <Card
-      elevate
       padding="$4"
       marginHorizontal="$4"
       marginBottom="$3"
@@ -200,6 +199,7 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
       borderRadius="$5"
       borderWidth={1}
       borderColor="$orange5"
+      bordered
     >
       <YStack gap="$3">
         {/* 标题 */}

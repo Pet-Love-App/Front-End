@@ -26,14 +26,6 @@ export default function TabLayout() {
           paddingBottom: insets.bottom,
           paddingTop: 10,
           borderTopWidth: 0,
-          shadowColor: '#000',
-          shadowOffset: {
-            width: 0,
-            height: 0,
-          },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
-          elevation: 10,
         },
       }}
     >

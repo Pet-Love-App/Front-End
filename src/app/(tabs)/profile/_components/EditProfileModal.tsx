@@ -141,7 +141,6 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
 
         <Dialog.Content
           bordered
-          elevate
           key="content"
           animateOnly={['transform', 'opacity']}
           animation="quick"

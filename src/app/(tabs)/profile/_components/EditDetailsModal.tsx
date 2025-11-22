@@ -48,7 +48,6 @@ export function EditDetailsModal({
 
         <Dialog.Content
           bordered
-          elevate
           key="content"
           animateOnly={['transform', 'opacity']}
           animation={[

@@ -72,7 +72,7 @@ export default function SettingsPage() {
             borderWidth={1}
             borderColor={colors.icon + '40'}
             backgroundColor={colors.background}
-            elevate
+            bordered
           >
             <YStack gap="$3">
               <XStack justifyContent="space-between" alignItems="center">
@@ -130,7 +130,6 @@ export default function SettingsPage() {
             borderWidth={1}
             borderColor={colors.icon + '40'}
             backgroundColor={colors.background}
-            elevate
           >
             <YStack gap="$3">
               <XStack justifyContent="space-between" alignItems="center">

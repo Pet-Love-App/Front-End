@@ -12,12 +12,12 @@ interface ReportHeaderProps {
 export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
   return (
     <Card
-      elevate
       padding="$0"
       margin="$4"
       backgroundColor="$background"
       borderRadius="$5"
       overflow="hidden"
+      bordered
     >
       {/* 渐变背景 */}
       <YStack position="absolute" width="100%" height="100%">
@@ -32,17 +32,7 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
       <XStack padding="$5" gap="$4" alignItems="center">
         {/* 猫粮图片 */}
         {imageUrl ? (
-          <YStack
-            borderRadius="$4"
-            overflow="hidden"
-            borderWidth={2}
-            borderColor="$orange4"
-            shadowColor="$shadowColor"
-            shadowOffset={{ width: 0, height: 4 }}
-            shadowOpacity={0.2}
-            shadowRadius={8}
-            elevation={5}
-          >
+          <YStack borderRadius="$4" overflow="hidden" borderWidth={2} borderColor="$orange4">
             <Image
               source={{ uri: imageUrl }}
               style={{

@@ -86,13 +86,14 @@ export function AiReportDetail({
   }, []);
 
   // 转换percentData格式 - 只要有任何营养数据就显示图表
+  // 修复：检查 !== null && !== undefined，避免误判
   const hasAnyNutritionData =
-    report.crude_protein !== null ||
-    report.crude_fat !== null ||
-    report.carbohydrates !== null ||
-    report.crude_fiber !== null ||
-    report.crude_ash !== null ||
-    report.others !== null;
+    (report.crude_protein !== null && report.crude_protein !== undefined) ||
+    (report.crude_fat !== null && report.crude_fat !== undefined) ||
+    (report.carbohydrates !== null && report.carbohydrates !== undefined) ||
+    (report.crude_fiber !== null && report.crude_fiber !== undefined) ||
+    (report.crude_ash !== null && report.crude_ash !== undefined) ||
+    (report.others !== null && report.others !== undefined);
 
   const percentData = hasAnyNutritionData
     ? {

@@ -54,7 +54,6 @@ export function ThemeSelectorModal({
 
         <Dialog.Content
           bordered
-          elevate
           key="content"
           animateOnly={['transform', 'opacity']}
           animation={[

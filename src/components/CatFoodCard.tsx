@@ -58,7 +58,6 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
 
   return (
     <Card
-      elevate
       size="$3"
       bordered
       animation="bouncy"

@@ -1,7 +1,8 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { useResponsiveLayout } from '@/src/hooks/useResponsiveLayout';
 import { commentService, ratingApi } from '@/src/services/api';
 import { useCatFoodStore } from '@/src/store/catFoodStore';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable } from 'react-native';
 import { Button, Card, Separator, Text, TextArea, XStack, YStack } from 'tamagui';
 
@@ -18,6 +19,43 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
   const [hasRated, setHasRated] = useState(false);
 
   const fetchCatFoodById = useCatFoodStore((state) => state.fetchCatFoodById);
+  const { width, getResponsiveSize, isExtraSmallScreen } = useResponsiveLayout();
+
+  // 响应式计算星星尺寸和间距
+  const starConfig = useMemo(() => {
+    // 计算可用宽度（减去卡片内边距和其他元素）
+    const cardPadding = 32; // $4 的像素值
+    const ratingDisplayWidth = myRating > 0 ? 60 : 0; // 评分显示的宽度
+    const availableWidth = width - cardPadding * 2 - ratingDisplayWidth - 40; // 40px 留作余量
+
+    // 计算每个星星的最大宽度
+    const minStarSize = 36; // 最小星星尺寸
+    const maxStarSize = 48; // 最大星星尺寸
+    const starCount = 5;
+    const minGap = 4; // 最小间距
+    const maxGap = 8; // 最大间距
+
+    // 根据可用宽度动态计算
+    let starSize = maxStarSize;
+    let gap = maxGap;
+
+    // 如果空间不够，逐步缩小
+    while (
+      starSize >= minStarSize &&
+      starSize * starCount + gap * (starCount - 1) > availableWidth
+    ) {
+      starSize -= 2;
+      if (starSize < 40) {
+        gap = minGap;
+      }
+    }
+
+    return {
+      size: Math.max(minStarSize, starSize),
+      iconSize: Math.max(20, Math.floor(starSize * 0.58)),
+      gap: gap,
+    };
+  }, [width, myRating]);
 
   // 加载用户的评分
   useEffect(() => {
@@ -226,7 +264,12 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
           <Text fontSize="$3" color="$gray11" fontWeight="600">
             选择评分
           </Text>
-          <XStack gap="$2" alignItems="center">
+          <XStack
+            gap={starConfig.gap}
+            alignItems="center"
+            flexWrap="nowrap"
+            justifyContent="flex-start"
+          >
             {[1, 2, 3, 4, 5].map((star) => (
               <Pressable
                 key={star}
@@ -246,8 +289,8 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
                 style={{ zIndex: 10 }}
               >
                 <YStack
-                  width={48}
-                  height={48}
+                  width={starConfig.size}
+                  height={starConfig.size}
                   alignItems="center"
                   justifyContent="center"
                   backgroundColor={star <= (hoverRating || myRating) ? '$orange3' : '$gray2'}
@@ -261,7 +304,7 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
                 >
                   <IconSymbol
                     name={star <= (hoverRating || myRating) ? 'star.fill' : 'star'}
-                    size={28}
+                    size={starConfig.iconSize}
                     color={star <= (hoverRating || myRating) ? '$orange10' : '$gray9'}
                   />
                 </YStack>
@@ -269,12 +312,13 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
             ))}
             {myRating > 0 && (
               <YStack
-                paddingHorizontal="$3"
+                paddingHorizontal={isExtraSmallScreen ? '$2' : '$3'}
                 paddingVertical="$2"
                 backgroundColor="$orange9"
                 borderRadius="$10"
+                marginLeft="$1"
               >
-                <Text color="white" fontSize="$4" fontWeight="bold">
+                <Text color="white" fontSize={isExtraSmallScreen ? '$3' : '$4'} fontWeight="bold">
                   {myRating}.0
                 </Text>
               </YStack>

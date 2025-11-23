@@ -127,6 +127,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
           width={dialogWidth}
           maxHeight="85%"
           padding="$0"
+          pointerEvents="auto"
         >
           {/* Header with gradient background */}
           <YStack
@@ -163,9 +164,10 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
           <ScrollView
             style={{ maxHeight: 450 }}
             showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="always"
+            keyboardShouldPersistTaps="handled"
             nestedScrollEnabled={true}
             scrollEnabled={true}
+            contentContainerStyle={{ pointerEvents: 'auto' }}
           >
             <YStack padding="$5" gap="$4">
               {/* Photo Section */}
@@ -251,6 +253,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                   backgroundColor={colors.background}
                   paddingHorizontal="$4"
                   paddingVertical="$1"
+                  pointerEvents="auto"
                 >
                   <TextInput
                     ref={nameRef}
@@ -343,6 +346,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                   borderColor="$gray6"
                   backgroundColor={colors.background}
                   paddingHorizontal="$4"
+                  pointerEvents="auto"
                 >
                   <TextInput
                     ref={ageRef}
@@ -376,6 +380,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                   backgroundColor={colors.background}
                   paddingHorizontal="$4"
                   paddingVertical="$3"
+                  pointerEvents="auto"
                 >
                   <TextInput
                     ref={descriptionRef}

@@ -59,14 +59,6 @@ class BaseApi {
     };
 
     try {
-      // 调试日志
-      console.log('🔍 API 请求:', {
-        method: options.method,
-        endpoint,
-        headers: config.headers,
-        hasBody: !!config.body,
-      });
-
       const response = await fetch(`${this.baseURL}${endpoint}`, config);
 
       // 处理 401 未授权（token 过期）

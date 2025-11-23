@@ -52,8 +52,6 @@ export const useCollectStore = create<CollectState>()(
             favorites: validFavorites,
             isLoading: false,
           });
-
-          console.log('✅ 收藏列表获取成功:', validFavorites.length);
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : '获取收藏列表失败';
           set({
@@ -76,8 +74,6 @@ export const useCollectStore = create<CollectState>()(
             favorites: [favorite, ...state.favorites],
             isLoading: false,
           }));
-
-          console.log('✅ 收藏成功:', favorite);
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : '收藏失败';
           set({
@@ -100,8 +96,6 @@ export const useCollectStore = create<CollectState>()(
             favorites: state.favorites.filter((fav) => fav.id !== favoriteId),
             isLoading: false,
           }));
-
-          console.log('✅ 取消收藏成功');
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : '取消收藏失败';
           set({
@@ -134,7 +128,6 @@ export const useCollectStore = create<CollectState>()(
             }));
           }
 
-          console.log(`✅ ${response.detail}`);
           return response.is_favorited;
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : '操作失败';
@@ -170,7 +163,6 @@ export const useCollectStore = create<CollectState>()(
           favorites: [],
           error: null,
         });
-        console.log('✅ 收藏列表已清空');
       },
 
       // 设置加载状态

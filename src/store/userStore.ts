@@ -63,8 +63,6 @@ export const useUserStore = create<UserState>()(
             user,
             isLoading: false,
           });
-
-          console.log('✅ 登录成功:', user);
         } catch (error) {
           set({ isLoading: false });
           console.error('❌ 登录失败:', error);
@@ -93,7 +91,6 @@ export const useUserStore = create<UserState>()(
           await authService.register(validatedData);
 
           set({ isLoading: false });
-          console.log('✅ 注册成功');
         } catch (error) {
           set({ isLoading: false });
           console.error('❌ 注册失败:', error);
@@ -122,8 +119,6 @@ export const useUserStore = create<UserState>()(
             accessToken: access,
             refreshToken: refresh,
           });
-
-          console.log('✅ Token 刷新成功');
         } catch (error) {
           console.error('❌ Token 刷新失败:', error);
           // Token 刷新失败，清除登录状态
@@ -146,8 +141,6 @@ export const useUserStore = create<UserState>()(
           set({
             user,
           });
-
-          console.log('✅ 用户信息获取成功:', user);
         } catch (error) {
           console.error('❌ 用户信息获取失败:', error);
           throw error;
@@ -160,7 +153,6 @@ export const useUserStore = create<UserState>()(
           set({ isLoading: true });
 
           const response = await userService.uploadAvatar(imageUri);
-          console.log('✅ 头像上传成功:', response.avatar);
 
           // 刷新用户信息
           await get().fetchCurrentUser();
@@ -179,7 +171,6 @@ export const useUserStore = create<UserState>()(
           set({ isLoading: true });
 
           await userService.deleteAvatar();
-          console.log('✅ 头像删除成功');
 
           // 刷新用户信息
           await get().fetchCurrentUser();
@@ -201,8 +192,6 @@ export const useUserStore = create<UserState>()(
             refreshToken: null,
             isAuthenticated: false,
           });
-
-          console.log('✅ 登出成功');
         } catch (error) {
           console.error('❌ 登出失败:', error);
           throw error;
@@ -241,10 +230,11 @@ export const useUserStore = create<UserState>()(
       }),
       // 水化完成后的回调
       onRehydrateStorage: () => (state) => {
-        console.log('💧 Zustand 状态恢复完成:', {
-          isAuthenticated: state?.isAuthenticated,
-          hasUser: !!state?.user,
-        });
+        // Zustand 状态恢复完成
+        // console.log('💧 Zustand 状态恢复完成:', {
+        //   isAuthenticated: state?.isAuthenticated,
+        //   hasUser: !!state?.user,
+        // });
         state?.setHasHydrated(true);
       },
     }

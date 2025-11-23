@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { Alert, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Text, YStack } from 'tamagui';
-import { AddPetModal, PetDetailModal, PetInfoPanel, PetList, ProfileHeader } from './_components';
+import { AddPetModal, PetDetailModal, PetInfoPanel, ProfileHeader } from './_components';
 
 export default function ProfileIndex() {
   // 使用 userStore - 使用选择器避免不必要的重渲染
@@ -39,6 +39,13 @@ export default function ProfileIndex() {
       });
     }
   }, [user, fetchCurrentUser, isAuthenticated, _hasHydrated]);
+
+  // Auto-select first pet when user data loads
+  useEffect(() => {
+    if (user?.pets && user.pets.length > 0 && !selectedPetForView) {
+      setSelectedPetForView(user.pets[0]);
+    }
+  }, [user?.pets, selectedPetForView]);
 
   // Handle adding new pet
   const handleAddPet = async (petData: PetInput, photoUri: string | null) => {
@@ -141,14 +148,6 @@ export default function ProfileIndex() {
 
         {/* Pet Info Panel - Show selected pet details */}
         {selectedPetForView && <PetInfoPanel pet={selectedPetForView} />}
-
-        {/* Pet List */}
-        <PetList
-          pets={user?.pets}
-          isLoading={isLoading && !user}
-          onAddPet={() => setPetModalVisible(true)}
-          onPetPress={setSelectedPet}
-        />
       </YStack>
 
       {/* Modals */}

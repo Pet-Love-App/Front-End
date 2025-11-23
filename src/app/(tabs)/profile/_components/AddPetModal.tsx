@@ -1,3 +1,4 @@
+import { BreedSelector } from '@/src/components/BreedSelector';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
@@ -132,7 +133,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
             paddingHorizontal="$5"
             paddingTop="$6"
             paddingBottom="$5"
-            backgroundColor="$red9"
+            backgroundColor="#FEBE98"
             borderTopLeftRadius="$4"
             borderTopRightRadius="$4"
           >
@@ -194,7 +195,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                       size="$3"
                       icon={<IconSymbol name="camera.fill" size={16} color="white" />}
                       onPress={pickPetImage}
-                      backgroundColor="$red9"
+                      backgroundColor="#FEBE98"
                       color="white"
                       borderRadius="$10"
                       pressStyle={{ scale: 0.95, opacity: 0.9 }}
@@ -209,8 +210,8 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                     borderRadius="$4"
                     borderWidth={2}
                     borderStyle="dashed"
-                    borderColor="$red6"
-                    backgroundColor="$red2"
+                    borderColor="#FDB97A"
+                    backgroundColor="#FEF3E8"
                     alignItems="center"
                     justifyContent="center"
                     gap="$3"
@@ -222,13 +223,13 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                       width={64}
                       height={64}
                       borderRadius="$12"
-                      backgroundColor="$red9"
+                      backgroundColor="#FEBE98"
                       alignItems="center"
                       justifyContent="center"
                     >
                       <IconSymbol name="camera.fill" size={32} color="white" />
                     </YStack>
-                    <Text fontSize={16} fontWeight="600" color="$red10">
+                    <Text fontSize={16} fontWeight="600" color="#D97706">
                       添加宠物照片
                     </Text>
                     <Text fontSize={13} color="$gray10">
@@ -251,7 +252,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                 <YStack
                   borderRadius="$4"
                   borderWidth={2}
-                  borderColor={nameValue ? '$red9' : '$gray6'}
+                  borderColor={nameValue ? '#FEBE98' : '$gray6'}
                   backgroundColor={colors.background}
                   paddingHorizontal="$4"
                   paddingVertical="$1"
@@ -298,13 +299,13 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                       alignItems="center"
                       padding="$3"
                       borderRadius="$4"
-                      backgroundColor={species === opt.key ? '$red9' : '$gray3'}
+                      backgroundColor={species === opt.key ? '#FEBE98' : '$gray3'}
                       borderWidth={2}
-                      borderColor={species === opt.key ? '$red9' : 'transparent'}
+                      borderColor={species === opt.key ? '#FEBE98' : 'transparent'}
                       pressStyle={{ scale: 0.95, opacity: 0.9 }}
                       onPress={() => setSpecies(opt.key)}
                       cursor="pointer"
-                      shadowColor={species === opt.key ? '#EF4444' : 'transparent'}
+                      shadowColor={species === opt.key ? '#FEBE98' : 'transparent'}
                       shadowOffset={{ width: 0, height: 2 }}
                       shadowOpacity={species === opt.key ? 0.3 : 0}
                       shadowRadius={4}
@@ -331,29 +332,12 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                     （选填）
                   </Text>
                 </Text>
-                <YStack
-                  borderRadius="$4"
-                  borderWidth={1.5}
-                  borderColor="$gray6"
-                  backgroundColor={colors.background}
-                  paddingHorizontal="$4"
-                >
-                  <TextInput
-                    ref={breedRef}
-                    placeholder="例如：英短、金毛、虎皮鹦鹉"
-                    placeholderTextColor={colors.icon + '80'}
-                    value={breedValue}
-                    onChangeText={setBreedValue}
-                    autoCapitalize="words"
-                    autoCorrect={false}
-                    returnKeyType="done"
-                    style={{
-                      color: colors.text,
-                      fontSize: 15,
-                      height: 48,
-                    }}
-                  />
-                </YStack>
+                <BreedSelector
+                  species={species}
+                  value={breedValue}
+                  onChange={setBreedValue}
+                  placeholder="选择或输入品种"
+                />
               </YStack>
 
               {/* Age */}
@@ -455,7 +439,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
             <Button
               flex={1}
               size="$4"
-              backgroundColor="$red9"
+              backgroundColor="#FEBE98"
               color="white"
               borderRadius="$4"
               fontWeight="700"
@@ -468,7 +452,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                   <IconSymbol name="checkmark.circle.fill" size={20} color="white" />
                 )
               }
-              shadowColor="$red9"
+              shadowColor="#FEBE98"
               shadowOffset={{ width: 0, height: 4 }}
               shadowOpacity={0.3}
               shadowRadius={8}

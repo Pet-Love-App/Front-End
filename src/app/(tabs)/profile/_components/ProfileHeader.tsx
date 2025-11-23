@@ -153,7 +153,7 @@ export function ProfileHeader({
       {/* 顶部渐变背景 */}
       <YStack width="100%" height={160} position="relative" overflow="hidden">
         <LinearGradient
-          colors={['#FCA5A5', '#F87171', '#EF4444']}
+          colors={['#FEBE98', '#FDB97A', '#FCA55C']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{
@@ -205,7 +205,7 @@ export function ProfileHeader({
                 <Avatar.Image src={avatarSrc} />
               ) : (
                 <Avatar.Fallback
-                  backgroundColor="$red9"
+                  backgroundColor="#FEBE98"
                   justifyContent="center"
                   alignItems="center"
                 >
@@ -223,7 +223,7 @@ export function ProfileHeader({
                 width={36}
                 height={36}
                 borderRadius="$8"
-                backgroundColor="$red9"
+                backgroundColor="#FEBE98"
                 alignItems="center"
                 justifyContent="center"
                 borderWidth={2}
@@ -297,7 +297,7 @@ export function ProfileHeader({
                       circular
                       size={56}
                       borderWidth={isSelected ? 3 : 0}
-                      borderColor={isSelected ? '$red9' : 'transparent'}
+                      borderColor={isSelected ? '#FEBE98' : 'transparent'}
                     >
                       {pet.photo ? (
                         <Avatar.Image src={pet.photo} />
@@ -321,7 +321,7 @@ export function ProfileHeader({
                         width={20}
                         height={20}
                         borderRadius="$10"
-                        backgroundColor="$red9"
+                        backgroundColor="#FEBE98"
                         alignItems="center"
                         justifyContent="center"
                         borderWidth={2}
@@ -341,7 +341,7 @@ export function ProfileHeader({
                 width={56}
                 height={56}
                 borderRadius="$12"
-                backgroundColor="$red9"
+                backgroundColor="#FEBE98"
                 alignItems="center"
                 justifyContent="center"
                 shadowColor="#000"
@@ -362,7 +362,7 @@ export function ProfileHeader({
                 width={56}
                 height={56}
                 borderRadius="$12"
-                backgroundColor="$red9"
+                backgroundColor="#FEBE98"
                 alignItems="center"
                 justifyContent="center"
                 shadowColor="#000"

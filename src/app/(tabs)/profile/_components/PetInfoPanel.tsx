@@ -159,10 +159,10 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet }: PetInfoPanelProp
               <XStack
                 paddingHorizontal="$2.5"
                 paddingVertical="$1"
-                backgroundColor="$red3"
+                backgroundColor="#FEF3E8"
                 borderRadius="$2"
               >
-                <Text fontSize={13} fontWeight="600" color="$red10">
+                <Text fontSize={13} fontWeight="600" color="#D97706">
                   {pet.species_display ?? pet.species}
                 </Text>
               </XStack>
@@ -201,7 +201,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet }: PetInfoPanelProp
               flex={1}
               paddingVertical="$3"
               borderRadius="$3"
-              backgroundColor={isActive ? '$red9' : '$gray3'}
+              backgroundColor={isActive ? '#FEBE98' : '$gray3'}
               alignItems="center"
               justifyContent="center"
               pressStyle={{ scale: 0.97, opacity: 0.8 }}
@@ -209,7 +209,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet }: PetInfoPanelProp
               cursor="pointer"
               gap="$1"
               animation="quick"
-              shadowColor={isActive ? '$red9' : 'transparent'}
+              shadowColor={isActive ? '#FEBE98' : 'transparent'}
               shadowOffset={{ width: 0, height: 2 }}
               shadowOpacity={isActive ? 0.2 : 0}
               shadowRadius={4}
@@ -240,7 +240,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet }: PetInfoPanelProp
         {activeTab === 'info' && (
           <YStack gap="$4">
             <XStack alignItems="center" gap="$2">
-              <IconSymbol name="info.circle.fill" size={20} color="$red9" />
+              <IconSymbol name="info.circle.fill" size={20} color="#FEBE98" />
               <Text fontSize={16} fontWeight="700" color={colors.text}>
                 基本信息
               </Text>

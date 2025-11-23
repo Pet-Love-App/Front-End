@@ -2,7 +2,7 @@ import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Pet } from '@/src/schemas/pet.schema';
-import { Button, Card, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Card, Spinner, Text, XStack, YStack } from 'tamagui';
 import { PetCard } from './PetCard';
 
 interface PetListProps {
@@ -19,22 +19,10 @@ export function PetList({ pets = [], isLoading, onAddPet, onPetPress }: PetListP
   return (
     <YStack width="90%" alignItems="center" gap="$3" marginTop="$4">
       {/* Section Header */}
-      <XStack width="100%" justifyContent="space-between" alignItems="center">
+      <XStack width="100%" justifyContent="flex-start" alignItems="center">
         <Text fontSize={20} fontWeight="700" color={colors.text}>
           我的宠物
         </Text>
-        <Button
-          size="$3"
-          backgroundColor={colors.tint}
-          color="white"
-          icon={<IconSymbol name="plus.circle.fill" size={16} color="white" />}
-          onPress={onAddPet}
-          pressStyle={{ scale: 0.95, opacity: 0.9 }}
-          borderRadius="$3"
-          fontWeight="600"
-        >
-          添加
-        </Button>
       </XStack>
 
       {/* Pet Cards Container */}

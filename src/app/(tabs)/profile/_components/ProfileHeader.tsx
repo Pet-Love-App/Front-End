@@ -3,9 +3,10 @@ import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { useUserStore } from '@/src/store/userStore';
 import * as ImagePicker from 'expo-image-picker';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Alert, TouchableOpacity } from 'react-native';
-import { Avatar, Button, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Avatar, Spinner, Text, YStack } from 'tamagui';
 
 interface ProfileHeaderProps {
   /** 用户名 */
@@ -14,8 +15,6 @@ interface ProfileHeaderProps {
   bio?: string;
   /** 头像更新回调 */
   onAvatarUpdate?: () => void;
-  /** 编辑资料回调 */
-  onEditProfile?: () => void;
 }
 
 /**
@@ -27,7 +26,6 @@ export function ProfileHeader({
   username = '未登录',
   bio = '这个人很懒，什么都没留下~',
   onAvatarUpdate,
-  onEditProfile,
 }: ProfileHeaderProps) {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
@@ -38,7 +36,7 @@ export function ProfileHeader({
   const avatarUrl = user?.avatar ?? null;
   const avatarSrc = avatarUrl ? `${avatarUrl}?v=${cacheBuster}` : null;
 
-  // 从相机拍照
+  // 拍照
   const pickFromCamera = async () => {
     try {
       const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
@@ -135,57 +133,95 @@ export function ProfileHeader({
   };
 
   return (
-    <YStack width="100%" alignItems="center" gap="$4" paddingVertical="$4">
-      {/* 头像区域 */}
-      <YStack alignItems="center" position="relative">
+    <YStack width="100%" alignItems="center" position="relative" paddingBottom="$4">
+      {/* 顶部渐变背景 */}
+      <YStack width="100%" height={160} position="relative" overflow="hidden">
+        <LinearGradient
+          colors={['#FEBE98', '#FDB97A', '#FCA55C']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        />
+        {/* 装饰性图案 */}
+        <YStack
+          position="absolute"
+          top={-30}
+          right={-30}
+          width={120}
+          height={120}
+          borderRadius="$12"
+          backgroundColor="rgba(255, 255, 255, 0.1)"
+          transform={[{ rotate: '45deg' }]}
+        />
+        <YStack
+          position="absolute"
+          bottom={-20}
+          left={-20}
+          width={80}
+          height={80}
+          borderRadius="$10"
+          backgroundColor="rgba(255, 255, 255, 0.08)"
+          transform={[{ rotate: '30deg' }]}
+        />
+      </YStack>
+
+      {/* 头像区域 - 悬浮在背景上 */}
+      <YStack position="absolute" top={70} alignItems="center" zIndex={10}>
         <TouchableOpacity onPress={onPressAvatar} activeOpacity={0.85}>
-          <YStack position="relative">
-            <Avatar circular size="$12" borderWidth={4} borderColor={colors.tint}>
+          <YStack position="relative" alignItems="center">
+            {/* 头像 - 完全占满无空隙 */}
+            <Avatar circular size={128} borderWidth={0} elevation={0}>
               {uploading ? (
                 <Avatar.Fallback
-                  backgroundColor={colors.background}
+                  backgroundColor="$gray3"
                   justifyContent="center"
                   alignItems="center"
                 >
-                  <Spinner size="large" color={colors.tint} />
+                  <Spinner size="large" color="$red9" />
                 </Avatar.Fallback>
               ) : avatarSrc ? (
                 <Avatar.Image src={avatarSrc} />
               ) : (
                 <Avatar.Fallback
-                  backgroundColor={colors.tint}
+                  backgroundColor="#FEBE98"
                   justifyContent="center"
                   alignItems="center"
                 >
-                  <IconSymbol name="person.fill" size={56} color="white" />
+                  <IconSymbol name="person.fill" size={50} color="white" />
                 </Avatar.Fallback>
               )}
             </Avatar>
 
-            {/* 编辑按钮悬浮标识 */}
+            {/* 相机按钮 */}
             {!uploading && (
               <YStack
                 position="absolute"
-                bottom={0}
-                right={0}
-                width={40}
-                height={40}
-                borderRadius="$10"
-                backgroundColor={colors.tint}
+                bottom={4}
+                right={4}
+                width={36}
+                height={36}
+                borderRadius="$8"
+                backgroundColor="#FEBE98"
                 alignItems="center"
                 justifyContent="center"
-                borderWidth={3}
-                borderColor={colors.background}
+                borderWidth={2}
+                borderColor="white"
               >
-                <IconSymbol name="camera.fill" size={18} color="white" />
+                <IconSymbol name="camera.fill" size={16} color="white" />
               </YStack>
             )}
           </YStack>
         </TouchableOpacity>
       </YStack>
 
-      {/* 用户信息区域 */}
-      <YStack width="90%" alignItems="center" gap="$2">
+      {/* 用户信息区域 - 在头像下方留出空间 */}
+      <YStack width="100%" alignItems="center" gap="$2.5" paddingTop={40} paddingBottom="$1">
         {/* 用户名 */}
         <Text
           fontSize={24}
@@ -199,60 +235,16 @@ export function ProfileHeader({
 
         {/* 用户简介 */}
         <Text
-          fontSize={14}
+          fontSize={12}
           color={colors.icon}
           textAlign="center"
           numberOfLines={2}
-          paddingHorizontal="$4"
+          paddingHorizontal="$6"
+          lineHeight={18}
         >
           {bio}
         </Text>
       </YStack>
-
-      {/* 统计数据区域 */}
-      <XStack
-        width="90%"
-        paddingVertical="$4"
-        paddingHorizontal="$3"
-        backgroundColor={colors.background}
-        borderRadius="$4"
-        borderWidth={1}
-        borderColor={colors.icon + '20'}
-        justifyContent="center"
-      >
-        <YStack flex={1} alignItems="center" gap="$1">
-          <Text fontSize={20} fontWeight="700" color={colors.text}>
-            {user?.pets?.length ?? 0}
-          </Text>
-          <Text fontSize={12} color={colors.icon}>
-            我的宠物
-          </Text>
-        </YStack>
-      </XStack>
-
-      {/* 编辑资料按钮 */}
-      <Button
-        width="90%"
-        size="$4"
-        borderRadius="$3"
-        backgroundColor="transparent"
-        borderWidth={1.5}
-        borderColor={colors.tint}
-        color={colors.tint}
-        fontWeight="600"
-        pressStyle={{
-          scale: 0.97,
-          opacity: 0.8,
-          backgroundColor: colors.tint + '10',
-        }}
-        hoverStyle={{
-          backgroundColor: colors.tint + '10',
-        }}
-        onPress={onEditProfile}
-        icon={<IconSymbol name="pencil" size={16} color={colors.tint} />}
-      >
-        编辑资料
-      </Button>
     </YStack>
   );
 }

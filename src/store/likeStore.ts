@@ -56,8 +56,6 @@ export const useLikeStore = create<LikeState>()(
             likes: validLikes,
             isLoading: false,
           });
-
-          console.log('✅ 点赞列表获取成功:', validLikes.length);
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : '获取点赞列表失败';
           set({
@@ -80,8 +78,6 @@ export const useLikeStore = create<LikeState>()(
             likes: [like, ...state.likes],
             isLoading: false,
           }));
-
-          console.log('✅ 点赞成功:', like);
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : '点赞失败';
           set({
@@ -104,8 +100,6 @@ export const useLikeStore = create<LikeState>()(
             likes: state.likes.filter((like) => like.id !== likeId),
             isLoading: false,
           }));
-
-          console.log('✅ 取消点赞成功');
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : '取消点赞失败';
           set({
@@ -146,7 +140,6 @@ export const useLikeStore = create<LikeState>()(
             }));
           }
 
-          console.log(`✅ ${response.detail}`);
           return { isLiked: response.is_liked, likeCount: response.like_count };
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : '操作失败';
@@ -210,7 +203,6 @@ export const useLikeStore = create<LikeState>()(
           likeCounts: {},
           error: null,
         });
-        console.log('✅ 点赞列表已清空');
       },
 
       // 设置加载状态

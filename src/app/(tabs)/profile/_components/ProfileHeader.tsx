@@ -228,11 +228,6 @@ export function ProfileHeader({
                 justifyContent="center"
                 borderWidth={2}
                 borderColor="white"
-                shadowColor="#000"
-                shadowOffset={{ width: 0, height: 2 }}
-                shadowOpacity={0.2}
-                shadowRadius={3}
-                elevation={4}
               >
                 <IconSymbol name="camera.fill" size={16} color="white" />
               </YStack>
@@ -283,15 +278,7 @@ export function ProfileHeader({
                   onPress={() => onPetPress?.(pet)}
                   activeOpacity={0.7}
                 >
-                  <YStack
-                    position="relative"
-                    shadowColor={isSelected ? '$red9' : '#000'}
-                    shadowOffset={{ width: 0, height: isSelected ? 4 : 2 }}
-                    shadowOpacity={isSelected ? 0.3 : 0.1}
-                    shadowRadius={isSelected ? 6 : 3}
-                    elevation={isSelected ? 5 : 3}
-                    borderRadius="$12"
-                  >
+                  <YStack position="relative" borderRadius="$12">
                     {/* 宠物头像 - 完全占满无空隙 */}
                     <Avatar
                       circular
@@ -344,11 +331,6 @@ export function ProfileHeader({
                 backgroundColor="#FEBE98"
                 alignItems="center"
                 justifyContent="center"
-                shadowColor="#000"
-                shadowOffset={{ width: 0, height: 2 }}
-                shadowOpacity={0.1}
-                shadowRadius={3}
-                elevation={3}
               >
                 <Text fontSize={16} fontWeight="700" color="white">
                   +{totalPets - 3}
@@ -365,11 +347,6 @@ export function ProfileHeader({
                 backgroundColor="#FEBE98"
                 alignItems="center"
                 justifyContent="center"
-                shadowColor="#000"
-                shadowOffset={{ width: 0, height: 2 }}
-                shadowOpacity={0.1}
-                shadowRadius={3}
-                elevation={3}
               >
                 <IconSymbol name="plus.circle.fill" size={28} color="white" />
               </YStack>

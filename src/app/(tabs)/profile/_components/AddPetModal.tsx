@@ -178,12 +178,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                       borderRadius="$12"
                       overflow="hidden"
                       borderWidth={4}
-                      borderColor="$red3"
-                      shadowColor="#000"
-                      shadowOffset={{ width: 0, height: 4 }}
-                      shadowOpacity={0.15}
-                      shadowRadius={8}
-                      elevation={5}
+                      borderColor="#FEF3E8"
                     >
                       <Image
                         source={{ uri: photoUri }}
@@ -305,11 +300,6 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                       pressStyle={{ scale: 0.95, opacity: 0.9 }}
                       onPress={() => setSpecies(opt.key)}
                       cursor="pointer"
-                      shadowColor={species === opt.key ? '#FEBE98' : 'transparent'}
-                      shadowOffset={{ width: 0, height: 2 }}
-                      shadowOpacity={species === opt.key ? 0.3 : 0}
-                      shadowRadius={4}
-                      elevation={species === opt.key ? 3 : 0}
                     >
                       <Text fontSize={32}>{opt.emoji}</Text>
                       <Text
@@ -452,11 +442,6 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                   <IconSymbol name="checkmark.circle.fill" size={20} color="white" />
                 )
               }
-              shadowColor="#FEBE98"
-              shadowOffset={{ width: 0, height: 4 }}
-              shadowOpacity={0.3}
-              shadowRadius={8}
-              elevation={4}
             >
               {submitting ? '保存中...' : '保存'}
             </Button>

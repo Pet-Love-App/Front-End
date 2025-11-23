@@ -120,11 +120,6 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet }: PetInfoPanelProp
         borderWidth={1}
         borderColor={colors.icon + '15'}
         borderRadius="$4"
-        shadowColor="#000"
-        shadowOffset={{ width: 0, height: 2 }}
-        shadowOpacity={0.05}
-        shadowRadius={4}
-        elevation={1}
       >
         <XStack gap="$4" alignItems="center">
           {/* Pet Photo */}
@@ -209,11 +204,6 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet }: PetInfoPanelProp
               cursor="pointer"
               gap="$1"
               animation="quick"
-              shadowColor={isActive ? '#FEBE98' : 'transparent'}
-              shadowOffset={{ width: 0, height: 2 }}
-              shadowOpacity={isActive ? 0.2 : 0}
-              shadowRadius={4}
-              elevation={isActive ? 2 : 0}
             >
               <IconSymbol
                 name={tab.icon as any}

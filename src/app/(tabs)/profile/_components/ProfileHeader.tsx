@@ -1,15 +1,12 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import type { Pet } from '@/src/schemas/pet.schema';
 import { useUserStore } from '@/src/store/userStore';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
-import { Alert, Dimensions, TouchableOpacity } from 'react-native';
-import { Avatar, Spinner, Text, XStack, YStack } from 'tamagui';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { Alert, TouchableOpacity } from 'react-native';
+import { Avatar, Spinner, Text, YStack } from 'tamagui';
 
 interface ProfileHeaderProps {
   /** 用户名 */
@@ -18,12 +15,6 @@ interface ProfileHeaderProps {
   bio?: string;
   /** 头像更新回调 */
   onAvatarUpdate?: () => void;
-  /** 添加宠物回调 */
-  onAddPet?: () => void;
-  /** 宠物点击回调 */
-  onPetPress?: (pet: Pet) => void;
-  /** 当前选中的宠物ID */
-  selectedPetId?: number;
 }
 
 /**
@@ -35,9 +26,6 @@ export function ProfileHeader({
   username = '未登录',
   bio = '这个人很懒，什么都没留下~',
   onAvatarUpdate,
-  onAddPet,
-  onPetPress,
-  selectedPetId,
 }: ProfileHeaderProps) {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
@@ -48,7 +36,7 @@ export function ProfileHeader({
   const avatarUrl = user?.avatar ?? null;
   const avatarSrc = avatarUrl ? `${avatarUrl}?v=${cacheBuster}` : null;
 
-  // 从相机拍照
+  // 拍照
   const pickFromCamera = async () => {
     try {
       const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
@@ -144,12 +132,8 @@ export function ProfileHeader({
     Alert.alert('更换头像', '请选择图片来源', actions);
   };
 
-  // 获取宠物列表（最多显示3个）
-  const pets = user?.pets?.slice(0, 3) || [];
-  const totalPets = user?.pets?.length || 0;
-
   return (
-    <YStack width="100%" alignItems="center" position="relative">
+    <YStack width="100%" alignItems="center" position="relative" paddingBottom="$4">
       {/* 顶部渐变背景 */}
       <YStack width="100%" height={160} position="relative" overflow="hidden">
         <LinearGradient
@@ -260,99 +244,6 @@ export function ProfileHeader({
         >
           {bio}
         </Text>
-
-        {/* 宠物展示区域 */}
-        {totalPets > 0 && (
-          <XStack
-            marginTop="$4"
-            justifyContent="flex-start"
-            paddingHorizontal="$2"
-            gap="$2.5"
-            flexWrap="wrap"
-          >
-            {pets.map((pet, index) => {
-              const isSelected = selectedPetId === pet.id;
-              return (
-                <TouchableOpacity
-                  key={pet.id}
-                  onPress={() => onPetPress?.(pet)}
-                  activeOpacity={0.7}
-                >
-                  <YStack position="relative" borderRadius="$12">
-                    {/* 宠物头像 - 完全占满无空隙 */}
-                    <Avatar
-                      circular
-                      size={56}
-                      borderWidth={isSelected ? 3 : 0}
-                      borderColor={isSelected ? '#FEBE98' : 'transparent'}
-                    >
-                      {pet.photo ? (
-                        <Avatar.Image src={pet.photo} />
-                      ) : (
-                        <Avatar.Fallback
-                          backgroundColor="$orange3"
-                          justifyContent="center"
-                          alignItems="center"
-                        >
-                          <Text fontSize={28}>🐱</Text>
-                        </Avatar.Fallback>
-                      )}
-                    </Avatar>
-
-                    {/* 选中指示器 */}
-                    {isSelected && (
-                      <YStack
-                        position="absolute"
-                        bottom={-2}
-                        right={-2}
-                        width={20}
-                        height={20}
-                        borderRadius="$10"
-                        backgroundColor="#FEBE98"
-                        alignItems="center"
-                        justifyContent="center"
-                        borderWidth={2}
-                        borderColor="white"
-                      >
-                        <IconSymbol name="checkmark.circle.fill" size={16} color="white" />
-                      </YStack>
-                    )}
-                  </YStack>
-                </TouchableOpacity>
-              );
-            })}
-
-            {/* 更多宠物指示器 */}
-            {totalPets > 3 && (
-              <YStack
-                width={56}
-                height={56}
-                borderRadius="$12"
-                backgroundColor="#FEBE98"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <Text fontSize={16} fontWeight="700" color="white">
-                  +{totalPets - 3}
-                </Text>
-              </YStack>
-            )}
-
-            {/* 添加宠物按钮 */}
-            <TouchableOpacity onPress={onAddPet} activeOpacity={0.7}>
-              <YStack
-                width={56}
-                height={56}
-                borderRadius="$12"
-                backgroundColor="#FEBE98"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <IconSymbol name="plus.circle.fill" size={28} color="white" />
-              </YStack>
-            </TouchableOpacity>
-          </XStack>
-        )}
       </YStack>
     </YStack>
   );

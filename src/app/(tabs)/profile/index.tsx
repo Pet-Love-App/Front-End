@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { Alert, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Text, YStack } from 'tamagui';
-import { AddPetModal, PetDetailModal, PetInfoPanel, ProfileHeader } from './_components';
+import { AddPetModal, PetDetailModal, ProfileHeader, ProfileTabs } from './_components';
 
 export default function ProfileIndex() {
   // 使用 userStore - 使用选择器避免不必要的重渲染
@@ -27,7 +27,6 @@ export default function ProfileIndex() {
   // Pet management states
   const [petModalVisible, setPetModalVisible] = useState(false);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
-  const [selectedPetForView, setSelectedPetForView] = useState<Pet | null>(null);
 
   // Load user data on mount
   useEffect(() => {
@@ -39,13 +38,6 @@ export default function ProfileIndex() {
       });
     }
   }, [user, fetchCurrentUser, isAuthenticated, _hasHydrated]);
-
-  // Auto-select first pet when user data loads
-  useEffect(() => {
-    if (user?.pets && user.pets.length > 0 && !selectedPetForView) {
-      setSelectedPetForView(user.pets[0]);
-    }
-  }, [user?.pets, selectedPetForView]);
 
   // Handle adding new pet
   const handleAddPet = async (petData: PetInput, photoUri: string | null) => {
@@ -136,18 +128,19 @@ export default function ProfileIndex() {
           </TouchableOpacity>
         </YStack>
 
-        {/* Profile Header - Integrated Avatar & User Info */}
+        {/* Profile Header - User Avatar & Info */}
         <ProfileHeader
           username={user?.username}
           bio="专业的宠物爱好者 🐱"
           onAvatarUpdate={fetchCurrentUser}
-          onAddPet={() => setPetModalVisible(true)}
-          onPetPress={setSelectedPetForView}
-          selectedPetId={selectedPetForView?.id}
         />
 
-        {/* Pet Info Panel - Show selected pet details */}
-        {selectedPetForView && <PetInfoPanel pet={selectedPetForView} />}
+        {/* Profile Tabs - Pets, Comments, Likes */}
+        <ProfileTabs
+          pets={user?.pets}
+          isLoading={isLoading && !user}
+          onAddPet={() => setPetModalVisible(true)}
+        />
       </YStack>
 
       {/* Modals */}

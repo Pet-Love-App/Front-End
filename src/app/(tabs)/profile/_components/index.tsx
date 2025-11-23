@@ -7,5 +7,6 @@ export { PetDetailModal } from './PetDetailModal';
 export { PetInfoPanel } from './PetInfoPanel';
 export { PetList } from './PetList';
 export { ProfileHeader } from './ProfileHeader';
+export { ProfileTabs } from './ProfileTabs';
 export { SettingItem } from './SettingItem';
 export { ThemeSelectorModal } from './ThemeSelectorModal';

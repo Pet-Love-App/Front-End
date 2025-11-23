@@ -99,25 +99,31 @@ export default function ProfileIndex() {
       flex={1}
       backgroundColor={colors.background}
       contentContainerStyle={{
-        paddingTop: insets.top + 20,
+        paddingTop: insets.top,
         paddingBottom: insets.bottom + 30,
       }}
     >
       <YStack flex={1} alignItems="center" position="relative">
-        {/* Settings Button - Fixed Top Right */}
-        <YStack width="90%" alignItems="flex-end" marginBottom="$4" marginTop={-10}>
+        {/* Settings Button - Floating Top Right */}
+        <YStack position="absolute" top={20} right={20} zIndex={100}>
           <TouchableOpacity
             onPress={() => router.push('/profile/settings' as any)}
             activeOpacity={0.7}
           >
             <YStack
-              padding="$3"
-              borderRadius="$3"
-              backgroundColor={colors.background}
-              borderWidth={1}
-              borderColor={colors.icon + '40'}
+              width={44}
+              height={44}
+              borderRadius="$10"
+              backgroundColor="rgba(255, 255, 255, 0.95)"
+              alignItems="center"
+              justifyContent="center"
+              shadowColor="#000"
+              shadowOffset={{ width: 0, height: 2 }}
+              shadowOpacity={0.15}
+              shadowRadius={4}
+              elevation={4}
             >
-              <Ionicons name="settings-outline" size={24} color={colors.icon} />
+              <Ionicons name="settings-outline" size={22} color={colors.icon} />
             </YStack>
           </TouchableOpacity>
         </YStack>
@@ -125,7 +131,7 @@ export default function ProfileIndex() {
         {/* Profile Header - Integrated Avatar & User Info */}
         <ProfileHeader
           username={user?.username}
-          bio="宠物爱好者"
+          bio="专业的宠物爱好者 🐱"
           onAvatarUpdate={fetchCurrentUser}
           onEditProfile={() => router.push('/profile/settings' as any)}
         />

@@ -8,6 +8,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, Modal, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Separator, Tabs, Text, XStack, YStack } from 'tamagui';
+import { TopRankingSwiper } from './_components/TopRankingSwiper';
 
 export default function RankingScreen() {
   const insets = useSafeAreaInsets();
@@ -93,6 +94,25 @@ export default function RankingScreen() {
     });
   }, [catfoods, searchQuery, sortBy, selectedBrand]);
 
+  // 轮播图显示的前5名猫粮
+  const topCatFoods = useMemo(() => {
+    // 只在未搜索且未筛选品牌时显示轮播图
+    if (!searchQuery.trim() && selectedBrand === 'all') {
+      return filteredCatFoods.slice(0, 5);
+    }
+    return [];
+  }, [filteredCatFoods, searchQuery, selectedBrand]);
+
+  // 列表显示的猫粮（排除轮播图中的前5名）
+  const listCatFoods = useMemo(() => {
+    // 如果有轮播图，则从第6名开始显示
+    if (topCatFoods.length > 0) {
+      return filteredCatFoods.slice(5);
+    }
+    // 如果没有轮播图（有搜索或品牌筛选），显示全部
+    return filteredCatFoods;
+  }, [filteredCatFoods, topCatFoods]);
+
   // 处理搜索输入
   const handleSearchChange = useCallback((text: string) => {
     setSearchQuery(text);
@@ -156,14 +176,242 @@ export default function RankingScreen() {
   };
 
   // 渲染猫粮卡片
-  const renderCatFoodCard = ({ item, index }: { item: CatFood; index: number }) => (
-    <CatFoodCard
-      catfood={item}
-      index={index}
-      onPress={handleCatFoodPress}
-      onImagePress={handleImagePress}
-    />
-  );
+  const renderCatFoodCard = ({ item, index }: { item: CatFood; index: number }) => {
+    // 如果有轮播图（前5名），列表从第6名开始显示
+    const displayIndex = topCatFoods.length > 0 ? index + 5 : index;
+
+    return (
+      <CatFoodCard
+        catfood={item}
+        index={displayIndex}
+        onPress={handleCatFoodPress}
+        onImagePress={handleImagePress}
+      />
+    );
+  };
+
+  // 渲染列表头部（轮播图和搜索框）
+  const renderHeader = () => {
+    return (
+      <>
+        {/* 热门推荐轮播图 */}
+        {topCatFoods.length > 0 && (
+          <TopRankingSwiper data={topCatFoods} topCount={5} onPress={handleCatFoodPress} />
+        )}
+
+        {/* 搜索框和筛选 */}
+        <YStack
+          paddingHorizontal="$4"
+          paddingTop="$3"
+          paddingBottom="$2"
+          backgroundColor="white"
+          borderBottomWidth={1}
+          borderBottomColor="$gray3"
+        >
+          <SearchBox
+            value={searchQuery}
+            onChangeText={handleSearchChange}
+            onClear={handleClearSearch}
+            placeholder="搜索猫粮名称、品牌或标签..."
+            size="$4"
+          />
+
+          {/* 品牌筛选器 - 可展开 */}
+          <YStack marginTop="$3" gap="$2">
+            {/* 品牌选择按钮 */}
+            <Button
+              size="$4"
+              backgroundColor="white"
+              borderWidth={1}
+              borderColor="$gray4"
+              onPress={toggleBrandMenu}
+              pressStyle={{ scale: 0.98, backgroundColor: '$gray2' }}
+              icon={
+                <YStack
+                  width={32}
+                  height={32}
+                  backgroundColor="$orange3"
+                  borderRadius="$10"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <IconSymbol name="building.2.fill" size={16} color="$orange10" />
+                </YStack>
+              }
+              iconAfter={
+                <IconSymbol
+                  name={brandMenuExpanded ? 'chevron.up' : 'chevron.down'}
+                  size={16}
+                  color="$gray10"
+                />
+              }
+            >
+              <XStack flex={1} alignItems="center" gap="$2">
+                <Text fontSize="$3" color="$gray11" fontWeight="600">
+                  品牌筛选:
+                </Text>
+                <Text fontSize="$3" color="$orange11" fontWeight="700">
+                  {selectedBrand === 'all' ? '全部品牌' : selectedBrand}
+                </Text>
+                {selectedBrand !== 'all' && (
+                  <Text fontSize="$2" color="$gray9">
+                    ({brandCounts[selectedBrand] || 0} 个)
+                  </Text>
+                )}
+              </XStack>
+            </Button>
+
+            {/* 展开的品牌列表 */}
+            {brandMenuExpanded && (
+              <YStack
+                backgroundColor="white"
+                borderWidth={1}
+                borderColor="$gray4"
+                borderRadius="$4"
+                padding="$3"
+                gap="$2"
+                maxHeight={300}
+              >
+                <ScrollView showsVerticalScrollIndicator={true}>
+                  <YStack gap="$2">
+                    {brandList.map((brand) => (
+                      <Button
+                        key={brand}
+                        size="$3"
+                        backgroundColor={selectedBrand === brand ? '$orange9' : '$gray2'}
+                        borderWidth={1}
+                        borderColor={selectedBrand === brand ? '$orange10' : '$gray4'}
+                        onPress={() => handleSelectBrand(brand)}
+                        pressStyle={{ scale: 0.98 }}
+                        justifyContent="space-between"
+                      >
+                        <XStack alignItems="center" gap="$2" flex={1}>
+                          {brand === 'all' ? (
+                            <IconSymbol
+                              name="square.grid.2x2.fill"
+                              size={14}
+                              color={selectedBrand === brand ? 'white' : '$gray11'}
+                            />
+                          ) : (
+                            <IconSymbol
+                              name="building.2"
+                              size={14}
+                              color={selectedBrand === brand ? 'white' : '$gray10'}
+                            />
+                          )}
+                          <Text
+                            fontSize="$3"
+                            color={selectedBrand === brand ? 'white' : '$gray11'}
+                            fontWeight={selectedBrand === brand ? '600' : '400'}
+                            flex={1}
+                            textAlign="left"
+                          >
+                            {brand === 'all' ? '全部品牌' : brand}
+                          </Text>
+                          <YStack
+                            paddingHorizontal="$2"
+                            paddingVertical="$1"
+                            backgroundColor={
+                              selectedBrand === brand ? 'rgba(255,255,255,0.2)' : '$gray4'
+                            }
+                            borderRadius="$10"
+                          >
+                            <Text
+                              fontSize="$2"
+                              color={selectedBrand === brand ? 'white' : '$gray11'}
+                              fontWeight="600"
+                            >
+                              {brandCounts[brand] || 0}
+                            </Text>
+                          </YStack>
+                        </XStack>
+                      </Button>
+                    ))}
+                  </YStack>
+                </ScrollView>
+              </YStack>
+            )}
+          </YStack>
+
+          {/* 排序和统计 */}
+          <XStack marginTop="$3" alignItems="center" justifyContent="space-between">
+            {/* 筛选结果统计 */}
+            <XStack alignItems="center" gap="$2" flex={1}>
+              {searchQuery.trim() || selectedBrand !== 'all' ? (
+                <>
+                  <Text fontSize="$2" color="$gray10">
+                    找到 {filteredCatFoods.length} 个结果
+                  </Text>
+                  {filteredCatFoods.length > 0 && catfoods.length > 0 && (
+                    <Text fontSize="$2" color="$gray9">
+                      / 共 {catfoods.length} 个
+                    </Text>
+                  )}
+                </>
+              ) : (
+                <Text fontSize="$2" color="$gray10">
+                  共 {filteredCatFoods.length} 个猫粮
+                </Text>
+              )}
+            </XStack>
+
+            {/* 排序切换 */}
+            <XStack gap="$2" alignItems="center">
+              <Text fontSize="$2" color="$gray10">
+                排序:
+              </Text>
+              <Button
+                size="$2"
+                paddingHorizontal="$3"
+                backgroundColor={sortBy === 'score' ? '$blue9' : '$gray4'}
+                borderWidth={0}
+                onPress={() => setSortBy('score')}
+                pressStyle={{ scale: 0.95 }}
+              >
+                <XStack alignItems="center" gap="$1">
+                  <IconSymbol
+                    name="star.fill"
+                    size={12}
+                    color={sortBy === 'score' ? 'white' : '$gray10'}
+                  />
+                  <Text
+                    fontSize="$2"
+                    color={sortBy === 'score' ? 'white' : '$gray11'}
+                    fontWeight={sortBy === 'score' ? '600' : '400'}
+                  >
+                    评分
+                  </Text>
+                </XStack>
+              </Button>
+              <Button
+                size="$2"
+                paddingHorizontal="$3"
+                backgroundColor={sortBy === 'likes' ? '$red9' : '$gray4'}
+                borderWidth={0}
+                onPress={() => setSortBy('likes')}
+                pressStyle={{ scale: 0.95 }}
+              >
+                <XStack alignItems="center" gap="$1">
+                  <IconSymbol
+                    name="heart.fill"
+                    size={12}
+                    color={sortBy === 'likes' ? 'white' : '$gray10'}
+                  />
+                  <Text
+                    fontSize="$2"
+                    color={sortBy === 'likes' ? 'white' : '$gray11'}
+                    fontWeight={sortBy === 'likes' ? '600' : '400'}
+                  >
+                    点赞
+                  </Text>
+                </XStack>
+              </Button>
+            </XStack>
+          </XStack>
+        </YStack>
+      </>
+    );
+  };
 
   // 渲染列表底部
   const renderFooter = () => {
@@ -197,6 +445,21 @@ export default function RankingScreen() {
       );
     }
 
+    // 如果列表为空但有轮播图（说明只有5个或更少猫粮）
+    if (topCatFoods.length > 0 && listCatFoods.length === 0) {
+      return (
+        <YStack flex={1} alignItems="center" justifyContent="center" padding="$6">
+          <IconSymbol name="checkmark.circle.fill" size={64} color="$green9" />
+          <Text fontSize="$6" fontWeight="600" marginTop="$4" color="$gray11">
+            已显示全部结果
+          </Text>
+          <Text fontSize="$3" color="$gray10" marginTop="$2" textAlign="center">
+            以上是热门推荐的全部猫粮
+          </Text>
+        </YStack>
+      );
+    }
+
     // 原始空状态
     return (
       <YStack flex={1} alignItems="center" justifyContent="center" padding="$6">
@@ -213,217 +476,6 @@ export default function RankingScreen() {
 
   return (
     <YStack flex={1} backgroundColor="$gray1">
-      {/* 搜索框和筛选 */}
-      <YStack
-        paddingHorizontal="$4"
-        paddingTop="$3"
-        paddingBottom="$2"
-        backgroundColor="white"
-        borderBottomWidth={1}
-        borderBottomColor="$gray3"
-      >
-        <SearchBox
-          value={searchQuery}
-          onChangeText={handleSearchChange}
-          onClear={handleClearSearch}
-          placeholder="搜索猫粮名称、品牌或标签..."
-          size="$4"
-        />
-
-        {/* 品牌筛选器 - 可展开 */}
-        <YStack marginTop="$3" gap="$2">
-          {/* 品牌选择按钮 */}
-          <Button
-            size="$4"
-            backgroundColor="white"
-            borderWidth={1}
-            borderColor="$gray4"
-            onPress={toggleBrandMenu}
-            pressStyle={{ scale: 0.98, backgroundColor: '$gray2' }}
-            icon={
-              <YStack
-                width={32}
-                height={32}
-                backgroundColor="$orange3"
-                borderRadius="$10"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <IconSymbol name="building.2.fill" size={16} color="$orange10" />
-              </YStack>
-            }
-            iconAfter={
-              <IconSymbol
-                name={brandMenuExpanded ? 'chevron.up' : 'chevron.down'}
-                size={16}
-                color="$gray10"
-              />
-            }
-          >
-            <XStack flex={1} alignItems="center" gap="$2">
-              <Text fontSize="$3" color="$gray11" fontWeight="600">
-                品牌筛选:
-              </Text>
-              <Text fontSize="$3" color="$orange11" fontWeight="700">
-                {selectedBrand === 'all' ? '全部品牌' : selectedBrand}
-              </Text>
-              {selectedBrand !== 'all' && (
-                <Text fontSize="$2" color="$gray9">
-                  ({brandCounts[selectedBrand] || 0} 个)
-                </Text>
-              )}
-            </XStack>
-          </Button>
-
-          {/* 展开的品牌列表 */}
-          {brandMenuExpanded && (
-            <YStack
-              backgroundColor="white"
-              borderWidth={1}
-              borderColor="$gray4"
-              borderRadius="$4"
-              padding="$3"
-              gap="$2"
-              maxHeight={300}
-            >
-              <ScrollView showsVerticalScrollIndicator={true}>
-                <YStack gap="$2">
-                  {brandList.map((brand) => (
-                    <Button
-                      key={brand}
-                      size="$3"
-                      backgroundColor={selectedBrand === brand ? '$orange9' : '$gray2'}
-                      borderWidth={1}
-                      borderColor={selectedBrand === brand ? '$orange10' : '$gray4'}
-                      onPress={() => handleSelectBrand(brand)}
-                      pressStyle={{ scale: 0.98 }}
-                      justifyContent="space-between"
-                    >
-                      <XStack alignItems="center" gap="$2" flex={1}>
-                        {brand === 'all' ? (
-                          <IconSymbol
-                            name="square.grid.2x2.fill"
-                            size={14}
-                            color={selectedBrand === brand ? 'white' : '$gray11'}
-                          />
-                        ) : (
-                          <IconSymbol
-                            name="building.2"
-                            size={14}
-                            color={selectedBrand === brand ? 'white' : '$gray10'}
-                          />
-                        )}
-                        <Text
-                          fontSize="$3"
-                          color={selectedBrand === brand ? 'white' : '$gray11'}
-                          fontWeight={selectedBrand === brand ? '600' : '400'}
-                          flex={1}
-                          textAlign="left"
-                        >
-                          {brand === 'all' ? '全部品牌' : brand}
-                        </Text>
-                        <YStack
-                          paddingHorizontal="$2"
-                          paddingVertical="$1"
-                          backgroundColor={
-                            selectedBrand === brand ? 'rgba(255,255,255,0.2)' : '$gray4'
-                          }
-                          borderRadius="$10"
-                        >
-                          <Text
-                            fontSize="$2"
-                            color={selectedBrand === brand ? 'white' : '$gray11'}
-                            fontWeight="600"
-                          >
-                            {brandCounts[brand] || 0}
-                          </Text>
-                        </YStack>
-                      </XStack>
-                    </Button>
-                  ))}
-                </YStack>
-              </ScrollView>
-            </YStack>
-          )}
-        </YStack>
-
-        {/* 排序和统计 */}
-        <XStack marginTop="$3" alignItems="center" justifyContent="space-between">
-          {/* 筛选结果统计 */}
-          <XStack alignItems="center" gap="$2" flex={1}>
-            {searchQuery.trim() || selectedBrand !== 'all' ? (
-              <>
-                <Text fontSize="$2" color="$gray10">
-                  找到 {filteredCatFoods.length} 个结果
-                </Text>
-                {filteredCatFoods.length > 0 && catfoods.length > 0 && (
-                  <Text fontSize="$2" color="$gray9">
-                    / 共 {catfoods.length} 个
-                  </Text>
-                )}
-              </>
-            ) : (
-              <Text fontSize="$2" color="$gray10">
-                共 {filteredCatFoods.length} 个猫粮
-              </Text>
-            )}
-          </XStack>
-
-          {/* 排序切换 */}
-          <XStack gap="$2" alignItems="center">
-            <Text fontSize="$2" color="$gray10">
-              排序:
-            </Text>
-            <Button
-              size="$2"
-              paddingHorizontal="$3"
-              backgroundColor={sortBy === 'score' ? '$blue9' : '$gray4'}
-              borderWidth={0}
-              onPress={() => setSortBy('score')}
-              pressStyle={{ scale: 0.95 }}
-            >
-              <XStack alignItems="center" gap="$1">
-                <IconSymbol
-                  name="star.fill"
-                  size={12}
-                  color={sortBy === 'score' ? 'white' : '$gray10'}
-                />
-                <Text
-                  fontSize="$2"
-                  color={sortBy === 'score' ? 'white' : '$gray11'}
-                  fontWeight={sortBy === 'score' ? '600' : '400'}
-                >
-                  评分
-                </Text>
-              </XStack>
-            </Button>
-            <Button
-              size="$2"
-              paddingHorizontal="$3"
-              backgroundColor={sortBy === 'likes' ? '$red9' : '$gray4'}
-              borderWidth={0}
-              onPress={() => setSortBy('likes')}
-              pressStyle={{ scale: 0.95 }}
-            >
-              <XStack alignItems="center" gap="$1">
-                <IconSymbol
-                  name="heart.fill"
-                  size={12}
-                  color={sortBy === 'likes' ? 'white' : '$gray10'}
-                />
-                <Text
-                  fontSize="$2"
-                  color={sortBy === 'likes' ? 'white' : '$gray11'}
-                  fontWeight={sortBy === 'likes' ? '600' : '400'}
-                >
-                  点赞
-                </Text>
-              </XStack>
-            </Button>
-          </XStack>
-        </XStack>
-      </YStack>
-
       {/* 图片预览 Modal */}
       <Modal
         visible={previewVisible}
@@ -494,10 +546,11 @@ export default function RankingScreen() {
         {/* 全部猫粮 Tab */}
         <Tabs.Content value="all" flex={1}>
           <FlatList
-            data={filteredCatFoods}
+            data={listCatFoods}
             renderItem={renderCatFoodCard}
             keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={{ paddingTop: 10, paddingBottom: Math.max(10, insets.bottom) }}
+            ListHeaderComponent={renderHeader}
+            contentContainerStyle={{ paddingBottom: Math.max(10, insets.bottom) }}
             refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
             onEndReached={searchQuery.trim() ? undefined : handleLoadMore}
             onEndReachedThreshold={0.5}

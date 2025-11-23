@@ -114,8 +114,15 @@ export const PetsTab = memo(function PetsTab({ pets, isLoading, onAddPet }: Pets
             </TouchableOpacity>
           </XStack>
 
-          {/* 宠物头像网格 */}
-          <XStack flexWrap="wrap" gap="$3">
+          {/* 宠物头像水平滑动列表 */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingRight: 16,
+              gap: 12,
+            }}
+          >
             {pets.map((pet) => {
               const isSelected = selectedPet?.id === pet.id;
               return (
@@ -163,7 +170,7 @@ export const PetsTab = memo(function PetsTab({ pets, isLoading, onAddPet }: Pets
                 </TouchableOpacity>
               );
             })}
-          </XStack>
+          </ScrollView>
         </YStack>
 
         {/* 选中宠物的详情面板 */}

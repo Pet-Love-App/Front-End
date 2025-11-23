@@ -258,11 +258,10 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                     placeholderTextColor={colors.icon + '80'}
                     value={nameValue}
                     onChangeText={setNameValue}
-                    autoCapitalize="words"
-                    autoCorrect={false}
+                    autoCapitalize="none"
                     returnKeyType="done"
                     editable={true}
-                    selectTextOnFocus={true}
+                    keyboardType="default"
                     style={{
                       color: colors.text,
                       fontSize: 16,
@@ -387,10 +386,10 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                     multiline
                     numberOfLines={4}
                     textAlignVertical="top"
-                    autoCapitalize="sentences"
-                    autoCorrect={false}
+                    autoCapitalize="none"
                     returnKeyType="default"
                     blurOnSubmit={false}
+                    keyboardType="default"
                     style={{
                       color: colors.text,
                       fontSize: 15,

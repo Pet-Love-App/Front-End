@@ -103,7 +103,7 @@ class CommentService {
       action: 'liked' | 'unliked';
       likes: number;
       comment: Comment;
-    }>(`${this.basePath}/${commentId}/like/`, {});
+    }>(`${this.basePath}/${commentId}/like/`);
   }
 }
 

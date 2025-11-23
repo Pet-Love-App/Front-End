@@ -158,6 +158,8 @@ export const BreedSelector = memo(function BreedSelector({
                     placeholderTextColor={colors.icon + '80'}
                     value={searchText}
                     onChangeText={setSearchText}
+                    autoCapitalize="none"
+                    keyboardType="default"
                     style={{
                       flex: 1,
                       height: 40,

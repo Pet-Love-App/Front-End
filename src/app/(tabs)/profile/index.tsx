@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { Alert, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Text, YStack } from 'tamagui';
-import { AddPetModal, PetDetailModal, PetList, ProfileHeader } from './_components';
+import { AddPetModal, PetDetailModal, PetInfoPanel, PetList, ProfileHeader } from './_components';
 
 export default function ProfileIndex() {
   // 使用 userStore - 使用选择器避免不必要的重渲染
@@ -27,6 +27,7 @@ export default function ProfileIndex() {
   // Pet management states
   const [petModalVisible, setPetModalVisible] = useState(false);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
+  const [selectedPetForView, setSelectedPetForView] = useState<Pet | null>(null);
 
   // Load user data on mount
   useEffect(() => {
@@ -134,7 +135,12 @@ export default function ProfileIndex() {
           bio="专业的宠物爱好者 🐱"
           onAvatarUpdate={fetchCurrentUser}
           onAddPet={() => setPetModalVisible(true)}
+          onPetPress={setSelectedPetForView}
+          selectedPetId={selectedPetForView?.id}
         />
+
+        {/* Pet Info Panel - Show selected pet details */}
+        {selectedPetForView && <PetInfoPanel pet={selectedPetForView} />}
 
         {/* Pet List */}
         <PetList

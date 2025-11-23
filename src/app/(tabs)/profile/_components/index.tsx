@@ -4,6 +4,7 @@ export { EditProfileModal } from './EditProfileModal';
 export { LogoutButton } from './LogoutButton';
 export { PetCard } from './PetCard';
 export { PetDetailModal } from './PetDetailModal';
+export { PetInfoPanel } from './PetInfoPanel';
 export { PetList } from './PetList';
 export { ProfileHeader } from './ProfileHeader';
 export { SettingItem } from './SettingItem';

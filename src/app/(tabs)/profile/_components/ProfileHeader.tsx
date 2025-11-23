@@ -1,6 +1,7 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
+import type { Pet } from '@/src/schemas/pet.schema';
 import { useUserStore } from '@/src/store/userStore';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,6 +20,10 @@ interface ProfileHeaderProps {
   onAvatarUpdate?: () => void;
   /** 添加宠物回调 */
   onAddPet?: () => void;
+  /** 宠物点击回调 */
+  onPetPress?: (pet: Pet) => void;
+  /** 当前选中的宠物ID */
+  selectedPetId?: number;
 }
 
 /**
@@ -31,6 +36,8 @@ export function ProfileHeader({
   bio = '这个人很懒，什么都没留下~',
   onAvatarUpdate,
   onAddPet,
+  onPetPress,
+  selectedPetId,
 }: ProfileHeaderProps) {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
@@ -268,33 +275,65 @@ export function ProfileHeader({
             gap="$2.5"
             flexWrap="wrap"
           >
-            {pets.map((pet, index) => (
-              <YStack
-                key={pet.id}
-                position="relative"
-                shadowColor="#000"
-                shadowOffset={{ width: 0, height: 2 }}
-                shadowOpacity={0.1}
-                shadowRadius={3}
-                elevation={3}
-                borderRadius="$12"
-              >
-                {/* 宠物头像 - 完全占满无空隙 */}
-                <Avatar circular size={56} borderWidth={0}>
-                  {pet.photo ? (
-                    <Avatar.Image src={pet.photo} />
-                  ) : (
-                    <Avatar.Fallback
-                      backgroundColor="$orange3"
-                      justifyContent="center"
-                      alignItems="center"
+            {pets.map((pet, index) => {
+              const isSelected = selectedPetId === pet.id;
+              return (
+                <TouchableOpacity
+                  key={pet.id}
+                  onPress={() => onPetPress?.(pet)}
+                  activeOpacity={0.7}
+                >
+                  <YStack
+                    position="relative"
+                    shadowColor={isSelected ? '$red9' : '#000'}
+                    shadowOffset={{ width: 0, height: isSelected ? 4 : 2 }}
+                    shadowOpacity={isSelected ? 0.3 : 0.1}
+                    shadowRadius={isSelected ? 6 : 3}
+                    elevation={isSelected ? 5 : 3}
+                    borderRadius="$12"
+                  >
+                    {/* 宠物头像 - 完全占满无空隙 */}
+                    <Avatar
+                      circular
+                      size={56}
+                      borderWidth={isSelected ? 3 : 0}
+                      borderColor={isSelected ? '$red9' : 'transparent'}
                     >
-                      <Text fontSize={28}>🐱</Text>
-                    </Avatar.Fallback>
-                  )}
-                </Avatar>
-              </YStack>
-            ))}
+                      {pet.photo ? (
+                        <Avatar.Image src={pet.photo} />
+                      ) : (
+                        <Avatar.Fallback
+                          backgroundColor="$orange3"
+                          justifyContent="center"
+                          alignItems="center"
+                        >
+                          <Text fontSize={28}>🐱</Text>
+                        </Avatar.Fallback>
+                      )}
+                    </Avatar>
+
+                    {/* 选中指示器 */}
+                    {isSelected && (
+                      <YStack
+                        position="absolute"
+                        bottom={-2}
+                        right={-2}
+                        width={20}
+                        height={20}
+                        borderRadius="$10"
+                        backgroundColor="$red9"
+                        alignItems="center"
+                        justifyContent="center"
+                        borderWidth={2}
+                        borderColor="white"
+                      >
+                        <IconSymbol name="checkmark.circle.fill" size={16} color="white" />
+                      </YStack>
+                    )}
+                  </YStack>
+                </TouchableOpacity>
+              );
+            })}
 
             {/* 更多宠物指示器 */}
             {totalPets > 3 && (

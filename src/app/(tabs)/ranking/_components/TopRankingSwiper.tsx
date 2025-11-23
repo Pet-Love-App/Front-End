@@ -403,12 +403,12 @@ export function TopRankingSwiper({
     <YStack
       position="relative"
       paddingTop="$4"
-      paddingBottom="$3"
-      marginBottom="$2"
-      minHeight={cardHeight * 1.15 + 140}
+      paddingBottom="$2"
+      marginBottom="$1"
+      minHeight={cardHeight * 1.15 + 10}
     >
       {/* 渐变背景 */}
-      <LinearGradient
+      {/* <LinearGradient
         colors={['#FEF3C7', '#FECACA', '#E0E7FF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -420,7 +420,7 @@ export function TopRankingSwiper({
           bottom: 0,
           opacity: 0.4,
         }}
-      />
+      /> */}
 
       {/* 标题 */}
       <XStack

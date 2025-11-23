@@ -78,6 +78,18 @@ class CommentService {
   }
 
   /**
+   * 获取当前用户的所有评论
+   * @param page 页码
+   * @param pageSize 每页数量
+   * @returns 用户评论列表
+   */
+  async getMyComments(page: number = 1, pageSize: number = 20): Promise<GetCommentsResponse> {
+    return await apiClient.get<GetCommentsResponse>(
+      `${this.basePath}/?my=true&page=${page}&page_size=${pageSize}`
+    );
+  }
+
+  /**
    * 点赞/取消点赞评论
    * @param commentId 评论 ID
    * @returns 点赞结果
@@ -91,7 +103,7 @@ class CommentService {
       action: 'liked' | 'unliked';
       likes: number;
       comment: Comment;
-    }>(`${this.basePath}/${commentId}/like/`, {});
+    }>(`${this.basePath}/${commentId}/like/`);
   }
 }
 
@@ -106,6 +118,8 @@ export const getComments = (
   page?: number,
   pageSize?: number
 ) => commentService.getComments(targetType, targetId, page, pageSize);
+export const getMyComments = (page?: number, pageSize?: number) =>
+  commentService.getMyComments(page, pageSize);
 export const getComment = (commentId: number) => commentService.getComment(commentId);
 export const updateComment = (commentId: number, params: UpdateCommentRequest) =>
   commentService.updateComment(commentId, params);

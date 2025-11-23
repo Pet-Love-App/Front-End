@@ -67,13 +67,13 @@ export function PetCard({ pet, onPress }: PetCardProps) {
             width={70}
             height={70}
             borderRadius="$3"
-            backgroundColor={colors.tint + '20'}
+            backgroundColor="$orange3"
             alignItems="center"
             justifyContent="center"
             borderWidth={2}
             borderColor={colors.tint + '30'}
           >
-            <IconSymbol name={getPetIcon()} size={32} color={colors.tint} />
+            <Text fontSize={40}>🐱</Text>
           </YStack>
         )}
 

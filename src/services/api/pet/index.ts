@@ -84,7 +84,10 @@ class PetService {
       type: `image/${fileType}`,
     } as any);
 
-    const data = await apiClient.upload(API_ENDPOINTS.PET.DETAIL(petId), formData);
+    // 使用 PATCH 方法更新宠物照片
+    const data = await apiClient.upload(API_ENDPOINTS.PET.DETAIL(petId), formData, {
+      method: 'PATCH',
+    });
     return validateResponse<Pet>(data, petSchema);
   }
 }

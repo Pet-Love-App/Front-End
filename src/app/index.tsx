@@ -19,8 +19,6 @@ export default function Index() {
     );
   }
 
-  console.log('🔍 检查登录状态:', { isAuthenticated });
-
   useEffect(() => {
     if (isAuthenticated) {
       console.log('✅ 已登录，跳转到主页');

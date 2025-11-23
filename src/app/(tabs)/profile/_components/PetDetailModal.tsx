@@ -54,7 +54,7 @@ export function PetDetailModal({ pet, open, onOpenChange }: PetDetailModalProps)
           </Dialog.Title>
 
           <YStack gap="$3" alignItems="center">
-            {pet.photo && (
+            {pet.photo ? (
               <Image
                 source={{ uri: pet.photo }}
                 style={{
@@ -65,6 +65,17 @@ export function PetDetailModal({ pet, open, onOpenChange }: PetDetailModalProps)
                 }}
                 resizeMode="cover"
               />
+            ) : (
+              <YStack
+                width={200}
+                height={200}
+                borderRadius={16}
+                backgroundColor="$orange3"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Text fontSize={120}>🐱</Text>
+              </YStack>
             )}
 
             <YStack gap="$2" width="100%">

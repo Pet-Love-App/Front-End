@@ -133,7 +133,7 @@ export default function ProfileIndex() {
           username={user?.username}
           bio="专业的宠物爱好者 🐱"
           onAvatarUpdate={fetchCurrentUser}
-          onEditProfile={() => router.push('/profile/settings' as any)}
+          onAddPet={() => setPetModalVisible(true)}
         />
 
         {/* Pet List */}

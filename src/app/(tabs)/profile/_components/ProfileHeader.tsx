@@ -6,7 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Alert, Dimensions, TouchableOpacity } from 'react-native';
-import { Avatar, Button, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Avatar, Spinner, Text, XStack, YStack } from 'tamagui';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -17,8 +17,8 @@ interface ProfileHeaderProps {
   bio?: string;
   /** 头像更新回调 */
   onAvatarUpdate?: () => void;
-  /** 编辑资料回调 */
-  onEditProfile?: () => void;
+  /** 添加宠物回调 */
+  onAddPet?: () => void;
 }
 
 /**
@@ -30,7 +30,7 @@ export function ProfileHeader({
   username = '未登录',
   bio = '这个人很懒，什么都没留下~',
   onAvatarUpdate,
-  onEditProfile,
+  onAddPet,
 }: ProfileHeaderProps) {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
@@ -184,38 +184,28 @@ export function ProfileHeader({
       <YStack position="absolute" top={70} alignItems="center" zIndex={10}>
         <TouchableOpacity onPress={onPressAvatar} activeOpacity={0.85}>
           <YStack position="relative" alignItems="center">
-            {/* 外圈灰色背景 */}
-            <YStack
-              width={144}
-              height={144}
-              borderRadius="$12"
-              backgroundColor="$gray3"
-              alignItems="center"
-              justifyContent="center"
-            >
-              {/* 头像 */}
-              <Avatar circular size={112} borderWidth={0} elevation={0}>
-                {uploading ? (
-                  <Avatar.Fallback
-                    backgroundColor="$gray2"
-                    justifyContent="center"
-                    alignItems="center"
-                  >
-                    <Spinner size="large" color="$red9" />
-                  </Avatar.Fallback>
-                ) : avatarSrc ? (
-                  <Avatar.Image src={avatarSrc} />
-                ) : (
-                  <Avatar.Fallback
-                    backgroundColor="$red9"
-                    justifyContent="center"
-                    alignItems="center"
-                  >
-                    <IconSymbol name="person.fill" size={50} color="white" />
-                  </Avatar.Fallback>
-                )}
-              </Avatar>
-            </YStack>
+            {/* 头像 - 完全占满无空隙 */}
+            <Avatar circular size={128} borderWidth={0} elevation={0}>
+              {uploading ? (
+                <Avatar.Fallback
+                  backgroundColor="$gray3"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <Spinner size="large" color="$red9" />
+                </Avatar.Fallback>
+              ) : avatarSrc ? (
+                <Avatar.Image src={avatarSrc} />
+              ) : (
+                <Avatar.Fallback
+                  backgroundColor="$red9"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <IconSymbol name="person.fill" size={50} color="white" />
+                </Avatar.Fallback>
+              )}
+            </Avatar>
 
             {/* 相机按钮 */}
             {!uploading && (
@@ -245,7 +235,7 @@ export function ProfileHeader({
       </YStack>
 
       {/* 用户信息区域 - 在头像下方留出空间 */}
-      <YStack width="100%" alignItems="center" gap="$2.5" paddingTop={90} paddingBottom="$3">
+      <YStack width="100%" alignItems="center" gap="$2.5" paddingTop={40} paddingBottom="$1">
         {/* 用户名 */}
         <Text
           fontSize={24}
@@ -253,9 +243,8 @@ export function ProfileHeader({
           color={colors.text}
           textAlign="center"
           numberOfLines={1}
-          marginTop="$2"
         >
-          @{username}
+          {username}
         </Text>
 
         {/* 用户简介 */}
@@ -272,129 +261,82 @@ export function ProfileHeader({
 
         {/* 宠物展示区域 */}
         {totalPets > 0 && (
-          <YStack width={SCREEN_WIDTH * 0.72} marginTop="$4" position="relative">
-            {/* 进度条背景 */}
-            <YStack
-              width="100%"
-              height={2}
-              backgroundColor="$red2"
-              borderRadius="$10"
-              overflow="hidden"
-              marginBottom="$1"
-            >
-              {/* 进度条填充 - 左侧留出空间给第一个头像 */}
-              <XStack width="100%" height="100%" paddingLeft={24} paddingRight={28}>
-                <YStack
-                  width={`${Math.min((totalPets / 5) * 100, 100)}%`}
-                  height="100%"
-                  backgroundColor="$red9"
-                />
-              </XStack>
-            </YStack>
+          <XStack
+            marginTop="$4"
+            justifyContent="flex-start"
+            paddingHorizontal="$2"
+            gap="$2.5"
+            flexWrap="wrap"
+          >
+            {pets.map((pet, index) => (
+              <YStack
+                key={pet.id}
+                position="relative"
+                shadowColor="#000"
+                shadowOffset={{ width: 0, height: 2 }}
+                shadowOpacity={0.1}
+                shadowRadius={3}
+                elevation={3}
+                borderRadius="$12"
+              >
+                {/* 宠物头像 - 完全占满无空隙 */}
+                <Avatar circular size={56} borderWidth={0}>
+                  {pet.photo ? (
+                    <Avatar.Image src={pet.photo} />
+                  ) : (
+                    <Avatar.Fallback
+                      backgroundColor="$orange3"
+                      justifyContent="center"
+                      alignItems="center"
+                    >
+                      <Text fontSize={28}>🐱</Text>
+                    </Avatar.Fallback>
+                  )}
+                </Avatar>
+              </YStack>
+            ))}
 
-            {/* 宠物头像列表 - 悬浮在进度条上 */}
-            <XStack
-              position="absolute"
-              top={-28}
-              left={0}
-              right={0}
-              justifyContent="flex-start"
-              paddingHorizontal="$2"
-              gap="$2.5"
-            >
-              {pets.map((pet, index) => (
-                <YStack key={pet.id} position="relative">
-                  {/* 外圈红色背景 */}
-                  <YStack
-                    width={60}
-                    height={60}
-                    borderRadius="$12"
-                    backgroundColor="$red3"
-                    alignItems="center"
-                    justifyContent="center"
-                    shadowColor="#000"
-                    shadowOffset={{ width: 0, height: 2 }}
-                    shadowOpacity={0.1}
-                    shadowRadius={3}
-                    elevation={3}
-                  >
-                    {/* 宠物头像 */}
-                    <Avatar circular size={48} borderWidth={0}>
-                      {pet.photo ? (
-                        <Avatar.Image src={pet.photo} />
-                      ) : (
-                        <Avatar.Fallback backgroundColor="$gray4">
-                          <IconSymbol name="pawprint.fill" size={22} color="$gray9" />
-                        </Avatar.Fallback>
-                      )}
-                    </Avatar>
-                  </YStack>
-                </YStack>
-              ))}
+            {/* 更多宠物指示器 */}
+            {totalPets > 3 && (
+              <YStack
+                width={56}
+                height={56}
+                borderRadius="$12"
+                backgroundColor="$red9"
+                alignItems="center"
+                justifyContent="center"
+                shadowColor="#000"
+                shadowOffset={{ width: 0, height: 2 }}
+                shadowOpacity={0.1}
+                shadowRadius={3}
+                elevation={3}
+              >
+                <Text fontSize={16} fontWeight="700" color="white">
+                  +{totalPets - 3}
+                </Text>
+              </YStack>
+            )}
 
-              {/* 更多宠物指示器 */}
-              {totalPets > 3 && (
-                <YStack
-                  width={60}
-                  height={60}
-                  borderRadius="$12"
-                  backgroundColor="$red3"
-                  alignItems="center"
-                  justifyContent="center"
-                  shadowColor="#000"
-                  shadowOffset={{ width: 0, height: 2 }}
-                  shadowOpacity={0.1}
-                  shadowRadius={3}
-                  elevation={3}
-                >
-                  <YStack
-                    width={48}
-                    height={48}
-                    borderRadius="$12"
-                    backgroundColor="$red9"
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <Text fontSize={16} fontWeight="700" color="white">
-                      +{totalPets - 3}
-                    </Text>
-                  </YStack>
-                </YStack>
-              )}
-            </XStack>
-
-            {/* 宠物统计文字 */}
-            <XStack marginTop="$4" justifyContent="center" gap="$1.5" alignItems="center">
-              <IconSymbol name="pawprint.fill" size={14} color="$red9" />
-              <Text fontSize={12} fontWeight="600" color="$gray10">
-                {totalPets} 只可爱的宠物
-              </Text>
-            </XStack>
-          </YStack>
-        )}
-
-        {/* 编辑资料按钮 */}
-        <Button
-          width="85%"
-          size="$3.5"
-          marginTop="$3"
-          borderRadius="$8"
-          backgroundColor="white"
-          borderWidth={1.5}
-          borderColor="$red9"
-          pressStyle={{
-            scale: 0.98,
-            backgroundColor: '$red1',
-          }}
-          onPress={onEditProfile}
-        >
-          <XStack gap="$1.5" alignItems="center">
-            <IconSymbol name="pencil" size={16} color="$red9" />
-            <Text fontSize={14} fontWeight="700" color="$red9">
-              编辑资料
-            </Text>
+            {/* 添加宠物按钮 */}
+            <TouchableOpacity onPress={onAddPet} activeOpacity={0.7}>
+              <YStack
+                width={56}
+                height={56}
+                borderRadius="$12"
+                backgroundColor="$red9"
+                alignItems="center"
+                justifyContent="center"
+                shadowColor="#000"
+                shadowOffset={{ width: 0, height: 2 }}
+                shadowOpacity={0.1}
+                shadowRadius={3}
+                elevation={3}
+              >
+                <IconSymbol name="plus.circle.fill" size={28} color="white" />
+              </YStack>
+            </TouchableOpacity>
           </XStack>
-        </Button>
+        )}
       </YStack>
     </YStack>
   );

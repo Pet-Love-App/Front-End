@@ -3,7 +3,11 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, RefreshControl } from 'react-native';
 import { Button, Card, Spinner, Text, XStack, YStack } from 'tamagui';
 
-export function MessagesTab() {
+interface MessagesTabProps {
+  onCreatePost?: () => void;
+}
+
+export function MessagesTab({ onCreatePost }: MessagesTabProps) {
   const [list, setList] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -53,9 +57,12 @@ export function MessagesTab() {
 
   return (
     <>
-      <XStack padding="$3" gap="$2">
+      <XStack padding="$3" gap="$2" justifyContent="flex-start">
         <Button size="$3" onPress={() => forumService.markAllNotificationsRead().then(() => load())}>全部设为已读</Button>
         <Button size="$3" chromeless onPress={load}>刷新</Button>
+        {onCreatePost && (
+          <Button size="$3" onPress={onCreatePost}>发帖</Button>
+        )}
       </XStack>
       <FlatList
         data={list}

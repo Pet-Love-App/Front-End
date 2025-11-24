@@ -46,13 +46,13 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
             width={48}
             height={48}
             borderRadius="$12"
-            backgroundColor="#EFF6FF"
+            backgroundColor="#FFF5ED"
             alignItems="center"
             justifyContent="center"
             borderWidth={2}
-            borderColor="#DBEAFE"
+            borderColor="#FFE4D1"
           >
-            <IconSymbol name="camera.metering.center.weighted" size={26} color="#3B82F6" />
+            <IconSymbol name="camera.metering.center.weighted" size={26} color="#FEBE98" />
           </YStack>
 
           {/* Header 文字 */}
@@ -86,13 +86,13 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
             width={100}
             height={100}
             borderRadius="$12"
-            backgroundColor="#EFF6FF"
+            backgroundColor="#FFF5ED"
             alignItems="center"
             justifyContent="center"
             borderWidth={3}
-            borderColor="#DBEAFE"
+            borderColor="#FFE4D1"
           >
-            <IconSymbol name="camera.fill" size={50} color="#3B82F6" />
+            <IconSymbol name="camera.fill" size={50} color="#FEBE98" />
           </YStack>
 
           {/* 主标题和描述 */}
@@ -157,11 +157,11 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
                     width={34}
                     height={34}
                     borderRadius="$8"
-                    backgroundColor="#EFF6FF"
+                    backgroundColor="#FFF5ED"
                     alignItems="center"
                     justifyContent="center"
                   >
-                    <IconSymbol name="camera.fill" size={17} color="#3B82F6" />
+                    <IconSymbol name="camera.fill" size={17} color="#FEBE98" />
                   </YStack>
                   <Text fontSize={13} color="#4B5563" fontWeight="600" flex={1}>
                     拍摄猫粮成分表
@@ -209,17 +209,17 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
           <YStack width="100%" marginTop="$3">
             <Button
               size="$6"
-              backgroundColor="#3B82F6"
+              backgroundColor="#FEBE98"
               color="white"
               borderRadius="$12"
               borderWidth={2}
-              borderColor="#2563EB"
+              borderColor="#FCA574"
               onPress={onStartScan}
               icon={<IconSymbol name="camera.fill" size={26} color="white" />}
               fontWeight="800"
               fontSize={18}
               letterSpacing={0.5}
-              pressStyle={{ scale: 0.97, backgroundColor: '#2563EB' }}
+              pressStyle={{ scale: 0.97, backgroundColor: '#FCA574' }}
               height={64}
             >
               开始扫描

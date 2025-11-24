@@ -60,11 +60,11 @@ const getRankStyle = (index: number) => {
       };
     default:
       return {
-        gradient: ['#60A5FA', '#3B82F6'] as const, // 蓝色渐变
+        gradient: ['#60A5FA', '#FEBE98'] as const, // 蓝色渐变
         textColor: 'white' as const,
         icon: 'star.fill' as const,
         iconColor: 'white' as const,
-        shadowColor: '#3B82F6',
+        shadowColor: '#FEBE98',
       };
   }
 };

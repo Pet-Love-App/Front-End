@@ -39,16 +39,16 @@ export function FilterChips({
           paddingHorizontal="$4"
           paddingVertical="$2.5"
           borderRadius="$12"
-          backgroundColor={sortBy === 'score' && selectedBrand === 'all' ? '#DBEAFE' : 'white'}
+          backgroundColor={sortBy === 'score' && selectedBrand === 'all' ? '#FFF5ED' : 'white'}
           borderWidth={2}
-          borderColor={sortBy === 'score' && selectedBrand === 'all' ? '#3B82F6' : '#E5E7EB'}
+          borderColor={sortBy === 'score' && selectedBrand === 'all' ? '#FEBE98' : '#E5E7EB'}
           gap="$2"
           alignItems="center"
         >
           <IconSymbol
             name="sparkles"
             size={16}
-            color={sortBy === 'score' && selectedBrand === 'all' ? '#3B82F6' : '#6B7280'}
+            color={sortBy === 'score' && selectedBrand === 'all' ? '#FEBE98' : '#6B7280'}
           />
           <Text
             fontSize={14}

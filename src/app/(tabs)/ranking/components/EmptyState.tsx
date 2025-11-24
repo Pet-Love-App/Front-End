@@ -29,14 +29,14 @@ export function EmptyState({ type, searchQuery, onReset, onRefresh }: EmptyState
           width={140}
           height={140}
           borderRadius="$12"
-          backgroundColor="#EFF6FF"
+          backgroundColor="#FFF5ED"
           alignItems="center"
           justifyContent="center"
           marginBottom="$5"
           borderWidth={3}
-          borderColor="#DBEAFE"
+          borderColor="#FFE4D1"
         >
-          <IconSymbol name="magnifyingglass" size={64} color="#3B82F6" />
+          <IconSymbol name="magnifyingglass" size={64} color="#FEBE98" />
         </YStack>
         <Text
           fontSize={24}
@@ -62,11 +62,11 @@ export function EmptyState({ type, searchQuery, onReset, onRefresh }: EmptyState
             paddingHorizontal="$5"
             paddingVertical="$3.5"
             borderRadius="$12"
-            backgroundColor="#3B82F6"
+            backgroundColor="#FEBE98"
             gap="$2.5"
             alignItems="center"
             borderWidth={2}
-            borderColor="#2563EB"
+            borderColor="#FCA574"
           >
             <IconSymbol name="arrow.counterclockwise" size={18} color="white" />
             <Text fontSize={16} color="white" fontWeight="800" letterSpacing={0.3}>
@@ -159,11 +159,11 @@ export function EmptyState({ type, searchQuery, onReset, onRefresh }: EmptyState
           paddingHorizontal="$5"
           paddingVertical="$3.5"
           borderRadius="$12"
-          backgroundColor="#3B82F6"
+          backgroundColor="#FEBE98"
           gap="$2.5"
           alignItems="center"
           borderWidth={2}
-          borderColor="#2563EB"
+          borderColor="#FCA574"
         >
           <IconSymbol name="arrow.clockwise" size={18} color="white" />
           <Text fontSize={16} color="white" fontWeight="800" letterSpacing={0.3}>

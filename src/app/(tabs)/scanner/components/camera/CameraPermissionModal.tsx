@@ -53,13 +53,13 @@ export function CameraPermissionModal({
                 width={80}
                 height={80}
                 borderRadius="$12"
-                backgroundColor="#EFF6FF"
+                backgroundColor="#FFF5ED"
                 alignItems="center"
                 justifyContent="center"
                 borderWidth={3}
-                borderColor="#DBEAFE"
+                borderColor="#FFE4D1"
               >
-                <IconSymbol name="camera.fill" size={40} color="#3B82F6" />
+                <IconSymbol name="camera.fill" size={40} color="#FEBE98" />
               </YStack>
 
               {/* 标题 */}
@@ -111,15 +111,15 @@ export function CameraPermissionModal({
                 {/* 授予权限按钮 */}
                 <Button
                   size="$5"
-                  backgroundColor="#3B82F6"
+                  backgroundColor="#FEBE98"
                   color="white"
                   borderRadius="$4"
                   borderWidth={2}
-                  borderColor="#2563EB"
+                  borderColor="#FCA574"
                   onPress={onRequestPermission}
                   fontWeight="800"
                   fontSize={16}
-                  pressStyle={{ scale: 0.98, backgroundColor: '#2563EB' }}
+                  pressStyle={{ scale: 0.98, backgroundColor: '#FCA574' }}
                   height={56}
                 >
                   授予相机权限

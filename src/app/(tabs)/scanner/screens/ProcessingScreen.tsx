@@ -72,7 +72,7 @@ export function ProcessingScreen({ insets }: ProcessingScreenProps) {
           borderColor="#E5E7EB"
         >
           <XStack alignItems="center" gap="$2.5">
-            <YStack width={8} height={8} borderRadius="$10" backgroundColor="#3B82F6" />
+            <YStack width={8} height={8} borderRadius="$10" backgroundColor="#FEBE98" />
             <Text fontSize={14} color="#6B7280" fontWeight="600">
               这可能需要几秒钟
             </Text>

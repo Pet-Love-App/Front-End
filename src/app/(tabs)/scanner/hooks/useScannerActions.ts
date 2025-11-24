@@ -22,7 +22,12 @@ import { Alert } from 'react-native';
 import type { ScanFlowState } from '../types';
 
 interface UseScannerActionsProps {
-  takePicture: (options: { quality: number }) => Promise<{ uri: string } | null>;
+  takePicture: (options: {
+    quality: number;
+    cropToScanFrame?: boolean;
+    zoom?: number;
+    frameLayout?: { x: number; y: number; width: number; height: number };
+  }) => Promise<{ uri: string } | null>;
   transitionTo: (state: ScanFlowState) => void;
   resetFlow: () => void;
 }
@@ -48,19 +53,33 @@ export function useScannerActions({
 
   /**
    * 拍照
+   * 自动裁剪到扫描框内容
+   * @param zoom - 当前缩放级别（0-1）
+   * @param frameLayout - 扫描框在屏幕上的实际位置
    */
-  const handleTakePhoto = useCallback(async () => {
-    try {
-      const photo = await takePicture({ quality: 0.6 });
-      if (photo) {
-        setPhotoUri(photo.uri);
-        transitionTo('photo-preview');
+  const handleTakePhoto = useCallback(
+    async (
+      zoom?: number,
+      frameLayout?: { x: number; y: number; width: number; height: number } | null
+    ) => {
+      try {
+        const photo = await takePicture({
+          quality: 0.6,
+          cropToScanFrame: true, // 启用裁剪到扫描框
+          zoom: zoom, // 传递缩放信息
+          frameLayout: frameLayout || undefined, // 传递扫描框位置
+        });
+        if (photo) {
+          setPhotoUri(photo.uri);
+          transitionTo('photo-preview');
+        }
+      } catch (error) {
+        console.error('拍照失败:', error);
+        Alert.alert('拍照失败', '请重试');
       }
-    } catch (error) {
-      console.error('拍照失败:', error);
-      Alert.alert('拍照失败', '请重试');
-    }
-  }, [takePicture, transitionTo]);
+    },
+    [takePicture, transitionTo]
+  );
 
   /**
    * 重新拍照

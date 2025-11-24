@@ -148,6 +148,7 @@ export default function ScannerScreen() {
         onToggleScanType={toggleScanType}
         onClose={goBack}
         onCameraReady={onCameraReady}
+        takePicture={takePicture}
       />
     );
   }

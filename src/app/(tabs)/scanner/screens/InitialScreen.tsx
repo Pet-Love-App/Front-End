@@ -8,7 +8,6 @@
  * - 安全区域适配：使用 insets
  */
 
-import { LottieAnimation } from '@/src/components/LottieAnimation';
 import { PageHeader } from '@/src/components/PageHeader';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import React from 'react';
@@ -95,22 +94,6 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
             >
               拍照即可获得专业的添加剂成分分析报告
             </Text>
-          </YStack>
-
-          {/* ==================== 动画区域 ==================== */}
-          <YStack
-            backgroundColor="white"
-            borderRadius="$12"
-            padding="$5"
-            borderWidth={2}
-            borderColor="#F3F4F6"
-            marginVertical="$2"
-          >
-            <LottieAnimation
-              source={require('@/assets/animations/cat_thinking_animation.json')}
-              width={150}
-              height={150}
-            />
           </YStack>
 
           {/* ==================== 功能说明卡片 ==================== */}

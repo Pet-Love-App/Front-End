@@ -13,8 +13,8 @@ interface ReportHeaderProps {
 export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
   const { isExtraSmallScreen, isSmallScreen } = useResponsiveLayout();
 
-  // 响应式图片尺寸
-  const imageSize = isExtraSmallScreen ? 100 : isSmallScreen ? 110 : 130;
+  // 响应式图片尺寸 - 纵向布局使用更大的尺寸
+  const imageSize = isExtraSmallScreen ? 180 : isSmallScreen ? 200 : 220;
 
   return (
     <Card
@@ -31,20 +31,21 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
         <LinearGradient
           colors={['rgba(255, 140, 50, 0.08)', 'rgba(255, 180, 100, 0.03)', 'transparent']}
           start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: 0, y: 1 }}
           style={{ width: '100%', height: '100%' }}
         />
       </YStack>
 
-      <XStack padding="$5" gap="$4" alignItems="center">
+      {/* 纵向布局：图片在上，名称在下 */}
+      <YStack padding="$5" gap="$4" alignItems="center">
         {/* 猫粮图片 */}
         {imageUrl ? (
           <YStack
-            borderRadius="$5"
+            borderRadius="$6"
             overflow="hidden"
             borderWidth={3}
             borderColor="$orange6"
-            flexShrink={0}
+            alignSelf="center"
           >
             <Image
               source={{ uri: imageUrl }}
@@ -60,29 +61,30 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
           <YStack
             width={imageSize}
             height={imageSize}
-            borderRadius="$5"
+            borderRadius="$6"
             backgroundColor="$orange2"
             alignItems="center"
             justifyContent="center"
             borderWidth={3}
             borderColor="$orange5"
-            flexShrink={0}
+            alignSelf="center"
           >
-            <IconSymbol name="photo" size={imageSize * 0.37} color="$orange9" />
-            <Text fontSize="$2" color="$orange9" marginTop="$2" fontWeight="500">
+            <IconSymbol name="photo" size={imageSize * 0.35} color="$orange9" />
+            <Text fontSize="$3" color="$orange9" marginTop="$2" fontWeight="500">
               暂无图片
             </Text>
           </YStack>
         )}
 
         {/* 文字信息 */}
-        <YStack flex={1} gap="$3" justifyContent="center">
+        <YStack width="100%" gap="$3" alignItems="center">
           {/* 猫粮名称 */}
           <Text
             fontSize="$8"
             fontWeight="800"
             color="$orange11"
-            lineHeight="$8"
+            textAlign="center"
+            lineHeight="$9"
             letterSpacing={-0.5}
           >
             {name}
@@ -90,8 +92,8 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
 
           {/* 标签 */}
           {tags && tags.length > 0 && (
-            <XStack gap="$2" flexWrap="wrap">
-              {tags.slice(0, 4).map((tag, index) => (
+            <XStack gap="$2" flexWrap="wrap" justifyContent="center">
+              {tags.slice(0, 5).map((tag, index) => (
                 <YStack
                   key={index}
                   backgroundColor="$orange4"
@@ -106,7 +108,7 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
                   </Text>
                 </YStack>
               ))}
-              {tags.length > 4 && (
+              {tags.length > 5 && (
                 <YStack
                   backgroundColor="$gray4"
                   paddingHorizontal="$3"
@@ -116,14 +118,14 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
                   borderColor="$gray6"
                 >
                   <Text color="$gray11" fontSize="$2" fontWeight="700">
-                    +{tags.length - 4}
+                    +{tags.length - 5}
                   </Text>
                 </YStack>
               )}
             </XStack>
           )}
         </YStack>
-      </XStack>
+      </YStack>
     </Card>
   );
 }

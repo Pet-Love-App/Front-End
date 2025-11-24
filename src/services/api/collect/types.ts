@@ -2,6 +2,7 @@
  * 收藏相关类型定义
  */
 
+import type { AIReportData } from '../ai_report/types';
 import type { CatFood } from '../catfood/types';
 
 /**
@@ -44,4 +45,38 @@ export interface GetFavoritesResponse {
   count: number;
   next: string | null;
   previous: string | null;
+}
+
+/**
+ * AI报告收藏记录
+ */
+export interface FavoriteReport {
+  id: number;
+  report: AIReportData;
+  created_at: string;
+}
+
+/**
+ * 切换报告收藏状态的响应
+ */
+export interface ToggleFavoriteReportResponse {
+  detail: string;
+  is_favorited: boolean;
+  report_id: number;
+  favorite?: FavoriteReport;
+}
+
+/**
+ * 检查报告收藏状态的响应
+ */
+export interface CheckFavoriteReportResponse {
+  is_favorited: boolean;
+}
+
+/**
+ * 获取报告收藏列表的响应
+ */
+export interface GetFavoriteReportsResponse {
+  results: FavoriteReport[];
+  count: number;
 }

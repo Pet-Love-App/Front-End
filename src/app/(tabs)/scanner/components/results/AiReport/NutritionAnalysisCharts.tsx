@@ -30,20 +30,16 @@ const NUTRITION_CONFIG = [
 ] as const;
 
 export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) {
-  // 过滤有效数据 - 只要不是 null 就显示（包括 0）
-  const validData = NUTRITION_CONFIG.filter((config) => {
+  // 过滤有效数据 - 排除 others（因为它是计算值）
+  // 只有当至少有一个实际营养成分数据时才显示图表
+  const actualNutritionData = NUTRITION_CONFIG.filter((config) => {
+    if (config.key === 'others') return false; // 先不考虑 others
     const value = data[config.key];
     return value !== null && value !== undefined;
   });
 
-  console.log('📈 图表组件数据:', {
-    rawData: data,
-    validDataCount: validData.length,
-    validData: validData.map((v) => ({ name: v.name, value: data[v.key] })),
-  });
-
-  if (validData.length === 0) {
-    console.log('⚠️ 没有有效的营养数据，显示空状态');
+  // 如果没有任何实际营养数据，不显示图表
+  if (actualNutritionData.length === 0) {
     return (
       <Card
         padding="$4"
@@ -64,6 +60,12 @@ export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) 
   }
 
   const screenWidth = Dimensions.get('window').width;
+
+  // 包含所有有数据的字段（包括 others）用于显示
+  const validData = NUTRITION_CONFIG.filter((config) => {
+    const value = data[config.key];
+    return value !== null && value !== undefined;
+  });
 
   // 准备饼状图数据 - 只显示大于 0 的值（饼图不能显示 0）
   const pieData = validData

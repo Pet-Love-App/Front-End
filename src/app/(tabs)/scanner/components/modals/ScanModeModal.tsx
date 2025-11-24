@@ -130,18 +130,18 @@ export function ScanModeModal({ visible, onClose, onSelectMode }: ScanModeModalP
 
             {/* 提示信息 */}
             <YStack
-              backgroundColor="#EFF6FF"
+              backgroundColor="#FFF5ED"
               padding="$4"
               borderRadius="$8"
               borderWidth={1.5}
-              borderColor="#DBEAFE"
+              borderColor="#FFE4D1"
             >
               <XStack alignItems="center" gap="$2.5">
                 <YStack
                   width={32}
                   height={32}
                   borderRadius="$8"
-                  backgroundColor="#3B82F6"
+                  backgroundColor="#FEBE98"
                   alignItems="center"
                   justifyContent="center"
                 >
@@ -187,9 +187,9 @@ function ScanModeOptionCard({ option, onSelect }: ScanModeOptionCardProps) {
     }, 500);
   }, [option.mode, onSelect, isPressed]);
 
-  const iconColor = option.mode === 'known-brand' ? '#3B82F6' : '#10B981';
-  const bgColor = option.mode === 'known-brand' ? '#EFF6FF' : '#D1FAE5';
-  const borderColor = option.mode === 'known-brand' ? '#DBEAFE' : '#A7F3D0';
+  const iconColor = option.mode === 'known-brand' ? '#FEBE98' : '#10B981';
+  const bgColor = option.mode === 'known-brand' ? '#FFF5ED' : '#D1FAE5';
+  const borderColor = option.mode === 'known-brand' ? '#FFE4D1' : '#A7F3D0';
 
   return (
     <TouchableOpacity onPress={handlePress} activeOpacity={0.8} disabled={isPressed}>

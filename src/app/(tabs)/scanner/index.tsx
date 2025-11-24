@@ -23,7 +23,7 @@ import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   AiReportDetail,
-  CameraPermission,
+  CameraPermissionModal,
   CatFoodSearchModal,
   ExpoCameraView,
   OcrResultView,
@@ -127,6 +127,13 @@ export default function ScannerScreen() {
   );
 
   /**
+   * 生成报告处理器（包装）
+   */
+  const handleGenerateReportWrapper = useCallback(() => {
+    handleGenerateReport(selectedCatFood);
+  }, [handleGenerateReport, selectedCatFood]);
+
+  /**
    * 保存报告处理器（包装）
    */
   const handleSaveReportWrapper = useCallback(() => {
@@ -134,11 +141,6 @@ export default function ScannerScreen() {
   }, [handleSaveReport, selectedCatFood]);
 
   // ==================== 渲染逻辑 ====================
-
-  // 相机权限页
-  if (!cameraState.hasPermission) {
-    return <CameraPermission onRequestPermission={requestPermission} />;
-  }
 
   // 拍照页
   if (flowState === 'taking-photo') {
@@ -153,6 +155,7 @@ export default function ScannerScreen() {
         onToggleScanType={toggleScanType}
         onClose={goBack}
         onCameraReady={onCameraReady}
+        takePicture={takePicture}
       />
     );
   }
@@ -182,7 +185,7 @@ export default function ScannerScreen() {
         ocrResult={ocrResult}
         photoUri={photoUri}
         isGeneratingReport={isGeneratingReport}
-        onGenerateReport={handleGenerateReport}
+        onGenerateReport={handleGenerateReportWrapper}
         onRetake={handleRetakePhoto}
         onClose={goBack}
       />
@@ -212,6 +215,12 @@ export default function ScannerScreen() {
       <InitialScreen insets={insets} onStartScan={startScan} />
 
       {/* 模态框组件 */}
+      {/* 相机权限请求模态框 */}
+      <CameraPermissionModal
+        visible={cameraState.hasPermission === false}
+        onRequestPermission={requestPermission}
+      />
+
       <ScanModeModal
         visible={flowState === 'selecting-mode'}
         onClose={() => transitionTo('initial')}

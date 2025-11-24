@@ -42,7 +42,7 @@ export function NutritionListSection({ ingredients }: NutritionListSectionProps)
       bordered
       borderColor="$gray4"
     >
-      <YStack space="$3">
+      <YStack gap="$3">
         <Text fontSize="$6" fontWeight="600" marginBottom="$2" color="$color">
           营养成分详情
         </Text>

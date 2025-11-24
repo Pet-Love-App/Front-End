@@ -33,7 +33,7 @@ export function IdentifiedItemsSection({
       borderRadius="$4"
       bordered
     >
-      <YStack space="$3">
+      <YStack gap="$3">
         <Text fontSize="$6" fontWeight="600" color="$color">
           {title} ({items.length})
         </Text>

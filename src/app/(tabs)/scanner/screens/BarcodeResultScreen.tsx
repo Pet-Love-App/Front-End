@@ -127,16 +127,16 @@ export function BarcodeResultScreen({ scannedCode, insets, onGoBack }: BarcodeRe
             {/* 搜索按钮 */}
             <Button
               size="$5"
-              backgroundColor="#3B82F6"
+              backgroundColor="#FEBE98"
               color="white"
               borderRadius="$10"
               borderWidth={2}
-              borderColor="#2563EB"
+              borderColor="#FCA574"
               icon={<IconSymbol name="magnifyingglass" size={20} color="white" />}
               fontWeight="800"
               fontSize={16}
               letterSpacing={0.3}
-              pressStyle={{ scale: 0.97, backgroundColor: '#2563EB' }}
+              pressStyle={{ scale: 0.97, backgroundColor: '#FCA574' }}
               height={56}
               onPress={handleSearchProduct}
             >

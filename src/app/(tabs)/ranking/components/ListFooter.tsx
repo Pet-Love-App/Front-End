@@ -18,11 +18,11 @@ export function ListFooter({ isLoadingMore }: ListFooterProps) {
         width={60}
         height={60}
         borderRadius="$12"
-        backgroundColor="#EFF6FF"
+        backgroundColor="#FFF5ED"
         alignItems="center"
         justifyContent="center"
       >
-        <ActivityIndicator size="large" color="#3B82F6" />
+        <ActivityIndicator size="large" color="#FEBE98" />
       </YStack>
       <Text fontSize={16} color="#1F2937" fontWeight="700" letterSpacing={0.3}>
         加载更多猫粮中...

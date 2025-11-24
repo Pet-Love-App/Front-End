@@ -27,7 +27,7 @@ export function AdditiveSection({ additives, onAdditivePress }: AdditiveSectionP
       bordered
       borderColor="$gray4"
     >
-      <YStack space="$3">
+      <YStack gap="$3">
         <Text fontSize="$6" fontWeight="600" color="$color">
           添加剂成分
         </Text>

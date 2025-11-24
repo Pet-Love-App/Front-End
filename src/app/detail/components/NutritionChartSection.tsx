@@ -78,7 +78,7 @@ export function NutritionChartSection({ percentData }: NutritionChartSectionProp
       bordered
       borderColor="$gray4"
     >
-      <YStack space="$3">
+      <YStack gap="$3">
         <Text fontSize="$6" fontWeight="600" color="$color">
           营养成分分析
         </Text>

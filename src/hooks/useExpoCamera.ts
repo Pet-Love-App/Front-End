@@ -1,7 +1,7 @@
 import type { CameraState, ExpoBarcodeResult } from '@/src/types/camera';
 import { ScanType } from '@/src/types/camera';
 import { Camera, CameraView, PermissionStatus } from 'expo-camera';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Expo 相机功能的自定义 Hook
@@ -16,6 +16,17 @@ export function useExpoCamera(initialScanType: ScanType = ScanType.BARCODE) {
     scanType: initialScanType,
     scannedBarcode: null,
   });
+
+  // 组件挂载时检查现有权限
+  useEffect(() => {
+    (async () => {
+      const { status } = await Camera.getCameraPermissionsAsync();
+      setCameraState((prev) => ({
+        ...prev,
+        hasPermission: status === PermissionStatus.GRANTED,
+      }));
+    })();
+  }, []);
 
   const requestPermission = useCallback(async () => {
     try {
@@ -84,24 +95,27 @@ export function useExpoCamera(initialScanType: ScanType = ScanType.BARCODE) {
     }));
   }, []);
 
-  const takePicture = useCallback(async (options?: { quality?: number }) => {
-    if (!cameraRef.current || !cameraState.isReady) {
-      console.warn('相机未准备好');
-      return null;
-    }
+  const takePicture = useCallback(
+    async (options?: { quality?: number }) => {
+      if (!cameraRef.current || !cameraState.isReady) {
+        console.warn('相机未准备好');
+        return null;
+      }
 
-    try {
-      const photo = await cameraRef.current.takePictureAsync({
-        quality: options?.quality || 0.8,
-        base64: false,
-        skipProcessing: false,
-      });
-      return photo;
-    } catch (error) {
-      console.error('拍照失败:', error);
-      return null;
-    }
-  }, [cameraState.isReady]);
+      try {
+        const photo = await cameraRef.current.takePictureAsync({
+          quality: options?.quality || 0.8,
+          base64: false,
+          skipProcessing: false,
+        });
+        return photo;
+      } catch (error) {
+        console.error('拍照失败:', error);
+        return null;
+      }
+    },
+    [cameraState.isReady]
+  );
 
   return {
     state: cameraState,
@@ -109,7 +123,7 @@ export function useExpoCamera(initialScanType: ScanType = ScanType.BARCODE) {
     takePicture,
     toggleFacing,
     toggleScanType, // 导出切换方法
-    setScanType,    // 导出设置方法
+    setScanType, // 导出设置方法
     onCameraReady,
     handleBarCodeScanned,
     requestPermission,

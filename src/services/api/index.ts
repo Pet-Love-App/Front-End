@@ -22,9 +22,13 @@ export type { Additive, Ingredient } from './additive';
 // 收藏服务
 export { collectApi } from './collect';
 export type {
+  CheckFavoriteReportResponse,
   CheckFavoriteResponse,
   Favorite,
+  FavoriteReport,
+  GetFavoriteReportsResponse,
   GetFavoritesResponse,
+  ToggleFavoriteReportResponse,
   ToggleFavoriteResponse,
 } from './collect';
 
@@ -54,10 +58,14 @@ export type { OcrRecognizeResponse, OcrResult } from './ocr';
 // AI 报告服务
 export { aiReportService } from './ai_report';
 export type {
+  AIReportData,
+  CheckReportExistsResponse,
   GenerateReportRequest,
   GenerateReportResponse,
   IngredientInfoRequest,
   IngredientInfoResponse,
+  SaveReportRequest,
+  SaveReportResponse,
 } from './ai_report';
 
 // 搜索服务

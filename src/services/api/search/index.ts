@@ -14,20 +14,17 @@ class SearchService {
    */
   async searchBaike(request: BaikeSearchRequest): Promise<BaikeSearchResponse> {
     try {
-      console.log('🔍 开始搜索百度百科:', request.ingredient);
+      console.log('\n========== 🔍 百度百科搜索请求 ==========');
+      console.log('📤 搜索关键词:', request.ingredient);
 
       const response = await apiClient.post<BaikeSearchResponse>(
         '/api/search/ingredient/info',
         request
       );
 
-      if (__DEV__) {
-        console.log('📖 百度百科搜索结果:', {
-          ok: response.ok,
-          title: response.title,
-          hasExtract: !!response.extract,
-        });
-      }
+      console.log('📥 百度百科搜索响应:');
+      console.log(JSON.stringify(response, null, 2));
+      console.log('========================================\n');
 
       return response;
     } catch (error) {

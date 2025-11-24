@@ -2,6 +2,8 @@ export { ActionBar } from './ActionBar';
 export { AdditiveBubble } from './AdditiveBubble';
 export { AdditiveDetailModal } from './AdditiveDetailModal';
 export { AdditiveSection } from './AdditiveSection';
+export { AIReportButton } from './AIReportButton';
+export { AIReportModal } from './AIReportModal';
 export { BasicInfoSection } from './BasicInfoSection';
 export { EmptyState } from './EmptyState';
 export { LoadingState } from './LoadingState';

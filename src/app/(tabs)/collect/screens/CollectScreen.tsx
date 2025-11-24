@@ -1,4 +1,5 @@
 import CollectListItem from '@/src/app/(tabs)/collect/components/collectItem';
+import ReportCollectItem from '@/src/app/(tabs)/collect/components/ReportCollectItem';
 import { PageHeader } from '@/src/components/PageHeader';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
@@ -6,7 +7,7 @@ import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Input, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
-import { useCollectData, useCollectFilter } from '../hooks';
+import { useCollectData, useCollectFilter, useReportCollectData } from '../hooks';
 
 /**
  * Collect 主屏幕组件
@@ -20,6 +21,17 @@ export function CollectScreen() {
   // 使用自定义 hooks
   const { isLoading, error, refreshing, handleRefresh, handleDelete, handlePress } =
     useCollectData();
+
+  // 报告收藏数据
+  const {
+    favoriteReports,
+    isLoadingReports,
+    reportError,
+    refreshing: refreshingReports,
+    handleRefresh: handleRefreshReports,
+    handleDelete: handleDeleteReport,
+    handlePress: handlePressReport,
+  } = useReportCollectData();
 
   const {
     currentTab,
@@ -80,9 +92,62 @@ export function CollectScreen() {
     );
   };
 
-  // 渲染报告收藏列表（暂时为空）
+  // 渲染报告收藏列表
   const renderReportList = () => {
-    return renderEmptyState('报告收藏功能即将上线\n敬请期待！', 'doc.text');
+    if (isLoadingReports && !refreshingReports) {
+      return (
+        <YStack flex={1} alignItems="center" justifyContent="center" paddingVertical="$10">
+          <Spinner size="large" color={colors.tint} />
+          <Text fontSize={16} color={colors.icon} marginTop="$4">
+            加载中...
+          </Text>
+        </YStack>
+      );
+    }
+
+    if (reportError && !isLoadingReports) {
+      return renderEmptyState(`❌ ${reportError}\n下拉刷新重试`, 'exclamationmark.triangle');
+    }
+
+    // 过滤报告收藏
+    const filteredReports = favoriteReports.filter((fav) => {
+      if (!searchText.trim()) return true;
+      const search = searchText.toLowerCase();
+      return (
+        fav.report.catfood_name.toLowerCase().includes(search) ||
+        fav.report.safety?.toLowerCase().includes(search) ||
+        fav.report.tags?.some((tag) => tag.toLowerCase().includes(search))
+      );
+    });
+
+    if (filteredReports.length === 0) {
+      return renderEmptyState(
+        searchText.trim()
+          ? '未找到匹配的报告收藏'
+          : '还没有收藏任何报告哦~\n快去收藏感兴趣的AI报告吧！',
+        'doc.text.fill'
+      );
+    }
+
+    return (
+      <YStack gap="$3" paddingBottom="$4">
+        {filteredReports.map((favoriteReport) => (
+          <YStack
+            key={favoriteReport.id}
+            pressStyle={{ scale: 0.98, opacity: 0.9 }}
+            animation="quick"
+          >
+            <ReportCollectItem
+              favoriteReport={favoriteReport}
+              onDelete={() => handleDeleteReport(favoriteReport.id)}
+              onPress={() =>
+                handlePressReport(favoriteReport.report.catfood_id, favoriteReport.report.id)
+              }
+            />
+          </YStack>
+        ))}
+      </YStack>
+    );
   };
 
   return (
@@ -109,7 +174,7 @@ export function CollectScreen() {
               borderRadius="$10"
             >
               <Text fontSize={13} fontWeight="600" color={colors.tint}>
-                {favoritesCount}
+                {currentTab === 'catfood' ? favoritesCount : favoriteReports.length}
               </Text>
             </XStack>
           }
@@ -209,7 +274,17 @@ export function CollectScreen() {
             {renderCatFoodList()}
           </ScrollView>
         ) : (
-          <ScrollView flex={1} padding="$4">
+          <ScrollView
+            flex={1}
+            padding="$4"
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshingReports}
+                onRefresh={handleRefreshReports}
+                tintColor={colors.tint}
+              />
+            }
+          >
             {renderReportList()}
           </ScrollView>
         )}

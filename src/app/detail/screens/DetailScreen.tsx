@@ -1,11 +1,14 @@
 import { CommentSection } from '@/src/components/Comments';
 import { Stack } from 'expo-router';
+import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, YStack } from 'tamagui';
 import {
   ActionBar,
   AdditiveDetailModal,
   AdditiveSection,
+  AIReportButton,
+  AIReportModal,
   BasicInfoSection,
   EmptyState,
   LoadingState,
@@ -16,7 +19,7 @@ import {
   ReportHeader,
   SafetyAnalysisSection,
 } from '../components';
-import { useAdditiveModal, useCatFoodDetail } from '../hooks';
+import { useAdditiveModal, useAIReport, useCatFoodDetail } from '../hooks';
 
 /**
  * Detail 主屏幕组件
@@ -29,6 +32,10 @@ export function DetailScreen() {
   const { catfoodId, catFood, isLoading } = useCatFoodDetail();
   const { selectedAdditive, modalVisible, handleAdditivePress, handleCloseModal } =
     useAdditiveModal();
+
+  // AI 报告相关
+  const { report, hasReport, isLoading: isLoadingReport } = useAIReport(catfoodId);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   // 渲染内容
   const renderContent = () => {
@@ -87,6 +94,17 @@ export function DetailScreen() {
         {/* 评论区 */}
         {catFood && <CommentSection targetType="catfood" targetId={catFood.id} />}
 
+        {/* AI 报告按钮 */}
+        {catfoodId && (
+          <YStack paddingHorizontal="$3" marginTop="$4" marginBottom="$3">
+            <AIReportButton
+              hasReport={hasReport}
+              isLoading={isLoadingReport}
+              onPress={() => setShowReportModal(true)}
+            />
+          </YStack>
+        )}
+
         {/* 底部安全区间距 */}
         <YStack height={Math.max(24, insets.bottom + 16)} />
       </ScrollView>
@@ -111,6 +129,13 @@ export function DetailScreen() {
           visible={modalVisible}
           additive={selectedAdditive}
           onClose={handleCloseModal}
+        />
+
+        {/* AI 报告详情弹窗 */}
+        <AIReportModal
+          visible={showReportModal}
+          report={report}
+          onClose={() => setShowReportModal(false)}
         />
 
         {/* 底部操作栏：收藏和点赞 */}

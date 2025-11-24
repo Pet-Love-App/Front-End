@@ -21,6 +21,23 @@ class BaseApi {
     return useUserStore.getState().accessToken;
   }
 
+  // 辅助：安全解析响应文本为 JSON 或返回原文/ null
+  private async safeParseResponse(res: Response): Promise<any> {
+    const raw = await res.text().catch(() => '');
+    if (!raw) return null;
+    const contentType = (res.headers.get('content-type') || '').toLowerCase();
+    if (contentType.includes('application/json')) {
+      try {
+        return JSON.parse(raw);
+      } catch (err) {
+        // 返回原始文本以便上层处理与调试
+        console.warn('解析 JSON 响应失败，返回原始文本', raw.slice(0, 200));
+        return raw;
+      }
+    }
+    return raw;
+  }
+
   /**
    * 通用请求方法
    */
@@ -71,11 +88,12 @@ class BaseApi {
             });
 
             if (!retryResponse.ok) {
-              const errorData = await retryResponse.json().catch(() => ({}));
-              throw new Error(errorData.detail || errorData.message || '请求失败');
+              const errorData = await this.safeParseResponse(retryResponse).catch(() => ({}));
+              const message = (errorData && (errorData.detail || errorData.message || errorData.error)) || `请求失败: ${retryResponse.status}`;
+              throw new Error(message);
             }
 
-            return retryResponse.json();
+            return (await this.safeParseResponse(retryResponse)) as T;
           }
         } catch (error) {
           // 刷新失败，需要重新登录
@@ -89,26 +107,26 @@ class BaseApi {
 
       // 处理其他错误响应
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await this.safeParseResponse(response).catch(() => ({}));
 
         // 提取详细的错误信息
         let errorMessage = `请求失败: ${response.status}`;
 
-        if (errorData.detail) {
-          errorMessage = errorData.detail;
-        } else if (errorData.message) {
-          errorMessage = errorData.message;
-        } else if (errorData.error) {
-          errorMessage = errorData.error;
+        if (errorData && typeof errorData === 'object') {
+          if (errorData.detail) errorMessage = errorData.detail;
+          else if (errorData.message) errorMessage = errorData.message;
+          else if (errorData.error) errorMessage = errorData.error;
+        } else if (typeof errorData === 'string' && errorData.length) {
+          errorMessage = errorData;
         }
 
-        console.error('API 错误详情:', JSON.stringify(errorData, null, 2));
+        console.error('API 错误详情:', typeof errorData === 'string' ? errorData : JSON.stringify(errorData, null, 2));
         throw new Error(errorMessage);
       }
 
-      // 成功响应
-      const data = await response.json();
-      return data;
+      // 成功响应：安全解析
+      const parsed = await this.safeParseResponse(response);
+      return parsed as T;
     } catch (error) {
       console.error('API 请求错误:', error);
       throw error;
@@ -173,11 +191,12 @@ class BaseApi {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || error.detail || '请求失败');
+        const error = await this.safeParseResponse(response).catch(() => ({}));
+        const message = (error && (error.message || error.detail)) || `请求失败: ${response.status}`;
+        throw new Error(message);
       }
 
-      return response.json();
+      return (await this.safeParseResponse(response)) as T;
     } catch (error) {
       console.error('API 请求错误:', error);
       throw error;
@@ -246,11 +265,11 @@ class BaseApi {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || error.detail || '上传失败');
+        const error = await this.safeParseResponse(response).catch(() => ({}));
+        throw new Error(error?.message || error?.detail || '上传失败');
       }
 
-      return response.json();
+      return (await this.safeParseResponse(response)) as T;
     } catch (error) {
       console.error('文件上传错误:', error);
       throw error;

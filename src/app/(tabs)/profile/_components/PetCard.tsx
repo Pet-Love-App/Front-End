@@ -7,7 +7,7 @@ import { Card, Text, XStack, YStack } from 'tamagui';
 
 interface PetCardProps {
   pet: Pet;
-  onPress: () => void;
+  onPress?: () => void;
 }
 
 /**
@@ -15,6 +15,9 @@ interface PetCardProps {
  * 展示单个宠物的基本信息
  */
 export function PetCard({ pet, onPress }: PetCardProps) {
+  // 防御性检查：如果没有 pet，则不渲染
+  if (!pet) return null;
+
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
 
@@ -57,7 +60,7 @@ export function PetCard({ pet, onPress }: PetCardProps) {
       hoverStyle={{
         borderColor: withAlpha(colors.tint, 0.251),
       }}
-      onPress={onPress}
+      {...(onPress ? { onPress } : {})}
       animation="quick"
       borderRadius="$4"
       shadowColor="$shadowColor"
@@ -101,11 +104,11 @@ export function PetCard({ pet, onPress }: PetCardProps) {
         {/* Pet Info */}
         <YStack flex={1} gap="$1">
           <Text fontSize={17} fontWeight="700" color={colors.text}>
-            {pet.name}
+            {pet.name || '宠物'}
           </Text>
           <XStack gap="$2" alignItems="center">
             <Text fontSize={14} color={colors.icon}>
-              {pet.species_display ?? pet.species}
+              {pet.species_display ?? pet.species ?? '未知'}
             </Text>
             {pet.age != null && (
               <>

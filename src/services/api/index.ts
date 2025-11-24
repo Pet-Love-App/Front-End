@@ -25,7 +25,7 @@ export type {
   CheckFavoriteResponse,
   Favorite,
   GetFavoritesResponse,
-  ToggleFavoriteResponse,
+  ToggleFavoriteResponse
 } from './collect';
 
 // 评论服务
@@ -36,7 +36,7 @@ export type {
   CreateCommentRequest,
   DeleteCommentResponse,
   GetCommentsResponse,
-  UpdateCommentRequest,
+  UpdateCommentRequest
 } from './comment';
 
 // 猫粮服务
@@ -53,5 +53,6 @@ export type {
   GenerateReportRequest,
   GenerateReportResponse,
   IngredientInfoRequest,
-  IngredientInfoResponse,
+  IngredientInfoResponse
 } from './ai_report';
+

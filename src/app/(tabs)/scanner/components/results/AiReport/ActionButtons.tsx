@@ -20,14 +20,18 @@ export function ActionButtons({ onSave, onRetake, onClose, isSaving }: ActionBut
           themeInverse
           onPress={onSave}
           disabled={isSaving}
-          icon={<IconSymbol name="heart.fill" size={20} color="white" />}
+          icon={<IconSymbol name="checkmark.circle.fill" size={20} color="white" />}
         >
-          {isSaving ? <Spinner size="small" color="$color" /> : '收藏报告'}
+          {isSaving ? <Spinner size="small" color="$color" /> : '保存报告到猫粮'}
         </Button>
       )}
 
       {onRetake && (
-        <Button size="$5" onPress={onRetake} icon={<IconSymbol name="camera.fill" size={20} />}>
+        <Button
+          size="$5"
+          onPress={onRetake}
+          icon={<IconSymbol name="camera.fill" size={20} color="$color" />}
+        >
           重新拍照
         </Button>
       )}

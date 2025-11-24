@@ -13,7 +13,34 @@ export interface GenerateReportRequest {
 }
 
 /**
- * AI 生成报告的响应
+ * 后端返回的原始数据结构
+ */
+interface BackendReportResponse {
+  /** 识别到的添加剂列表 */
+  additive: string[];
+  /** 识别到的营养成分名称列表 */
+  ingredient: string[];
+  /** 安全性分析（约50字） */
+  safety: string;
+  /** 营养分析（约300字） */
+  nutrient: string;
+  /** 是否包含百分比数据 */
+  percentage: boolean;
+  /** 百分比数据（嵌套对象） */
+  percent_data: {
+    crude_protein: number | null;
+    crude_fat: number | null;
+    carbohydrates: number | null;
+    crude_fiber: number | null;
+    crude_ash: number | null;
+    others: number | null;
+  };
+  /** 标签 */
+  tags?: string[];
+}
+
+/**
+ * AI 生成报告的响应（前端使用的格式）
  */
 export interface GenerateReportResponse {
   /** 识别到的添加剂列表 */
@@ -38,7 +65,12 @@ export interface GenerateReportResponse {
   crude_ash: number | null;
   /** 其他成分含量（%） */
   others: number | null;
+  /** 标签（可选） */
+  tags?: string[];
 }
+
+// 导出后端类型供内部使用
+export type { BackendReportResponse };
 
 /**
  * 成分信息查询请求
@@ -70,4 +102,105 @@ export interface IngredientInfoResponse {
     message: string;
     detail?: string;
   };
+}
+
+/**
+ * 保存 AI 分析报告的请求参数
+ */
+export interface SaveReportRequest {
+  /** 猫粮 ID */
+  catfood_id: number;
+  /** 原始配料表文本 */
+  ingredients_text: string;
+  /** 产品标签列表 */
+  tags: string[];
+  /** 识别到的添加剂列表 */
+  additives: string[];
+  /** 识别到的营养成分列表 */
+  ingredients: string[];
+  /** 安全性分析文本 */
+  safety: string;
+  /** 营养分析文本 */
+  nutrient: string;
+  /** 是否支持百分比分析 */
+  percentage: boolean;
+  /** 粗蛋白含量（%） */
+  crude_protein?: number | null;
+  /** 粗脂肪含量（%） */
+  crude_fat?: number | null;
+  /** 碳水化合物含量（%） */
+  carbohydrates?: number | null;
+  /** 粗纤维含量（%） */
+  crude_fiber?: number | null;
+  /** 粗灰分含量（%） */
+  crude_ash?: number | null;
+  /** 其他成分含量（%） */
+  others?: number | null;
+}
+
+/**
+ * 保存 AI 分析报告的响应
+ */
+export interface SaveReportResponse {
+  /** 提示消息 */
+  message: string;
+  /** 保存的报告数据 */
+  report: AIReportData;
+}
+
+/**
+ * AI 分析报告数据（从数据库获取）
+ */
+export interface AIReportData {
+  /** 报告 ID */
+  id: number;
+  /** 猫粮 ID */
+  catfood_id: number;
+  /** 猫粮名称 */
+  catfood_name: string;
+  /** 原始配料表文本 */
+  ingredients_text: string;
+  /** 产品标签列表 */
+  tags: string[];
+  /** 识别到的添加剂列表 */
+  additives: string[];
+  /** 识别到的营养成分列表 */
+  ingredients: string[];
+  /** 安全性分析文本 */
+  safety: string;
+  /** 营养分析文本 */
+  nutrient: string;
+  /** 是否支持百分比分析 */
+  percentage: boolean;
+  /** 百分比数据 */
+  percent_data: {
+    crude_protein: number | null;
+    crude_fat: number | null;
+    carbohydrates: number | null;
+    crude_fiber: number | null;
+    crude_ash: number | null;
+    others: number | null;
+  };
+  /** 创建时间 */
+  created_at: string;
+  /** 更新时间 */
+  updated_at: string;
+}
+
+/**
+ * 检查报告是否存在的响应
+ */
+export interface CheckReportExistsResponse {
+  /** 是否存在报告 */
+  exists: boolean;
+  /** 猫粮 ID */
+  catfood_id: number;
+  /** 猫粮名称（如果存在） */
+  catfood_name?: string;
+  /** 报告 ID（如果存在） */
+  report_id?: number;
+  /** 更新时间（如果存在） */
+  updated_at?: string;
+  /** 错误信息（如果猫粮不存在） */
+  error?: string;
 }

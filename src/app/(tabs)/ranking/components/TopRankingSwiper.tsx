@@ -60,11 +60,11 @@ const getRankStyle = (index: number) => {
       };
     default:
       return {
-        gradient: ['#60A5FA', '#3B82F6'] as const, // 蓝色渐变
+        gradient: ['#60A5FA', '#FEBE98'] as const, // 蓝色渐变
         textColor: 'white' as const,
         icon: 'star.fill' as const,
         iconColor: 'white' as const,
-        shadowColor: '#3B82F6',
+        shadowColor: '#FEBE98',
       };
   }
 };
@@ -407,77 +407,6 @@ export function TopRankingSwiper({
           opacity: 0.4,
         }}
       /> */}
-
-      {/* 标题 */}
-      <XStack
-        paddingHorizontal="$4"
-        paddingBottom="$3"
-        marginBottom="$2"
-        alignItems="center"
-        justifyContent="space-between"
-        zIndex={2}
-      >
-        <XStack alignItems="center" gap="$3">
-          <YStack
-            overflow="hidden"
-            width={56}
-            height={56}
-            borderRadius="$12"
-            alignItems="center"
-            justifyContent="center"
-            borderWidth={2.5}
-            borderColor="#FDE68A"
-          >
-            <LinearGradient
-              colors={['#FCD34D', '#F59E0B']}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-              }}
-            />
-            <IconSymbol name="trophy.fill" size={30} color="white" style={{ zIndex: 1 }} />
-          </YStack>
-          <YStack>
-            <Text fontSize={24} fontWeight="900" color="#111827" letterSpacing={0.5}>
-              热门推荐
-            </Text>
-            <Text fontSize={14} color="#6B7280" fontWeight="700" letterSpacing={0.2}>
-              精选优质猫粮 TOP {topCount}
-            </Text>
-          </YStack>
-        </XStack>
-        <YStack
-          overflow="hidden"
-          paddingHorizontal="$4"
-          paddingVertical="$2.5"
-          borderRadius="$12"
-          borderWidth={2.5}
-          borderColor="#FDE68A"
-        >
-          <LinearGradient
-            colors={['#FBBF24', '#F59E0B']}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-            }}
-          />
-          <Text
-            fontSize={16}
-            color="white"
-            fontWeight="900"
-            style={{ zIndex: 1 }}
-            letterSpacing={0.5}
-          >
-            TOP {topCount}
-          </Text>
-        </YStack>
-      </XStack>
 
       {/* 横向滑动列表 - 增强的3D轮播效果 */}
       <YStack height={cardHeight * 1.15 + 10} overflow="visible" zIndex={1} paddingTop="$2">

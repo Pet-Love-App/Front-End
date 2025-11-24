@@ -1,4 +1,5 @@
 import { CommentSection } from '@/src/components/Comments';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, YStack } from 'tamagui';
@@ -6,6 +7,7 @@ import {
   ActionBar,
   AdditiveDetailModal,
   AdditiveSection,
+  AIReportSection,
   BasicInfoSection,
   EmptyState,
   LoadingState,
@@ -16,7 +18,7 @@ import {
   ReportHeader,
   SafetyAnalysisSection,
 } from '../components';
-import { useAdditiveModal, useCatFoodDetail } from '../hooks';
+import { useAdditiveModal, useAIReport, useCatFoodDetail } from '../hooks';
 
 /**
  * Detail 主屏幕组件
@@ -29,6 +31,9 @@ export function DetailScreen() {
   const { catfoodId, catFood, isLoading } = useCatFoodDetail();
   const { selectedAdditive, modalVisible, handleAdditivePress, handleCloseModal } =
     useAdditiveModal();
+
+  // AI 报告相关
+  const { report, hasReport, isLoading: isLoadingReport } = useAIReport(catfoodId);
 
   // 渲染内容
   const renderContent = () => {
@@ -44,9 +49,10 @@ export function DetailScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: 16,
-          paddingLeft: Math.max(12, insets.left),
-          paddingRight: Math.max(12, insets.right),
+          paddingTop: 8,
+          paddingLeft: Math.max(8, insets.left),
+          paddingRight: Math.max(8, insets.right),
+          paddingBottom: 16,
         }}
       >
         {/* 头部信息 */}
@@ -60,25 +66,33 @@ export function DetailScreen() {
           catfoodId={catFood.id}
         />
 
-        {/* 安全性分析 */}
-        {catFood.safety && <SafetyAnalysisSection safety={catFood.safety} />}
+        {/* AI 报告板块 - 如果有报告则显示（包含安全性、营养分析、添加剂、营养成分等） */}
+        {hasReport && report && <AIReportSection report={report} isLoading={isLoadingReport} />}
 
-        {/* 营养分析 */}
-        {catFood.nutrient && <NutrientAnalysisSection nutrient={catFood.nutrient} />}
+        {/* 如果没有 AI 报告，则显示原始数据 */}
+        {!hasReport && (
+          <>
+            {/* 安全性分析 */}
+            {catFood.safety && <SafetyAnalysisSection safety={catFood.safety} />}
 
-        {/* 添加剂成分 */}
-        {catFood.additive && catFood.additive.length > 0 && (
-          <AdditiveSection additives={catFood.additive} onAdditivePress={handleAdditivePress} />
-        )}
+            {/* 营养分析 */}
+            {catFood.nutrient && <NutrientAnalysisSection nutrient={catFood.nutrient} />}
 
-        {/* 营养成分分析图表 */}
-        {catFood.percentage && catFood.percentData && (
-          <NutritionChartSection percentData={catFood.percentData} />
-        )}
+            {/* 添加剂成分 */}
+            {catFood.additive && catFood.additive.length > 0 && (
+              <AdditiveSection additives={catFood.additive} onAdditivePress={handleAdditivePress} />
+            )}
 
-        {/* 营养成分详情列表 */}
-        {catFood.ingredient && catFood.ingredient.length > 0 && (
-          <NutritionListSection ingredients={catFood.ingredient} />
+            {/* 营养成分分析图表 */}
+            {catFood.percentage && catFood.percentData && (
+              <NutritionChartSection percentData={catFood.percentData} />
+            )}
+
+            {/* 营养成分详情列表 */}
+            {catFood.ingredient && catFood.ingredient.length > 0 && (
+              <NutritionListSection ingredients={catFood.ingredient} />
+            )}
+          </>
         )}
 
         {/* 评分区 */}
@@ -100,10 +114,24 @@ export function DetailScreen() {
           title: '猫粮详情',
           headerBackTitle: '返回',
           headerBackVisible: true,
+          headerStyle: {
+            backgroundColor: '#fff',
+          },
+          headerShadowVisible: true,
         }}
       />
 
-      <YStack flex={1} backgroundColor="$gray1">
+      <YStack flex={1} position="relative">
+        {/* 背景渐变 */}
+        <YStack position="absolute" width="100%" height="100%">
+          <LinearGradient
+            colors={['#FFF5F0', '#FFF9F5', '#FFFFFF']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 0.5 }}
+            style={{ width: '100%', height: '100%' }}
+          />
+        </YStack>
+
         {renderContent()}
 
         {/* 添加剂详情弹窗 */}

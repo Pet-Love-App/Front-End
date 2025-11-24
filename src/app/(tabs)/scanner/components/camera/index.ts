@@ -6,6 +6,6 @@
  * - 清晰的功能分组
  */
 
-export { CameraPermission } from './CameraPermission';
+export { CameraPermissionModal } from './CameraPermissionModal';
 export { ExpoCameraView } from './ExpoCameraView';
 export { PhotoPreview } from './PhotoPreview';

@@ -10,88 +10,99 @@ type IconSymbolName = keyof typeof MAPPING;
  * Add your SF Symbols to Material Icons mappings here.
  * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
  * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
+ *
+ * Android兼容性优化说明：
+ * - 所有映射都使用Ionicons标准图标名称
+ * - 确保在Android平台上能正常显示
  */
 const MAPPING = {
-  // 底部tabs
-  'doc.text.fill': 'document-text-outline',
-  'bubble.left.and.bubble.right.fill': 'chatbubbles-outline',
-  'viewfinder.circle.fill': 'scan-outline',
-  'cart.fill': 'cart-outline',
-  'person.fill': 'person-outline',
-  // 相机
+  // ==================== 底部Tabs ====================
+  'doc.text.fill': 'document-text',
+  'bubble.left.and.bubble.right.fill': 'chatbubbles',
+  'viewfinder.circle.fill': 'scan-circle',
+  'cart.fill': 'cart',
+  'person.fill': 'person',
+
+  // ==================== 相机相关 ====================
   'camera.fill': 'camera',
-  xmark: 'close',
-  'arrow.triangle.2.circlepath.camera': 'camera-reverse',
-  'photo.fill.on.rectangle.fill': 'image-outline',
   'camera.rotate': 'camera-reverse',
-  // 宠物相关
-  'pawprint.fill': 'paw',
-  // 编辑
-  pencil: 'pencil',
-  // 搜索
-  magnifyingglass: 'search',
-  // 列表
-  'list.bullet': 'list',
-  // 建筑/品牌
-  'building.2.fill': 'business',
-  'building.2': 'business-outline',
-  // 刷新/重试
-  'arrow.counterclockwise': 'refresh',
-  'arrow.clockwise': 'reload',
-  // 状态图标
+  'camera.metering.center.weighted': 'camera-outline',
+  'arrow.triangle.2.circlepath.camera': 'camera-reverse-outline',
+
+  // ==================== 基础操作图标 ====================
+  xmark: 'close',
+  'xmark.circle.fill': 'close-circle',
   'checkmark.circle.fill': 'checkmark-circle',
   'checkmark.shield.fill': 'shield-checkmark',
-  'checkmark.seal.fill': 'ribbon',
-  'xmark.circle.fill': 'close-circle',
+  'checkmark.seal.fill': 'medal',
+  'plus.circle.fill': 'add-circle',
+
+  // ==================== 文档相关 ====================
+  'doc.text.viewfinder': 'reader',
+  'doc.text.magnifyingglass': 'search',
+  'doc.on.doc': 'copy',
+  'photo.fill.on.rectangle.fill': 'images',
+  photo: 'image',
+  'photo.badge.plus': 'image-outline',
+
+  // ==================== 图表相关 ====================
+  'chart.bar.fill': 'bar-chart',
+  'chart.pie.fill': 'pie-chart',
+  'chart.bar.xaxis': 'stats-chart',
+  'chart.line.uptrend.xyaxis': 'trending-up',
+  'chart.bar.doc.horizontal.fill': 'stats-chart',
+  'list.bullet.rectangle': 'list',
+
+  // ==================== 状态和提示图标 ====================
+  'exclamationmark.circle': 'alert-circle',
+  'exclamationmark.triangle': 'warning',
   'questionmark.circle.fill': 'help-circle',
-  'exclamationmark.circle': 'alert-circle-outline',
-  'exclamationmark.triangle': 'warning-outline',
-  // 图片
-  photo: 'image-outline',
-  'photo.badge.plus': 'add-circle-outline',
-  // 星星/爱心
+  'info.circle.fill': 'information-circle',
+  'lightbulb.fill': 'bulb',
+  sparkles: 'sparkles-outline',
+
+  // ==================== 导航和箭头 ====================
+  'chevron.right': 'chevron-forward',
+  'arrow.left': 'arrow-back',
+  'arrow.counterclockwise': 'refresh',
+  'arrow.clockwise': 'reload',
+
+  // ==================== 搜索和过滤 ====================
+  magnifyingglass: 'search',
+  'barcode.viewfinder': 'barcode',
+
+  // ==================== 社交和互动 ====================
   'star.fill': 'star',
   'heart.fill': 'heart',
   'heart.slash': 'heart-dislike',
   'trophy.fill': 'trophy',
-  // 托盘
+
+  // ==================== 宠物相关 ====================
+  'pawprint.fill': 'paw',
+
+  // ==================== 列表和组织 ====================
+  'list.bullet': 'list',
   'tray.fill': 'file-tray-full',
-  // 图表
-  'chart.line.uptrend.xyaxis': 'trending-up',
-  'chart.bar.fill': 'bar-chart',
-  'chart.pie.fill': 'pie-chart',
-  'chart.bar.xaxis': 'stats-chart',
-  'list.bullet.rectangle': 'list-outline',
-  // 信息
-  'info.circle.fill': 'information-circle',
-  // 时钟
-  clock: 'time-outline',
-  // 条形码
-  'barcode.viewfinder': 'barcode-outline',
-  // 文档
-  'doc.on.doc': 'copy-outline',
-  'doc.text.viewfinder': 'document-text',
-  'doc.text.magnifyingglass': 'document-text-outline',
-  // 灯泡
-  'lightbulb.fill': 'bulb',
-  // 箭头
-  'chevron.right': 'chevron-forward',
-  'arrow.left': 'arrow-back',
-  // 闪光
-  sparkles: 'sparkles',
-  // 锁
+
+  // ==================== 建筑/品牌 ====================
+  'building.2.fill': 'business',
+  'building.2': 'business-outline',
+
+  // ==================== 编辑工具 ====================
+  pencil: 'pencil',
+  trash: 'trash',
+
+  // ==================== 安全相关 ====================
   'lock.fill': 'lock-closed',
   'key.fill': 'key',
-  // 评论
-  'bubble.left': 'chatbubble-outline',
-  // 发送
+
+  // ==================== 通讯相关 ====================
+  'bubble.left': 'chatbubble',
   'paperplane.fill': 'send',
-  // 垃圾桶
-  trash: 'trash-outline',
-  // 添加
-  'plus.circle.fill': 'add-circle',
-  // 退出
-  'rectangle.portrait.and.arrow.right': 'exit-outline',
+
+  // ==================== 系统操作 ====================
+  'rectangle.portrait.and.arrow.right': 'exit',
+  clock: 'time',
 } as IconMapping;
 
 /**

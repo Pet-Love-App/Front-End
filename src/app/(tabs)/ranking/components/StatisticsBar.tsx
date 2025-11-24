@@ -41,12 +41,12 @@ export function StatisticsBar({
           alignItems="center"
           justifyContent="center"
         >
-          <IconSymbol name="list.bullet" size={18} color="#3B82F6" />
+          <IconSymbol name="list.bullet" size={18} color="#FEBE98" />
         </YStack>
         {hasFilter ? (
           <Text fontSize={14} color="#4B5563" fontWeight="600">
             找到{' '}
-            <Text fontWeight="800" color="#3B82F6" fontSize={15}>
+            <Text fontWeight="800" color="#FEBE98" fontSize={15}>
               {filteredCount}
             </Text>{' '}
             个结果
@@ -60,7 +60,7 @@ export function StatisticsBar({
         ) : (
           <Text fontSize={14} color="#4B5563" fontWeight="600">
             共{' '}
-            <Text fontWeight="800" color="#3B82F6" fontSize={15}>
+            <Text fontWeight="800" color="#FEBE98" fontSize={15}>
               {filteredCount}
             </Text>{' '}
             个优质猫粮

@@ -8,7 +8,7 @@
  * - 安全区域适配：使用 insets
  */
 
-import { LottieAnimation } from '@/src/components/LottieAnimation';
+import { PageHeader } from '@/src/components/PageHeader';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import React from 'react';
 import { ScrollView } from 'react-native';
@@ -32,40 +32,18 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
   return (
     <YStack flex={1} backgroundColor="#FAFAFA">
       {/* ==================== Header 区域 ==================== */}
-      <YStack
-        paddingTop={insets.top}
-        paddingHorizontal="$5"
-        paddingBottom="$4"
-        backgroundColor="white"
-        borderBottomWidth={1}
-        borderBottomColor="#F3F4F6"
-      >
-        <XStack alignItems="center" gap="$3" paddingTop="$3">
-          {/* Header 图标 */}
-          <YStack
-            width={48}
-            height={48}
-            borderRadius="$12"
-            backgroundColor="#EFF6FF"
-            alignItems="center"
-            justifyContent="center"
-            borderWidth={2}
-            borderColor="#DBEAFE"
-          >
-            <IconSymbol name="camera.metering.center.weighted" size={26} color="#3B82F6" />
-          </YStack>
-
-          {/* Header 文字 */}
-          <YStack flex={1}>
-            <Text fontSize={24} fontWeight="900" color="#111827" letterSpacing={0.5}>
-              智能扫描
-            </Text>
-            <Text fontSize={13} color="#6B7280" fontWeight="600" marginTop="$1">
-              AI 成分分析助手
-            </Text>
-          </YStack>
-        </XStack>
-      </YStack>
+      <PageHeader
+        title="智能扫描"
+        subtitle="AI 成分分析助手"
+        icon={{
+          name: 'camera.metering.center.weighted',
+          size: 26,
+          color: '#FEBE98',
+          backgroundColor: '#FFF5ED',
+          borderColor: '#FFE4D1',
+        }}
+        insets={insets}
+      />
 
       {/* ==================== 内容区域（可滚动） ==================== */}
       <ScrollView
@@ -86,13 +64,13 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
             width={100}
             height={100}
             borderRadius="$12"
-            backgroundColor="#EFF6FF"
+            backgroundColor="#FFF5ED"
             alignItems="center"
             justifyContent="center"
             borderWidth={3}
-            borderColor="#DBEAFE"
+            borderColor="#FFE4D1"
           >
-            <IconSymbol name="camera.fill" size={50} color="#3B82F6" />
+            <IconSymbol name="camera.fill" size={50} color="#FEBE98" />
           </YStack>
 
           {/* 主标题和描述 */}
@@ -118,22 +96,6 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
             </Text>
           </YStack>
 
-          {/* ==================== 动画区域 ==================== */}
-          <YStack
-            backgroundColor="white"
-            borderRadius="$12"
-            padding="$5"
-            borderWidth={2}
-            borderColor="#F3F4F6"
-            marginVertical="$2"
-          >
-            <LottieAnimation
-              source={require('@/assets/animations/cat_thinking_animation.json')}
-              width={150}
-              height={150}
-            />
-          </YStack>
-
           {/* ==================== 功能说明卡片 ==================== */}
           <YStack width="100%" gap="$3">
             <YStack
@@ -157,11 +119,11 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
                     width={34}
                     height={34}
                     borderRadius="$8"
-                    backgroundColor="#EFF6FF"
+                    backgroundColor="#FFF5ED"
                     alignItems="center"
                     justifyContent="center"
                   >
-                    <IconSymbol name="camera.fill" size={17} color="#3B82F6" />
+                    <IconSymbol name="camera.fill" size={17} color="#FEBE98" />
                   </YStack>
                   <Text fontSize={13} color="#4B5563" fontWeight="600" flex={1}>
                     拍摄猫粮成分表
@@ -209,17 +171,17 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
           <YStack width="100%" marginTop="$3">
             <Button
               size="$6"
-              backgroundColor="#3B82F6"
+              backgroundColor="#FEBE98"
               color="white"
               borderRadius="$12"
               borderWidth={2}
-              borderColor="#2563EB"
+              borderColor="#FCA574"
               onPress={onStartScan}
               icon={<IconSymbol name="camera.fill" size={26} color="white" />}
               fontWeight="800"
               fontSize={18}
               letterSpacing={0.5}
-              pressStyle={{ scale: 0.97, backgroundColor: '#2563EB' }}
+              pressStyle={{ scale: 0.97, backgroundColor: '#FCA574' }}
               height={64}
             >
               开始扫描

@@ -7,7 +7,7 @@ import {
   AdditiveDetailModal,
   NutrientAnalysisSection,
   SafetyAnalysisSection,
-} from '@/src/app/detail/_components';
+} from '@/src/app/detail/components';
 import { searchAdditive, searchIngredient, type GenerateReportResponse } from '@/src/services/api';
 import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';

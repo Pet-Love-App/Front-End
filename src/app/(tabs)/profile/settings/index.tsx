@@ -8,10 +8,10 @@ import { useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card, ScrollView, Separator, Text, XStack, YStack } from 'tamagui';
-import { EditProfileModal } from '../_components/EditProfileModal';
-import { LogoutButton } from '../_components/LogoutButton';
-import { SettingItem } from '../_components/SettingItem';
-import { ThemeSelectorModal } from '../_components/ThemeSelectorModal';
+import { EditProfileModal } from '../components/EditProfileModal';
+import { LogoutButton } from '../components/LogoutButton';
+import { SettingItem } from '../components/SettingItem';
+import { ThemeSelectorModal } from '../components/ThemeSelectorModal';
 
 export default function SettingsPage() {
   const colorScheme = useThemeAwareColorScheme();

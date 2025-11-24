@@ -1,14 +1,12 @@
 import { CommentSection } from '@/src/components/Comments';
 import { Stack } from 'expo-router';
-import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, YStack } from 'tamagui';
 import {
   ActionBar,
   AdditiveDetailModal,
   AdditiveSection,
-  AIReportButton,
-  AIReportModal,
+  AIReportSection,
   BasicInfoSection,
   EmptyState,
   LoadingState,
@@ -35,7 +33,6 @@ export function DetailScreen() {
 
   // AI 报告相关
   const { report, hasReport, isLoading: isLoadingReport } = useAIReport(catfoodId);
-  const [showReportModal, setShowReportModal] = useState(false);
 
   // 渲染内容
   const renderContent = () => {
@@ -67,25 +64,33 @@ export function DetailScreen() {
           catfoodId={catFood.id}
         />
 
-        {/* 安全性分析 */}
-        {catFood.safety && <SafetyAnalysisSection safety={catFood.safety} />}
+        {/* AI 报告板块 - 如果有报告则显示（包含安全性、营养分析、添加剂、营养成分等） */}
+        {hasReport && report && <AIReportSection report={report} isLoading={isLoadingReport} />}
 
-        {/* 营养分析 */}
-        {catFood.nutrient && <NutrientAnalysisSection nutrient={catFood.nutrient} />}
+        {/* 如果没有 AI 报告，则显示原始数据 */}
+        {!hasReport && (
+          <>
+            {/* 安全性分析 */}
+            {catFood.safety && <SafetyAnalysisSection safety={catFood.safety} />}
 
-        {/* 添加剂成分 */}
-        {catFood.additive && catFood.additive.length > 0 && (
-          <AdditiveSection additives={catFood.additive} onAdditivePress={handleAdditivePress} />
-        )}
+            {/* 营养分析 */}
+            {catFood.nutrient && <NutrientAnalysisSection nutrient={catFood.nutrient} />}
 
-        {/* 营养成分分析图表 */}
-        {catFood.percentage && catFood.percentData && (
-          <NutritionChartSection percentData={catFood.percentData} />
-        )}
+            {/* 添加剂成分 */}
+            {catFood.additive && catFood.additive.length > 0 && (
+              <AdditiveSection additives={catFood.additive} onAdditivePress={handleAdditivePress} />
+            )}
 
-        {/* 营养成分详情列表 */}
-        {catFood.ingredient && catFood.ingredient.length > 0 && (
-          <NutritionListSection ingredients={catFood.ingredient} />
+            {/* 营养成分分析图表 */}
+            {catFood.percentage && catFood.percentData && (
+              <NutritionChartSection percentData={catFood.percentData} />
+            )}
+
+            {/* 营养成分详情列表 */}
+            {catFood.ingredient && catFood.ingredient.length > 0 && (
+              <NutritionListSection ingredients={catFood.ingredient} />
+            )}
+          </>
         )}
 
         {/* 评分区 */}
@@ -93,17 +98,6 @@ export function DetailScreen() {
 
         {/* 评论区 */}
         {catFood && <CommentSection targetType="catfood" targetId={catFood.id} />}
-
-        {/* AI 报告按钮 */}
-        {catfoodId && (
-          <YStack paddingHorizontal="$3" marginTop="$4" marginBottom="$3">
-            <AIReportButton
-              hasReport={hasReport}
-              isLoading={isLoadingReport}
-              onPress={() => setShowReportModal(true)}
-            />
-          </YStack>
-        )}
 
         {/* 底部安全区间距 */}
         <YStack height={Math.max(24, insets.bottom + 16)} />
@@ -129,13 +123,6 @@ export function DetailScreen() {
           visible={modalVisible}
           additive={selectedAdditive}
           onClose={handleCloseModal}
-        />
-
-        {/* AI 报告详情弹窗 */}
-        <AIReportModal
-          visible={showReportModal}
-          report={report}
-          onClose={() => setShowReportModal(false)}
         />
 
         {/* 底部操作栏：收藏和点赞 */}

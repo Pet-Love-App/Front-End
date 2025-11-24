@@ -4,6 +4,7 @@ export { AdditiveDetailModal } from './AdditiveDetailModal';
 export { AdditiveSection } from './AdditiveSection';
 export { AIReportButton } from './AIReportButton';
 export { AIReportModal } from './AIReportModal';
+export { AIReportSection } from './AIReportSection';
 export { BasicInfoSection } from './BasicInfoSection';
 export { EmptyState } from './EmptyState';
 export { LoadingState } from './LoadingState';

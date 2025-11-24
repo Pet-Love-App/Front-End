@@ -4,6 +4,7 @@
 
 import { apiClient } from '../BaseApi';
 import type {
+  BackendReportResponse,
   GenerateReportRequest,
   GenerateReportResponse,
   IngredientInfoRequest,
@@ -18,10 +19,60 @@ class AiReportService {
    */
   async generateReport(request: GenerateReportRequest): Promise<GenerateReportResponse> {
     try {
-      const response = await apiClient.post<GenerateReportResponse>('/api/ai/llm/chat', request);
-      return response;
+      console.log('🚀 开始生成AI报告...');
+      console.log('📤 请求参数:', { ingredients: request.ingredients.substring(0, 100) + '...' });
+
+      // 后端返回的数据结构
+      const backendResponse = await apiClient.post<BackendReportResponse>(
+        '/api/ai/llm/chat',
+        request
+      );
+
+      // 开发环境下打印后端原始响应
+      if (__DEV__) {
+        console.log('\n========== 📥 后端原始响应数据 ==========');
+        console.log('完整响应:', JSON.stringify(backendResponse, null, 2));
+        console.log('========================================\n');
+      }
+
+      // 转换为前端期望的数据结构
+      const frontendResponse: GenerateReportResponse = {
+        additives: backendResponse.additive || [],
+        identified_nutrients: backendResponse.ingredient || [],
+        safety: backendResponse.safety || '',
+        nutrient: backendResponse.nutrient || '',
+        percentage: backendResponse.percentage ?? null,
+        crude_protein: backendResponse.percent_data?.crude_protein ?? null,
+        crude_fat: backendResponse.percent_data?.crude_fat ?? null,
+        carbohydrates: backendResponse.percent_data?.carbohydrates ?? null,
+        crude_fiber: backendResponse.percent_data?.crude_fiber ?? null,
+        crude_ash: backendResponse.percent_data?.crude_ash ?? null,
+        others: backendResponse.percent_data?.others ?? null,
+        tags: backendResponse.tags || [],
+      };
+
+      // 开发环境下打印摘要
+      if (__DEV__) {
+        console.log('📊 数据摘要:', {
+          additives: backendResponse.additive?.length || 0,
+          nutrients: backendResponse.ingredient?.length || 0,
+          percentage: backendResponse.percentage,
+          hasActualNutritionData:
+            frontendResponse.crude_protein !== null ||
+            frontendResponse.crude_fat !== null ||
+            frontendResponse.carbohydrates !== null ||
+            frontendResponse.crude_fiber !== null ||
+            frontendResponse.crude_ash !== null,
+        });
+        console.log('📊 营养百分比数据:', backendResponse.percent_data);
+      }
+
+      return frontendResponse;
     } catch (error) {
-      console.error('生成AI报告失败:', error);
+      console.error('❌ 生成AI报告失败:', error);
+      if (error instanceof Error) {
+        console.error('错误详情:', error.message);
+      }
       throw error;
     }
   }

@@ -60,6 +60,10 @@ export type {
   IngredientInfoResponse,
 } from './ai_report';
 
+// 搜索服务
+export { searchService } from './search';
+export type { BaikeSearchRequest, BaikeSearchResponse } from './search';
+
 // 评分服务
 export { ratingApi } from './rating';
 export type { CreateRatingRequest, Rating, RatingResponse } from './rating';

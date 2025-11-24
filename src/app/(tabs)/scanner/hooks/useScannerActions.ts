@@ -141,14 +141,28 @@ export function useScannerActions({
 
     try {
       setIsGeneratingReport(true);
+
       const report = await aiReportService.generateReport({
         ingredients: ocrResult.text,
         max_tokens: 2048,
       });
+
+      // 简化日志：只打印关键数据
+      console.log('✅ AI报告生成完成');
+      console.log('📊 营养数据:', {
+        crude_protein: report.crude_protein,
+        crude_fat: report.crude_fat,
+        carbohydrates: report.carbohydrates,
+        crude_fiber: report.crude_fiber,
+        crude_ash: report.crude_ash,
+        others: report.others,
+        percentage: report.percentage,
+      });
+
       setAiReport(report);
       transitionTo('ai-report-detail');
     } catch (error) {
-      console.error('生成报告失败:', error);
+      console.error('❌ 生成报告失败:', error);
       Alert.alert('错误', '生成报告失败');
     } finally {
       setIsGeneratingReport(false);

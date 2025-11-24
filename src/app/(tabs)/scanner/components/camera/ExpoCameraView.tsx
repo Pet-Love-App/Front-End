@@ -262,11 +262,31 @@ export function ExpoCameraView({
           style={StyleSheet.absoluteFill}
           facing={facing as CameraType}
           zoom={zoom}
+          autofocus="on"
           onCameraReady={handleCameraReady}
           barcodeScannerSettings={{
             barcodeTypes: [...SUPPORTED_BARCODE_TYPES],
           }}
           onBarcodeScanned={scanType === ScanType.BARCODE ? handleBarCodeScanned : undefined}
+        />
+
+        {/* 顶部控制栏 */}
+        <CameraControls
+          scanType={scanType}
+          zoom={zoom}
+          onClose={onClose}
+          onToggleCamera={onToggleCamera}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          setZoom={setZoom}
+        />
+
+        {/* 扫描框 */}
+        <ScanFrame
+          scanType={scanType}
+          frameScale={frameScale}
+          frameBorderWidth={frameBorderWidthInterpolated}
+          onLayout={setScanFrameLayout}
         />
 
         {/* 顶部控制栏 */}

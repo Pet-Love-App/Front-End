@@ -13,7 +13,34 @@ export interface GenerateReportRequest {
 }
 
 /**
- * AI 生成报告的响应
+ * 后端返回的原始数据结构
+ */
+interface BackendReportResponse {
+  /** 识别到的添加剂列表 */
+  additive: string[];
+  /** 识别到的营养成分名称列表 */
+  ingredient: string[];
+  /** 安全性分析（约50字） */
+  safety: string;
+  /** 营养分析（约300字） */
+  nutrient: string;
+  /** 是否包含百分比数据 */
+  percentage: boolean;
+  /** 百分比数据（嵌套对象） */
+  percent_data: {
+    crude_protein: number | null;
+    crude_fat: number | null;
+    carbohydrates: number | null;
+    crude_fiber: number | null;
+    crude_ash: number | null;
+    others: number | null;
+  };
+  /** 标签 */
+  tags?: string[];
+}
+
+/**
+ * AI 生成报告的响应（前端使用的格式）
  */
 export interface GenerateReportResponse {
   /** 识别到的添加剂列表 */
@@ -38,7 +65,12 @@ export interface GenerateReportResponse {
   crude_ash: number | null;
   /** 其他成分含量（%） */
   others: number | null;
+  /** 标签（可选） */
+  tags?: string[];
 }
+
+// 导出后端类型供内部使用
+export type { BackendReportResponse };
 
 /**
  * 成分信息查询请求

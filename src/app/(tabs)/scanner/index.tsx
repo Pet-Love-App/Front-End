@@ -127,6 +127,13 @@ export default function ScannerScreen() {
   );
 
   /**
+   * 生成报告处理器（包装）
+   */
+  const handleGenerateReportWrapper = useCallback(() => {
+    handleGenerateReport(selectedCatFood);
+  }, [handleGenerateReport, selectedCatFood]);
+
+  /**
    * 保存报告处理器（包装）
    */
   const handleSaveReportWrapper = useCallback(() => {
@@ -178,7 +185,7 @@ export default function ScannerScreen() {
         ocrResult={ocrResult}
         photoUri={photoUri}
         isGeneratingReport={isGeneratingReport}
-        onGenerateReport={handleGenerateReport}
+        onGenerateReport={handleGenerateReportWrapper}
         onRetake={handleRetakePhoto}
         onClose={goBack}
       />

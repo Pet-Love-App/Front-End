@@ -135,42 +135,72 @@ export function useScannerActions({
 
   /**
    * 生成AI报告
+   * 修改：生成后自动保存到数据库（如果有选择的猫粮）
    */
-  const handleGenerateReport = useCallback(async () => {
-    if (!ocrResult) return;
+  const handleGenerateReport = useCallback(
+    async (selectedCatFood: CatFood | null) => {
+      if (!ocrResult) return;
 
-    try {
-      setIsGeneratingReport(true);
+      try {
+        setIsGeneratingReport(true);
 
-      console.log('\n========== 📝 OCR识别文本（完整） ==========');
-      console.log(ocrResult.text);
-      console.log('========================================\n');
+        console.log('\n========== 📝 OCR识别文本（完整） ==========');
+        console.log(ocrResult.text);
+        console.log('========================================\n');
 
-      const report = await aiReportService.generateReport({
-        ingredients: ocrResult.text,
-        max_tokens: 2048,
-      });
+        const report = await aiReportService.generateReport({
+          ingredients: ocrResult.text,
+          max_tokens: 2048,
+        });
 
-      console.log('\n========== ✅ 前端接收到的报告数据 ==========');
-      console.log(JSON.stringify(report, null, 2));
-      console.log('========================================\n');
+        console.log('\n========== ✅ 前端接收到的报告数据 ==========');
+        console.log(JSON.stringify(report, null, 2));
+        console.log('========================================\n');
 
-      setAiReport(report);
-      transitionTo('ai-report-detail');
-    } catch (error) {
-      console.error('❌ 生成报告失败:', error);
-      Alert.alert('错误', '生成报告失败');
-    } finally {
-      setIsGeneratingReport(false);
-    }
-  }, [ocrResult, transitionTo]);
+        setAiReport(report);
+
+        // ========== 自动保存报告到数据库 ==========
+        if (selectedCatFood) {
+          console.log('\n========== 💾 自动保存 AI 报告到数据库 ==========');
+          try {
+            const saveReportResult = await aiReportService.saveReport({
+              catfood_id: selectedCatFood.id,
+              ingredients_text: ocrResult.text,
+              tags: report.tags || [],
+              additives: report.additives || [],
+              ingredients: report.identified_nutrients || [],
+              safety: report.safety || '',
+              nutrient: report.nutrient || '',
+              percentage: report.percentage ?? false,
+              crude_protein: report.crude_protein,
+              crude_fat: report.crude_fat,
+              carbohydrates: report.carbohydrates,
+              crude_fiber: report.crude_fiber,
+              crude_ash: report.crude_ash,
+              others: report.others,
+            });
+
+            console.log('✅ AI 报告自动保存成功:', saveReportResult.message);
+          } catch (error: any) {
+            console.error('❌ 自动保存 AI 报告失败:', error);
+            // 保存失败不影响显示报告
+          }
+        }
+
+        transitionTo('ai-report-detail');
+      } catch (error) {
+        console.error('❌ 生成报告失败:', error);
+        Alert.alert('错误', '生成报告失败');
+      } finally {
+        setIsGeneratingReport(false);
+      }
+    },
+    [ocrResult, transitionTo]
+  );
 
   /**
-   * 保存报告到猫粮
-   * 新逻辑：
-   * 1. 先保存 AI 报告到数据库（新增）
-   * 2. 再查询成分和添加剂 ID
-   * 3. 最后更新猫粮的成分和添加剂关联
+   * 保存报告到猫粮（更新成分和添加剂关联）
+   * 注意：AI报告已在生成时自动保存，此函数仅用于更新关联
    */
   const handleSaveReport = useCallback(
     async (selectedCatFood: CatFood | null) => {
@@ -179,42 +209,10 @@ export function useScannerActions({
       try {
         setIsProcessing(true);
 
-        console.log('\n========== 💾 开始保存流程 ==========');
+        console.log('\n========== � 开始更新猫粮关联 ==========');
 
-        // ========== 步骤 1: 保存 AI 报告到数据库 ==========
-        console.log('📝 步骤 1: 保存 AI 报告到数据库...');
-        try {
-          const saveReportResult = await aiReportService.saveReport({
-            catfood_id: selectedCatFood.id,
-            ingredients_text: ocrResult.text, // 使用 OCR 识别的原始文本
-            tags: aiReport.tags || [],
-            additives: aiReport.additives || [],
-            ingredients: aiReport.identified_nutrients || [],
-            safety: aiReport.safety || '',
-            nutrient: aiReport.nutrient || '',
-            percentage: aiReport.percentage ?? false,
-            crude_protein: aiReport.crude_protein,
-            crude_fat: aiReport.crude_fat,
-            carbohydrates: aiReport.carbohydrates,
-            crude_fiber: aiReport.crude_fiber,
-            crude_ash: aiReport.crude_ash,
-            others: aiReport.others,
-          });
-
-          console.log('✅ AI 报告保存成功:', saveReportResult.message);
-        } catch (error: any) {
-          console.error('❌ 保存 AI 报告失败:', error);
-          // 如果保存报告失败，继续尝试更新猫粮信息
-          if (error.response?.status === 404) {
-            Alert.alert('错误', '猫粮不存在，无法保存报告');
-            return;
-          }
-          // 其他错误继续执行后续流程
-          console.warn('⚠️ AI 报告保存失败，继续更新猫粮信息...');
-        }
-
-        // ========== 步骤 2: 查询识别到的成分ID列表 ==========
-        console.log('\n📝 步骤 2: 查询成分 ID...');
+        // ========== 步骤 1: 查询识别到的成分ID列表 ==========
+        console.log('\n📝 步骤 1: 查询成分 ID...');
         const ingredientIds: number[] = [];
         const notFoundIngredients: string[] = [];
 
@@ -238,8 +236,8 @@ export function useScannerActions({
           }
         }
 
-        // ========== 步骤 3: 查询识别到的添加剂ID列表 ==========
-        console.log('\n📝 步骤 3: 查询添加剂 ID...');
+        // ========== 步骤 2: 查询识别到的添加剂ID列表 ==========
+        console.log('\n📝 步骤 2: 查询添加剂 ID...');
         const additiveIds: number[] = [];
         const notFoundAdditives: string[] = [];
 
@@ -263,8 +261,8 @@ export function useScannerActions({
           }
         }
 
-        // ========== 步骤 4: 调用 PATCH 接口更新猫粮信息 ==========
-        console.log('\n📝 步骤 4: 更新猫粮的成分和添加剂关联...');
+        // ========== 步骤 3: 调用 PATCH 接口更新猫粮信息 ==========
+        console.log('\n📝 步骤 3: 更新猫粮的成分和添加剂关联...');
         console.log('📤 开始更新猫粮信息...', {
           catfoodId: selectedCatFood.id,
           ingredientIds,
@@ -278,10 +276,10 @@ export function useScannerActions({
 
         console.log('✅ 猫粮信息更新成功');
 
-        // ========== 步骤 5: 提示用户 ==========
-        console.log('\n========== ✅ 保存流程完成 ==========\n');
+        // ========== 步骤 4: 提示用户 ==========
+        console.log('\n========== ✅ 更新流程完成 ==========\n');
 
-        let message = 'AI 报告已保存到数据库\n猫粮信息已更新';
+        let message = '猫粮成分和添加剂关联已更新';
         if (notFoundIngredients.length > 0 || notFoundAdditives.length > 0) {
           message += '\n\n部分成分未找到:';
           if (notFoundIngredients.length > 0) {
@@ -292,15 +290,15 @@ export function useScannerActions({
           }
         }
 
-        Alert.alert('保存成功', message, [
+        Alert.alert('更新成功', message, [
           {
             text: '确定',
             onPress: () => resetFlow(),
           },
         ]);
       } catch (error) {
-        console.error('❌ 保存报告失败:', error);
-        Alert.alert('保存失败', '请重试');
+        console.error('❌ 更新猫粮信息失败:', error);
+        Alert.alert('更新失败', '请重试');
       } finally {
         setIsProcessing(false);
       }

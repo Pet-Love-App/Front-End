@@ -1,7 +1,7 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import React from 'react';
 import { Modal, Pressable, StyleSheet, TouchableOpacity } from 'react-native';
-import { Button, Card, Text, XStack, YStack } from 'tamagui';
+import { Text, XStack, YStack } from 'tamagui';
 
 /**
  * 扫描模式类型
@@ -88,25 +88,37 @@ export function ScanModeModal({ visible, onClose, onSelectMode }: ScanModeModalP
         >
           {/* 内容布局 - 使用 Tamagui 组件 */}
           <YStack
-            backgroundColor="$background"
-            borderRadius="$6"
-            padding="$5"
-            gap="$4"
+            backgroundColor="white"
+            borderRadius="$8"
+            padding="$6"
+            gap="$5"
             maxWidth={500}
             width="90%"
+            borderWidth={1}
+            borderColor="#E5E7EB"
           >
             {/* 标题栏 */}
             <XStack justifyContent="space-between" alignItems="center">
-              <Text fontSize="$8" fontWeight="bold">
-                选择扫描模式
-              </Text>
-              <Button
-                circular
-                size="$3"
-                icon={<IconSymbol name="xmark.circle.fill" size={28} color="$gray10" />}
-                chromeless
-                onPress={onClose}
-              />
+              <YStack gap="$1.5">
+                <Text fontSize={26} fontWeight="900" color="#111827" letterSpacing={0.5}>
+                  选择扫描模式
+                </Text>
+                <Text fontSize={14} fontWeight="600" color="#6B7280">
+                  选择适合的方式进行扫描
+                </Text>
+              </YStack>
+              <Pressable onPress={onClose}>
+                <YStack
+                  width={40}
+                  height={40}
+                  borderRadius="$10"
+                  backgroundColor="#F3F4F6"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <IconSymbol name="xmark" size={20} color="#6B7280" />
+                </YStack>
+              </Pressable>
             </XStack>
 
             {/* 扫描模式选项 */}
@@ -117,10 +129,25 @@ export function ScanModeModal({ visible, onClose, onSelectMode }: ScanModeModalP
             </YStack>
 
             {/* 提示信息 */}
-            <YStack backgroundColor="$blue2" padding="$3" borderRadius="$4">
-              <XStack alignItems="center" justifyContent="center" gap="$2">
-                <IconSymbol name="lightbulb.fill" size={16} color="$blue11" />
-                <Text fontSize="$3" color="$blue11" textAlign="center">
+            <YStack
+              backgroundColor="#EFF6FF"
+              padding="$4"
+              borderRadius="$8"
+              borderWidth={1.5}
+              borderColor="#DBEAFE"
+            >
+              <XStack alignItems="center" gap="$2.5">
+                <YStack
+                  width={32}
+                  height={32}
+                  borderRadius="$8"
+                  backgroundColor="#3B82F6"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <IconSymbol name="lightbulb.fill" size={16} color="white" />
+                </YStack>
+                <Text fontSize={14} color="#1E40AF" fontWeight="600" flex={1} lineHeight={20}>
                   提示：已知品牌可以查看详细的成分数据库信息
                 </Text>
               </XStack>
@@ -160,40 +187,60 @@ function ScanModeOptionCard({ option, onSelect }: ScanModeOptionCardProps) {
     }, 500);
   }, [option.mode, onSelect, isPressed]);
 
+  const iconColor = option.mode === 'known-brand' ? '#3B82F6' : '#10B981';
+  const bgColor = option.mode === 'known-brand' ? '#EFF6FF' : '#D1FAE5';
+  const borderColor = option.mode === 'known-brand' ? '#DBEAFE' : '#A7F3D0';
+
   return (
-    <TouchableOpacity onPress={handlePress} activeOpacity={0.7} disabled={isPressed}>
-      <Card size="$4" bordered animation="bouncy" pointerEvents="none">
-        <Card.Header padded>
-          <XStack gap="$3" alignItems="center">
-            {/* 图标 */}
-            <YStack
-              width={60}
-              height={60}
-              backgroundColor={option.iconColor}
-              borderRadius="$10"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <IconSymbol name={option.icon} size={32} color="white" />
-            </YStack>
+    <TouchableOpacity onPress={handlePress} activeOpacity={0.8} disabled={isPressed}>
+      <YStack
+        backgroundColor="white"
+        borderRadius="$10"
+        borderWidth={2}
+        borderColor={borderColor}
+        padding="$4"
+        pointerEvents="none"
+      >
+        <XStack gap="$3.5" alignItems="center">
+          {/* 图标 */}
+          <YStack
+            width={68}
+            height={68}
+            backgroundColor={bgColor}
+            borderRadius="$12"
+            alignItems="center"
+            justifyContent="center"
+            borderWidth={2}
+            borderColor={borderColor}
+          >
+            <IconSymbol name={option.icon} size={36} color={iconColor} />
+          </YStack>
 
-            {/* 内容 */}
-            <YStack flex={1} gap="$2">
-              <Text fontSize="$6" fontWeight="600">
-                {option.title}
+          {/* 内容 */}
+          <YStack flex={1} gap="$2">
+            <Text fontSize={18} fontWeight="800" color="#111827" letterSpacing={0.3}>
+              {option.title}
+            </Text>
+            {option.description.map((desc, index) => (
+              <Text key={index} fontSize={13} color="#6B7280" fontWeight="600" lineHeight={18}>
+                • {desc}
               </Text>
-              {option.description.map((desc, index) => (
-                <Text key={index} fontSize="$3" color="$gray11">
-                  {desc}
-                </Text>
-              ))}
-            </YStack>
+            ))}
+          </YStack>
 
-            {/* 箭头 */}
-            <IconSymbol name="chevron.right" size={24} color="$gray10" />
-          </XStack>
-        </Card.Header>
-      </Card>
+          {/* 箭头 */}
+          <YStack
+            width={32}
+            height={32}
+            borderRadius="$8"
+            backgroundColor="#F3F4F6"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <IconSymbol name="chevron.right" size={18} color="#9CA3AF" />
+          </YStack>
+        </XStack>
+      </YStack>
     </TouchableOpacity>
   );
 }

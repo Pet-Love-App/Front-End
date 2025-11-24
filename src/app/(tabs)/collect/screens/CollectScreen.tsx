@@ -1,5 +1,6 @@
 import CollectListItem from '@/src/app/(tabs)/collect/components/collectItem';
 import ReportCollectItem from '@/src/app/(tabs)/collect/components/ReportCollectItem';
+import { AIReportModal } from '@/src/app/detail/components/AIReportModal';
 import { PageHeader } from '@/src/components/PageHeader';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
@@ -31,6 +32,9 @@ export function CollectScreen() {
     handleRefresh: handleRefreshReports,
     handleDelete: handleDeleteReport,
     handlePress: handlePressReport,
+    selectedReport,
+    isReportModalVisible,
+    closeReportModal,
   } = useReportCollectData();
 
   const {
@@ -140,9 +144,7 @@ export function CollectScreen() {
             <ReportCollectItem
               favoriteReport={favoriteReport}
               onDelete={() => handleDeleteReport(favoriteReport.id)}
-              onPress={() =>
-                handlePressReport(favoriteReport.report.catfood_id, favoriteReport.report.id)
-              }
+              onPress={() => handlePressReport(favoriteReport.report)}
             />
           </YStack>
         ))}
@@ -289,6 +291,13 @@ export function CollectScreen() {
           </ScrollView>
         )}
       </YStack>
+
+      {/* AI 报告详情模态框 */}
+      <AIReportModal
+        visible={isReportModalVisible}
+        report={selectedReport}
+        onClose={closeReportModal}
+      />
     </YStack>
   );
 }

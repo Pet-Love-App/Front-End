@@ -1,3 +1,4 @@
+import type { AIReportData } from '@/src/services/api';
 import { useCollectStore } from '@/src/store/collectStore';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -10,6 +11,8 @@ import { Alert } from 'react-native';
 export function useReportCollectData() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<AIReportData | null>(null);
+  const [isReportModalVisible, setIsReportModalVisible] = useState(false);
 
   // 使用 collectStore - 使用选择器避免不必要的重渲染
   const favoriteReports = useCollectStore((state) => state.favoriteReports);
@@ -57,16 +60,16 @@ export function useReportCollectData() {
     ]);
   };
 
-  // 点击报告，显示报告详情（可以导航到报告详情页或显示模态框）
-  const handlePress = (catfoodId: number, reportId: number) => {
-    // 跳转到猫粮详情页并打开AI报告
-    router.push({
-      pathname: '/detail',
-      params: {
-        id: catfoodId,
-        showReport: '1', // 标记需要自动打开报告
-      },
-    });
+  // 点击报告，直接打开报告详情模态框
+  const handlePress = (report: AIReportData) => {
+    setSelectedReport(report);
+    setIsReportModalVisible(true);
+  };
+
+  // 关闭报告模态框
+  const closeReportModal = () => {
+    setIsReportModalVisible(false);
+    setSelectedReport(null);
   };
 
   return {
@@ -77,5 +80,8 @@ export function useReportCollectData() {
     handleRefresh,
     handleDelete,
     handlePress,
+    selectedReport,
+    isReportModalVisible,
+    closeReportModal,
   };
 }

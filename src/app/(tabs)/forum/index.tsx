@@ -77,7 +77,7 @@ export default function ForumScreen() {
 
       <YStack flex={1} padding="$3" gap="$3">
         {tab === 'square' && <SquareTab externalReloadRef={squareReloadRef} />}
-        {tab === 'favorites' && <FavoritesTab />}
+        {tab === 'favorites' && <FavoritesTab onCreatePost={() => setPostModalVisible(true)} />}
         {tab === 'messages' && <MessagesTab />}
       </YStack>
 

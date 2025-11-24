@@ -1,7 +1,9 @@
 import { forumService, type Post } from '@/src/services/api/forum';
-import React, { useCallback, useEffect, useState } from 'react';
+import LottieView from 'lottie-react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, FlatList, RefreshControl } from 'react-native';
 import { Button, Card, Spinner, Text, XStack, YStack } from 'tamagui';
+// Removed ForumHeader import
 import { PostDetailModal } from './PostDetailModal';
 
 interface Props {
@@ -14,6 +16,7 @@ export function SquareTab({ onOpenPost, externalReloadRef }: Props) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activePost, setActivePost] = useState<Post | null>(null);
+  const animationRefs = useRef<Record<number, LottieView | null>>({});
 
   const load = useCallback(async () => {
     try {
@@ -28,17 +31,25 @@ export function SquareTab({ onOpenPost, externalReloadRef }: Props) {
     }
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
-  // 暴露外部刷新方法
   useEffect(() => {
     if (externalReloadRef) externalReloadRef.current = load;
-    return () => {
-      if (externalReloadRef) externalReloadRef.current = null;
-    };
+    return () => { if (externalReloadRef) externalReloadRef.current = null; };
   }, [externalReloadRef, load]);
+
+  const toggleFavorite = async (postId: number, wasFavorited: boolean) => {
+    try {
+      const res = await forumService.toggleFavorite(postId);
+      setList(prev => prev.map(p => p.id === postId ? { ...p, is_favorited: res.action === 'favorited', favorites_count: res.favorites_count ?? p.favorites_count } : p));
+      if (!wasFavorited && res.action === 'favorited') {
+        // 播放动画
+        setTimeout(() => animationRefs.current[postId]?.play(), 0);
+      }
+    } catch (e) {
+      Alert.alert('错误', '操作失败');
+    }
+  };
 
   const renderItem = ({ item }: { item: Post }) => (
     <Card margin="$3" padding="$3" elevate>
@@ -51,8 +62,28 @@ export function SquareTab({ onOpenPost, externalReloadRef }: Props) {
 
         <XStack gap="$3" alignItems="center" justifyContent="space-between">
           <Text color="$gray10">{new Date(item.created_at).toLocaleString()}</Text>
-          <XStack gap="$3">
-            <Text>收藏 {item.favorites_count}</Text>
+          <XStack gap="$3" alignItems="center">
+            <Button
+              size="$2"
+              onPress={() => toggleFavorite(item.id, item.is_favorited)}
+              backgroundColor={item.is_favorited ? '$yellow4' : '$background'}
+            >
+              <XStack alignItems="center" gap="$1">
+                <Text fontSize="$5" color={item.is_favorited ? '$yellow10' : '$gray10'}>
+                  {item.is_favorited ? '★' : '☆'}
+                </Text>
+                <Text fontSize="$3" color="$gray11">{item.favorites_count}</Text>
+              </XStack>
+              <YStack position="absolute" top={-20} left={-20} width={60} height={60} pointerEvents="none">
+                <LottieView
+                  ref={(ref) => { animationRefs.current[item.id] = ref; }}
+                  source={require('@/assets/animations/Tap_Burst.json')}
+                  loop={false}
+                  autoPlay={false}
+                  style={{ width: 60, height: 60 }}
+                />
+              </YStack>
+            </Button>
           </XStack>
         </XStack>
 
@@ -73,7 +104,6 @@ export function SquareTab({ onOpenPost, externalReloadRef }: Props) {
         renderItem={renderItem}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}
       />
-
       <PostDetailModal visible={!!activePost} post={activePost} onClose={() => setActivePost(null)} />
     </>
   );

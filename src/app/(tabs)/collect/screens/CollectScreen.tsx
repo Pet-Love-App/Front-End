@@ -1,4 +1,5 @@
 import CollectListItem from '@/src/app/(tabs)/collect/components/collectItem';
+import { PageHeader } from '@/src/components/PageHeader';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
@@ -87,37 +88,32 @@ export function CollectScreen() {
   return (
     <YStack flex={1} backgroundColor="$gray1">
       {/* 整合的顶部区域 */}
-      <YStack
-        paddingTop={insets.top}
-        backgroundColor="white"
-        borderBottomWidth={1}
-        borderBottomColor="$gray3"
-      >
+      <YStack backgroundColor="white" borderBottomWidth={1} borderBottomColor="$gray3">
         {/* 标题栏 */}
-        <XStack
-          alignItems="center"
-          justifyContent="space-between"
-          paddingHorizontal="$4"
-          paddingTop="$3"
-          paddingBottom="$3"
-        >
-          <XStack alignItems="center" gap="$2">
-            <IconSymbol name="heart.fill" size={24} color={colors.tint} />
-            <Text fontSize={25} fontWeight="700" color={colors.text}>
-              我的收藏
-            </Text>
-          </XStack>
-          <XStack
-            backgroundColor={colors.tint + '15'}
-            paddingHorizontal="$2.5"
-            paddingVertical="$1.5"
-            borderRadius="$10"
-          >
-            <Text fontSize={13} fontWeight="600" color={colors.tint}>
-              {favoritesCount}
-            </Text>
-          </XStack>
-        </XStack>
+        <PageHeader
+          title="我的收藏"
+          icon={{
+            name: 'heart.fill',
+            size: 24,
+            color: colors.tint,
+            backgroundColor: colors.tint + '15',
+            borderColor: colors.tint + '30',
+          }}
+          insets={insets}
+          showBorder={false}
+          rightElement={
+            <XStack
+              backgroundColor={colors.tint + '15'}
+              paddingHorizontal="$2.5"
+              paddingVertical="$1.5"
+              borderRadius="$10"
+            >
+              <Text fontSize={13} fontWeight="600" color={colors.tint}>
+                {favoritesCount}
+              </Text>
+            </XStack>
+          }
+        />
 
         {/* 搜索框 */}
         <YStack paddingHorizontal="$4" paddingBottom="$3">

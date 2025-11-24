@@ -9,6 +9,7 @@
  */
 
 import { LottieAnimation } from '@/src/components/LottieAnimation';
+import { PageHeader } from '@/src/components/PageHeader';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import React from 'react';
 import { ScrollView } from 'react-native';
@@ -32,40 +33,18 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
   return (
     <YStack flex={1} backgroundColor="#FAFAFA">
       {/* ==================== Header 区域 ==================== */}
-      <YStack
-        paddingTop={insets.top}
-        paddingHorizontal="$5"
-        paddingBottom="$4"
-        backgroundColor="white"
-        borderBottomWidth={1}
-        borderBottomColor="#F3F4F6"
-      >
-        <XStack alignItems="center" gap="$3" paddingTop="$3">
-          {/* Header 图标 */}
-          <YStack
-            width={48}
-            height={48}
-            borderRadius="$12"
-            backgroundColor="#FFF5ED"
-            alignItems="center"
-            justifyContent="center"
-            borderWidth={2}
-            borderColor="#FFE4D1"
-          >
-            <IconSymbol name="camera.metering.center.weighted" size={26} color="#FEBE98" />
-          </YStack>
-
-          {/* Header 文字 */}
-          <YStack flex={1}>
-            <Text fontSize={24} fontWeight="900" color="#111827" letterSpacing={0.5}>
-              智能扫描
-            </Text>
-            <Text fontSize={13} color="#6B7280" fontWeight="600" marginTop="$1">
-              AI 成分分析助手
-            </Text>
-          </YStack>
-        </XStack>
-      </YStack>
+      <PageHeader
+        title="智能扫描"
+        subtitle="AI 成分分析助手"
+        icon={{
+          name: 'camera.metering.center.weighted',
+          size: 26,
+          color: '#FEBE98',
+          backgroundColor: '#FFF5ED',
+          borderColor: '#FFE4D1',
+        }}
+        insets={insets}
+      />
 
       {/* ==================== 内容区域（可滚动） ==================== */}
       <ScrollView

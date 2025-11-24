@@ -62,12 +62,15 @@ const MAPPING = {
   'chart.pie.fill': 'pie-chart',
   'chart.bar.xaxis': 'stats-chart',
   'list.bullet.rectangle': 'list-outline',
+  'chart.bar.doc.horizontal.fill': 'document-text',
   // 信息
   'info.circle.fill': 'information-circle',
   // 时钟
   clock: 'time-outline',
   // 条形码
   'barcode.viewfinder': 'barcode-outline',
+  // Scanner相关
+  'camera.metering.center.weighted': 'camera',
   // 文档
   'doc.on.doc': 'copy-outline',
   'doc.text.viewfinder': 'document-text',

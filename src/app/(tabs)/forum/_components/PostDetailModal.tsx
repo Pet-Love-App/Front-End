@@ -3,7 +3,9 @@ import type { Post } from '@/src/services/api/forum';
 import { forumService } from '@/src/services/api/forum';
 import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, Modal } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Card, Separator, Text, TextArea, XStack, YStack } from 'tamagui';
+import { ForumColors, ForumHeader } from './ForumHeader';
 
 interface Props {
   visible: boolean;
@@ -16,6 +18,7 @@ export function PostDetailModal({ visible, post, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState('');
   const [replyTarget, setReplyTarget] = useState<Comment | null>(null);
+  const insets = useSafeAreaInsets();
 
   const load = useCallback(async () => {
     if (!post) return;
@@ -69,57 +72,69 @@ export function PostDetailModal({ visible, post, onClose }: Props) {
   const renderItem = ({ item }: { item: Comment }) => (
     <YStack paddingVertical="$3" gap="$2">
       <XStack alignItems="center" justifyContent="space-between">
-        <Text fontWeight="700">{item.author.username}</Text>
-        <Text color="$gray10">{new Date(item.createdAt).toLocaleString()}</Text>
+        <Text fontWeight="700" color={ForumColors.clay}>{item.author.username}</Text>
+        <Text color={ForumColors.clay + '80'}>{new Date(item.createdAt).toLocaleString()}</Text>
       </XStack>
-      <Text>{item.content}</Text>
+      <Text color="#3c2e20">{item.content}</Text>
       <XStack gap="$3">
-        <Button size="$2" onPress={() => toggleLike(item.id)}>
+        <Button size="$2" onPress={() => toggleLike(item.id)} backgroundColor={item.isLiked ? ForumColors.clay : ForumColors.peach} color={item.isLiked ? '#fff' : '#3c2e20'}>
           {item.isLiked ? `已赞 ${item.likes || 0}` : `点赞 ${item.likes || 0}`}
         </Button>
-        <Button size="$2" chromeless onPress={() => setReplyTarget(item)}>回复</Button>
+        <Button size="$2" chromeless onPress={() => setReplyTarget(item)} color={ForumColors.clay}>
+          回复
+        </Button>
       </XStack>
-      <Separator />
+      <Separator backgroundColor={ForumColors.clay + '33'} />
     </YStack>
   );
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <YStack flex={1} padding="$4" gap="$3" backgroundColor="$background">
-        <XStack alignItems="center" justifyContent="space-between">
-          <Text fontSize="$7" fontWeight="700">帖子详情</Text>
-          <Button size="$3" chromeless onPress={onClose}>关闭</Button>
-        </XStack>
+      <YStack flex={1} backgroundColor={ForumColors.sand}>
+        <ForumHeader title="帖子详情" onClose={onClose} />
+        <YStack flex={1} padding="$4" gap="$3">
+          {post ? (
+            <Card padding="$3" backgroundColor={ForumColors.peach} borderColor={ForumColors.clay + '55'} borderWidth={1}>
+              <YStack gap="$2">
+                <Text fontWeight="700" color={ForumColors.clay}>{post.author.username}</Text>
+                <Text color="#3c2e20">{post.content}</Text>
+              </YStack>
+            </Card>
+          ) : null}
 
-        {post ? (
-          <Card padding="$3">
-            <YStack gap="$2">
-              <Text fontWeight="700">{post.author.username}</Text>
-              <Text>{post.content}</Text>
-            </YStack>
-          </Card>
-        ) : null}
+          <Text fontSize="$6" fontWeight="700" color={ForumColors.clay}>评论（按赞）</Text>
+          <FlatList
+            data={comments}
+            keyExtractor={(i) => String(i.id)}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 100 }}
+          />
 
-        <Text fontSize="$6" fontWeight="700">评论（按赞）</Text>
-        <FlatList
-          data={comments}
-          keyExtractor={(i) => String(i.id)}
-          renderItem={renderItem}
-        />
+          <Separator backgroundColor={ForumColors.clay + '55'} />
 
-        <Separator />
+          {replyTarget ? (
+            <XStack alignItems="center" justifyContent="space-between" backgroundColor={ForumColors.peach} padding="$2" borderRadius="$3">
+              <Text color={ForumColors.clay}>正在回复 @{replyTarget.author.username}</Text>
+              <Button size="$2" chromeless onPress={() => setReplyTarget(null)} color={ForumColors.clay}>取消</Button>
+            </XStack>
+          ) : null}
 
-        {replyTarget ? (
-          <XStack alignItems="center" justifyContent="space-between">
-            <Text color="$gray10">正在回复 @{replyTarget.author.username}</Text>
-            <Button size="$2" chromeless onPress={() => setReplyTarget(null)}>取消</Button>
+          <XStack gap="$2">
+            <TextArea
+              flex={1}
+              value={content}
+              onChangeText={setContent}
+              placeholder="写下你的评论..."
+              backgroundColor="#fff"
+              borderColor={ForumColors.clay + '55'}
+              borderWidth={1}
+              color="#3c2e20"
+            />
+            <Button size="$3" onPress={submit} backgroundColor={ForumColors.clay} color="#fff" pressStyle={{ opacity: 0.85 }}>
+              发送
+            </Button>
           </XStack>
-        ) : null}
-
-        <XStack gap="$2">
-          <TextArea flex={1} value={content} onChangeText={setContent} placeholder="写下你的评论..." />
-          <Button size="$3" themeInverse onPress={submit}>发送</Button>
-        </XStack>
+        </YStack>
       </YStack>
     </Modal>
   );

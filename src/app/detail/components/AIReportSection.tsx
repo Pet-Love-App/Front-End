@@ -74,24 +74,32 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
   const hasNutritionData = report.percentage && report.percent_data;
 
   return (
-    <Card size="$4" bordered backgroundColor="$background" marginHorizontal="$3" marginBottom="$3">
+    <Card
+      size="$4"
+      backgroundColor="white"
+      marginHorizontal="$3"
+      marginBottom="$3"
+      borderRadius="$6"
+      borderWidth={2}
+      borderColor={colors.tint + '40'}
+    >
       <Card.Header paddingBottom="$2">
         {/* 板块标题 */}
-        <XStack alignItems="center" gap="$2" marginBottom="$3">
+        <XStack alignItems="center" gap="$3" marginBottom="$3">
           <YStack
-            backgroundColor={colors.tint + '15'}
-            padding="$2"
-            borderRadius="$3"
-            borderWidth={1}
-            borderColor={colors.tint + '30'}
+            backgroundColor={colors.tint + '20'}
+            padding="$2.5"
+            borderRadius="$4"
+            borderWidth={2}
+            borderColor={colors.tint + '50'}
           >
-            <IconSymbol name="doc.text.fill" size={24} color={colors.tint} />
+            <IconSymbol name="doc.text.fill" size={26} color={colors.tint} />
           </YStack>
           <YStack flex={1}>
-            <H4 color="$gray12" fontWeight="700">
+            <H4 color="$gray12" fontWeight="800" letterSpacing={-0.4}>
               AI 智能分析报告
             </H4>
-            <Text fontSize="$2" color="$gray10">
+            <Text fontSize="$2" color="$gray10" marginTop="$1" fontWeight="500">
               基于配料表的深度分析
             </Text>
           </YStack>
@@ -103,10 +111,10 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
       <YStack padding="$4" gap="$4">
         {/* 产品标签 */}
         {report.tags && report.tags.length > 0 && (
-          <YStack gap="$2">
+          <YStack gap="$2.5">
             <XStack alignItems="center" gap="$2">
-              <IconSymbol name="tag.fill" size={18} color={colors.tint} />
-              <H5 color="$gray12" fontWeight="600">
+              <IconSymbol name="tag.fill" size={20} color={colors.tint} />
+              <H5 color="$gray12" fontWeight="700" letterSpacing={-0.2}>
                 产品特征
               </H5>
             </XStack>
@@ -115,13 +123,13 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
                 <YStack
                   key={index}
                   paddingHorizontal="$3"
-                  paddingVertical="$1.5"
-                  backgroundColor="$blue2"
-                  borderRadius="$3"
-                  borderWidth={1}
-                  borderColor="$blue6"
+                  paddingVertical="$2"
+                  backgroundColor="$blue3"
+                  borderRadius="$4"
+                  borderWidth={1.5}
+                  borderColor="$blue7"
                 >
-                  <Text fontSize="$2" color="$blue11" fontWeight="500">
+                  <Text fontSize="$2" color="$blue11" fontWeight="600">
                     {tag}
                   </Text>
                 </YStack>
@@ -134,21 +142,21 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
         {report.safety && (
           <>
             <Separator borderColor="$borderColor" />
-            <YStack gap="$2">
+            <YStack gap="$2.5">
               <XStack alignItems="center" gap="$2">
-                <IconSymbol name="shield.fill" size={18} color="$green10" />
-                <H5 color="$gray12" fontWeight="600">
+                <IconSymbol name="shield.fill" size={20} color="$green10" />
+                <H5 color="$gray12" fontWeight="700" letterSpacing={-0.2}>
                   安全性分析
                 </H5>
               </XStack>
               <YStack
                 backgroundColor="$green2"
-                padding="$3"
-                borderRadius="$3"
-                borderWidth={1}
+                padding="$4"
+                borderRadius="$4"
+                borderWidth={1.5}
                 borderColor="$green6"
               >
-                <Text fontSize="$3" color="$gray12" lineHeight={22}>
+                <Text fontSize="$3" color="$gray12" lineHeight={24} fontWeight="500">
                   {report.safety}
                 </Text>
               </YStack>
@@ -160,21 +168,21 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
         {report.nutrient && (
           <>
             <Separator borderColor="$borderColor" />
-            <YStack gap="$2">
+            <YStack gap="$2.5">
               <XStack alignItems="center" gap="$2">
-                <IconSymbol name="chart.bar.fill" size={18} color="$orange10" />
-                <H5 color="$gray12" fontWeight="600">
+                <IconSymbol name="chart.bar.fill" size={20} color="$orange10" />
+                <H5 color="$gray12" fontWeight="700" letterSpacing={-0.2}>
                   营养分析
                 </H5>
               </XStack>
               <YStack
                 backgroundColor="$orange2"
-                padding="$3"
-                borderRadius="$3"
-                borderWidth={1}
+                padding="$4"
+                borderRadius="$4"
+                borderWidth={1.5}
                 borderColor="$orange6"
               >
-                <Text fontSize="$3" color="$gray12" lineHeight={22}>
+                <Text fontSize="$3" color="$gray12" lineHeight={24} fontWeight="500">
                   {report.nutrient}
                 </Text>
               </YStack>
@@ -188,8 +196,8 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
             <Separator borderColor="$borderColor" />
             <YStack gap="$3">
               <XStack alignItems="center" gap="$2">
-                <IconSymbol name="chart.pie.fill" size={18} color="$purple10" />
-                <H5 color="$gray12" fontWeight="600">
+                <IconSymbol name="chart.pie.fill" size={20} color="$purple10" />
+                <H5 color="$gray12" fontWeight="700" letterSpacing={-0.2}>
                   营养成分占比
                 </H5>
               </XStack>
@@ -348,19 +356,19 @@ interface NutrientBarProps {
 
 function NutrientBar({ label, value, color }: NutrientBarProps) {
   return (
-    <YStack gap="$1">
+    <YStack gap="$1.5">
       <XStack justifyContent="space-between" alignItems="center">
-        <Text fontSize="$3" color="$gray11" fontWeight="500">
+        <Text fontSize="$3" color="$gray11" fontWeight="600">
           {label}
         </Text>
-        <Text fontSize="$4" color={color} fontWeight="700">
+        <Text fontSize="$5" color={color} fontWeight="800" letterSpacing={-0.5}>
           {value.toFixed(1)}%
         </Text>
       </XStack>
       <YStack
-        height={8}
+        height={10}
         backgroundColor="$gray3"
-        borderRadius="$2"
+        borderRadius="$3"
         overflow="hidden"
         borderWidth={1}
         borderColor="$borderColor"
@@ -369,7 +377,7 @@ function NutrientBar({ label, value, color }: NutrientBarProps) {
           height="100%"
           width={`${Math.min(value, 100)}%`}
           backgroundColor={color}
-          borderRadius="$2"
+          borderRadius="$3"
         />
       </YStack>
     </YStack>

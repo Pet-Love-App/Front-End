@@ -1,4 +1,5 @@
 import { CommentSection } from '@/src/components/Comments';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, YStack } from 'tamagui';
@@ -48,9 +49,10 @@ export function DetailScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: 16,
-          paddingLeft: Math.max(12, insets.left),
-          paddingRight: Math.max(12, insets.right),
+          paddingTop: 8,
+          paddingLeft: Math.max(8, insets.left),
+          paddingRight: Math.max(8, insets.right),
+          paddingBottom: 16,
         }}
       >
         {/* 头部信息 */}
@@ -112,10 +114,24 @@ export function DetailScreen() {
           title: '猫粮详情',
           headerBackTitle: '返回',
           headerBackVisible: true,
+          headerStyle: {
+            backgroundColor: '#fff',
+          },
+          headerShadowVisible: true,
         }}
       />
 
-      <YStack flex={1} backgroundColor="$gray1">
+      <YStack flex={1} position="relative">
+        {/* 背景渐变 */}
+        <YStack position="absolute" width="100%" height="100%">
+          <LinearGradient
+            colors={['#FFF5F0', '#FFF9F5', '#FFFFFF']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 0.5 }}
+            style={{ width: '100%', height: '100%' }}
+          />
+        </YStack>
+
         {renderContent()}
 
         {/* 添加剂详情弹窗 */}

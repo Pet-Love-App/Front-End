@@ -29,7 +29,6 @@ import {
   ExpoCameraView,
   OcrResultView,
   PhotoPreview,
-  ScanModeModal,
 } from './components';
 import { useScannerActions, useScannerFlow } from './hooks';
 import { BarcodeResultScreen, InitialScreen, ProcessingScreen } from './screens';
@@ -66,11 +65,9 @@ export default function ScannerScreen() {
   // ==================== 扫描流程 Hook ====================
   const {
     flowState,
-    scanMode,
     selectedCatFood,
     scannedCode,
     startScan,
-    selectMode,
     selectCatFood: setSelectedCatFood,
     onBarcodeScanned,
     goBack,
@@ -281,12 +278,6 @@ export default function ScannerScreen() {
       <CameraPermissionModal
         visible={cameraState.hasPermission === false}
         onRequestPermission={requestPermission}
-      />
-
-      <ScanModeModal
-        visible={flowState === 'selecting-mode'}
-        onClose={() => transitionTo('initial')}
-        onSelectMode={selectMode}
       />
 
       <CatFoodSearchModal

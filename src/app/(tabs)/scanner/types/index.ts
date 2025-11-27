@@ -13,7 +13,6 @@
  */
 export type ScanFlowState =
   | 'initial' // 初始状态
-  | 'selecting-mode' // 选择扫描模式
   | 'searching-catfood' // 搜索猫粮
   | 'selected-catfood' // 已选择猫粮
   | 'taking-photo' // 拍照中
@@ -22,8 +21,3 @@ export type ScanFlowState =
   | 'ocr-result' // OCR结果
   | 'barcode-result' // 条形码结果
   | 'ai-report-detail'; // AI报告详情
-
-/**
- * 扫描模式
- */
-export type ScanMode = 'known-brand' | 'direct-additive' | null;

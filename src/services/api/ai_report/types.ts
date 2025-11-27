@@ -26,15 +26,8 @@ interface BackendReportResponse {
   nutrient: string;
   /** 是否包含百分比数据 */
   percentage: boolean;
-  /** 百分比数据（嵌套对象） */
-  percent_data: {
-    crude_protein: number | null;
-    crude_fat: number | null;
-    carbohydrates: number | null;
-    crude_fiber: number | null;
-    crude_ash: number | null;
-    others: number | null;
-  };
+  /** 百分比数据（动态字段，如 protein, fat, fiber, ash, moisture, carbohydrates, others 等） */
+  percent_data: Record<string, number | null>;
   /** 标签 */
   tags?: string[];
 }
@@ -53,18 +46,8 @@ export interface GenerateReportResponse {
   nutrient: string;
   /** 是否包含百分比数据 */
   percentage: boolean | null;
-  /** 粗蛋白含量（%） */
-  crude_protein: number | null;
-  /** 粗脂肪含量（%） */
-  crude_fat: number | null;
-  /** 碳水化合物含量（%） */
-  carbohydrates: number | null;
-  /** 粗纤维含量（%） */
-  crude_fiber: number | null;
-  /** 粗灰分含量（%） */
-  crude_ash: number | null;
-  /** 其他成分含量（%） */
-  others: number | null;
+  /** 百分比数据（动态字段，如 protein, fat, fiber, ash, moisture, carbohydrates, others 等） */
+  percent_data: Record<string, number | null>;
   /** 标签（可选） */
   tags?: string[];
 }
@@ -124,18 +107,8 @@ export interface SaveReportRequest {
   nutrient: string;
   /** 是否支持百分比分析 */
   percentage: boolean;
-  /** 粗蛋白含量（%） */
-  crude_protein?: number | null;
-  /** 粗脂肪含量（%） */
-  crude_fat?: number | null;
-  /** 碳水化合物含量（%） */
-  carbohydrates?: number | null;
-  /** 粗纤维含量（%） */
-  crude_fiber?: number | null;
-  /** 粗灰分含量（%） */
-  crude_ash?: number | null;
-  /** 其他成分含量（%） */
-  others?: number | null;
+  /** 百分比数据（动态字段） */
+  percent_data?: Record<string, number | null>;
 }
 
 /**
@@ -172,15 +145,8 @@ export interface AIReportData {
   nutrient: string;
   /** 是否支持百分比分析 */
   percentage: boolean;
-  /** 百分比数据 */
-  percent_data: {
-    crude_protein: number | null;
-    crude_fat: number | null;
-    carbohydrates: number | null;
-    crude_fiber: number | null;
-    crude_ash: number | null;
-    others: number | null;
-  };
+  /** 百分比数据（动态字段，如 protein, fat, fiber, ash, moisture, carbohydrates, others 等） */
+  percent_data: Record<string, number | null>;
   /** 创建时间 */
   created_at: string;
   /** 更新时间 */

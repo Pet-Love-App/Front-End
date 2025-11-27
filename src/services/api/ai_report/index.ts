@@ -122,12 +122,7 @@ class AiReportService {
         safety: backendResponse.safety || '',
         nutrient: backendResponse.nutrient || '',
         percentage: backendResponse.percentage ?? null,
-        crude_protein: backendResponse.percent_data?.crude_protein ?? null,
-        crude_fat: backendResponse.percent_data?.crude_fat ?? null,
-        carbohydrates: backendResponse.percent_data?.carbohydrates ?? null,
-        crude_fiber: backendResponse.percent_data?.crude_fiber ?? null,
-        crude_ash: backendResponse.percent_data?.crude_ash ?? null,
-        others: backendResponse.percent_data?.others ?? null,
+        percent_data: backendResponse.percent_data || {},
         tags: backendResponse.tags || [],
       };
 

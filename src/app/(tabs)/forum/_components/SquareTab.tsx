@@ -1,7 +1,7 @@
 import { forumService, type Post } from '@/src/services/api/forum';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, FlatList, RefreshControl } from 'react-native';
+import { Alert, FlatList, Image, RefreshControl } from 'react-native';
 import { Button, Card, Spinner, Text, XStack, YStack } from 'tamagui';
 
 interface Props {
@@ -46,6 +46,34 @@ export function SquareTab({ onOpenPost, externalReloadRef, order = 'latest' }: P
     }
   };
 
+  const renderMediaPreview = (item: Post) => {
+    if (!item.media || item.media.length === 0) return null;
+    const maxThumbs = 3;
+    const thumbs = item.media.slice(0, maxThumbs);
+    const overflow = item.media.length - maxThumbs;
+
+    return (
+      <XStack gap="$2" flexWrap="wrap">
+        {thumbs.map((m, idx) => (
+          m.media_type === 'image' ? (
+            <Card key={m.id} width={110} height={110} overflow="hidden">
+              <Image source={{ uri: m.file }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+              {idx === maxThumbs - 1 && overflow > 0 ? (
+                <YStack position="absolute" top={0} left={0} right={0} bottom={0} alignItems="center" justifyContent="center" backgroundColor="rgba(0,0,0,0.35)">
+                  <Text color="#fff" fontWeight="700">+{overflow}</Text>
+                </YStack>
+              ) : null}
+            </Card>
+          ) : (
+            <Card key={m.id} padding="$2">
+              <Text color="$gray10">[视频]</Text>
+            </Card>
+          )
+        ))}
+      </XStack>
+    );
+  };
+
   const renderItem = ({ item }: { item: Post }) => (
     <Card margin="$3" padding="$3" elevate>
       <YStack gap="$2">
@@ -62,9 +90,8 @@ export function SquareTab({ onOpenPost, externalReloadRef, order = 'latest' }: P
             ))}
           </XStack>
         ) : null}
-        {item.media?.length ? (
-          <Text color="$gray10">[含{item.media.length}个{item.media[0].media_type === 'video' ? '视频' : '图片'}]</Text>
-        ) : null}
+
+        {renderMediaPreview(item)}
 
         <XStack gap="$3" alignItems="center" justifyContent="space-between">
           <XStack gap="$3" alignItems="center">

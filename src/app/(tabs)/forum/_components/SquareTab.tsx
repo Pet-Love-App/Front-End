@@ -3,25 +3,23 @@ import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, FlatList, RefreshControl } from 'react-native';
 import { Button, Card, Spinner, Text, XStack, YStack } from 'tamagui';
-// Removed ForumHeader import
-import { PostDetailModal } from './PostDetailModal';
 
 interface Props {
   onOpenPost?: (post: Post) => void;
   externalReloadRef?: React.MutableRefObject<(() => void) | null>;
+  order?: 'latest' | 'most_replied' | 'featured' | 'random';
 }
 
-export function SquareTab({ onOpenPost, externalReloadRef }: Props) {
+export function SquareTab({ onOpenPost, externalReloadRef, order = 'latest' }: Props) {
   const [list, setList] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activePost, setActivePost] = useState<Post | null>(null);
   const animationRefs = useRef<Record<number, LottieView | null>>({});
 
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await forumService.getSquareList('latest');
+      const res = await forumService.getSquareList(order);
       setList(res);
     } catch (e) {
       Alert.alert('错误', '加载失败');
@@ -29,7 +27,7 @@ export function SquareTab({ onOpenPost, externalReloadRef }: Props) {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [order]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -42,10 +40,7 @@ export function SquareTab({ onOpenPost, externalReloadRef }: Props) {
     try {
       const res = await forumService.toggleFavorite(postId);
       setList(prev => prev.map(p => p.id === postId ? { ...p, is_favorited: res.action === 'favorited', favorites_count: res.favorites_count ?? p.favorites_count } : p));
-      if (!wasFavorited && res.action === 'favorited') {
-        // 播放动画
-        setTimeout(() => animationRefs.current[postId]?.play(), 0);
-      }
+      if (!wasFavorited && res.action === 'favorited') setTimeout(() => animationRefs.current[postId]?.play(), 0);
     } catch (e) {
       Alert.alert('错误', '操作失败');
     }
@@ -54,14 +49,28 @@ export function SquareTab({ onOpenPost, externalReloadRef }: Props) {
   const renderItem = ({ item }: { item: Post }) => (
     <Card margin="$3" padding="$3" elevate>
       <YStack gap="$2">
-        <Text fontWeight="700">{item.author.username}</Text>
+        <XStack alignItems="center" justifyContent="space-between">
+          <Text fontWeight="700">{item.author.username}</Text>
+          <Text color="$gray10">{new Date(item.created_at).toLocaleString()}</Text>
+        </XStack>
         <Text>{item.content}</Text>
+        {(item.category || (item.tags && item.tags.length)) ? (
+          <XStack gap="$2" alignItems="center" flexWrap="wrap">
+            {item.category && <Text color="$orange10">#{item.category}</Text>}
+            {item.tags?.map((t) => (
+              <Text key={t} color="$gray10">#{t}</Text>
+            ))}
+          </XStack>
+        ) : null}
         {item.media?.length ? (
           <Text color="$gray10">[含{item.media.length}个{item.media[0].media_type === 'video' ? '视频' : '图片'}]</Text>
         ) : null}
 
         <XStack gap="$3" alignItems="center" justifyContent="space-between">
-          <Text color="$gray10">{new Date(item.created_at).toLocaleString()}</Text>
+          <XStack gap="$3" alignItems="center">
+            <Text color="$gray10">{(item.comments_count ?? 0)} 回复</Text>
+            <Text color="$gray10">{item.favorites_count} 收藏</Text>
+          </XStack>
           <XStack gap="$3" alignItems="center">
             <Button
               size="$2"
@@ -88,7 +97,7 @@ export function SquareTab({ onOpenPost, externalReloadRef }: Props) {
         </XStack>
 
         <XStack gap="$2">
-          <Button size="$3" onPress={() => setActivePost(item)}>查看详情</Button>
+          <Button size="$3" onPress={() => onOpenPost?.(item)}>查看详情</Button>
         </XStack>
       </YStack>
     </Card>
@@ -97,14 +106,11 @@ export function SquareTab({ onOpenPost, externalReloadRef }: Props) {
   if (loading) return <YStack alignItems="center" marginTop={40}><Spinner /></YStack>;
 
   return (
-    <>
-      <FlatList
-        data={list}
-        keyExtractor={(i) => String(i.id)}
-        renderItem={renderItem}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}
-      />
-      <PostDetailModal visible={!!activePost} post={activePost} onClose={() => setActivePost(null)} />
-    </>
+    <FlatList
+      data={list}
+      keyExtractor={(i) => String(i.id)}
+      renderItem={renderItem}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}
+    />
   );
 }

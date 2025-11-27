@@ -3,13 +3,15 @@ import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, FlatList, RefreshControl } from 'react-native';
 import { Button, Card, Spinner, Text, XStack, YStack } from 'tamagui';
-import { PostDetailModal } from './PostDetailModal';
 
-export function FavoritesTab() {
+interface Props {
+  onOpenPost?: (post: Post) => void;
+}
+
+export function FavoritesTab({ onOpenPost }: Props) {
   const [list, setList] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activePost, setActivePost] = useState<Post | null>(null);
   const animationRefs = useRef<Record<number, LottieView | null>>({});
 
   const load = useCallback(async () => {
@@ -69,7 +71,7 @@ export function FavoritesTab() {
           </XStack>
         </XStack>
         <XStack gap="$2">
-          <Button size="$3" onPress={() => setActivePost(item)}>查看详情</Button>
+          <Button size="$3" onPress={() => onOpenPost?.(item)}>查看详情</Button>
         </XStack>
       </YStack>
     </Card>
@@ -78,14 +80,11 @@ export function FavoritesTab() {
   if (loading) return <YStack alignItems="center" marginTop={40}><Spinner /></YStack>;
 
   return (
-    <>
-      <FlatList
-        data={list}
-        keyExtractor={(i) => String(i.id)}
-        renderItem={renderItem}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}
-      />
-      <PostDetailModal visible={!!activePost} post={activePost} onClose={() => setActivePost(null)} />
-    </>
+    <FlatList
+      data={list}
+      keyExtractor={(i) => String(i.id)}
+      renderItem={renderItem}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} />}
+    />
   );
 }

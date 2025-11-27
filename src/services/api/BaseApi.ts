@@ -120,8 +120,19 @@ class BaseApi {
           errorMessage = errorData;
         }
 
-        console.error('API 错误详情:', typeof errorData === 'string' ? errorData : JSON.stringify(errorData, null, 2));
-        throw new Error(errorMessage);
+        const hasPayload =
+          typeof errorData === 'string'
+            ? errorData.length > 0
+            : errorData && typeof errorData === 'object' && Object.keys(errorData).length > 0;
+        const payloadForLog =
+          typeof errorData === 'string'
+            ? errorData
+            : hasPayload
+            ? JSON.stringify(errorData, null, 2)
+            : '无详细错误信息';
+
+        console.error('API 错误详情:', payloadForLog);
+        throw new Error(errorMessage || `请求失败: ${response.status}`);
       }
 
       // 成功响应：安全解析

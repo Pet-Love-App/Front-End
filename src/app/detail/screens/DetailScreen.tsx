@@ -1,4 +1,5 @@
 import { CommentSection } from '@/src/components/Comments';
+import { useUserStore } from '@/src/store/userStore';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +8,7 @@ import {
   ActionBar,
   AdditiveDetailModal,
   AdditiveSection,
+  AdminUpdatePrompt,
   AIReportSection,
   BasicInfoSection,
   EmptyState,
@@ -35,6 +37,10 @@ export function DetailScreen() {
 
   // AI 报告相关
   const { report, hasReport, isLoading: isLoadingReport } = useAIReport(catfoodId);
+
+  // 用户信息（用于管理员权限检查）
+  const user = useUserStore((state) => state.user);
+  const isAdmin = user?.is_admin || false;
 
   // 渲染内容
   const renderContent = () => {
@@ -69,6 +75,11 @@ export function DetailScreen() {
 
         {/* AI 报告板块 - 如果有报告则显示（包含安全性、营养分析、添加剂、营养成分等） */}
         {hasReport && report && <AIReportSection report={report} isLoading={isLoadingReport} />}
+
+        {/* 管理员更新提示 - 仅当有营养信息且用户是管理员时显示 */}
+        {isAdmin && (hasReport || catFood.percentage) && (
+          <AdminUpdatePrompt catfoodId={catFood.id} catfoodName={catFood.name} />
+        )}
 
         {/* 如果没有 AI 报告，则显示原始数据 */}
         {!hasReport && (

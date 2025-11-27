@@ -2,6 +2,7 @@ export { ActionBar } from './ActionBar';
 export { AdditiveBubble } from './AdditiveBubble';
 export { AdditiveDetailModal } from './AdditiveDetailModal';
 export { AdditiveSection } from './AdditiveSection';
+export { AdminUpdatePrompt } from './AdminUpdatePrompt';
 export { AIReportButton } from './AIReportButton';
 export { AIReportModal } from './AIReportModal';
 export { AIReportSection } from './AIReportSection';

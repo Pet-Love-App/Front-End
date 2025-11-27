@@ -28,6 +28,8 @@ export interface AiReportDetailProps {
   onRetake?: () => void;
   onClose?: () => void;
   isSaving?: boolean;
+  isAdmin?: boolean; // 是否为管理员用户
+  hasExistingReport?: boolean; // 猫粮是否已有报告
 }
 
 /**
@@ -39,6 +41,8 @@ export function AiReportDetail({
   onRetake,
   onClose,
   isSaving,
+  isAdmin = false,
+  hasExistingReport = false,
 }: AiReportDetailProps) {
   const insets = useSafeAreaInsets();
   const [selectedAdditive, setSelectedAdditive] = useState<any>(null);
@@ -237,7 +241,14 @@ export function AiReportDetail({
 
             {/* 操作按钮 */}
             <YStack paddingHorizontal="$4" marginTop="$4">
-              <ActionButtons onRetake={onRetake} onClose={onClose} isSaving={isSaving} />
+              <ActionButtons
+                onSave={onSave}
+                onRetake={onRetake}
+                onClose={onClose}
+                isSaving={isSaving}
+                isAdmin={isAdmin}
+                hasExistingReport={hasExistingReport}
+              />
             </YStack>
           </YStack>
         </ScrollView>

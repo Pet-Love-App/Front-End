@@ -16,6 +16,7 @@
 
 import { useExpoCamera as useCamera } from '@/src/hooks/useExpoCamera';
 import { useCatFoodStore } from '@/src/store/catFoodStore';
+import { useUserStore } from '@/src/store/userStore';
 import { ScanType, type ExpoBarcodeResult } from '@/src/types/camera';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect } from 'react';
@@ -91,6 +92,9 @@ export default function ScannerScreen() {
     handleGenerateReport,
     handleSaveReport,
   } = useScannerActions({ takePicture, transitionTo, resetFlow });
+
+  // ==================== 用户信息 ====================
+  const user = useUserStore((state) => state.user);
 
   // ==================== URL 参数处理 ====================
 
@@ -261,6 +265,8 @@ export default function ScannerScreen() {
         onSave={handleSaveReportWrapper}
         onRetake={handleRetakePhoto}
         isSaving={isProcessing}
+        isAdmin={user?.is_admin || false}
+        hasExistingReport={!!selectedCatFood?.percentage}
       />
     );
   }

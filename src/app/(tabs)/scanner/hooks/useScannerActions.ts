@@ -166,7 +166,20 @@ export function useScannerActions({
               percent_data: report.percent_data || {}, // ✅ 使用动态 percent_data
             });
           } catch (error: any) {
-            // 保存失败不影响显示报告
+            // 权限检查：403 表示需要管理员权限
+            if (error.response?.status === 403) {
+              Alert.alert(
+                '权限不足',
+                error.response?.data?.message || '该猫粮已有营养成分信息，只有管理员可以更新。',
+                [
+                  {
+                    text: '了解',
+                    style: 'default',
+                  },
+                ]
+              );
+            }
+            // 保存失败不影响显示报告，继续显示AI分析结果
           }
         }
 

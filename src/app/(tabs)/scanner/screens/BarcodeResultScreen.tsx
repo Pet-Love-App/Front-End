@@ -15,8 +15,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView } from 'react-native';
 import type { EdgeInsets } from 'react-native-safe-area-context';
-import { Button, Card, Text, YStack } from 'tamagui';
-import { XStack } from 'tamagui';
+import { Button, Card, Text, XStack, YStack } from 'tamagui';
 
 /**
  * 组件 Props 接口

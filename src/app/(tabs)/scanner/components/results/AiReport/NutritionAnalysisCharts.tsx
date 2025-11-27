@@ -30,11 +30,8 @@ const NUTRITION_CONFIG: Record<string, { name: string; color: string; icon: stri
 const DEFAULT_COLORS = ['#34495E', '#E67E22', '#16A085', '#C0392B', '#8E44AD'];
 
 export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) {
-  console.log('📊 [NutritionAnalysisCharts] 接收到数据:', data);
-
   // 验证数据
   if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
-    console.warn('⚠️ [NutritionAnalysisCharts] 数据无效或为空');
     return (
       <Card
         padding="$4"
@@ -66,10 +63,7 @@ export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) 
       return { key, value: value as number, ...config };
     });
 
-  console.log('✅ [NutritionAnalysisCharts] 有效数据数量:', validEntries.length);
-
   if (validEntries.length === 0) {
-    console.warn('⚠️ [NutritionAnalysisCharts] 没有有效的数值数据');
     return (
       <Card
         padding="$4"
@@ -116,8 +110,6 @@ export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) 
       legendFontColor: '#555',
       legendFontSize: pieLegendFontSize, // 响应式字体大小
     }));
-
-  console.log('📊 [NutritionAnalysisCharts] 饼图数据:', pieData);
 
   // 准备柱状图数据
   const barData = {

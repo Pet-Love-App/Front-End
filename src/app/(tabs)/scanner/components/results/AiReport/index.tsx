@@ -160,13 +160,6 @@ export function AiReportDetail({
   // 只有当有实际营养数据时才使用 percentData
   const percentData = hasActualNutritionData ? report.percent_data : null;
 
-  // 调试日志
-  console.log('📊 [AiReportDetail] 营养数据检查:');
-  console.log('  - percentage:', report.percentage);
-  console.log('  - percent_data:', report.percent_data);
-  console.log('  - hasActualNutritionData:', hasActualNutritionData);
-  console.log('  - percentData:', percentData);
-
   return (
     <>
       <YStack flex={1} backgroundColor="$background" paddingTop={insets.top + 20}>

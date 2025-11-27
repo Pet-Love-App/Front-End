@@ -36,11 +36,8 @@ const NUTRITION_NAME_MAP: Record<string, string> = {
 };
 
 function preparePieChartData(percentData: Record<string, number | null>) {
-  console.log('📊 [NutritionChart] 开始准备饼图数据:', percentData);
-
   // 数据验证
   if (!percentData || typeof percentData !== 'object') {
-    console.warn('⚠️ [NutritionChart] percentData 无效或为空');
     return [];
   }
 
@@ -52,14 +49,10 @@ function preparePieChartData(percentData: Record<string, number | null>) {
     if (value !== null && value !== undefined && typeof value === 'number' && value > 0) {
       const name = NUTRITION_NAME_MAP[key] || key;
       data.push({ name, value });
-      console.log(`  ✅ [NutritionChart] 添加成分: ${name} = ${value}%`);
     }
   });
 
-  console.log(`📊 [NutritionChart] 有效数据数量: ${data.length}`);
-
   if (data.length === 0) {
-    console.warn('⚠️ [NutritionChart] 没有有效的图表数据');
     return [];
   }
 
@@ -71,22 +64,17 @@ function preparePieChartData(percentData: Record<string, number | null>) {
     legendFontSize: 12,
   }));
 
-  console.log('✅ [NutritionChart] 图表数据准备完成:', chartData);
   return chartData;
 }
 
 export function NutritionChartSection({ percentData }: NutritionChartSectionProps) {
-  console.log('🎨 [NutritionChartSection] 组件渲染，percentData:', percentData);
-
   // 数据验证
   if (!percentData || typeof percentData !== 'object' || Object.keys(percentData).length === 0) {
-    console.warn('⚠️ [NutritionChartSection] percentData 为空或无效');
     return null;
   }
 
   const chartData = preparePieChartData(percentData);
   if (chartData.length === 0) {
-    console.warn('⚠️ [NutritionChartSection] 图表数据为空，不渲染');
     return null;
   }
 

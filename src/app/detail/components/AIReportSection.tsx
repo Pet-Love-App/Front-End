@@ -82,20 +82,6 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
   const chartData = hasNutritionData ? preparePieChartData(report.percent_data) : [];
   const hasValidChartData = chartData.length > 0;
 
-  // 调试日志
-  console.log('🔍 [AIReport] 营养数据检查:');
-  console.log('  - percentage:', report.percentage);
-  console.log('  - percent_data:', report.percent_data);
-  console.log('  - percent_data keys:', Object.keys(report.percent_data || {}));
-  console.log('  - hasNutritionData:', hasNutritionData);
-  console.log('  - chartData length:', chartData.length);
-  console.log('  - hasValidChartData:', hasValidChartData);
-
-  if (hasNutritionData && !hasValidChartData) {
-    console.warn('⚠️ [AIReport] 有 percent_data 但图表数据为空！');
-    console.warn('  - percent_data 内容:', JSON.stringify(report.percent_data));
-  }
-
   return (
     <Card
       size="$4"
@@ -456,11 +442,8 @@ const NUTRITION_NAME_MAP: Record<string, string> = {
  * 企业最佳实践：严格的数据验证和类型安全
  */
 function preparePieChartData(percentData: Record<string, number | null>) {
-  console.log('📊 [AIReport] 开始准备饼图数据:', percentData);
-
   // 数据验证
   if (!percentData || typeof percentData !== 'object') {
-    console.warn('⚠️ [AIReport] percentData 无效或为空');
     return [];
   }
 
@@ -472,16 +455,10 @@ function preparePieChartData(percentData: Record<string, number | null>) {
     if (value !== null && value !== undefined && typeof value === 'number' && value > 0) {
       const name = NUTRITION_NAME_MAP[key] || key;
       data.push({ name, value });
-      console.log(`  ✅ [AIReport] 添加成分: ${name} = ${value}%`);
-    } else {
-      console.log(`  ⏭️ [AIReport] 跳过成分: ${key} = ${value}`);
     }
   });
 
-  console.log(`📊 [AIReport] 有效数据数量: ${data.length}`);
-
   if (data.length === 0) {
-    console.warn('⚠️ [AIReport] 没有有效的图表数据');
     return [];
   }
 
@@ -493,7 +470,6 @@ function preparePieChartData(percentData: Record<string, number | null>) {
     legendFontSize: 12,
   }));
 
-  console.log('✅ [AIReport] 图表数据准备完成:', chartData);
   return chartData;
 }
 

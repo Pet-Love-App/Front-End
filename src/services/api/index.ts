@@ -48,8 +48,22 @@ export type {
 } from './comment';
 
 // 猫粮服务
-export { catFoodService, getCatFood, getCatFoods, patchCatFood, searchCatFood } from './catfood';
-export type { CatFood, GetCatFoodsResponse, SearchCatFoodParams } from './catfood';
+export {
+  catFoodService,
+  getCatFood,
+  getCatFoodByBarcode,
+  getCatFoods,
+  patchCatFood,
+  scanBarcode,
+  searchCatFood,
+} from './catfood';
+export type {
+  CatFood,
+  GetCatFoodsResponse,
+  ScanBarcodeRequest,
+  ScanBarcodeResponse,
+  SearchCatFoodParams,
+} from './catfood';
 
 // OCR 服务
 export { ocrService, recognizeImage } from './ocr';

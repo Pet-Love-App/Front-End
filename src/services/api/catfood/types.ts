@@ -33,5 +33,21 @@ export interface CatFoodCommentsResponse {
   previous: string | null;
 }
 
+/**
+ * 扫描条形码响应
+ */
+export interface ScanBarcodeResponse {
+  exists: boolean;
+  message: string;
+  catfood?: CatFood;
+}
+
+/**
+ * 扫描条形码请求
+ */
+export interface ScanBarcodeRequest {
+  barcode: string;
+}
+
 // 重新导出类型
 export type { CatFood, CatFoodCreateUpdate };

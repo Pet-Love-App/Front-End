@@ -25,6 +25,8 @@ export interface CatFood {
   name: string;
   /** 品牌名称 */
   brand: string;
+  /** 商品条形码 */
+  barcode?: string | null;
   /** 用户总分（只读） */
   score: number;
   /** 打分人数（只读） */
@@ -61,6 +63,8 @@ export interface CatFoodCreateUpdate {
   name: string;
   /** 品牌名称 */
   brand: string;
+  /** 商品条形码 */
+  barcode?: string;
   /** 猫粮图片URL */
   imageUrl?: string;
   /** 标签名称数组（字符串数组，后端会自动创建标签） */

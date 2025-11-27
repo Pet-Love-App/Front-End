@@ -8,12 +8,15 @@
  */
 
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { scanBarcode } from '@/src/services/api';
 // @ts-ignore: expo-clipboard may not have type declarations
 import * as Clipboard from 'expo-clipboard';
-import React from 'react';
-import { Alert, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView } from 'react-native';
 import type { EdgeInsets } from 'react-native-safe-area-context';
 import { Button, Card, Text, YStack } from 'tamagui';
+import { XStack } from 'tamagui';
 
 /**
  * 组件 Props 接口
@@ -31,6 +34,36 @@ interface BarcodeResultScreenProps {
  * 条形码扫描结果页面组件
  */
 export function BarcodeResultScreen({ scannedCode, insets, onGoBack }: BarcodeResultScreenProps) {
+  const router = useRouter();
+  const [isSearching, setIsSearching] = useState(false);
+  const [catFoodFound, setCatFoodFound] = useState(false);
+  const [catFoodName, setCatFoodName] = useState('');
+
+  /**
+   * 自动查询条形码对应的猫粮
+   */
+  useEffect(() => {
+    const searchCatFood = async () => {
+      setIsSearching(true);
+      try {
+        const response = await scanBarcode(scannedCode);
+        if (response.exists && response.catfood) {
+          setCatFoodFound(true);
+          setCatFoodName(response.catfood.name);
+        } else {
+          setCatFoodFound(false);
+        }
+      } catch (error) {
+        console.error('查询条形码失败:', error);
+        setCatFoodFound(false);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    searchCatFood();
+  }, [scannedCode]);
+
   /**
    * 复制条形码到剪贴板
    */
@@ -45,10 +78,20 @@ export function BarcodeResultScreen({ scannedCode, insets, onGoBack }: BarcodeRe
   };
 
   /**
-   * 搜索商品（功能开发中）
+   * 查看猫粮详情
    */
-  const handleSearchProduct = () => {
-    Alert.alert('功能开发中', `正在搜索条码: ${scannedCode}`);
+  const handleViewCatFood = async () => {
+    try {
+      const response = await scanBarcode(scannedCode);
+      if (response.exists && response.catfood) {
+        router.push({
+          pathname: '/detail',
+          params: { id: response.catfood.id },
+        } as any);
+      }
+    } catch (error) {
+      Alert.alert('错误', '无法打开猫粮详情');
+    }
   };
 
   return (
@@ -119,29 +162,79 @@ export function BarcodeResultScreen({ scannedCode, insets, onGoBack }: BarcodeRe
               >
                 {scannedCode}
               </Text>
+
+              {/* 查询状态显示 */}
+              {isSearching && (
+                <XStack gap="$2" alignItems="center" marginTop="$2">
+                  <ActivityIndicator size="small" color="#FEBE98" />
+                  <Text fontSize={14} color="#6B7280" fontWeight="600">
+                    正在查询猫粮信息...
+                  </Text>
+                </XStack>
+              )}
+
+              {!isSearching && catFoodFound && (
+                <YStack
+                  backgroundColor="#D1FAE5"
+                  paddingHorizontal="$4"
+                  paddingVertical="$2.5"
+                  borderRadius="$6"
+                  borderWidth={1.5}
+                  borderColor="#A7F3D0"
+                  marginTop="$2"
+                >
+                  <XStack gap="$2" alignItems="center">
+                    <IconSymbol name="checkmark.circle.fill" size={18} color="#10B981" />
+                    <Text fontSize={14} color="#059669" fontWeight="700">
+                      已找到: {catFoodName}
+                    </Text>
+                  </XStack>
+                </YStack>
+              )}
+
+              {!isSearching && !catFoodFound && (
+                <YStack
+                  backgroundColor="#FFF5ED"
+                  paddingHorizontal="$4"
+                  paddingVertical="$2.5"
+                  borderRadius="$6"
+                  borderWidth={1.5}
+                  borderColor="#FFE4D1"
+                  marginTop="$2"
+                >
+                  <XStack gap="$2" alignItems="center">
+                    <IconSymbol name="exclamationmark.circle.fill" size={18} color="#F59E0B" />
+                    <Text fontSize={14} color="#D97706" fontWeight="700">
+                      数据库中暂无此猫粮
+                    </Text>
+                  </XStack>
+                </YStack>
+              )}
             </YStack>
           </Card>
 
           {/* ==================== 操作按钮 ==================== */}
           <YStack width="100%" gap="$3" marginTop="$2">
-            {/* 搜索按钮 */}
-            <Button
-              size="$5"
-              backgroundColor="#FEBE98"
-              color="white"
-              borderRadius="$10"
-              borderWidth={2}
-              borderColor="#FCA574"
-              icon={<IconSymbol name="magnifyingglass" size={20} color="white" />}
-              fontWeight="800"
-              fontSize={16}
-              letterSpacing={0.3}
-              pressStyle={{ scale: 0.97, backgroundColor: '#FCA574' }}
-              height={56}
-              onPress={handleSearchProduct}
-            >
-              搜索此商品
-            </Button>
+            {/* 查看猫粮详情按钮 - 仅在找到猫粮时显示 */}
+            {catFoodFound && !isSearching && (
+              <Button
+                size="$5"
+                backgroundColor="#10B981"
+                color="white"
+                borderRadius="$10"
+                borderWidth={2}
+                borderColor="#059669"
+                icon={<IconSymbol name="arrow.right.circle.fill" size={20} color="white" />}
+                fontWeight="800"
+                fontSize={16}
+                letterSpacing={0.3}
+                pressStyle={{ scale: 0.97, backgroundColor: '#059669' }}
+                height={56}
+                onPress={handleViewCatFood}
+              >
+                查看猫粮详情
+              </Button>
+            )}
 
             {/* 复制按钮 */}
             <Button

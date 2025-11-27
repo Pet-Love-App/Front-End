@@ -13,6 +13,7 @@ import {
   LoadingState,
   NutrientAnalysisSection,
   NutritionChartSection,
+  NutritionInputPrompt,
   NutritionListSection,
   RatingSection,
   ReportHeader,
@@ -92,6 +93,14 @@ export function DetailScreen() {
             {catFood.ingredient && catFood.ingredient.length > 0 && (
               <NutritionListSection ingredients={catFood.ingredient} />
             )}
+
+            {/* 如果缺少营养成分信息，显示录入提示 */}
+            {(!catFood.ingredient || catFood.ingredient.length === 0) &&
+              !catFood.percentage &&
+              !catFood.safety &&
+              !catFood.nutrient && (
+                <NutritionInputPrompt catfoodId={catFood.id} catfoodName={catFood.name} />
+              )}
           </>
         )}
 

@@ -162,6 +162,7 @@ export function useScannerActions({
         // ========== 自动保存报告到数据库 ==========
         if (selectedCatFood) {
           console.log('\n========== 💾 自动保存 AI 报告到数据库 ==========');
+          console.log('📊 报告数据 percent_data:', report.percent_data);
           try {
             const saveReportResult = await aiReportService.saveReport({
               catfood_id: selectedCatFood.id,
@@ -172,17 +173,14 @@ export function useScannerActions({
               safety: report.safety || '',
               nutrient: report.nutrient || '',
               percentage: report.percentage ?? false,
-              crude_protein: report.crude_protein,
-              crude_fat: report.crude_fat,
-              carbohydrates: report.carbohydrates,
-              crude_fiber: report.crude_fiber,
-              crude_ash: report.crude_ash,
-              others: report.others,
+              percent_data: report.percent_data || {}, // ✅ 使用动态 percent_data
             });
 
             console.log('✅ AI 报告自动保存成功:', saveReportResult.message);
+            console.log('📊 保存的 percent_data:', report.percent_data);
           } catch (error: any) {
             console.error('❌ 自动保存 AI 报告失败:', error);
+            console.error('错误详情:', error.response?.data || error.message);
             // 保存失败不影响显示报告
           }
         }

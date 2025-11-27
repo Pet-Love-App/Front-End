@@ -72,7 +72,22 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
   };
 
   // 获取营养成分占比数据
-  const hasNutritionData = report.percentage && report.percent_data;
+  // 企业最佳实践：严格验证数据完整性
+  const hasNutritionData =
+    report.percentage === true &&
+    report.percent_data &&
+    Object.keys(report.percent_data).length > 0;
+
+  // 准备图表数据（仅在需要时）
+  const chartData = hasNutritionData ? preparePieChartData(report.percent_data) : [];
+  const hasValidChartData = chartData.length > 0;
+
+  // 调试日志
+  console.log('🔍 [AIReport] 营养数据检查:');
+  console.log('  - percentage:', report.percentage);
+  console.log('  - percent_data:', report.percent_data);
+  console.log('  - hasNutritionData:', hasNutritionData);
+  console.log('  - hasValidChartData:', hasValidChartData);
 
   return (
     <Card
@@ -192,7 +207,7 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
         )}
 
         {/* 营养成分占比 */}
-        {hasNutritionData && (
+        {hasNutritionData && hasValidChartData && (
           <>
             <Separator borderColor="$borderColor" />
             <YStack gap="$3">
@@ -206,17 +221,25 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
               {/* 饼图展示 */}
               <YStack alignItems="center" marginVertical="$3">
                 <PieChart
-                  data={preparePieChartData(report.percent_data)}
+                  data={chartData}
                   width={Dimensions.get('window').width - 64}
                   height={220}
                   chartConfig={{
-                    color: (opacity = 1) => `rgba(255, 140, 66, ${opacity})`,
+                    backgroundColor: 'transparent',
+                    backgroundGradientFrom: '#fff',
+                    backgroundGradientTo: '#fff',
+                    color: (opacity = 1) => `rgba(99, 102, 241, ${opacity})`,
                     labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                    strokeWidth: 2,
+                    barPercentage: 0.5,
+                    decimalPlaces: 1,
                   }}
                   accessor="population"
                   backgroundColor="transparent"
                   paddingLeft="15"
                   absolute
+                  hasLegend={true}
+                  avoidFalseZero
                 />
               </YStack>
 
@@ -259,6 +282,35 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
 
                 return <NutrientBar key={key} label={label} value={value} color={color} />;
               })}
+            </YStack>
+          </>
+        )}
+
+        {/* 营养成分占比缺失提示 */}
+        {report.percentage === true && !hasValidChartData && (
+          <>
+            <Separator borderColor="$borderColor" />
+            <YStack gap="$2.5">
+              <XStack alignItems="center" gap="$2">
+                <IconSymbol name="exclamationmark.triangle.fill" size={20} color="$orange10" />
+                <H5 color="$gray12" fontWeight="700" letterSpacing={-0.2}>
+                  营养成分占比
+                </H5>
+              </XStack>
+              <YStack
+                backgroundColor="$orange2"
+                padding="$4"
+                borderRadius="$4"
+                borderWidth={1.5}
+                borderColor="$orange6"
+              >
+                <Text fontSize="$3" color="$gray11" lineHeight={22} fontWeight="500">
+                  该报告标记支持营养成分占比分析，但未包含具体数据。这可能是历史数据问题或AI分析未能提取到足够信息。
+                </Text>
+                <Text fontSize="$2" color="$gray10" marginTop="$2">
+                  提示：可以重新生成报告以获取最新的营养分析数据
+                </Text>
+              </YStack>
             </YStack>
           </>
         )}
@@ -394,25 +446,48 @@ const NUTRITION_NAME_MAP: Record<string, string> = {
 
 /**
  * 准备饼图数据
+ * 企业最佳实践：严格的数据验证和类型安全
  */
 function preparePieChartData(percentData: Record<string, number | null>) {
+  console.log('📊 [AIReport] 开始准备饼图数据:', percentData);
+
+  // 数据验证
+  if (!percentData || typeof percentData !== 'object') {
+    console.warn('⚠️ [AIReport] percentData 无效或为空');
+    return [];
+  }
+
   const data: Array<{ name: string; value: number }> = [];
 
-  // 动态处理所有字段
+  // 动态处理所有字段，严格验证
   Object.entries(percentData).forEach(([key, value]) => {
-    if (value !== null && value > 0) {
+    // 严格验证：必须是数字且大于0
+    if (value !== null && value !== undefined && typeof value === 'number' && value > 0) {
       const name = NUTRITION_NAME_MAP[key] || key;
       data.push({ name, value });
+      console.log(`  ✅ [AIReport] 添加成分: ${name} = ${value}%`);
+    } else {
+      console.log(`  ⏭️ [AIReport] 跳过成分: ${key} = ${value}`);
     }
   });
 
-  return data.map((item, index) => ({
+  console.log(`📊 [AIReport] 有效数据数量: ${data.length}`);
+
+  if (data.length === 0) {
+    console.warn('⚠️ [AIReport] 没有有效的图表数据');
+    return [];
+  }
+
+  const chartData = data.map((item, index) => ({
     name: item.name,
     population: parseFloat(item.value.toFixed(1)),
     color: CHART_COLORS[index % CHART_COLORS.length],
     legendFontColor: '#666',
     legendFontSize: 12,
   }));
+
+  console.log('✅ [AIReport] 图表数据准备完成:', chartData);
+  return chartData;
 }
 
 /**

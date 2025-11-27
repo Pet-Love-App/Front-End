@@ -17,8 +17,8 @@
 import { useExpoCamera as useCamera } from '@/src/hooks/useExpoCamera';
 import { useCatFoodStore } from '@/src/store/catFoodStore';
 import { ScanType, type ExpoBarcodeResult } from '@/src/types/camera';
-import { useRouter } from 'expo-router';
-import React, { useCallback } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useCallback, useEffect } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -41,6 +41,13 @@ export default function ScannerScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const fetchCatFoodById = useCatFoodStore((state) => state.fetchCatFoodById);
+
+  // 获取URL参数（从详情页传递过来的）
+  const params = useLocalSearchParams<{
+    catfoodId?: string;
+    catfoodName?: string;
+    scanType?: 'ingredients' | 'barcode';
+  }>();
 
   // ==================== 相机 Hook ====================
   const {
@@ -84,6 +91,55 @@ export default function ScannerScreen() {
     handleGenerateReport,
     handleSaveReport,
   } = useScannerActions({ takePicture, transitionTo, resetFlow });
+
+  // ==================== URL 参数处理 ====================
+
+  /**
+   * 处理从详情页传来的参数
+   * 自动进入相应的扫描模式
+   */
+  useEffect(() => {
+    console.log('📱 Scanner页面参数:', params);
+
+    if (params.catfoodId && params.scanType) {
+      console.log('✅ 收到详情页参数，准备跳转:', {
+        catfoodId: params.catfoodId,
+        scanType: params.scanType,
+        catfoodName: params.catfoodName,
+      });
+
+      // 使用setTimeout确保组件完全加载后再执行跳转
+      setTimeout(() => {
+        // 根据scanType设置扫描模式
+        if (params.scanType === 'barcode') {
+          // 扫描条形码模式 - 直接进入拍照
+          console.log('🔵 进入条形码扫描模式');
+          setScanType(ScanType.BARCODE);
+          transitionTo('taking-photo');
+        } else if (params.scanType === 'ingredients') {
+          // 扫描配料表模式（需要先选择猫粮）
+          console.log('🟢 进入配料表扫描模式');
+          // 创建一个临时猫粮对象
+          const tempCatFood = {
+            id: parseInt(params.catfoodId || '0'),
+            name: params.catfoodName || '未知猫粮',
+          };
+          setSelectedCatFood(tempCatFood as any);
+          setScanType(ScanType.OCR);
+          transitionTo('taking-photo');
+        }
+      }, 100);
+    } else {
+      console.log('⚠️ 参数不完整或未传递:', params);
+    }
+  }, [
+    params.catfoodId,
+    params.scanType,
+    params.catfoodName,
+    setScanType,
+    setSelectedCatFood,
+    transitionTo,
+  ]);
 
   // ==================== 业务逻辑处理器 ====================
 

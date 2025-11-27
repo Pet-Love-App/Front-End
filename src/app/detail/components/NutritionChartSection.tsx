@@ -36,33 +36,59 @@ const NUTRITION_NAME_MAP: Record<string, string> = {
 };
 
 function preparePieChartData(percentData: Record<string, number | null>) {
+  console.log('📊 [NutritionChart] 开始准备饼图数据:', percentData);
+
+  // 数据验证
+  if (!percentData || typeof percentData !== 'object') {
+    console.warn('⚠️ [NutritionChart] percentData 无效或为空');
+    return [];
+  }
+
   const data: Array<{ name: string; value: number }> = [];
 
-  // 动态处理所有字段
+  // 动态处理所有字段，严格验证
   Object.entries(percentData).forEach(([key, value]) => {
-    if (value !== null && value > 0) {
-      const name = NUTRITION_NAME_MAP[key] || key; // 使用映射或原始key
-      data.push({
-        name,
-        value,
-      });
+    // 严格验证：必须是数字且大于0
+    if (value !== null && value !== undefined && typeof value === 'number' && value > 0) {
+      const name = NUTRITION_NAME_MAP[key] || key;
+      data.push({ name, value });
+      console.log(`  ✅ [NutritionChart] 添加成分: ${name} = ${value}%`);
     }
   });
 
-  return data.map((item, index) => ({
+  console.log(`📊 [NutritionChart] 有效数据数量: ${data.length}`);
+
+  if (data.length === 0) {
+    console.warn('⚠️ [NutritionChart] 没有有效的图表数据');
+    return [];
+  }
+
+  const chartData = data.map((item, index) => ({
     name: item.name,
     population: parseFloat(item.value.toFixed(1)),
     color: CHART_COLORS[index % CHART_COLORS.length],
     legendFontColor: '#666',
     legendFontSize: 12,
   }));
+
+  console.log('✅ [NutritionChart] 图表数据准备完成:', chartData);
+  return chartData;
 }
 
 export function NutritionChartSection({ percentData }: NutritionChartSectionProps) {
-  if (!percentData) return null;
+  console.log('🎨 [NutritionChartSection] 组件渲染，percentData:', percentData);
+
+  // 数据验证
+  if (!percentData || typeof percentData !== 'object' || Object.keys(percentData).length === 0) {
+    console.warn('⚠️ [NutritionChartSection] percentData 为空或无效');
+    return null;
+  }
 
   const chartData = preparePieChartData(percentData);
-  if (chartData.length === 0) return null;
+  if (chartData.length === 0) {
+    console.warn('⚠️ [NutritionChartSection] 图表数据为空，不渲染');
+    return null;
+  }
 
   const screenWidth = Dimensions.get('window').width;
 
@@ -86,13 +112,21 @@ export function NutritionChartSection({ percentData }: NutritionChartSectionProp
             width={screenWidth - 64}
             height={220}
             chartConfig={{
-              color: (opacity = 1) => `rgba(255, 140, 66, ${opacity})`,
+              backgroundColor: 'transparent',
+              backgroundGradientFrom: '#fff',
+              backgroundGradientTo: '#fff',
+              color: (opacity = 1) => `rgba(99, 102, 241, ${opacity})`,
               labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+              strokeWidth: 2,
+              barPercentage: 0.5,
+              decimalPlaces: 1,
             }}
             accessor="population"
             backgroundColor="transparent"
             paddingLeft="15"
             absolute
+            hasLegend={true}
+            avoidFalseZero
           />
         </YStack>
       </YStack>

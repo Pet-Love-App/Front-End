@@ -1,8 +1,9 @@
 import type { Comment } from '@/src/services/api/comment';
 import type { Post } from '@/src/services/api/forum';
 import { forumService } from '@/src/services/api/forum';
+import { useUserStore } from '@/src/store/userStore';
 import React, { useCallback, useEffect, useState } from 'react';
-import { FlatList, Image } from 'react-native';
+import { Alert, FlatList, Image } from 'react-native';
 import { Button, Card, Separator, Text, TextArea, XStack, YStack } from 'tamagui';
 import { ForumColors } from './ForumHeader'; // colors only
 
@@ -11,13 +12,18 @@ interface Props {
   post: Post | null;
   onClose: () => void;
   headerOffset?: number; // height of fixed header
+  onEditPost?: (post: Post) => void;
+  onPostDeleted?: () => void;
 }
 
-export function PostDetailModal({ visible, post, onClose, headerOffset = 0 }: Props) {
+export function PostDetailModal({ visible, post, onClose, headerOffset = 0, onEditPost, onPostDeleted }: Props) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState('');
   const [replyTarget, setReplyTarget] = useState<Comment | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editingContent, setEditingContent] = useState('');
+  const currentUser = useUserStore((s) => s.user);
 
   const load = useCallback(async () => {
     if (!post) return;
@@ -35,7 +41,7 @@ export function PostDetailModal({ visible, post, onClose, headerOffset = 0 }: Pr
   }, [post]);
 
   useEffect(() => {
-    if (visible) load(); else { setComments([]); setContent(''); setReplyTarget(null); }
+    if (visible) load(); else { setComments([]); setContent(''); setReplyTarget(null); setEditingCommentId(null); setEditingContent(''); }
   }, [visible, load]);
 
   const submit = async () => {
@@ -56,6 +62,58 @@ export function PostDetailModal({ visible, post, onClose, headerOffset = 0 }: Pr
     setComments(prev => prev.map(c => c.id === commentId ? { ...c, likes: res.likes || 0, isLiked: res.action === 'liked' } : c));
   };
 
+  const canEditPost = currentUser && post && currentUser.id === post.author.id;
+
+  const deletePost = async () => {
+    if (!post) return;
+    Alert.alert('确认删除', '确定删除该帖子吗？', [
+      { text: '取消', style: 'cancel' },
+      { text: '删除', style: 'destructive', onPress: async () => {
+        try {
+          await forumService.deletePost(post.id);
+          onPostDeleted?.();
+        } catch (e) {
+          Alert.alert('错误', '删除失败');
+        }
+      }}
+    ]);
+  };
+
+  const isMyComment = (c: Comment) => !!currentUser && c.author?.id === currentUser.id;
+
+  const startEditComment = (c: Comment) => {
+    setEditingCommentId(c.id);
+    setEditingContent(c.content);
+  };
+
+  const saveEditComment = async () => {
+    if (!editingCommentId) return;
+    const text = editingContent.trim();
+    if (!text) return;
+    try {
+      await forumService.updateComment(editingCommentId, text);
+      setComments(prev => prev.map(c => c.id === editingCommentId ? { ...c, content: text } : c));
+      setEditingCommentId(null);
+      setEditingContent('');
+    } catch (e) {
+      Alert.alert('错误', '更新失败');
+    }
+  };
+
+  const deleteComment = async (commentId: number) => {
+    Alert.alert('确认删除', '确定删除该评论吗？', [
+      { text: '取消', style: 'cancel' },
+      { text: '删除', style: 'destructive', onPress: async () => {
+        try {
+          await forumService.deleteComment(commentId);
+          setComments(prev => prev.filter(c => c.id !== commentId));
+        } catch (e) {
+          Alert.alert('错误', '删除失败');
+        }
+      }}
+    ]);
+  };
+
   if (!visible) return null;
 
   return (
@@ -74,7 +132,15 @@ export function PostDetailModal({ visible, post, onClose, headerOffset = 0 }: Pr
     >
       <XStack justifyContent="space-between" alignItems="center">
         <Text fontSize="$6" fontWeight="700" color={ForumColors.clay}>帖子详情</Text>
-        <Button size="$3" chromeless onPress={onClose} color={ForumColors.clay}>关闭</Button>
+        <XStack gap="$2" alignItems="center">
+          {canEditPost ? (
+            <>
+              <Button size="$3" onPress={() => post && onEditPost?.(post)} backgroundColor={ForumColors.peach} color="#3c2e20">编辑</Button>
+              <Button size="$3" onPress={deletePost} backgroundColor="#ffebe9" color="#ae2e24">删除</Button>
+            </>
+          ) : null}
+          <Button size="$3" chromeless onPress={onClose} color={ForumColors.clay}>关闭</Button>
+        </XStack>
       </XStack>
       {post ? (
         <Card padding="$3" backgroundColor={ForumColors.peach} borderColor={ForumColors.clay + '55'} borderWidth={1}>
@@ -96,6 +162,14 @@ export function PostDetailModal({ visible, post, onClose, headerOffset = 0 }: Pr
                 ))}
               </XStack>
             )}
+            {(post.category || (post.tags && post.tags.length)) ? (
+              <XStack gap="$2" alignItems="center" flexWrap="wrap">
+                {post.category && <Text color={ForumColors.clay}>#{post.category}</Text>}
+                {post.tags?.map((t) => (
+                  <Text key={t} color={ForumColors.clay + '99'}>#{t}</Text>
+                ))}
+              </XStack>
+            ) : null}
           </YStack>
         </Card>
       ) : null}
@@ -110,12 +184,28 @@ export function PostDetailModal({ visible, post, onClose, headerOffset = 0 }: Pr
               <Text fontWeight="700" color={ForumColors.clay}>{item.author.username}</Text>
               <Text color={ForumColors.clay + '80'}>{new Date(item.createdAt).toLocaleString()}</Text>
             </XStack>
-            <Text color="#3c2e20">{item.content}</Text>
-            <XStack gap="$3">
+            {editingCommentId === item.id ? (
+              <YStack gap="$2">
+                <TextArea value={editingContent} onChangeText={setEditingContent} backgroundColor="#fff" borderColor={ForumColors.clay + '55'} borderWidth={1} color="#3c2e20" />
+                <XStack gap="$2">
+                  <Button size="$2" onPress={saveEditComment} backgroundColor={ForumColors.clay} color="#fff">保存</Button>
+                  <Button size="$2" chromeless onPress={() => { setEditingCommentId(null); setEditingContent(''); }}>取消</Button>
+                </XStack>
+              </YStack>
+            ) : (
+              <Text color="#3c2e20">{item.content}</Text>
+            )}
+            <XStack gap="$3" alignItems="center">
               <Button size="$2" onPress={() => toggleLike(item.id)} backgroundColor={item.isLiked ? ForumColors.clay : ForumColors.peach} color={item.isLiked ? '#fff' : '#3c2e20'}>
                 {item.isLiked ? `已赞 ${item.likes || 0}` : `点赞 ${item.likes || 0}`}
               </Button>
               <Button size="$2" chromeless onPress={() => setReplyTarget(item)} color={ForumColors.clay}>回复</Button>
+              {isMyComment(item) ? (
+                <>
+                  <Button size="$2" chromeless onPress={() => startEditComment(item)} color={ForumColors.clay}>编辑</Button>
+                  <Button size="$2" chromeless onPress={() => deleteComment(item.id)} color={ForumColors.clay}>删除</Button>
+                </>
+              ) : null}
             </XStack>
             <Separator backgroundColor={ForumColors.clay + '33'} />
           </YStack>

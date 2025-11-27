@@ -218,22 +218,50 @@ class BaseApi {
    * PUT 请求
    */
   async put<T = any>(endpoint: string, data?: any, options: RequestInit = {}): Promise<T> {
-    return this.request<T>(endpoint, {
+    const isFormData = data instanceof FormData;
+
+    const requestOptions: RequestInit = {
       ...options,
       method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+      body: isFormData ? data : data ? JSON.stringify(data) : undefined,
+    };
+
+    if (isFormData) {
+      const token = this.getToken();
+      const headers: Record<string, string> = {
+        ...(options.headers as Record<string, string>),
+      };
+      if (headers['Content-Type']) delete headers['Content-Type'];
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      return this.requestWithCustomHeaders<T>(endpoint, requestOptions, headers);
+    }
+
+    return this.request<T>(endpoint, requestOptions);
   }
 
   /**
    * PATCH 请求
    */
   async patch<T = any>(endpoint: string, data?: any, options: RequestInit = {}): Promise<T> {
-    return this.request<T>(endpoint, {
+    const isFormData = data instanceof FormData;
+
+    const requestOptions: RequestInit = {
       ...options,
       method: 'PATCH',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+      body: isFormData ? data : data ? JSON.stringify(data) : undefined,
+    };
+
+    if (isFormData) {
+      const token = this.getToken();
+      const headers: Record<string, string> = {
+        ...(options.headers as Record<string, string>),
+      };
+      if (headers['Content-Type']) delete headers['Content-Type'];
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      return this.requestWithCustomHeaders<T>(endpoint, requestOptions, headers);
+    }
+
+    return this.request<T>(endpoint, requestOptions);
   }
 
   /**

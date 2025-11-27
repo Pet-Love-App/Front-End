@@ -19,9 +19,16 @@ class ForumService {
     return apiClient.upload<Post>(`${this.basePath}/posts/`, form);
   }
 
-  // 编辑帖子
+  // 编辑帖子（改为 multipart/form-data）
   async updatePost(postId: number, data: Partial<CreatePostRequest>) {
-    return apiClient.patch<Post>(`${this.basePath}/posts/${postId}/`, data);
+    const form = new FormData();
+    if (typeof data.content === 'string') form.append('content', data.content);
+    if (data.category) form.append('category', data.category);
+    if (Array.isArray(data.tags)) {
+      data.tags.forEach((t) => form.append('tags[]', t));
+    }
+    // 使用 PATCH 发送 multipart/form-data（BaseApi.patch 已支持 FormData）
+    return apiClient.patch<Post>(`${this.basePath}/posts/${postId}/`, form as any);
   }
 
   // 删除帖子

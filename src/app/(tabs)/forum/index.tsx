@@ -1,5 +1,6 @@
 import type { Post } from '@/src/services/api/forum';
 import { forumService } from '@/src/services/api/forum';
+import type { PostCategory } from '@/src/services/api/forum/types';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useRef, useState } from 'react';
 import { Alert, Image } from 'react-native';
@@ -11,6 +12,13 @@ import { MessagesTab } from './_components/MessagesTab';
 import { PostDetailModal } from './_components/PostDetailModal';
 import { SquareTab } from './_components/SquareTab';
 
+const CATEGORIES: { key: PostCategory; label: string }[] = [
+  { key: 'help', label: '求助' },
+  { key: 'share', label: '分享' },
+  { key: 'science', label: '科普' },
+  { key: 'warning', label: '避雷' },
+];
+
 export default function ForumScreen() {
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<'square' | 'favorites' | 'messages'>('square');
@@ -21,6 +29,9 @@ export default function ForumScreen() {
   const squareReloadRef = useRef<(() => void) | null>(null);
   const [headerHeight, setHeaderHeight] = useState(0);
   const [activePost, setActivePost] = useState<Post | null>(null);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [category, setCategory] = useState<PostCategory | undefined>(undefined);
+  const [tagsText, setTagsText] = useState('');
 
   const pickImages = async () => {
     const res = await ImagePicker.launchImageLibraryAsync({
@@ -37,22 +48,53 @@ export default function ForumScreen() {
     setPickedFiles((prev) => [...prev, ...files]);
   };
 
+  const parseTags = (text: string) =>
+    text
+      .split(/[，,\s]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+  const openCreatePanel = () => {
+    setEditingPost(null);
+    setContent('');
+    setCategory(undefined);
+    setTagsText('');
+    setPickedFiles([]);
+    setIsPostPanelOpen(true);
+  };
+
+  const openEditPanel = (post: Post) => {
+    setEditingPost(post);
+    setContent(post.content || '');
+    setCategory(post.category);
+    setTagsText((post.tags || []).join(' '));
+    setPickedFiles([]); // 简化：暂不编辑已上传媒体
+    setIsPostPanelOpen(true);
+  };
+
   const submitPost = async () => {
+    const tags = parseTags(tagsText);
     if (!content.trim() && pickedFiles.length === 0) {
       Alert.alert('提示', '请输入内容或选择媒体');
       return;
     }
     try {
       setSubmitting(true);
-      await forumService.createPost({ content }, pickedFiles);
-      Alert.alert('成功', '发布成功');
+      if (editingPost) {
+        await forumService.updatePost(editingPost.id, { content, category, tags });
+        Alert.alert('成功', '更新成功');
+      } else {
+        await forumService.createPost({ content, category, tags }, pickedFiles);
+        Alert.alert('成功', '发布成功');
+      }
       setContent('');
       setPickedFiles([]);
       setIsPostPanelOpen(false);
+      setEditingPost(null);
       setTab('square');
       setTimeout(() => squareReloadRef.current?.(), 0);
     } catch (e: any) {
-      Alert.alert('失败', e?.message || '发布失败');
+      Alert.alert('失败', e?.message || (editingPost ? '更新失败' : '发布失败'));
     } finally {
       setSubmitting(false);
     }
@@ -73,7 +115,7 @@ export default function ForumScreen() {
         <YStack padding="$3" gap="$3">
           <XStack alignItems="center" justifyContent="space-between">
             <Text fontSize="$7" fontWeight="700" color={ForumColors.clay}>论坛</Text>
-            <Button size="$3" onPress={() => setIsPostPanelOpen(true)} backgroundColor={ForumColors.clay} color="#fff" pressStyle={{ opacity: 0.85 }}>
+            <Button size="$3" onPress={openCreatePanel} backgroundColor={ForumColors.clay} color="#fff" pressStyle={{ opacity: 0.85 }}>
               发帖
             </Button>
           </XStack>
@@ -95,10 +137,10 @@ export default function ForumScreen() {
       <YStack flex={1} padding="$3" gap="$3">
         {tab === 'square' && <SquareTab externalReloadRef={squareReloadRef} onOpenPost={(p) => setActivePost(p)} />}
         {tab === 'favorites' && <FavoritesTab onOpenPost={(p) => setActivePost(p)} />}
-        {tab === 'messages' && <MessagesTab onCreatePost={() => setIsPostPanelOpen(true)} />}
+        {tab === 'messages' && <MessagesTab onCreatePost={openCreatePanel} />}
       </YStack>
 
-      {/* Post creation overlay (no extra header) */}
+      {/* Post creation / edit overlay (no extra header) */}
       {isPostPanelOpen && (
         <YStack
           position="absolute"
@@ -114,16 +156,42 @@ export default function ForumScreen() {
           borderColor={ForumColors.clay + '55'}
         >
           <XStack justifyContent="space-between" alignItems="center" marginBottom="$2">
-            <Text fontSize="$6" fontWeight="700" color={ForumColors.clay}>发布帖子</Text>
+            <Text fontSize="$6" fontWeight="700" color={ForumColors.clay}>{editingPost ? '编辑帖子' : '发布帖子'}</Text>
             <XStack gap="$2">
               <Button size="$3" onPress={submitPost} backgroundColor={ForumColors.clay} color="#fff" pressStyle={{ opacity: 0.85 }}>
-                {submitting ? '发布中...' : '发布'}
+                {submitting ? (editingPost ? '更新中...' : '发布中...') : (editingPost ? '更新' : '发布')}
               </Button>
-              <Button size="$3" chromeless onPress={() => { setIsPostPanelOpen(false); }} color={ForumColors.clay}>
+              <Button size="$3" chromeless onPress={() => { setIsPostPanelOpen(false); setEditingPost(null); }} color={ForumColors.clay}>
                 关闭
               </Button>
             </XStack>
           </XStack>
+
+          {/* 分类选择 */}
+          <XStack gap="$2" flexWrap="wrap">
+            {CATEGORIES.map((c) => (
+              <Button key={c.key} size="$2" onPress={() => setCategory(c.key)} backgroundColor={category === c.key ? ForumColors.clay : ForumColors.sand} color={category === c.key ? '#fff' : '#603e1f'}>
+                {c.label}
+              </Button>
+            ))}
+            {category && (
+              <Button size="$2" chromeless onPress={() => setCategory(undefined)} color={ForumColors.clay}>清除分类</Button>
+            )}
+          </XStack>
+
+          {/* 标签输入 */}
+          <TextArea
+            value={tagsText}
+            onChangeText={setTagsText}
+            placeholder="输入标签，以空格或逗号分隔"
+            height={50}
+            backgroundColor="#fff"
+            borderColor={ForumColors.clay + '55'}
+            borderWidth={1}
+            color="#3c2e20"
+          />
+
+          {/* 正文 */}
           <TextArea
             value={content}
             onChangeText={setContent}
@@ -134,6 +202,8 @@ export default function ForumScreen() {
             borderWidth={1}
             color="#3c2e20"
           />
+
+          {/* 已选媒体预览 */}
           <XStack gap="$2" flexWrap="wrap">
             {pickedFiles.map((f, idx) => (
               <Card key={idx} width={90} height={90} backgroundColor={ForumColors.peach} borderColor={ForumColors.clay + '55'} borderWidth={1} overflow="hidden">
@@ -145,14 +215,21 @@ export default function ForumScreen() {
             <Button size="$3" onPress={pickImages} backgroundColor={ForumColors.peach} color="#3c2e20" pressStyle={{ opacity: 0.85 }}>
               选择图片/视频
             </Button>
-            <Button size="$3" onPress={() => { setContent(''); setPickedFiles([]); }} backgroundColor={ForumColors.sand} borderWidth={1} borderColor={ForumColors.clay + '55'} color="#603e1f" pressStyle={{ opacity: 0.85 }}>
+            <Button size="$3" onPress={() => { setContent(''); setPickedFiles([]); setTagsText(''); setCategory(undefined); }} backgroundColor={ForumColors.sand} borderWidth={1} borderColor={ForumColors.clay + '55'} color="#603e1f" pressStyle={{ opacity: 0.85 }}>
               重置
             </Button>
           </XStack>
         </YStack>
       )}
 
-      <PostDetailModal visible={!!activePost} post={activePost} onClose={() => setActivePost(null)} headerOffset={headerHeight} />
+      <PostDetailModal
+        visible={!!activePost}
+        post={activePost}
+        onClose={() => setActivePost(null)}
+        headerOffset={headerHeight}
+        onEditPost={(p) => { setActivePost(null); openEditPanel(p); }}
+        onPostDeleted={() => { setActivePost(null); setTimeout(() => squareReloadRef.current?.(), 0); }}
+      />
     </YStack>
   );
 }

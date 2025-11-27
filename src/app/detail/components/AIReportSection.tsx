@@ -86,8 +86,15 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
   console.log('🔍 [AIReport] 营养数据检查:');
   console.log('  - percentage:', report.percentage);
   console.log('  - percent_data:', report.percent_data);
+  console.log('  - percent_data keys:', Object.keys(report.percent_data || {}));
   console.log('  - hasNutritionData:', hasNutritionData);
+  console.log('  - chartData length:', chartData.length);
   console.log('  - hasValidChartData:', hasValidChartData);
+
+  if (hasNutritionData && !hasValidChartData) {
+    console.warn('⚠️ [AIReport] 有 percent_data 但图表数据为空！');
+    console.warn('  - percent_data 内容:', JSON.stringify(report.percent_data));
+  }
 
   return (
     <Card

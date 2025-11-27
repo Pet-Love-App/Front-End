@@ -85,6 +85,19 @@ export function useAIReport(catfoodId: number | null): UseAIReportReturn {
     loadReport();
   }, [catfoodId]);
 
+  // 调试日志
+  console.log('🎯 [useAIReport] Hook 状态:');
+  console.log('  - catfoodId:', catfoodId);
+  console.log('  - hasReport:', hasReport);
+  console.log('  - report:', report ? `存在 (ID: ${report.id})` : '不存在');
+  console.log('  - isLoading:', isLoading);
+  console.log('  - error:', error);
+
+  if (report) {
+    console.log('  - report.percentage:', report.percentage);
+    console.log('  - report.percent_data:', report.percent_data);
+  }
+
   return {
     report,
     hasReport,

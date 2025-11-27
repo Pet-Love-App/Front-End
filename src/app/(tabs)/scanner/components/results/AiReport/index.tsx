@@ -28,6 +28,8 @@ export interface AiReportDetailProps {
   onRetake?: () => void;
   onClose?: () => void;
   isSaving?: boolean;
+  isAdmin?: boolean; // 是否为管理员用户
+  hasExistingReport?: boolean; // 猫粮是否已有报告
 }
 
 /**
@@ -39,6 +41,8 @@ export function AiReportDetail({
   onRetake,
   onClose,
   isSaving,
+  isAdmin = false,
+  hasExistingReport = false,
 }: AiReportDetailProps) {
   const insets = useSafeAreaInsets();
   const [selectedAdditive, setSelectedAdditive] = useState<any>(null);
@@ -149,26 +153,16 @@ export function AiReportDetail({
     }
   }, []);
 
-  // 转换percentData格式 - 只显示有实际数据的营养成分
-  // 注意：忽略 others 字段，因为它是计算值，当所有数据为 null 时会错误地显示 100%
+  // 使用动态 percent_data
+  // 企业最佳实践：验证数据完整性
   const hasActualNutritionData =
-    (report.crude_protein !== null && report.crude_protein !== undefined) ||
-    (report.crude_fat !== null && report.crude_fat !== undefined) ||
-    (report.carbohydrates !== null && report.carbohydrates !== undefined) ||
-    (report.crude_fiber !== null && report.crude_fiber !== undefined) ||
-    (report.crude_ash !== null && report.crude_ash !== undefined);
+    report.percentage === true &&
+    report.percent_data &&
+    typeof report.percent_data === 'object' &&
+    Object.keys(report.percent_data).length > 0;
 
-  // 只有当有实际营养数据时才构建 percentData
-  const percentData = hasActualNutritionData
-    ? {
-        crude_protein: report.crude_protein,
-        crude_fat: report.crude_fat,
-        carbohydrates: report.carbohydrates,
-        crude_fiber: report.crude_fiber,
-        crude_ash: report.crude_ash,
-        others: report.others,
-      }
-    : null;
+  // 只有当有实际营养数据时才使用 percentData
+  const percentData = hasActualNutritionData ? report.percent_data : null;
 
   return (
     <>
@@ -247,7 +241,14 @@ export function AiReportDetail({
 
             {/* 操作按钮 */}
             <YStack paddingHorizontal="$4" marginTop="$4">
-              <ActionButtons onRetake={onRetake} onClose={onClose} isSaving={isSaving} />
+              <ActionButtons
+                onSave={onSave}
+                onRetake={onRetake}
+                onClose={onClose}
+                isSaving={isSaving}
+                isAdmin={isAdmin}
+                hasExistingReport={hasExistingReport}
+              />
             </YStack>
           </YStack>
         </ScrollView>

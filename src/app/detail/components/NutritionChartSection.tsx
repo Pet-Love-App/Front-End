@@ -2,17 +2,8 @@ import { Dimensions } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { Card, Text, YStack } from 'tamagui';
 
-interface PercentData {
-  crude_protein: number | null;
-  crude_fat: number | null;
-  carbohydrates: number | null;
-  crude_fiber: number | null;
-  crude_ash: number | null;
-  others: number | null;
-}
-
 interface NutritionChartSectionProps {
-  percentData: PercentData;
+  percentData: Record<string, number | null>;
 }
 
 // 柔和的高对比度配色
@@ -29,42 +20,63 @@ const CHART_COLORS = [
   '#2C3E50', // 深灰色
 ];
 
-const NUTRITION_FIELDS = [
-  { key: 'crude_protein', name: '粗蛋白' },
-  { key: 'crude_fat', name: '粗脂肪' },
-  { key: 'carbohydrates', name: '碳水化合物' },
-  { key: 'crude_fiber', name: '粗纤维' },
-  { key: 'crude_ash', name: '粗灰分' },
-  { key: 'others', name: '其它' },
-] as const;
+// 营养成分中文名称映射
+const NUTRITION_NAME_MAP: Record<string, string> = {
+  protein: '粗蛋白',
+  crude_protein: '粗蛋白',
+  fat: '粗脂肪',
+  crude_fat: '粗脂肪',
+  carbohydrates: '碳水化合物',
+  fiber: '粗纤维',
+  crude_fiber: '粗纤维',
+  ash: '粗灰分',
+  crude_ash: '粗灰分',
+  moisture: '水分',
+  others: '其它',
+};
 
-function preparePieChartData(percentData: PercentData) {
+function preparePieChartData(percentData: Record<string, number | null>) {
+  // 数据验证
+  if (!percentData || typeof percentData !== 'object') {
+    return [];
+  }
+
   const data: Array<{ name: string; value: number }> = [];
 
-  NUTRITION_FIELDS.forEach((field) => {
-    const value = percentData[field.key];
-    if (value !== null && value > 0) {
-      data.push({
-        name: field.name,
-        value,
-      });
+  // 动态处理所有字段，严格验证
+  Object.entries(percentData).forEach(([key, value]) => {
+    // 严格验证：必须是数字且大于0
+    if (value !== null && value !== undefined && typeof value === 'number' && value > 0) {
+      const name = NUTRITION_NAME_MAP[key] || key;
+      data.push({ name, value });
     }
   });
 
-  return data.map((item, index) => ({
+  if (data.length === 0) {
+    return [];
+  }
+
+  const chartData = data.map((item, index) => ({
     name: item.name,
     population: parseFloat(item.value.toFixed(1)),
     color: CHART_COLORS[index % CHART_COLORS.length],
     legendFontColor: '#666',
     legendFontSize: 12,
   }));
+
+  return chartData;
 }
 
 export function NutritionChartSection({ percentData }: NutritionChartSectionProps) {
-  if (!percentData) return null;
+  // 数据验证
+  if (!percentData || typeof percentData !== 'object' || Object.keys(percentData).length === 0) {
+    return null;
+  }
 
   const chartData = preparePieChartData(percentData);
-  if (chartData.length === 0) return null;
+  if (chartData.length === 0) {
+    return null;
+  }
 
   const screenWidth = Dimensions.get('window').width;
 
@@ -88,13 +100,21 @@ export function NutritionChartSection({ percentData }: NutritionChartSectionProp
             width={screenWidth - 64}
             height={220}
             chartConfig={{
-              color: (opacity = 1) => `rgba(255, 140, 66, ${opacity})`,
+              backgroundColor: 'transparent',
+              backgroundGradientFrom: '#fff',
+              backgroundGradientTo: '#fff',
+              color: (opacity = 1) => `rgba(99, 102, 241, ${opacity})`,
               labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+              strokeWidth: 2,
+              barPercentage: 0.5,
+              decimalPlaces: 1,
             }}
             accessor="population"
             backgroundColor="transparent"
             paddingLeft="15"
             absolute
+            hasLegend={true}
+            avoidFalseZero
           />
         </YStack>
       </YStack>

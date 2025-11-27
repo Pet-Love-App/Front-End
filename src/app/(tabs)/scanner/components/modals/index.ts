@@ -7,4 +7,3 @@
  */
 
 export { CatFoodSearchModal } from './CatFoodSearchModal';
-export { ScanModeModal, type ScanMode } from './ScanModeModal';

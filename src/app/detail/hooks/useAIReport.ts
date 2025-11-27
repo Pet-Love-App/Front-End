@@ -40,7 +40,6 @@ export function useAIReport(catfoodId: number | null): UseAIReportReturn {
    */
   const loadReport = async () => {
     if (!catfoodId) {
-      console.log('⚠️ [useAIReport] catfoodId 为空，跳过加载');
       setHasReport(false);
       return;
     }
@@ -49,27 +48,19 @@ export function useAIReport(catfoodId: number | null): UseAIReportReturn {
       setIsLoading(true);
       setError(null);
 
-      console.log(`🔍 [useAIReport] 开始检查猫粮 ${catfoodId} 的 AI 报告...`);
-
       // 先检查报告是否存在
       const checkResult = await aiReportService.checkReportExists(catfoodId);
-      console.log(`📊 [useAIReport] 检查结果:`, checkResult);
 
       setHasReport(checkResult.exists);
 
       if (checkResult.exists) {
-        console.log(`✅ [useAIReport] 报告存在，开始获取详情...`);
         // 获取报告详情
         const reportData = await aiReportService.getReport(catfoodId);
-        console.log(`✅ [useAIReport] 报告获取成功:`, reportData);
         setReport(reportData);
       } else {
-        console.log(`❌ [useAIReport] 报告不存在`);
         setReport(null);
       }
     } catch (err: any) {
-      console.error('❌ [useAIReport] 加载 AI 报告失败:', err);
-      console.error('❌ [useAIReport] 错误详情:', err.response || err.message);
       setError(err.message || '加载失败');
       setHasReport(false);
       setReport(null);

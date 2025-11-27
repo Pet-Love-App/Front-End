@@ -10,7 +10,7 @@
 import { ScanType } from '@/src/types/camera';
 import type { CatFood } from '@/src/types/catFood';
 import { useCallback, useState } from 'react';
-import type { ScanFlowState, ScanMode } from '../types';
+import type { ScanFlowState } from '../types';
 
 interface UseScannerFlowProps {
   setScanType: (type: ScanType) => void;
@@ -25,36 +25,18 @@ interface UseScannerFlowProps {
 export function useScannerFlow({ setScanType, resetBarcodeScan }: UseScannerFlowProps) {
   // ==================== 状态管理 ====================
   const [flowState, setFlowState] = useState<ScanFlowState>('initial');
-  const [scanMode, setScanMode] = useState<ScanMode>(null);
   const [selectedCatFood, setSelectedCatFood] = useState<CatFood | null>(null);
   const [scannedCode, setScannedCode] = useState<string | null>(null);
 
   // ==================== 流程控制方法 ====================
 
   /**
-   * 开始扫描流程
+   * 开始扫描流程 - 直接进入条形码扫描
    */
   const startScan = useCallback(() => {
-    setFlowState('selecting-mode');
-  }, []);
-
-  /**
-   * 选择扫描模式
-   */
-  const selectMode = useCallback(
-    (mode: ScanMode) => {
-      console.log('🎯 选择扫描模式:', mode);
-      setScanMode(mode);
-
-      if (mode === 'known-brand') {
-        setFlowState('searching-catfood');
-      } else if (mode === 'direct-additive') {
-        setScanType(ScanType.OCR);
-        setFlowState('taking-photo');
-      }
-    },
-    [setScanType]
-  );
+    setScanType(ScanType.BARCODE);
+    setFlowState('taking-photo');
+  }, [setScanType]);
 
   /**
    * 选择猫粮
@@ -77,14 +59,11 @@ export function useScannerFlow({ setScanType, resetBarcodeScan }: UseScannerFlow
    */
   const goBack = useCallback(() => {
     switch (flowState) {
-      case 'selecting-mode':
+      case 'searching-catfood':
         setFlowState('initial');
         break;
-      case 'searching-catfood':
-        setFlowState('selecting-mode');
-        break;
       case 'taking-photo':
-        setFlowState('selecting-mode');
+        setFlowState('initial');
         break;
       case 'photo-preview':
         setFlowState('taking-photo');
@@ -106,7 +85,6 @@ export function useScannerFlow({ setScanType, resetBarcodeScan }: UseScannerFlow
    */
   const resetFlow = useCallback(() => {
     setFlowState('initial');
-    setScanMode(null);
     setSelectedCatFood(null);
     setScannedCode(null);
     resetBarcodeScan();
@@ -123,13 +101,11 @@ export function useScannerFlow({ setScanType, resetBarcodeScan }: UseScannerFlow
   return {
     // 状态
     flowState,
-    scanMode,
     selectedCatFood,
     scannedCode,
 
     // 方法
     startScan,
-    selectMode,
     selectCatFood,
     onBarcodeScanned,
     goBack,

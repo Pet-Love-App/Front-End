@@ -9,6 +9,7 @@ export const userSchema = z.object({
   id: z.number(),
   username: z.string(),
   avatar: z.string().nullable().optional(), // 头像 URL
+  is_admin: z.boolean().optional().default(false), // 管理员标识
   pets: z.array(petSchema).optional(), // 用户的宠物列表
 });
 

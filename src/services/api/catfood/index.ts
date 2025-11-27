@@ -4,6 +4,7 @@ import type {
   CatFoodCommentsResponse,
   CatFoodCreateUpdate,
   GetCatFoodsResponse,
+  ScanBarcodeResponse,
   SearchCatFoodParams,
 } from './types';
 
@@ -99,6 +100,28 @@ class CatFoodService {
       `${this.basePath}/${id}/comments/?page=${page}&page_size=${pageSize}`
     );
   }
+
+  /**
+   * 扫描条形码并返回猫粮信息
+   * @param barcode 条形码
+   * @returns 扫描结果
+   */
+  async scanBarcode(barcode: string): Promise<ScanBarcodeResponse> {
+    return await apiClient.post<ScanBarcodeResponse>(`${this.basePath}/scan-barcode/`, {
+      barcode,
+    });
+  }
+
+  /**
+   * 通过条形码查询猫粮
+   * @param barcode 条形码
+   * @returns 猫粮详情
+   */
+  async getCatFoodByBarcode(barcode: string): Promise<CatFood> {
+    return await apiClient.get<CatFood>(
+      `${this.basePath}/by-barcode/?barcode=${encodeURIComponent(barcode)}`
+    );
+  }
 }
 
 // 导出单例
@@ -117,6 +140,8 @@ export const deleteCatFood = (id: number) => catFoodService.deleteCatFood(id);
 export const searchCatFood = (params: SearchCatFoodParams) => catFoodService.searchCatFood(params);
 export const getCatFoodComments = (id: number, page?: number, pageSize?: number) =>
   catFoodService.getCatFoodComments(id, page, pageSize);
+export const scanBarcode = (barcode: string) => catFoodService.scanBarcode(barcode);
+export const getCatFoodByBarcode = (barcode: string) => catFoodService.getCatFoodByBarcode(barcode);
 
 // 重新导出类型
 export type {
@@ -124,5 +149,7 @@ export type {
   CatFoodCommentsResponse,
   CatFoodCreateUpdate,
   GetCatFoodsResponse,
+  ScanBarcodeRequest,
+  ScanBarcodeResponse,
   SearchCatFoodParams,
 } from './types';

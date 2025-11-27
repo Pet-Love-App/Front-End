@@ -3,7 +3,7 @@ import type { Post } from '@/src/services/api/forum';
 import { forumService } from '@/src/services/api/forum';
 import { useUserStore } from '@/src/store/userStore';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, FlatList, Image } from 'react-native';
+import { Alert, Dimensions, FlatList, Image, ScrollView } from 'react-native';
 import { Button, Card, Separator, Text, TextArea, XStack, YStack } from 'tamagui';
 import { ForumColors } from './ForumHeader'; // colors only
 
@@ -24,6 +24,8 @@ export function PostDetailModal({ visible, post, onClose, headerOffset = 0, onEd
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState('');
   const currentUser = useUserStore((s) => s.user);
+  const windowHeight = Dimensions.get('window').height;
+  const contentMaxHeight = Math.max(200, Math.floor(windowHeight * 0.3));
 
   const load = useCallback(async () => {
     if (!post) return;
@@ -130,6 +132,7 @@ export function PostDetailModal({ visible, post, onClose, headerOffset = 0, onEd
       padding="$4"
       gap="$3"
     >
+      {/* 顶部标题与操作 */}
       <XStack justifyContent="space-between" alignItems="center">
         <Text fontSize="$6" fontWeight="700" color={ForumColors.clay}>帖子详情</Text>
         <XStack gap="$2" alignItems="center">
@@ -142,76 +145,84 @@ export function PostDetailModal({ visible, post, onClose, headerOffset = 0, onEd
           <Button size="$3" chromeless onPress={onClose} color={ForumColors.clay}>关闭</Button>
         </XStack>
       </XStack>
+
+      {/* 详情内容滚动区域（限制最大高度） */}
       {post ? (
-        <Card padding="$3" backgroundColor={ForumColors.peach} borderColor={ForumColors.clay + '55'} borderWidth={1}>
-          <YStack gap="$2">
-            <Text fontWeight="700" color={ForumColors.clay}>{post.author.username}</Text>
-            <Text color="#3c2e20">{post.content}</Text>
-            {!!post.media?.length && (
-              <XStack gap="$2" flexWrap="wrap">
-                {post.media.map(m => (
-                  m.media_type === 'image' ? (
-                    <Card key={m.id} width={110} height={110} overflow="hidden" borderColor={ForumColors.clay + '55'} borderWidth={1}>
-                      <Image source={{ uri: m.file }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-                    </Card>
-                  ) : (
-                    <Card key={m.id} padding="$2" borderColor={ForumColors.clay + '55'} borderWidth={1}>
-                      <Text color="#3c2e20">[视频]</Text>
-                    </Card>
-                  )
-                ))}
-              </XStack>
-            )}
-            {(post.category || (post.tags && post.tags.length)) ? (
-              <XStack gap="$2" alignItems="center" flexWrap="wrap">
-                {post.category && <Text color={ForumColors.clay}>#{post.category}</Text>}
-                {post.tags?.map((t) => (
-                  <Text key={t} color={ForumColors.clay + '99'}>#{t}</Text>
-                ))}
-              </XStack>
-            ) : null}
-          </YStack>
-        </Card>
+        <ScrollView style={{ maxHeight: contentMaxHeight }} contentContainerStyle={{ paddingBottom: 8 }}>
+          <Card padding="$3" backgroundColor={ForumColors.peach} borderColor={ForumColors.clay + '55'} borderWidth={1}>
+            <YStack gap="$2">
+              <Text fontWeight="700" color={ForumColors.clay}>{post.author.username}</Text>
+              <Text color="#3c2e20">{post.content}</Text>
+              {!!post.media?.length && (
+                <XStack gap="$2" flexWrap="wrap">
+                  {post.media.map(m => (
+                    m.media_type === 'image' ? (
+                      <Card key={m.id} width={110} height={110} overflow="hidden" borderColor={ForumColors.clay + '55'} borderWidth={1}>
+                        <Image source={{ uri: m.file }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                      </Card>
+                    ) : (
+                      <Card key={m.id} padding="$2" borderColor={ForumColors.clay + '55'} borderWidth={1}>
+                        <Text color="#3c2e20">[视频]</Text>
+                      </Card>
+                    )
+                  ))}
+                </XStack>
+              )}
+              {(post.category || (post.tags && post.tags.length)) ? (
+                <XStack gap="$2" alignItems="center" flexWrap="wrap">
+                  {post.category && <Text color={ForumColors.clay}>#{post.category}</Text>}
+                  {post.tags?.map((t) => (
+                    <Text key={t} color={ForumColors.clay + '99'}>#{t}</Text>
+                  ))}
+                </XStack>
+              ) : null}
+            </YStack>
+          </Card>
+        </ScrollView>
       ) : null}
 
       <Text fontSize="$6" fontWeight="700" color={ForumColors.clay}>评论（按赞）</Text>
-      <FlatList
-        data={comments}
-        keyExtractor={(i) => String(i.id)}
-        renderItem={({ item }) => (
-          <YStack paddingVertical="$3" gap="$2">
-            <XStack alignItems="center" justifyContent="space-between">
-              <Text fontWeight="700" color={ForumColors.clay}>{item.author.username}</Text>
-              <Text color={ForumColors.clay + '80'}>{new Date(item.createdAt).toLocaleString()}</Text>
-            </XStack>
-            {editingCommentId === item.id ? (
-              <YStack gap="$2">
-                <TextArea value={editingContent} onChangeText={setEditingContent} backgroundColor="#fff" borderColor={ForumColors.clay + '55'} borderWidth={1} color="#3c2e20" />
-                <XStack gap="$2">
-                  <Button size="$2" onPress={saveEditComment} backgroundColor={ForumColors.clay} color="#fff">保存</Button>
-                  <Button size="$2" chromeless onPress={() => { setEditingCommentId(null); setEditingContent(''); }}>取消</Button>
-                </XStack>
-              </YStack>
-            ) : (
-              <Text color="#3c2e20">{item.content}</Text>
-            )}
-            <XStack gap="$3" alignItems="center">
-              <Button size="$2" onPress={() => toggleLike(item.id)} backgroundColor={item.isLiked ? ForumColors.clay : ForumColors.peach} color={item.isLiked ? '#fff' : '#3c2e20'}>
-                {item.isLiked ? `已赞 ${item.likes || 0}` : `点赞 ${item.likes || 0}`}
-              </Button>
-              <Button size="$2" chromeless onPress={() => setReplyTarget(item)} color={ForumColors.clay}>回复</Button>
-              {isMyComment(item) ? (
-                <>
-                  <Button size="$2" chromeless onPress={() => startEditComment(item)} color={ForumColors.clay}>编辑</Button>
-                  <Button size="$2" chromeless onPress={() => deleteComment(item.id)} color={ForumColors.clay}>删除</Button>
-                </>
-              ) : null}
-            </XStack>
-            <Separator backgroundColor={ForumColors.clay + '33'} />
-          </YStack>
-        )}
-        contentContainerStyle={{ paddingBottom: 120 }}
-      />
+
+      {/* 评论列表占据剩余空间 */}
+      <YStack flex={1}>
+        <FlatList
+          data={comments}
+          keyExtractor={(i) => String(i.id)}
+          renderItem={({ item }) => (
+            <YStack paddingVertical="$3" gap="$2">
+              <XStack alignItems="center" justifyContent="space-between">
+                <Text fontWeight="700" color={ForumColors.clay}>{item.author.username}</Text>
+                <Text color={ForumColors.clay + '80'}>{new Date(item.createdAt).toLocaleString()}</Text>
+              </XStack>
+              {editingCommentId === item.id ? (
+                <YStack gap="$2">
+                  <TextArea value={editingContent} onChangeText={setEditingContent} backgroundColor="#fff" borderColor={ForumColors.clay + '55'} borderWidth={1} color="#3c2e20" />
+                  <XStack gap="$2">
+                    <Button size="$2" onPress={saveEditComment} backgroundColor={ForumColors.clay} color="#fff">保存</Button>
+                    <Button size="$2" chromeless onPress={() => { setEditingCommentId(null); setEditingContent(''); }}>取消</Button>
+                  </XStack>
+                </YStack>
+              ) : (
+                <Text color="#3c2e20">{item.content}</Text>
+              )}
+              <XStack gap="$3" alignItems="center">
+                <Button size="$2" onPress={() => toggleLike(item.id)} backgroundColor={item.isLiked ? ForumColors.clay : ForumColors.peach} color={item.isLiked ? '#fff' : '#3c2e20'}>
+                  {item.isLiked ? `已赞 ${item.likes || 0}` : `点赞 ${item.likes || 0}`}
+                </Button>
+                <Button size="$2" chromeless onPress={() => setReplyTarget(item)} color={ForumColors.clay}>回复</Button>
+                {isMyComment(item) ? (
+                  <>
+                    <Button size="$2" chromeless onPress={() => startEditComment(item)} color={ForumColors.clay}>编辑</Button>
+                    <Button size="$2" chromeless onPress={() => deleteComment(item.id)} color={ForumColors.clay}>删除</Button>
+                  </>
+                ) : null}
+              </XStack>
+              <Separator backgroundColor={ForumColors.clay + '33'} />
+            </YStack>
+          )}
+          contentContainerStyle={{ paddingBottom: 120 }}
+        />
+      </YStack>
 
       <Separator backgroundColor={ForumColors.clay + '55'} />
 

@@ -85,18 +85,39 @@ export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) 
 
   const screenWidth = Dimensions.get('window').width;
 
-  // 响应式图表配置 - 针对小屏幕优化
-  const isSmallScreen = screenWidth < 380;
-  const chartPadding = isSmallScreen ? 16 : 32;
-  const chartWidth = screenWidth - chartPadding * 2; // 根据padding调整宽度
+  // 更精细的响应式图表配置 - 多层级适配
+  const isVerySmallScreen = screenWidth < 360; // 超小屏
+  const isSmallScreen = screenWidth < 380; // 小屏
+  const isMediumScreen = screenWidth < 420; // 中屏
 
-  // 饼图尺寸优化
-  const pieChartHeight = isSmallScreen
-    ? Math.min(240, screenWidth * 0.65) // 小屏幕：更紧凑
-    : Math.min(280, screenWidth * 0.7); // 大屏幕：更舒展
+  const chartPadding = isVerySmallScreen ? 12 : isSmallScreen ? 16 : 32;
+  const chartWidth = screenWidth - chartPadding * 2;
 
-  const pieChartPaddingLeft = isSmallScreen ? '10' : '20'; // 小屏幕减少左边距
-  const pieLegendFontSize = isSmallScreen ? 10 : 12; // 小屏幕减小字体
+  // 饼图尺寸优化 - 根据数据项数量和屏幕大小动态调整
+  const dataItemCount = validEntries.filter((entry) => entry.value > 0).length;
+  const needsExtraSpace = dataItemCount > 4; // 超过4项需要更多空间
+
+  // 动态计算饼图高度，考虑数据项数量
+  const getPieChartHeight = () => {
+    const baseHeight = isVerySmallScreen ? 180 : isSmallScreen ? 200 : isMediumScreen ? 240 : 280;
+    return needsExtraSpace ? baseHeight + 20 : baseHeight;
+  };
+
+  const pieChartHeight = getPieChartHeight();
+
+  // 左边距 - 给饼图本身留足空间
+  const pieChartPaddingLeft = isVerySmallScreen ? '0' : isSmallScreen ? '5' : '15';
+
+  // 图例字体大小 - 更小屏幕用更小字体
+  const pieLegendFontSize = isVerySmallScreen ? 8 : isSmallScreen ? 9 : 11;
+
+  // 饼图中心点 - 关键：向左移动饼图，为右侧标签留出充足空间
+  const pieChartRadius = isVerySmallScreen ? 50 : isSmallScreen ? 55 : 65; // 饼图半径
+  const legendSpace = chartWidth * (isVerySmallScreen ? 0.45 : isSmallScreen ? 0.42 : 0.38); // 标签区域宽度
+  const pieChartCenter: [number, number] = [
+    pieChartRadius + 10, // 左边距 + 半径
+    0,
+  ];
 
   const barChartHeight = isSmallScreen ? 200 : 220;
 
@@ -127,8 +148,8 @@ export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) 
       {/* 饼状图卡片 - 只在有非零数据时显示 */}
       {pieData.length > 0 && (
         <Card
-          padding="$4"
-          marginHorizontal="$4"
+          padding={isVerySmallScreen ? '$3' : '$4'}
+          marginHorizontal={isVerySmallScreen ? '$2' : isSmallScreen ? '$3' : '$4'}
           backgroundColor="white"
           borderRadius="$6"
           elevate
@@ -174,13 +195,14 @@ export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) 
                 }}
                 accessor="population"
                 backgroundColor="transparent"
-                paddingLeft="20"
-                center={[chartWidth / 4, 0]}
+                paddingLeft={pieChartPaddingLeft}
+                center={pieChartCenter}
                 absolute
                 hasLegend={true}
                 avoidFalseZero
                 style={{
                   borderRadius: 16,
+                  marginLeft: isVerySmallScreen ? -10 : isSmallScreen ? -5 : 0, // 微调整体位置
                 }}
               />
             </YStack>

@@ -10,16 +10,10 @@ export interface CatFoodTag {
 }
 
 /**
- * 百分比数据
+ * 百分比数据 - 动态营养成分数据
+ * 支持任意营养成分字段名
  */
-export interface PercentData {
-  crude_protein: number | null;
-  crude_fat: number | null;
-  carbohydrates: number | null;
-  crude_fiber: number | null;
-  crude_ash: number | null;
-  others: number | null;
-}
+export type PercentData = Record<string, number | null>;
 
 /**
  * 猫粮（GET 请求返回的完整数据）

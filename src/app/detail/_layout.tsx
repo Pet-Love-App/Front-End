@@ -4,8 +4,7 @@ export default function DetailLayout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: true,
-        headerBackTitle: '返回',
+        headerShown: false,
         presentation: 'card',
         animation: 'slide_from_right',
       }}

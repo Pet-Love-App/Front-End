@@ -41,3 +41,6 @@ app-example
 # generated native folders
 /ios
 /android
+
+# documentation (internal development notes)
+/docs

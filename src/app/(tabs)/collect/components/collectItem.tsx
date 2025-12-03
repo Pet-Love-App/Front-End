@@ -40,17 +40,12 @@ export default function CollectListItem({ favorite, onDelete }: CollectListItemP
 
   return (
     <Card
-      elevate
       size="$4"
       bordered
-      borderColor={colors.icon + '20'}
-      backgroundColor={colors.background}
+      borderColor="$gray4"
+      backgroundColor="white"
       pressStyle={{ scale: 0.98, opacity: 0.95 }}
       animation="quick"
-      shadowColor="$shadowColor"
-      shadowOffset={{ width: 0, height: 2 }}
-      shadowOpacity={0.1}
-      shadowRadius={4}
     >
       <Card.Header padding="$4">
         <XStack gap="$3" alignItems="center">

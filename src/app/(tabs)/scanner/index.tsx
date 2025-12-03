@@ -1,49 +1,57 @@
-import { LottieAnimation } from '@/src/components/LottieAnimation';
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
+/**
+ * ScannerScreen - 智能扫描主页面
+ *
+ * 企业最佳实践：
+ * - 职责分离：主文件仅负责组装和协调
+ * - 业务逻辑提取到hooks
+ * - 清晰的组件导入结构
+ * - 状态机模式管理扫描流程
+ *
+ * 架构说明：
+ * - hooks/ - 业务逻辑层
+ * - components/ - UI组件层（camera/modals/results）
+ * - screens/ - 页面组件层
+ * - types/ - 类型定义层
+ */
+
 import { useExpoCamera as useCamera } from '@/src/hooks/useExpoCamera';
-import {
-  aiReportService,
-  patchCatFood,
-  recognizeImage,
-  type GenerateReportResponse,
-  type OcrResult,
-} from '@/src/services/api';
 import { useCatFoodStore } from '@/src/store/catFoodStore';
-import { ScanType, type ExpoBarcodeResult } from '@/src/types/camera'; // 1. 导入 ExpoBarcodeResult
-import type { CatFood } from '@/src/types/catFood';
-// @ts-ignore: expo-clipboard may not have type declarations in this project
-import * as Clipboard from 'expo-clipboard'; // 2. 使用 expo-clipboard 替代 react-native Clipboard
-import { useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import { useUserStore } from '@/src/store/userStore';
+import { ScanType, type ExpoBarcodeResult } from '@/src/types/camera';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useCallback, useEffect } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Card, Text, YStack } from 'tamagui';
-import { AiReportDetail } from './_components/AiReport';
-import { CameraPermission } from './_components/CameraPermission';
-import { CatFoodSearchModal } from './_components/CatFoodSearchModal';
-import { ExpoCameraView } from './_components/ExpoCameraView'; // 3. 导入 ExpoCameraView
-import { OcrResultView } from './_components/OcrResultView';
-import { PhotoPreview } from './_components/PhotoPreview';
-import { ScanModeModal, type ScanMode } from './_components/ScanModeModal';
+import {
+  AiReportDetail,
+  CameraPermissionModal,
+  CatFoodSearchModal,
+  ExpoCameraView,
+  OcrResultView,
+  PhotoPreview,
+} from './components';
+import { useScannerActions, useScannerFlow } from './hooks';
+import { BarcodeResultScreen, InitialScreen, ProcessingScreen } from './screens';
 
-// ... ScanFlowState 定义保持不变 ...
-type ScanFlowState =
-  | 'initial'
-  | 'selecting-mode'
-  | 'searching-catfood'
-  | 'selected-catfood'
-  | 'taking-photo'
-  | 'photo-preview'
-  | 'processing-ocr'
-  | 'ocr-result'
-  | 'barcode-result'
-  | 'ai-report-detail';
-
+/**
+ * Scanner 主组件
+ */
 export default function ScannerScreen() {
+  // ==================== 基础 Hooks ====================
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const fetchCatFoodById = useCatFoodStore((state) => state.fetchCatFoodById);
+
+  // 获取URL参数（从详情页传递过来的）
+  const params = useLocalSearchParams<{
+    catfoodId?: string;
+    catfoodName?: string;
+    scanType?: 'ingredients' | 'barcode';
+  }>();
+
+  // ==================== 相机 Hook ====================
   const {
-    state,
+    state: cameraState,
     cameraRef,
     takePicture,
     toggleFacing,
@@ -54,63 +62,114 @@ export default function ScannerScreen() {
     resetBarcodeScan,
   } = useCamera(ScanType.BARCODE);
 
-  const fetchCatFoodById = useCatFoodStore((state) => state.fetchCatFoodById);
+  // ==================== 扫描流程 Hook ====================
+  const {
+    flowState,
+    selectedCatFood,
+    scannedCode,
+    startScan,
+    selectCatFood: setSelectedCatFood,
+    onBarcodeScanned,
+    goBack,
+    resetFlow,
+    transitionTo,
+  } = useScannerFlow({ setScanType, resetBarcodeScan });
 
-  const [flowState, setFlowState] = useState<ScanFlowState>('initial');
-  const [scanMode, setScanMode] = useState<ScanMode>(null);
-  const [selectedCatFood, setSelectedCatFood] = useState<CatFood | null>(null);
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
-  const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
-  const [aiReport, setAiReport] = useState<GenerateReportResponse | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  // ==================== 扫描操作 Hook ====================
+  const {
+    photoUri,
+    ocrResult,
+    aiReport,
+    isProcessing,
+    isGeneratingReport,
+    handleTakePhoto,
+    handleRetakePhoto,
+    handleCancelPreview,
+    handleConfirmPhoto,
+    handleGenerateReport,
+    handleSaveReport,
+  } = useScannerActions({ takePicture, transitionTo, resetFlow });
 
-  const [scannedCode, setScannedCode] = useState<string | null>(null);
+  // ==================== 用户信息 ====================
+  const user = useUserStore((state) => state.user);
 
-  const handleStartScan = useCallback(() => {
-    setFlowState('selecting-mode');
-  }, []);
+  // ==================== URL 参数处理 ====================
 
-  const handleSelectMode = useCallback(
-    (mode: ScanMode) => {
-      setScanMode(mode);
-      if (mode === 'known-brand') {
-        setFlowState('searching-catfood');
-      } else if (mode === 'direct-additive') {
-        setScanType(ScanType.OCR);
-        setFlowState('taking-photo');
-      }
-    },
-    [setScanType]
-  );
+  /**
+   * 处理从详情页传来的参数
+   * 自动进入相应的扫描模式
+   */
+  useEffect(() => {
+    console.log('📱 Scanner页面参数:', params);
 
+    if (params.catfoodId && params.scanType) {
+      console.log('✅ 收到详情页参数，准备跳转:', {
+        catfoodId: params.catfoodId,
+        scanType: params.scanType,
+        catfoodName: params.catfoodName,
+      });
+
+      // 使用setTimeout确保组件完全加载后再执行跳转
+      setTimeout(() => {
+        // 根据scanType设置扫描模式
+        if (params.scanType === 'barcode') {
+          // 扫描条形码模式 - 直接进入拍照
+          console.log('🔵 进入条形码扫描模式');
+          setScanType(ScanType.BARCODE);
+          transitionTo('taking-photo');
+        } else if (params.scanType === 'ingredients') {
+          // 扫描配料表模式（需要先选择猫粮）
+          console.log('🟢 进入配料表扫描模式');
+          // 创建一个临时猫粮对象
+          const tempCatFood = {
+            id: parseInt(params.catfoodId || '0'),
+            name: params.catfoodName || '未知猫粮',
+          };
+          setSelectedCatFood(tempCatFood as any);
+          setScanType(ScanType.OCR);
+          transitionTo('taking-photo');
+        }
+      }, 100);
+    } else {
+      console.log('⚠️ 参数不完整或未传递:', params);
+    }
+  }, [
+    params.catfoodId,
+    params.scanType,
+    params.catfoodName,
+    setScanType,
+    setSelectedCatFood,
+    transitionTo,
+  ]);
+
+  // ==================== 业务逻辑处理器 ====================
+
+  /**
+   * 处理条形码扫描回调
+   */
   const handleBarCodeScannedCallback = useCallback(
     (result: ExpoBarcodeResult) => {
       if (flowState !== 'taking-photo') return;
-
-      console.log('ScannerScreen: Scanned', result.data);
-      setScannedCode(result.data);
-      setFlowState('barcode-result');
+      console.log('ScannerScreen: 扫描到条形码', result.data);
+      onBarcodeScanned(result.data);
     },
-    [flowState]
+    [flowState, onBarcodeScanned]
   );
 
+  /**
+   * 选择猫粮处理器
+   */
   const handleSelectCatFood = useCallback(
-    async (catFood: CatFood) => {
+    async (catFood: any) => {
       try {
         const fullCatFood = await fetchCatFoodById(catFood.id);
         setSelectedCatFood(fullCatFood);
-        setFlowState('selected-catfood');
 
         const hasIngredients = fullCatFood.ingredient && fullCatFood.ingredient.length > 0;
 
         if (!hasIngredients) {
-          setFlowState('taking-photo');
+          transitionTo('taking-photo');
         } else {
-          // 4. 修复路由错误
-          // 你的路由表中似乎没有 /detail。请检查 app 目录。
-          // 这里暂时使用 'as any' 绕过类型检查，请确保 app/(tabs)/... 或 app/detail.tsx 存在
-          // 或者如果你的详情页是 /report/[id]，请修改为正确的路径
           router.push({
             pathname: '/detail',
             params: { id: fullCatFood.id },
@@ -121,236 +180,45 @@ export default function ScannerScreen() {
         Alert.alert('错误', '获取猫粮详情失败，请重试');
       }
     },
-    [router, fetchCatFoodById]
+    [router, fetchCatFoodById, setSelectedCatFood, transitionTo]
   );
 
-  const resetFlow = useCallback(() => {
-    setFlowState('initial');
-    setScanMode(null);
-    setSelectedCatFood(null);
-    setPhotoUri(null);
-    setOcrResult(null);
-    setAiReport(null);
-    setScannedCode(null);
-    resetBarcodeScan();
-  }, [resetBarcodeScan]);
+  /**
+   * 生成报告处理器（包装）
+   */
+  const handleGenerateReportWrapper = useCallback(() => {
+    handleGenerateReport(selectedCatFood);
+  }, [handleGenerateReport, selectedCatFood]);
 
-  const handleGoBack = useCallback(() => {
-    if (flowState === 'selecting-mode') {
-      setFlowState('initial');
-    } else if (flowState === 'searching-catfood') {
-      setFlowState('selecting-mode');
-    } else if (flowState === 'taking-photo') {
-      if (scanMode === 'direct-additive') {
-        setFlowState('selecting-mode');
-      } else {
-        setFlowState('selecting-mode');
-      }
-    } else if (flowState === 'photo-preview') {
-      setFlowState('taking-photo');
-    } else if (flowState === 'ocr-result') {
-      setFlowState('taking-photo');
-    } else if (flowState === 'barcode-result') {
-      setFlowState('taking-photo');
-      resetBarcodeScan();
-    }
-  }, [flowState, scanMode, resetBarcodeScan]);
+  /**
+   * 保存报告处理器（包装）
+   */
+  const handleSaveReportWrapper = useCallback(() => {
+    handleSaveReport(selectedCatFood);
+  }, [handleSaveReport, selectedCatFood]);
 
-  // ... performOCR, handleTakePhoto, handleConfirmPhoto, handleRetakePhoto, handleCancelPreview, handleGenerateReport 保持不变 ...
-  // 为了节省篇幅，这里省略中间未修改的函数，请保持原样
+  // ==================== 渲染逻辑 ====================
 
-  const performOCR = useCallback(
-    async (imageUri: string) => {
-      // ... 原有代码 ...
-      try {
-        setIsProcessing(true);
-        const result = await recognizeImage(imageUri);
-        setOcrResult(result);
-        setFlowState('ocr-result');
-      } catch (error) {
-        // ... 错误处理 ...
-        Alert.alert('识别失败', '请重试');
-        setFlowState('photo-preview');
-      } finally {
-        setIsProcessing(false);
-      }
-    },
-    [resetFlow]
-  );
-
-  const handleTakePhoto = useCallback(async () => {
-    try {
-      const photo = await takePicture({ quality: 0.6 });
-      if (photo) {
-        setPhotoUri(photo.uri);
-        setFlowState('photo-preview');
-      }
-    } catch (error) {
-      console.error('拍照失败:', error);
-      Alert.alert('拍照失败', '请重试');
-    }
-  }, [takePicture]);
-
-  const handleConfirmPhoto = useCallback(async () => {
-    if (!photoUri) return;
-    setFlowState('processing-ocr');
-    await performOCR(photoUri);
-  }, [photoUri, performOCR]);
-
-  const handleRetakePhoto = useCallback(() => {
-    setPhotoUri(null);
-    setOcrResult(null);
-    setAiReport(null);
-    setFlowState('taking-photo');
-  }, []);
-
-  const handleCancelPreview = useCallback(() => {
-    setPhotoUri(null);
-    handleGoBack();
-  }, [handleGoBack]);
-
-  const handleGenerateReport = useCallback(async () => {
-    // ... 原有代码 ...
-    if (!ocrResult) return;
-    try {
-      setIsGeneratingReport(true);
-      const report = await aiReportService.generateReport({
-        ingredients: ocrResult.text,
-        max_tokens: 2048,
-      });
-      setAiReport(report);
-      setFlowState('ai-report-detail');
-    } catch (e) {
-      Alert.alert('错误', '生成报告失败');
-    } finally {
-      setIsGeneratingReport(false);
-    }
-  }, [ocrResult]);
-
-  const handleSaveReport = useCallback(async () => {
-    if (!aiReport || !selectedCatFood) return;
-    try {
-      setIsProcessing(true);
-      await patchCatFood(selectedCatFood.id, {
-        safety: aiReport.safety,
-        nutrient: aiReport.nutrient,
-        percentage: aiReport.percentage || false,
-        percentData: {
-          crude_protein: aiReport.crude_protein,
-          crude_fat: aiReport.crude_fat,
-          carbohydrates: aiReport.carbohydrates,
-          crude_fiber: aiReport.crude_fiber,
-          crude_ash: aiReport.crude_ash,
-          others: aiReport.others,
-        },
-      });
-
-      Alert.alert('成功', '报告已保存', [
-        {
-          text: '查看详情',
-          onPress: () =>
-            router.push({
-              pathname: '/detail',
-              params: { id: selectedCatFood.id },
-            } as any), // 使用 as any 修复路由类型报错
-        },
-      ]);
-      resetFlow();
-    } catch (error) {
-      Alert.alert('保存失败', '请重试');
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [aiReport, selectedCatFood, router, resetFlow]);
-
-  const handleImageSelected = useCallback((uri: string) => {
-    setPhotoUri(uri);
-    setFlowState('photo-preview');
-  }, []);
-
-  // 渲染逻辑
-  if (flowState === 'taking-photo' && !state.hasPermission) {
-    return <CameraPermission onRequestPermission={requestPermission} />;
-  }
-
-  if (flowState === 'taking-photo' && state.hasPermission) {
+  // 拍照页
+  if (flowState === 'taking-photo') {
     return (
       <ExpoCameraView
         cameraRef={cameraRef}
-        facing={state.facing}
-        scanType={state.scanType || ScanType.BARCODE}
+        facing={cameraState.facing}
+        scanType={cameraState.scanType || ScanType.BARCODE}
+        onBarCodeScanned={handleBarCodeScannedCallback}
         onTakePhoto={handleTakePhoto}
         onToggleCamera={toggleFacing}
         onToggleScanType={toggleScanType}
-        onClose={handleGoBack}
+        onClose={goBack}
         onCameraReady={onCameraReady}
-        onBarCodeScanned={handleBarCodeScannedCallback}
+        takePicture={takePicture}
       />
     );
   }
 
-  if (flowState === 'barcode-result' && scannedCode) {
-    return (
-      <YStack
-        flex={1}
-        backgroundColor="$background"
-        padding="$6"
-        justifyContent="center"
-        alignItems="center"
-        gap="$5"
-      >
-        <IconSymbol name="barcode.viewfinder" size={64} color="$blue10" />
-
-        <Text fontSize="$8" fontWeight="bold">
-          扫描成功
-        </Text>
-
-        <Card bordered elevate padding="$4" width="100%">
-          <YStack gap="$2" alignItems="center">
-            <Text fontSize="$3" color="$gray10">
-              条形码内容
-            </Text>
-            <Text fontSize="$7" fontFamily="monospace" fontWeight="600">
-              {scannedCode}
-            </Text>
-          </YStack>
-        </Card>
-
-        <YStack width="100%" gap="$3">
-          <Button
-            size="$5"
-            themeInverse
-            icon={<IconSymbol name="magnifyingglass" size={20} color="white" />}
-            onPress={() => {
-              Alert.alert('功能开发中', `正在搜索条码: ${scannedCode}`);
-            }}
-          >
-            搜索此商品
-          </Button>
-
-          <Button
-            size="$5"
-            // 5. 修复 IconSymbol 缺少 color 属性
-            icon={<IconSymbol name="doc.on.doc" size={20} color="black" />}
-            onPress={async () => {
-              // 6. 修复 Clipboard.setString 报错
-              await Clipboard.setStringAsync(scannedCode);
-              Alert.alert('已复制', '条码已复制到剪贴板');
-            }}
-          >
-            复制条码
-          </Button>
-
-          <Button size="$5" chromeless onPress={handleGoBack}>
-            重新扫描
-          </Button>
-        </YStack>
-      </YStack>
-    );
-  }
-
-  // ... PhotoPreview, ProcessingOCR, OcrResult, AiReportDetail 保持不变 ...
-  if (flowState === 'photo-preview') {
+  // 照片预览页
+  if (flowState === 'photo-preview' && photoUri) {
     return (
       <PhotoPreview
         photoUri={photoUri}
@@ -362,98 +230,59 @@ export default function ScannerScreen() {
     );
   }
 
-  // 处理中状态
+  // OCR 处理中页
   if (flowState === 'processing-ocr') {
-    return (
-      <YStack
-        flex={1}
-        justifyContent="center"
-        alignItems="center"
-        backgroundColor="$background"
-        gap="$4"
-      >
-        <LottieAnimation
-          source={require('@/assets/animations/cat_loader.json')}
-          width={200}
-          height={200}
-          message="正在识别文字..."
-        />
-      </YStack>
-    );
+    return <ProcessingScreen insets={insets} />;
   }
 
-  // OCR 结果展示
+  // OCR 结果页
   if (flowState === 'ocr-result' && ocrResult) {
     return (
       <OcrResultView
         ocrResult={ocrResult}
         photoUri={photoUri}
         isGeneratingReport={isGeneratingReport}
-        onGenerateReport={handleGenerateReport}
+        onGenerateReport={handleGenerateReportWrapper}
         onRetake={handleRetakePhoto}
-        onClose={resetFlow}
+        onClose={goBack}
       />
     );
   }
 
+  // 条形码结果页
+  if (flowState === 'barcode-result' && scannedCode) {
+    return <BarcodeResultScreen scannedCode={scannedCode} insets={insets} onGoBack={goBack} />;
+  }
+
+  // AI 报告详情页
   if (flowState === 'ai-report-detail' && aiReport) {
     return (
       <AiReportDetail
         report={aiReport}
-        onSave={selectedCatFood ? handleSaveReport : undefined}
+        onSave={handleSaveReportWrapper}
         onRetake={handleRetakePhoto}
-        onClose={resetFlow}
         isSaving={isProcessing}
+        isAdmin={user?.is_admin || false}
+        hasExistingReport={!!selectedCatFood?.percentage}
       />
     );
   }
 
+  // 初始页（默认页）
   return (
     <>
-      <YStack
-        flex={1}
-        backgroundColor="$background"
-        paddingTop={insets.top}
-        justifyContent="center"
-        alignItems="center"
-        padding="$6"
-        gap="$6"
-      >
-        <Text fontSize="$9" fontWeight="bold" textAlign="center">
-          猫粮成分智能分析
-        </Text>
+      <InitialScreen insets={insets} onStartScan={startScan} />
 
-        <Text fontSize="$4" color="$gray11" textAlign="center" opacity={0.8}>
-          拍照即可获得专业的添加剂成分分析报告
-        </Text>
-
-        <LottieAnimation
-          source={require('@/assets/animations/cat_thinking_animation.json')}
-          width={150}
-          height={150}
-        />
-
-        <YStack width="100%" maxWidth={400} gap="$3">
-          <Button
-            size="$6"
-            themeInverse
-            onPress={handleStartScan}
-            icon={<IconSymbol name="camera.fill" size={24} color="white" />}
-          >
-            开始扫描
-          </Button>
-        </YStack>
-      </YStack>
-
-      <ScanModeModal
-        visible={flowState === 'selecting-mode'}
-        onClose={() => setFlowState('initial')}
-        onSelectMode={handleSelectMode}
+      {/* 模态框组件 */}
+      {/* 相机权限请求模态框 */}
+      <CameraPermissionModal
+        visible={cameraState.hasPermission === false}
+        onRequestPermission={requestPermission}
       />
 
       <CatFoodSearchModal
         visible={flowState === 'searching-catfood'}
-        onClose={handleGoBack}
+        onClose={goBack}
         onSelectCatFood={handleSelectCatFood}
       />
     </>

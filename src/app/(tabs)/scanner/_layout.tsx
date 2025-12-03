@@ -1,11 +1,11 @@
-import { Stack } from "expo-router";
+import { Stack } from 'expo-router';
 
 export default function ScannerLayout() {
-    return (
+  return (
     <Stack
-        screenOptions={{
-            headerShown: false,  
-        }}
+      screenOptions={{
+        headerShown: false,
+      }}
     />
-    );
+  );
 }

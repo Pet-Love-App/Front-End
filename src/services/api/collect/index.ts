@@ -4,9 +4,13 @@
 
 import { apiClient } from '../BaseApi';
 import type {
+  CheckFavoriteReportResponse,
   CheckFavoriteResponse,
   Favorite,
+  FavoriteReport,
+  GetFavoriteReportsResponse,
   GetFavoritesResponse,
+  ToggleFavoriteReportResponse,
   ToggleFavoriteResponse,
 } from './types';
 
@@ -67,14 +71,58 @@ class CollectApi {
     });
     return response.is_favorited;
   }
+
+  // ========== 报告收藏相关 ==========
+
+  /**
+   * 获取用户收藏的AI报告列表
+   */
+  async getFavoriteReports(): Promise<FavoriteReport[]> {
+    const response = await apiClient.get<GetFavoriteReportsResponse>('/api/ai/favorites/');
+    return response.results || [];
+  }
+
+  /**
+   * 切换AI报告收藏状态（收藏/取消收藏）
+   */
+  async toggleFavoriteReport(reportId: number): Promise<ToggleFavoriteReportResponse> {
+    const response = await apiClient.post<ToggleFavoriteReportResponse>(
+      '/api/ai/favorites/toggle/',
+      {
+        report_id: reportId,
+      }
+    );
+    return response;
+  }
+
+  /**
+   * 删除AI报告收藏
+   */
+  async deleteFavoriteReport(favoriteId: number): Promise<void> {
+    await apiClient.delete(`/api/ai/favorites/${favoriteId}/`);
+  }
+
+  /**
+   * 检查AI报告是否已收藏
+   */
+  async checkFavoriteReport(reportId: number): Promise<boolean> {
+    const response = await apiClient.get<CheckFavoriteReportResponse>(
+      `/api/ai/favorites/check/${reportId}/`
+    );
+    return response.is_favorited;
+  }
 }
 
 export const collectApi = new CollectApi();
 
 // 导出类型
 export type {
+  CheckFavoriteReportResponse,
   CheckFavoriteResponse,
   Favorite,
+  FavoriteReport,
+  GetFavoriteReportsResponse,
   GetFavoritesResponse,
+  ToggleFavoriteReportResponse,
   ToggleFavoriteResponse,
 } from './types';

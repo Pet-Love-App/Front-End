@@ -58,15 +58,16 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
 
   return (
     <Card
-      elevate
       size="$3"
       bordered
+      borderColor="$gray4"
+      backgroundColor="white"
       animation="bouncy"
       scale={0.9}
       hoverStyle={{ scale: 0.925 }}
       pressStyle={{ scale: 0.875 }}
-      marginHorizontal="$1"
-      marginBottom="$0"
+      marginHorizontal="$2"
+      marginBottom="$3"
       onPress={handlePress}
     >
       <Card.Header padded>
@@ -133,17 +134,23 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
               </Text>
             </XStack>
 
-            {/* 评分 */}
-            <XStack alignItems="center" gap="$2">
+            {/* 评分和点赞 */}
+            <XStack alignItems="center" gap="$3" flexWrap="wrap">
               <XStack alignItems="center" gap="$1">
                 <IconSymbol name="star.fill" size={14} color="$yellow9" />
                 <Text fontSize="$3" fontWeight="600">
                   {catfood.score.toFixed(1)}
                 </Text>
+                <Text fontSize="$2" color="$gray10">
+                  ({catfood.countNum})
+                </Text>
               </XStack>
-              <Text fontSize="$2" color="$gray10">
-                ({catfood.countNum}人评价)
-              </Text>
+              <XStack alignItems="center" gap="$1">
+                <IconSymbol name="heart.fill" size={14} color="$red9" />
+                <Text fontSize="$3" fontWeight="600" color="$red9">
+                  {catfood.like_count || 0}
+                </Text>
+              </XStack>
             </XStack>
 
             {/* 标签 */}

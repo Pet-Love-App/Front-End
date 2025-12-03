@@ -62,9 +62,24 @@ class BaseApi {
 
     // 构建请求头
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
     };
+
+    // 检查是否需要跳过 Content-Type（FormData 请求）
+    const skipContentType = headers['X-Skip-Content-Type'] === 'true';
+    if (skipContentType) {
+      delete headers['X-Skip-Content-Type'];
+    }
+
+    // 只在有 body 的请求中添加 Content-Type
+    // GET 和 DELETE 请求通常不需要 Content-Type
+    const method = options.method?.toUpperCase();
+    if (method && ['POST', 'PUT', 'PATCH'].includes(method) && !skipContentType) {
+      // 只有在不是 FormData 的情况下才添加 application/json
+      if (!headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+      }
+    }
 
     // 自动添加 Authorization header
     if (token) {
@@ -139,26 +154,41 @@ class BaseApi {
           errorMessage = /<html/i.test(errorData) ? this.extractErrorFromHtml(errorData) : errorData;
         }
 
-        const hasPayload =
-          typeof errorData === 'string'
-            ? errorData.length > 0
-            : errorData && typeof errorData === 'object' && Object.keys(errorData).length > 0;
-        const payloadForLog =
-          typeof errorData === 'string'
-            ? (errorData.length > 2000 ? errorData.slice(0, 2000) + '...<trimmed>' : errorData)
-            : hasPayload
-            ? JSON.stringify(errorData, null, 2)
-            : '无详细错误信息';
+        // 只在非预期的错误时打印详细日志
+        // 404 可能是正常的业务逻辑（如"尚未评分"），由调用者决定是否记录
+        if (response.status !== 404) {
+          const hasPayload =
+            typeof errorData === 'string'
+              ? errorData.length > 0
+              : errorData && typeof errorData === 'object' && Object.keys(errorData).length > 0;
+          const payloadForLog =
+            typeof errorData === 'string'
+              ? (errorData.length > 2000 ? errorData.slice(0, 2000) + '...<trimmed>' : errorData)
+              : hasPayload
+              ? JSON.stringify(errorData, null, 2)
+              : '无详细错误信息';
 
-        console.error('API 错误详情:', payloadForLog);
-        throw new Error(errorMessage || `请求失败: ${response.status}`);
+          console.error('API 错误详情:', payloadForLog);
+        }
+
+        // 创建一个包含状态码的错误对象
+        const error: any = new Error(errorMessage);
+        error.response = {
+          status: response.status,
+          data: errorData,
+        };
+        throw error;
       }
 
       // 成功响应：安全解析
       const parsed = await this.safeParseResponse(response);
       return parsed as T;
-    } catch (error) {
-      console.error('API 请求错误:', error);
+    } catch (error: any) {
+      // 只在非预期的错误时打印日志
+      // 404 等业务逻辑错误由调用者决定是否记录
+      if (!error.response || error.response.status !== 404) {
+        console.error('API 请求错误:', error);
+      }
       throw error;
     }
   }
@@ -177,31 +207,24 @@ class BaseApi {
   async post<T = any>(endpoint: string, data?: any, options: RequestInit = {}): Promise<T> {
     // 如果 data 是 FormData，直接使用；否则序列化为 JSON
     const isFormData = data instanceof FormData;
+    const hasData = data !== undefined && data !== null;
+
+    // 如果是 FormData 或没有数据，设置特殊标记
+    const customHeaders: Record<string, string> = {
+      ...(options.headers as Record<string, string>),
+    };
+
+    if (isFormData || !hasData) {
+      // 明确标记不要添加 Content-Type
+      customHeaders['X-Skip-Content-Type'] = 'true';
+    }
 
     const requestOptions: RequestInit = {
       ...options,
       method: 'POST',
-      body: isFormData ? data : data ? JSON.stringify(data) : undefined,
+      body: isFormData ? data : hasData ? JSON.stringify(data) : undefined,
+      headers: customHeaders,
     };
-
-    // 如果是 FormData，需要移除 Content-Type 让浏览器自动设置
-    if (isFormData) {
-      const token = this.getToken();
-      const headers: Record<string, string> = {
-        ...(options.headers as Record<string, string>),
-      };
-
-      // 删除 Content-Type，让浏览器自动添加 multipart/form-data
-      if (headers['Content-Type']) {
-        delete headers['Content-Type'];
-      }
-
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      return this.requestWithCustomHeaders<T>(endpoint, requestOptions, headers);
-    }
 
     return this.request<T>(endpoint, requestOptions);
   }
@@ -320,7 +343,7 @@ class BaseApi {
 
     try {
       const response = await fetch(`${this.baseURL}${endpoint}`, {
-        method: 'POST',
+        method: options.method || 'POST', // 允许自定义方法，默认 POST
         headers,
         body: formData,
         ...options,

@@ -22,11 +22,19 @@ export type { Additive, Ingredient } from './additive';
 // 收藏服务
 export { collectApi } from './collect';
 export type {
+  CheckFavoriteReportResponse,
   CheckFavoriteResponse,
   Favorite,
+  FavoriteReport,
+  GetFavoriteReportsResponse,
   GetFavoritesResponse,
-  ToggleFavoriteResponse
+  ToggleFavoriteReportResponse,
+  ToggleFavoriteResponse,
 } from './collect';
+
+// 点赞服务
+export { likeApi } from './like';
+export type { CheckLikeResponse, GetLikeCountResponse, Like, ToggleLikeResponse } from './like';
 
 // 评论服务
 export { commentService } from './comment';
@@ -36,12 +44,26 @@ export type {
   CreateCommentRequest,
   DeleteCommentResponse,
   GetCommentsResponse,
-  UpdateCommentRequest
+  UpdateCommentRequest,
 } from './comment';
 
 // 猫粮服务
-export { catFoodService, getCatFood, getCatFoods, patchCatFood, searchCatFood } from './catfood';
-export type { CatFood, GetCatFoodsResponse, SearchCatFoodParams } from './catfood';
+export {
+  catFoodService,
+  getCatFood,
+  getCatFoodByBarcode,
+  getCatFoods,
+  patchCatFood,
+  scanBarcode,
+  searchCatFood,
+} from './catfood';
+export type {
+  CatFood,
+  GetCatFoodsResponse,
+  ScanBarcodeRequest,
+  ScanBarcodeResponse,
+  SearchCatFoodParams,
+} from './catfood';
 
 // OCR 服务
 export { ocrService, recognizeImage } from './ocr';
@@ -50,9 +72,20 @@ export type { OcrRecognizeResponse, OcrResult } from './ocr';
 // AI 报告服务
 export { aiReportService } from './ai_report';
 export type {
+  AIReportData,
+  CheckReportExistsResponse,
   GenerateReportRequest,
   GenerateReportResponse,
   IngredientInfoRequest,
-  IngredientInfoResponse
+  IngredientInfoResponse,
+  SaveReportRequest,
+  SaveReportResponse,
 } from './ai_report';
 
+// 搜索服务
+export { searchService } from './search';
+export type { BaikeSearchRequest, BaikeSearchResponse } from './search';
+
+// 评分服务
+export { ratingApi } from './rating';
+export type { CreateRatingRequest, Rating, RatingResponse } from './rating';

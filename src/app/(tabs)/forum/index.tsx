@@ -1,314 +1,116 @@
-import type { Post } from '@/src/services/api/forum';
-import { forumService } from '@/src/services/api/forum';
-import type { PostCategory } from '@/src/services/api/forum/types';
-import * as ImagePicker from 'expo-image-picker';
-import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Image, ScrollView } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Card, Text, TextArea, XStack, YStack } from 'tamagui';
-import { FavoritesTab } from './_components/FavoritesTab';
-import { ForumColors } from './_components/ForumHeader'; // colors only
-import { MessagesTab } from './_components/MessagesTab';
-import { PostDetailModal } from './_components/PostDetailModal';
-import { SquareTab } from './_components/SquareTab';
+/**
+ * 论坛主页面
+ * 组件化重构后的版本，遵循企业最佳实践
+ */
 
-const CATEGORIES: { key: PostCategory; label: string }[] = [
-  { key: 'help', label: '求助' },
-  { key: 'share', label: '分享' },
-  { key: 'science', label: '科普' },
-  { key: 'warning', label: '避雷' },
-];
+import type { Post } from '@/src/services/api/forum';
+import React, { useRef, useState } from 'react';
+import { YStack } from 'tamagui';
+import {
+  FavoritesTab,
+  ForumHeader,
+  MessagesTab,
+  PostDetailModal,
+  PostEditor,
+  SquareTab,
+  type ForumTab,
+} from './components';
+import { ForumColors } from './constants';
 
 export default function ForumScreen() {
-  const insets = useSafeAreaInsets();
-  const [tab, setTab] = useState<'square' | 'favorites' | 'messages'>('square');
-  const [isPostPanelOpen, setIsPostPanelOpen] = useState(false);
-  const [content, setContent] = useState('');
-  const [pickedFiles, setPickedFiles] = useState<{ uri: string; name: string; type: string }[]>([]);
-  const [submitting, setSubmitting] = useState(false);
-  const squareReloadRef = useRef<(() => void) | null>(null);
+  // ===== 状态管理 =====
+  const [activeTab, setActiveTab] = useState<ForumTab>('square');
   const [headerHeight, setHeaderHeight] = useState(0);
-  const [activePost, setActivePost] = useState<Post | null>(null);
-  const [editingPost, setEditingPost] = useState<Post | null>(null);
-  const [category, setCategory] = useState<PostCategory | undefined>(undefined);
-  const [tagsText, setTagsText] = useState('');
-
-  // Tag filtering state
-  const [allTags, setAllTags] = useState<{ id: number; name: string }[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isPostEditorOpen, setIsPostEditorOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [activePost, setActivePost] = useState<Post | null>(null);
 
-  useEffect(() => {
-    // load tags for filter UI
-    forumService
-      .getTags()
-      .then((res) => {
-        const list = Array.isArray(res) ? res : (res as any)?.results || [];
-        setAllTags(list.filter((t: any) => t && (t.name || typeof t === 'string')));
-      })
-      .catch(() => {
-        setAllTags([]);
-      });
-  }, []);
+  // ===== Refs =====
+  const squareReloadRef = useRef<(() => void) | null>(null);
 
-  const toggleFilterTag = (name: string) => {
-    setSelectedTags((prev) => (prev.includes(name) ? prev.filter((t) => t !== name) : [...prev, name]));
-    // auto refresh square list
-    setTimeout(() => squareReloadRef.current?.(), 0);
-  };
-
-  const clearFilters = () => {
-    setSelectedTags([]);
-    setTimeout(() => squareReloadRef.current?.(), 0);
-  };
-
-  const pickImages = async () => {
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsMultipleSelection: true,
-      quality: 0.8,
-    });
-    if (res.canceled) return;
-    const MAX_FILES = 9;
-    const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
-    const accepted: { uri: string; name: string; type: string }[] = [];
-    const current = pickedFiles.length;
-    for (let idx = 0; idx < res.assets.length; idx++) {
-      const a = res.assets[idx];
-      const mime = a.mimeType || (a.type === 'video' ? 'video/mp4' : 'image/jpeg');
-      const isOkType = mime.startsWith('image/') || mime.startsWith('video/');
-      const size = (a as any).fileSize || (a as any).size || 0;
-      if (!isOkType) continue;
-      if (size && size > MAX_SIZE_BYTES) continue;
-      if (current + accepted.length >= MAX_FILES) break;
-      accepted.push({
-        uri: a.uri,
-        name: (a.fileName || `media_${Date.now()}_${idx}`) + (a.type === 'video' ? '.mp4' : '.jpg'),
-        type: mime,
-      });
-    }
-    if (accepted.length === 0) {
-      Alert.alert('提示', '未选择符合要求的文件（仅限图片/视频，单文件≤10MB，最多9个）');
-      return;
-    }
-    setPickedFiles((prev) => [...prev, ...accepted]);
-  };
-
-  const parseTags = (text: string) =>
-    text
-      .split(/[，,\s]+/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-
-  const openCreatePanel = () => {
+  // ===== 事件处理 =====
+  const handleOpenCreatePanel = () => {
     setEditingPost(null);
-    setContent('');
-    setCategory(undefined);
-    setTagsText('');
-    setPickedFiles([]);
-    setIsPostPanelOpen(true);
+    setIsPostEditorOpen(true);
   };
 
-  const openEditPanel = (post: Post) => {
+  const handleOpenEditPanel = (post: Post) => {
     setEditingPost(post);
-    setContent(post.content || '');
-    setCategory(post.category);
-    setTagsText((post.tags || []).join(' '));
-    setPickedFiles([]); // 简化：暂不编辑已上传媒体
-    setIsPostPanelOpen(true);
+    setIsPostEditorOpen(true);
   };
 
-  const submitPost = async () => {
-    const tags = parseTags(tagsText);
-    const MAX_FILES = 9;
-    if (!content.trim() && pickedFiles.length === 0) {
-      Alert.alert('提示', '请输入内容或选择媒体');
-      return;
-    }
-    if (pickedFiles.length > MAX_FILES) {
-      Alert.alert('提示', `最多可上传 ${MAX_FILES} 个文件`);
-      return;
-    }
-    try {
-      setSubmitting(true);
-      if (editingPost) {
-        await forumService.updatePost(editingPost.id, { content, tags });
-        Alert.alert('成功', '更新成功');
-      } else {
-        await forumService.createPost({ content, tags }, pickedFiles);
-        Alert.alert('成功', '发布成功');
-      }
-      setContent('');
-      setPickedFiles([]);
-      setIsPostPanelOpen(false);
-      setEditingPost(null);
-      setTab('square');
-      setTimeout(() => squareReloadRef.current?.(), 0);
-    } catch (e: any) {
-      Alert.alert('失败', e?.message || (editingPost ? '更新失败' : '发布失败'));
-    } finally {
-      setSubmitting(false);
-    }
+  const handlePostEditorSuccess = () => {
+    setActiveTab('square');
+    // 延迟触发刷新，确保编辑器关闭后再刷新列表
+    setTimeout(() => {
+      squareReloadRef.current?.();
+    }, 100);
   };
 
+  const handlePostDeleted = () => {
+    setActivePost(null);
+    setTimeout(() => {
+      squareReloadRef.current?.();
+    }, 100);
+  };
+
+  const handleTagsChange = (tags: string[]) => {
+    setSelectedTags(tags);
+    // 延迟触发刷新，避免频繁调用
+    setTimeout(() => {
+      squareReloadRef.current?.();
+    }, 0);
+  };
+
+  const handleEditPostFromDetail = (post: Post) => {
+    setActivePost(null);
+    handleOpenEditPanel(post);
+  };
+
+  // ===== 渲染 =====
   return (
     <YStack flex={1} backgroundColor={ForumColors.sand}>
-      {/* Fixed single header */}
-      <YStack
-        onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
-        paddingTop={insets.top}
-        backgroundColor={ForumColors.sand}
-        borderBottomWidth={1}
-        borderColor={ForumColors.clay + '55'}
-        zIndex={100}
-      >
-        <XStack height={1} backgroundColor={ForumColors.borderTop} />
-        <YStack padding="$3" gap="$3">
-          <XStack alignItems="center" justifyContent="space-between">
-            <Text fontSize="$7" fontWeight="700" color={ForumColors.clay}>论坛</Text>
-            <Button size="$3" onPress={openCreatePanel} backgroundColor={ForumColors.clay} color="#fff" pressStyle={{ opacity: 0.85 }}>
-              发帖
-            </Button>
-          </XStack>
-          <XStack gap="$3" justifyContent="space-around" backgroundColor={ForumColors.peach} borderRadius="$4" padding="$2">
-            <Button size="$3" onPress={() => setTab('square')} backgroundColor={tab === 'square' ? ForumColors.clay : ForumColors.sand} color={tab === 'square' ? '#fff' : '#603e1f'} flex={1}>
-              广场
-            </Button>
-            <Button size="$3" onPress={() => setTab('favorites')} backgroundColor={tab === 'favorites' ? ForumColors.clay : ForumColors.sand} color={tab === 'favorites' ? '#fff' : '#603e1f'} flex={1}>
-              我的收藏
-            </Button>
-            <Button size="$3" onPress={() => setTab('messages')} backgroundColor={tab === 'messages' ? ForumColors.clay : ForumColors.sand} color={tab === 'messages' ? '#fff' : '#603e1f'} flex={1}>
-              消息
-            </Button>
-          </XStack>
+      {/* 固定头部 */}
+      <ForumHeader
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onCreatePost={handleOpenCreatePanel}
+        selectedTags={selectedTags}
+        onTagsChange={handleTagsChange}
+        onHeightChange={setHeaderHeight}
+      />
 
-          {/* Tag filter row */}
-          <YStack gap="$2">
-            <XStack alignItems="center" justifyContent="space-between">
-              <Text fontWeight="700" color={ForumColors.clay}>标签筛选</Text>
-              <Button size="$2" chromeless onPress={clearFilters} color={ForumColors.clay}>清空</Button>
-            </XStack>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 6 }}>
-              <XStack gap="$2" alignItems="center">
-                {(Array.isArray(allTags) ? allTags : []).map((t: any) => {
-                  const name = typeof t === 'string' ? t : t.name;
-                  const id = (t && t.id) || name;
-                  const active = selectedTags.includes(name);
-                  return (
-                    <Button
-                      key={id}
-                      size="$2"
-                      onPress={() => toggleFilterTag(name)}
-                      backgroundColor={active ? ForumColors.clay : '#fff'}
-                      color={active ? '#fff' : '#603e1f'}
-                      borderWidth={1}
-                      borderColor={ForumColors.clay + '55'}
-                    >
-                      #{name}
-                    </Button>
-                  );
-                })}
-              </XStack>
-            </ScrollView>
-          </YStack>
-        </YStack>
-      </YStack>
-
-      {/* Content area below header */}
+      {/* 内容区域 */}
       <YStack flex={1} padding="$3" gap="$3">
-        {tab === 'square' && <SquareTab externalReloadRef={squareReloadRef} onOpenPost={(p) => setActivePost(p)} filterTags={selectedTags} />}
-        {tab === 'favorites' && <FavoritesTab onOpenPost={(p) => setActivePost(p)} />}
-        {tab === 'messages' && <MessagesTab onCreatePost={openCreatePanel} />}
+        {activeTab === 'square' && (
+          <SquareTab
+            externalReloadRef={squareReloadRef}
+            onOpenPost={setActivePost}
+            filterTags={selectedTags}
+          />
+        )}
+        {activeTab === 'favorites' && <FavoritesTab onOpenPost={setActivePost} />}
+        {activeTab === 'messages' && <MessagesTab onCreatePost={handleOpenCreatePanel} />}
       </YStack>
 
-      {/* Post creation / edit overlay (no extra header) */}
-      {isPostPanelOpen && (
-        <YStack
-          position="absolute"
-          top={headerHeight}
-          left={0}
-          right={0}
-          bottom={0}
-          backgroundColor={ForumColors.sand}
-          padding="$4"
-          gap="$3"
-          zIndex={200}
-          borderTopWidth={1}
-          borderColor={ForumColors.clay + '55'}
-        >
-          <XStack justifyContent="space-between" alignItems="center" marginBottom="$2">
-            <Text fontSize="$6" fontWeight="700" color={ForumColors.clay}>{editingPost ? '编辑帖子' : '发布帖子'}</Text>
-            <XStack gap="$2">
-              <Button size="$3" onPress={submitPost} backgroundColor={ForumColors.clay} color="#fff" pressStyle={{ opacity: 0.85 }}>
-                {submitting ? (editingPost ? '更新中...' : '发布中...') : (editingPost ? '更新' : '发布')}
-              </Button>
-              <Button size="$3" chromeless onPress={() => { setIsPostPanelOpen(false); setEditingPost(null); }} color={ForumColors.clay}>
-                关闭
-              </Button>
-            </XStack>
-          </XStack>
+      {/* 帖子编辑器 */}
+      <PostEditor
+        visible={isPostEditorOpen}
+        editingPost={editingPost}
+        onClose={() => setIsPostEditorOpen(false)}
+        onSuccess={handlePostEditorSuccess}
+        headerOffset={headerHeight}
+      />
 
-          {/* 分类选择 */}
-          <XStack gap="$2" flexWrap="wrap">
-            {CATEGORIES.map((c) => (
-              <Button key={c.key} size="$2" onPress={() => setCategory(c.key)} backgroundColor={category === c.key ? ForumColors.clay : ForumColors.sand} color={category === c.key ? '#fff' : '#603e1f'}>
-                {c.label}
-              </Button>
-            ))}
-            {category && (
-              <Button size="$2" chromeless onPress={() => setCategory(undefined)} color={ForumColors.clay}>清除分类</Button>
-            )}
-          </XStack>
-
-          {/* 标签输入 */}
-          <TextArea
-            value={tagsText}
-            onChangeText={setTagsText}
-            placeholder="输入标签，以空格或逗号分隔"
-            height={50}
-            backgroundColor="#fff"
-            borderColor={ForumColors.clay + '55'}
-            borderWidth={1}
-            color="#3c2e20"
-          />
-
-          {/* 正文 */}
-          <TextArea
-            value={content}
-            onChangeText={setContent}
-            placeholder="说点什么..."
-            height={160}
-            backgroundColor="#fff"
-            borderColor={ForumColors.clay + '55'}
-            borderWidth={1}
-            color="#3c2e20"
-          />
-
-          {/* 已选媒体预览 */}
-          <XStack gap="$2" flexWrap="wrap">
-            {pickedFiles.map((f, idx) => (
-              <Card key={idx} width={90} height={90} backgroundColor={ForumColors.peach} borderColor={ForumColors.clay + '55'} borderWidth={1} overflow="hidden">
-                <Image source={{ uri: f.uri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-              </Card>
-            ))}
-          </XStack>
-          <XStack gap="$3">
-            <Button size="$3" onPress={pickImages} backgroundColor={ForumColors.peach} color="#3c2e20" pressStyle={{ opacity: 0.85 }}>
-              选择图片/视频
-            </Button>
-            <Button size="$3" onPress={() => { setContent(''); setPickedFiles([]); setTagsText(''); setCategory(undefined); }} backgroundColor={ForumColors.sand} borderWidth={1} borderColor={ForumColors.clay + '55'} color="#603e1f" pressStyle={{ opacity: 0.85 }}>
-              重置
-            </Button>
-          </XStack>
-        </YStack>
-      )}
-
+      {/* 帖子详情弹窗 */}
       <PostDetailModal
         visible={!!activePost}
         post={activePost}
         onClose={() => setActivePost(null)}
         headerOffset={headerHeight}
-        onEditPost={(p) => { setActivePost(null); openEditPanel(p); }}
-        onPostDeleted={() => { setActivePost(null); setTimeout(() => squareReloadRef.current?.(), 0); }}
+        onEditPost={handleEditPostFromDetail}
+        onPostDeleted={handlePostDeleted}
       />
     </YStack>
   );

@@ -1,5 +1,5 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { Colors } from '@/src/constants/theme';
+import { Colors, withAlpha } from '@/src/constants/colors';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Pet } from '@/src/schemas/pet.schema';
 import { Image } from 'react-native';
@@ -20,23 +20,6 @@ export function PetCard({ pet, onPress }: PetCardProps) {
 
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
-
-  // 将十六进制颜色转换为带透明度的 rgba 字符串
-  const withAlpha = (color: string, alpha: number) => {
-    if (!color || typeof color !== 'string') return color as any;
-    const hex = color.trim();
-    if (!hex.startsWith('#')) return color; // 已是 rgba 或 token 时直接返回
-    const normalize = (h: string) =>
-      h.length === 4
-        ? `#${h[1]}${h[1]}${h[2]}${h[2]}${h[3]}${h[3]}`
-        : h;
-    const h = normalize(hex);
-    if (h.length !== 7) return color;
-    const r = parseInt(h.slice(1, 3), 16);
-    const g = parseInt(h.slice(3, 5), 16);
-    const b = parseInt(h.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  };
 
   // 获取宠物图标
   const getPetIcon = () => {

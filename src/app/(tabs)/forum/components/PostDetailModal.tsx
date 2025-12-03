@@ -1,5 +1,7 @@
 import { ForumColors } from '@/src/app/(tabs)/forum/constants';
 import Tag from '@/src/components/ui/Tag';
+import { Colors } from '@/src/constants/colors';
+import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Comment } from '@/src/services/api/comment';
 import type { Post } from '@/src/services/api/forum';
 import { forumService } from '@/src/services/api/forum';
@@ -25,6 +27,9 @@ export function PostDetailModal({
   onEditPost,
   onPostDeleted,
 }: PostDetailModalProps) {
+  const colorScheme = useThemeAwareColorScheme();
+  const colors = Colors[colorScheme];
+
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState('');
@@ -212,9 +217,15 @@ export function PostDetailModal({
         >
           <Card
             padding="$3"
-            backgroundColor={ForumColors.peach}
-            borderColor={ForumColors.clay + '55'}
+            backgroundColor="#FFF5ED"
+            borderColor="#E5E7EB"
             borderWidth={1}
+            borderRadius="$4"
+            shadowColor="#000"
+            shadowOffset={{ width: 0, height: 1 }}
+            shadowOpacity={0.05}
+            shadowRadius={2}
+            elevation={1}
           >
             <YStack gap="$2">
               <Text fontWeight="700" color={ForumColors.clay}>
@@ -274,7 +285,16 @@ export function PostDetailModal({
           data={comments}
           keyExtractor={(i) => String(i.id)}
           renderItem={({ item }) => (
-            <YStack paddingVertical="$3" gap="$2">
+            <YStack
+              paddingVertical="$3"
+              paddingHorizontal="$3"
+              marginVertical="$2"
+              gap="$2"
+              backgroundColor={colors.cardBackground}
+              borderWidth={1}
+              borderColor="#E5E7EB"
+              borderRadius="$3"
+            >
               <XStack alignItems="center" justifyContent="space-between">
                 <Text fontWeight="700" color={ForumColors.clay}>
                   {item.author.username}
@@ -288,17 +308,17 @@ export function PostDetailModal({
                   <TextArea
                     value={editingContent}
                     onChangeText={setEditingContent}
-                    backgroundColor="#fff"
+                    backgroundColor={colors.inputBackground}
                     borderColor={ForumColors.clay + '55'}
                     borderWidth={1}
-                    color={ForumColors.text}
+                    color={colors.text}
                   />
                   <XStack gap="$2">
                     <Button
                       size="$2"
                       onPress={saveEditComment}
                       backgroundColor={ForumColors.clay}
-                      color="#fff"
+                      color={colors.buttonPrimaryText}
                     >
                       保存
                     </Button>
@@ -322,7 +342,7 @@ export function PostDetailModal({
                   size="$2"
                   onPress={() => toggleLike(item.id)}
                   backgroundColor={item.isLiked ? ForumColors.clay : ForumColors.peach}
-                  color={item.isLiked ? '#fff' : ForumColors.text}
+                  color={item.isLiked ? colors.buttonPrimaryText : ForumColors.text}
                 >
                   {item.isLiked ? `已赞 ${item.likes || 0}` : `点赞 ${item.likes || 0}`}
                 </Button>
@@ -390,16 +410,16 @@ export function PostDetailModal({
           value={content}
           onChangeText={setContent}
           placeholder="写下你的评论..."
-          backgroundColor="#fff"
+          backgroundColor={colors.inputBackground}
           borderColor={ForumColors.clay + '55'}
           borderWidth={1}
-          color={ForumColors.text}
+          color={colors.text}
         />
         <Button
           size="$3"
           onPress={submit}
           backgroundColor={ForumColors.clay}
-          color="#fff"
+          color={colors.buttonPrimaryText}
           pressStyle={{ opacity: 0.85 }}
         >
           发送

@@ -4,6 +4,8 @@
  * 性能优化：使用 React.memo 避免不必要的重新渲染
  */
 
+import { Colors } from '@/src/constants/colors';
+import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Text, XStack, YStack } from 'tamagui';
@@ -29,18 +31,20 @@ export const ForumHeader = React.memo(function ForumHeader({
   onTagsChange,
   onHeightChange,
 }: ForumHeaderProps) {
+  const colorScheme = useThemeAwareColorScheme();
+  const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
 
   return (
     <YStack
       onLayout={(e) => onHeightChange?.(e.nativeEvent.layout.height)}
       paddingTop={insets.top}
-      backgroundColor={ForumColors.sand}
+      backgroundColor="#fff"
       borderBottomWidth={1}
-      borderColor={`${ForumColors.clay}55`}
+      borderColor="#E5E7EB"
       zIndex={100}
     >
-      <XStack height={1} backgroundColor={ForumColors.borderTop} />
+      <XStack height={1} backgroundColor="#D8C8BD" />
 
       <YStack padding="$3" gap="$3">
         {/* 标题和发帖按钮 */}
@@ -52,7 +56,7 @@ export const ForumHeader = React.memo(function ForumHeader({
             size="$3"
             onPress={onCreatePost}
             backgroundColor={ForumColors.clay}
-            color="#fff"
+            color={colors.buttonPrimaryText}
             pressStyle={{ opacity: 0.85 }}
           >
             发帖
@@ -100,12 +104,15 @@ interface TabButtonProps {
 }
 
 const TabButton = React.memo(function TabButton({ active, onPress, label }: TabButtonProps) {
+  const colorScheme = useThemeAwareColorScheme();
+  const colors = Colors[colorScheme];
+
   return (
     <Button
       size="$3"
       onPress={onPress}
-      backgroundColor={active ? ForumColors.clay : ForumColors.sand}
-      color={active ? '#fff' : ForumColors.darkText}
+      backgroundColor={active ? ForumColors.clay : '#F5F5F5'}
+      color={active ? colors.buttonPrimaryText : ForumColors.darkText}
       flex={1}
     >
       {label}

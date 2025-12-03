@@ -11,6 +11,7 @@
  */
 
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { RANK_COLORS } from '@/src/constants/colors';
 import { useResponsiveLayout } from '@/src/hooks/useResponsiveLayout';
 import type { CatFood } from '@/src/types/catFood';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -30,41 +31,41 @@ interface TopRankingSwiperProps {
 }
 
 /**
- * 获取排名徽章样式
+ * 获取排名徽章样式（使用统一颜色系统）
  */
 const getRankStyle = (index: number) => {
   switch (index) {
     case 0:
       return {
-        gradient: ['#FFD700', '#FFA500'] as const, // 金色渐变
+        gradient: RANK_COLORS.gold,
         textColor: 'white' as const,
         icon: 'crown.fill' as const,
         iconColor: 'white' as const,
-        shadowColor: '#FFD700',
+        shadowColor: RANK_COLORS.gold[0],
       };
     case 1:
       return {
-        gradient: ['#C0C0C0', '#A8A8A8'] as const, // 银色渐变
+        gradient: RANK_COLORS.silver,
         textColor: 'white' as const,
         icon: 'medal.fill' as const,
         iconColor: 'white' as const,
-        shadowColor: '#C0C0C0',
+        shadowColor: RANK_COLORS.silver[0],
       };
     case 2:
       return {
-        gradient: ['#CD7F32', '#A0522D'] as const, // 铜色渐变
+        gradient: RANK_COLORS.bronze,
         textColor: 'white' as const,
         icon: 'medal.fill' as const,
         iconColor: 'white' as const,
-        shadowColor: '#CD7F32',
+        shadowColor: RANK_COLORS.bronze[0],
       };
     default:
       return {
-        gradient: ['#60A5FA', '#FEBE98'] as const, // 蓝色渐变
+        gradient: RANK_COLORS.normal,
         textColor: 'white' as const,
         icon: 'star.fill' as const,
         iconColor: 'white' as const,
-        shadowColor: '#FEBE98',
+        shadowColor: RANK_COLORS.normal[0],
       };
   }
 };

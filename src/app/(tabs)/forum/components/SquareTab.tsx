@@ -1,9 +1,12 @@
 import Tag from '@/src/components/ui/Tag';
+import { Colors } from '@/src/constants/colors';
+import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { forumService, type Post } from '@/src/services/api/forum';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, FlatList, Image, RefreshControl } from 'react-native';
 import { Button, Card, Spinner, Text, XStack, YStack } from 'tamagui';
+import { ForumColors, MORANDI_COLORS } from '../constants';
 
 interface SquareTabProps {
   onOpenPost?: (post: Post) => void;
@@ -13,26 +16,13 @@ interface SquareTabProps {
   filterTags?: string[];
 }
 
-const MORANDI_COLORS = [
-  '#E6D5C3', // sand
-  '#D7CCC8', // warm gray
-  '#C5CAE9', // soft blue
-  '#B3E5FC', // pale sky
-  '#FFCCBC', // peach
-  '#CFD8DC', // slate
-  '#F8BBD0', // rose
-  '#DCEDC8', // green tea
-  '#FFE0B2', // apricot
-  '#D1C4E9', // lavender
-];
-
-const getBadgeColor = (key: string) => {
+const getBadgeColor = (key: string, isDark: boolean) => {
   let hash = 0;
   for (let i = 0; i < key.length; i++) {
     hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
   }
   const bg = MORANDI_COLORS[hash % MORANDI_COLORS.length];
-  return { bg, fg: '#3c2e20' };
+  return { bg, fg: isDark ? '#ECEDEE' : ForumColors.text };
 };
 
 export function SquareTab({
@@ -42,6 +32,10 @@ export function SquareTab({
   filterTag,
   filterTags,
 }: SquareTabProps) {
+  const colorScheme = useThemeAwareColorScheme();
+  const colors = Colors[colorScheme];
+  const isDark = colorScheme === 'dark';
+
   const [list, setList] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -136,9 +130,9 @@ export function SquareTab({
                   bottom={0}
                   alignItems="center"
                   justifyContent="center"
-                  backgroundColor="rgba(0,0,0,0.35)"
+                  backgroundColor={isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.35)'}
                 >
-                  <Text color="#fff" fontWeight="700">
+                  <Text color={isDark ? '#000' : '#fff'} fontWeight="700">
                     +{overflow}
                   </Text>
                 </YStack>
@@ -155,7 +149,19 @@ export function SquareTab({
   };
 
   const renderItem = ({ item }: { item: Post }) => (
-    <Card margin="$3" padding="$3" elevate>
+    <Card
+      margin="$3"
+      padding="$3"
+      backgroundColor={colors.cardBackground}
+      borderWidth={1}
+      borderColor="#E5E7EB"
+      borderRadius="$4"
+      shadowColor="#000"
+      shadowOffset={{ width: 0, height: 1 }}
+      shadowOpacity={0.05}
+      shadowRadius={2}
+      elevation={1}
+    >
       <YStack gap="$2">
         <XStack alignItems="center" justifyContent="space-between">
           <Text fontWeight="700">{item.author.username}</Text>

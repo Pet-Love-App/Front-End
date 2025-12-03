@@ -4,6 +4,8 @@
  * 重构后：UI 层只负责渲染，业务逻辑在 Hook 中
  */
 
+import { Colors } from '@/src/constants/colors';
+import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Post } from '@/src/services/api/forum/types';
 import React, { useEffect } from 'react';
 import { Alert, Image } from 'react-native';
@@ -27,6 +29,9 @@ export function PostEditor({
   onSuccess,
   headerOffset = 0,
 }: PostEditorProps) {
+  const colorScheme = useThemeAwareColorScheme();
+  const colors = Colors[colorScheme];
+
   // ✅ 创建错误处理器
   const errorHandler = createErrorHandler('PostEditor');
 
@@ -93,12 +98,12 @@ export function PostEditor({
       left={0}
       right={0}
       bottom={0}
-      backgroundColor={ForumColors.sand}
+      backgroundColor="#fff"
       padding="$4"
       gap="$3"
       zIndex={200}
       borderTopWidth={1}
-      borderColor={`${ForumColors.clay}55`}
+      borderColor="#E5E7EB"
     >
       {/* 头部 */}
       <XStack justifyContent="space-between" alignItems="center" marginBottom="$2">
@@ -111,7 +116,7 @@ export function PostEditor({
             onPress={handleSubmit}
             disabled={editor.submitting}
             backgroundColor={ForumColors.clay}
-            color="#fff"
+            color={colors.buttonPrimaryText}
             pressStyle={{ opacity: 0.85 }}
           >
             {editor.submitting
@@ -141,8 +146,8 @@ export function PostEditor({
             key={cat.key}
             size="$2"
             onPress={() => editor.setCategory(cat.key)}
-            backgroundColor={editor.category === cat.key ? ForumColors.clay : ForumColors.sand}
-            color={editor.category === cat.key ? '#fff' : ForumColors.darkText}
+            backgroundColor={editor.category === cat.key ? ForumColors.clay : '#F5F5F5'}
+            color={editor.category === cat.key ? colors.buttonPrimaryText : ForumColors.darkText}
           >
             {cat.label}
           </Button>
@@ -165,10 +170,10 @@ export function PostEditor({
         onChangeText={editor.setTagsText}
         placeholder="输入标签，以空格或逗号分隔"
         height={50}
-        backgroundColor="#fff"
+        backgroundColor={colors.inputBackground}
         borderColor={`${ForumColors.clay}55`}
         borderWidth={1}
-        color={ForumColors.text}
+        color={colors.text}
       />
 
       {/* 正文 */}
@@ -177,10 +182,10 @@ export function PostEditor({
         onChangeText={editor.setContent}
         placeholder="说点什么..."
         height={160}
-        backgroundColor="#fff"
+        backgroundColor={colors.inputBackground}
         borderColor={`${ForumColors.clay}55`}
         borderWidth={1}
-        color={ForumColors.text}
+        color={colors.text}
       />
 
       {/* 媒体预览 */}
@@ -191,11 +196,12 @@ export function PostEditor({
               key={idx}
               width={UI_CONFIG.THUMBNAIL_SIZE}
               height={UI_CONFIG.THUMBNAIL_SIZE}
-              backgroundColor={ForumColors.peach}
-              borderColor={`${ForumColors.clay}55`}
+              backgroundColor="#F5F5F5"
+              borderColor="#E5E7EB"
               borderWidth={1}
               overflow="hidden"
               position="relative"
+              borderRadius="$3"
             >
               <Image
                 source={{ uri: file.uri }}
@@ -208,7 +214,7 @@ export function PostEditor({
                 top={2}
                 right={2}
                 backgroundColor="rgba(0,0,0,0.6)"
-                color="#fff"
+                color={colors.buttonPrimaryText}
                 paddingHorizontal="$2"
                 paddingVertical="$1"
                 onPress={() => editor.removeFile(idx)}
@@ -234,9 +240,9 @@ export function PostEditor({
         <Button
           size="$3"
           onPress={handleReset}
-          backgroundColor={ForumColors.sand}
+          backgroundColor="#F5F5F5"
           borderWidth={1}
-          borderColor={`${ForumColors.clay}55`}
+          borderColor="#E5E7EB"
           color={ForumColors.darkText}
           pressStyle={{ opacity: 0.85 }}
         >

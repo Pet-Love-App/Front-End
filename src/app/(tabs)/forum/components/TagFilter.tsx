@@ -4,6 +4,8 @@
  * 性能优化：使用 React.memo 避免不必要的重新渲染
  */
 
+import { Colors } from '@/src/constants/colors';
+import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import React from 'react';
 import { ScrollView } from 'react-native';
 import { Button, Spinner, Text, XStack, YStack } from 'tamagui';
@@ -19,6 +21,8 @@ export const TagFilter = React.memo(function TagFilter({
   selectedTags,
   onTagsChange,
 }: TagFilterProps) {
+  const colorScheme = useThemeAwareColorScheme();
+  const colors = Colors[colorScheme];
   const { tags, loading } = useForumTags();
 
   const toggleTag = (name: string) => {
@@ -62,8 +66,8 @@ export const TagFilter = React.memo(function TagFilter({
                   key={tag.id}
                   size="$2"
                   onPress={() => toggleTag(tag.name)}
-                  backgroundColor={active ? ForumColors.clay : '#fff'}
-                  color={active ? '#fff' : ForumColors.darkText}
+                  backgroundColor={active ? ForumColors.clay : colors.cardBackground}
+                  color={active ? colors.buttonPrimaryText : ForumColors.darkText}
                   borderWidth={1}
                   borderColor={`${ForumColors.clay}55`}
                 >

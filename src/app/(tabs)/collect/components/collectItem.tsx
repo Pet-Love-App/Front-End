@@ -43,7 +43,7 @@ export default function CollectListItem({ favorite, onDelete }: CollectListItemP
       size="$4"
       bordered
       borderColor="$gray4"
-      backgroundColor="white"
+      backgroundColor={colors.background}
       pressStyle={{ scale: 0.98, opacity: 0.95 }}
       animation="quick"
     >

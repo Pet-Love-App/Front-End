@@ -15,7 +15,6 @@ import {
   SquareTab,
   type ForumTab,
 } from './components';
-import { ForumColors } from './constants';
 
 export default function ForumScreen() {
   // ===== 状态管理 =====
@@ -70,7 +69,7 @@ export default function ForumScreen() {
 
   // ===== 渲染 =====
   return (
-    <YStack flex={1} backgroundColor={ForumColors.sand}>
+    <YStack flex={1} backgroundColor="#fff">
       {/* 固定头部 */}
       <ForumHeader
         activeTab={activeTab}

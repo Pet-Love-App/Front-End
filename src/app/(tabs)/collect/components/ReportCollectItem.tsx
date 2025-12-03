@@ -1,5 +1,5 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { Colors } from '@/src/constants/theme';
+import { Colors, SEMANTIC_COLORS } from '@/src/constants/colors';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { FavoriteReport } from '@/src/services/api';
 import { Button, Card, Separator, Text, XStack, YStack } from 'tamagui';
@@ -34,23 +34,12 @@ export default function ReportCollectItem({
     return date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
   };
 
-  // 获取标签颜色（返回不带 $ 的颜色名）
+  // 获取标签颜色（使用统一颜色系统）
   const getTagColor = (tag: string): string => {
-    if (tag.includes('高蛋白') || tag.includes('优质')) return 'green10';
-    if (tag.includes('低碳水') || tag.includes('健康')) return 'blue10';
-    if (tag.includes('天然') || tag.includes('无添加')) return 'purple10';
-    return 'orange10';
-  };
-
-  // 使用十六进制颜色映射代替 Tamagui token 拼接
-  const getHexColor = (colorName: string): string => {
-    const colorMap: Record<string, string> = {
-      green10: '#18794e',
-      blue10: '#0c5fbf',
-      purple10: '#8445e1',
-      orange10: '#c85a15',
-    };
-    return colorMap[colorName] || colorMap['orange10'];
+    if (tag.includes('高蛋白') || tag.includes('优质')) return SEMANTIC_COLORS.successDark;
+    if (tag.includes('低碳水') || tag.includes('健康')) return SEMANTIC_COLORS.infoDark;
+    if (tag.includes('天然') || tag.includes('无添加')) return '#8b5cf6'; // purple
+    return SEMANTIC_COLORS.warningDark;
   };
 
   // 提取主要营养信息
@@ -118,19 +107,18 @@ export default function ReportCollectItem({
           {report.tags && report.tags.length > 0 && (
             <XStack gap="$2" flexWrap="wrap">
               {report.tags.slice(0, 4).map((tag, index) => {
-                const colorName = getTagColor(tag);
-                const hexColor = getHexColor(colorName);
+                const tagColor = getTagColor(tag);
                 return (
                   <YStack
                     key={index}
-                    backgroundColor={hexColor + '15'}
+                    backgroundColor={tagColor + '15'}
                     paddingHorizontal="$2.5"
                     paddingVertical="$1"
                     borderRadius="$2"
                     borderWidth={1}
-                    borderColor={hexColor + '40'}
+                    borderColor={tagColor + '40'}
                   >
-                    <Text fontSize={12} fontWeight="600" color={hexColor}>
+                    <Text fontSize={12} fontWeight="600" color={tagColor}>
                       {tag}
                     </Text>
                   </YStack>

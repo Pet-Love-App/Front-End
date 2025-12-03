@@ -3,33 +3,18 @@
  * 统一管理颜色、尺寸、限制等常量
  */
 
+import {
+  FUNCTIONAL_COLORS,
+  TAG_COLORS,
+  ForumColors as UnifiedForumColors,
+} from '@/src/constants/colors';
 import type { PostCategory } from '@/src/services/api/forum/types';
 
-// ===== 主题颜色 =====
-export const ForumColors = {
-  sand: '#F2E8DA',
-  peach: '#FEBE98',
-  clay: '#E8A47E',
-  borderTop: '#D8C8BD',
-  text: '#3c2e20',
-  darkText: '#603e1f',
-  red: '#ae2e24',
-  lightRed: '#ffebe9',
-} as const;
+// ===== 主题颜色 (使用统一颜色系统) =====
+export const ForumColors = UnifiedForumColors;
 
-// ===== 莫兰迪色系（用于标签） =====
-export const MORANDI_COLORS = [
-  '#E6D5C3', // sand
-  '#D7CCC8', // warm gray
-  '#C5CAE9', // soft blue
-  '#B3E5FC', // pale sky
-  '#FFCCBC', // peach
-  '#CFD8DC', // slate
-  '#F8BBD0', // rose
-  '#DCEDC8', // green tea
-  '#FFE0B2', // apricot
-  '#D1C4E9', // lavender
-] as const;
+// ===== 莫兰迪色系（用于标签，使用统一颜色系统） =====
+export const MORANDI_COLORS = TAG_COLORS;
 
 // ===== 媒体限制 =====
 export const MEDIA_LIMITS = {
@@ -43,16 +28,16 @@ export const MEDIA_LIMITS = {
   VIDEO_TYPES: ['video/mp4', 'video/quicktime', 'video/x-msvideo'] as const,
 } as const;
 
-// ===== 帖子分类配置 =====
+// ===== 帖子分类配置 (使用统一颜色系统) =====
 export const POST_CATEGORIES: ReadonlyArray<{
   key: PostCategory;
   label: string;
   color?: string;
 }> = [
-  { key: 'help', label: '求助', color: '#f97316' },
-  { key: 'share', label: '分享', color: '#06b6d4' },
-  { key: 'science', label: '科普', color: '#8b5cf6' },
-  { key: 'warning', label: '避雷', color: '#ef4444' },
+  { key: 'help', label: '求助', color: FUNCTIONAL_COLORS.help },
+  { key: 'share', label: '分享', color: FUNCTIONAL_COLORS.share },
+  { key: 'science', label: '科普', color: FUNCTIONAL_COLORS.science },
+  { key: 'warning', label: '避雷', color: FUNCTIONAL_COLORS.warning },
 ] as const;
 
 // ===== UI 配置 =====

@@ -21,6 +21,39 @@ class BaseApi {
     return useUserStore.getState().accessToken;
   }
 
+  // 从 HTML（例如 Django Debug 页面）中提取简短错误标题
+  private extractErrorFromHtml(html: string): string {
+    try {
+      const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
+      if (titleMatch && titleMatch[1]) return titleMatch[1].trim();
+      const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+      if (h1Match && h1Match[1]) return h1Match[1].trim();
+      // Django debug 页面常见的提示
+      const disallowed = html.match(/DisallowedHost/i);
+      if (disallowed) return 'DisallowedHost（后端 ALLOWED_HOSTS 配置不允许该 Host）';
+      return '服务器返回了 HTML 错误页面';
+    } catch {
+      return '服务器错误';
+    }
+  }
+
+  // 辅助：安全解析响应文本为 JSON 或返回原文/ null
+  private async safeParseResponse(res: Response): Promise<any> {
+    const raw = await res.text().catch(() => '');
+    if (!raw) return null;
+    const contentType = (res.headers.get('content-type') || '').toLowerCase();
+    if (contentType.includes('application/json')) {
+      try {
+        return JSON.parse(raw);
+      } catch (err) {
+        // 返回原始文本以便上层处理与调试
+        console.warn('解析 JSON 响应失败，返回原始文本', raw.slice(0, 200));
+        return raw;
+      }
+    }
+    return raw;
+  }
+
   /**
    * 通用请求方法
    */
@@ -86,11 +119,15 @@ class BaseApi {
             });
 
             if (!retryResponse.ok) {
-              const errorData = await retryResponse.json().catch(() => ({}));
-              throw new Error(errorData.detail || errorData.message || '请求失败');
+              const errorData = await this.safeParseResponse(retryResponse).catch(() => ({}));
+              let message = (errorData && (errorData.detail || (errorData as any).message || (errorData as any).error)) as string | undefined;
+              if (!message && typeof errorData === 'string' && errorData.length) {
+                message = /<html/i.test(errorData) ? this.extractErrorFromHtml(errorData) : errorData;
+              }
+              throw new Error(message || `请求失败: ${retryResponse.status}`);
             }
 
-            return retryResponse.json();
+            return (await this.safeParseResponse(retryResponse)) as T;
           }
         } catch (error) {
           // 刷新失败，需要重新登录
@@ -104,23 +141,34 @@ class BaseApi {
 
       // 处理其他错误响应
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await this.safeParseResponse(response).catch(() => ({}));
 
-        // 提取详细的错误信息
+        // 提取详细的错误信息（避免把整段 HTML 抛出去）
         let errorMessage = `请求失败: ${response.status}`;
 
-        if (errorData.detail) {
-          errorMessage = errorData.detail;
-        } else if (errorData.message) {
-          errorMessage = errorData.message;
-        } else if (errorData.error) {
-          errorMessage = errorData.error;
+        if (errorData && typeof errorData === 'object') {
+          if ((errorData as any).detail) errorMessage = (errorData as any).detail;
+          else if ((errorData as any).message) errorMessage = (errorData as any).message;
+          else if ((errorData as any).error) errorMessage = (errorData as any).error;
+        } else if (typeof errorData === 'string' && errorData.length) {
+          errorMessage = /<html/i.test(errorData) ? this.extractErrorFromHtml(errorData) : errorData;
         }
 
         // 只在非预期的错误时打印详细日志
         // 404 可能是正常的业务逻辑（如"尚未评分"），由调用者决定是否记录
         if (response.status !== 404) {
-          console.error('API 错误详情:', JSON.stringify(errorData, null, 2));
+          const hasPayload =
+            typeof errorData === 'string'
+              ? errorData.length > 0
+              : errorData && typeof errorData === 'object' && Object.keys(errorData).length > 0;
+          const payloadForLog =
+            typeof errorData === 'string'
+              ? (errorData.length > 2000 ? errorData.slice(0, 2000) + '...<trimmed>' : errorData)
+              : hasPayload
+              ? JSON.stringify(errorData, null, 2)
+              : '无详细错误信息';
+
+          console.error('API 错误详情:', payloadForLog);
         }
 
         // 创建一个包含状态码的错误对象
@@ -132,9 +180,9 @@ class BaseApi {
         throw error;
       }
 
-      // 成功响应
-      const data = await response.json();
-      return data;
+      // 成功响应：安全解析
+      const parsed = await this.safeParseResponse(response);
+      return parsed as T;
     } catch (error: any) {
       // 只在非预期的错误时打印日志
       // 404 等业务逻辑错误由调用者决定是否记录
@@ -182,25 +230,83 @@ class BaseApi {
   }
 
   /**
+   * 使用自定义 headers 的请求（用于 FormData）
+   */
+  private async requestWithCustomHeaders<T = any>(
+    endpoint: string,
+    options: RequestInit,
+    headers: Record<string, string>
+  ): Promise<T> {
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        ...options,
+        headers,
+      });
+
+      if (!response.ok) {
+        const error = await this.safeParseResponse(response).catch(() => ({}));
+        let message = (error && ((error as any).message || (error as any).detail)) as string | undefined;
+        if (!message && typeof error === 'string' && error.length) {
+          message = /<html/i.test(error) ? this.extractErrorFromHtml(error) : error;
+        }
+        throw new Error(message || `请求失败: ${response.status}`);
+      }
+
+      return (await this.safeParseResponse(response)) as T;
+    } catch (error) {
+      console.error('API 请求错误:', error);
+      throw error;
+    }
+  }
+
+  /**
    * PUT 请求
    */
   async put<T = any>(endpoint: string, data?: any, options: RequestInit = {}): Promise<T> {
-    return this.request<T>(endpoint, {
+    const isFormData = data instanceof FormData;
+
+    const requestOptions: RequestInit = {
       ...options,
       method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+      body: isFormData ? data : data ? JSON.stringify(data) : undefined,
+    };
+
+    if (isFormData) {
+      const token = this.getToken();
+      const headers: Record<string, string> = {
+        ...(options.headers as Record<string, string>),
+      };
+      if (headers['Content-Type']) delete headers['Content-Type'];
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      return this.requestWithCustomHeaders<T>(endpoint, requestOptions, headers);
+    }
+
+    return this.request<T>(endpoint, requestOptions);
   }
 
   /**
    * PATCH 请求
    */
   async patch<T = any>(endpoint: string, data?: any, options: RequestInit = {}): Promise<T> {
-    return this.request<T>(endpoint, {
+    const isFormData = data instanceof FormData;
+
+    const requestOptions: RequestInit = {
       ...options,
       method: 'PATCH',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+      body: isFormData ? data : data ? JSON.stringify(data) : undefined,
+    };
+
+    if (isFormData) {
+      const token = this.getToken();
+      const headers: Record<string, string> = {
+        ...(options.headers as Record<string, string>),
+      };
+      if (headers['Content-Type']) delete headers['Content-Type'];
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      return this.requestWithCustomHeaders<T>(endpoint, requestOptions, headers);
+    }
+
+    return this.request<T>(endpoint, requestOptions);
   }
 
   /**
@@ -223,6 +329,7 @@ class BaseApi {
     const headers: Record<string, string> = {
       // 不设置 Content-Type，让浏览器自动设置 multipart/form-data
       ...(options.headers as Record<string, string>),
+      Accept: 'application/json',
     };
 
     // 删除 Content-Type，让浏览器自动添加
@@ -243,11 +350,36 @@ class BaseApi {
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || error.detail || '上传失败');
+        const errorPayload = await this.safeParseResponse(response).catch(() => ({}));
+        let message = (errorPayload && ((errorPayload as any).message || (errorPayload as any).detail)) as string | undefined;
+        if (!message && typeof errorPayload === 'string' && errorPayload.length) {
+          message = /<html/i.test(errorPayload) ? this.extractErrorFromHtml(errorPayload) : errorPayload;
+        }
+
+        // 针对 500 错误给出更明确的指导
+        if (response.status === 500) {
+          const serverErrorMessage = '后端服务器错误 (500)。这不是前端代码问题，请检查服务器日志获取详细错误栈。';
+          console.error('🔴 ' + serverErrorMessage);
+          throw new Error(serverErrorMessage);
+        }
+
+        const statusInfo = `上传失败: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`;
+        const payloadForLog =
+          typeof errorPayload === 'string'
+            ? (errorPayload.length > 2000 ? errorPayload.slice(0, 2000) + '...<trimmed>' : errorPayload)
+            : errorPayload && typeof errorPayload === 'object' && Object.keys(errorPayload).length > 0
+            ? JSON.stringify(errorPayload, null, 2)
+            : '无详细错误信息';
+        console.error('文件上传错误详情:', {
+          endpoint,
+          status: response.status,
+          statusText: response.statusText,
+          payload: payloadForLog,
+        });
+        throw new Error(message || statusInfo);
       }
 
-      return response.json();
+      return (await this.safeParseResponse(response)) as T;
     } catch (error) {
       console.error('文件上传错误:', error);
       throw error;

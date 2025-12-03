@@ -3,10 +3,9 @@
  * 使用 Expo 的环境变量系统
  */
 
-// 从环境变量获取 API 地址，如果没有则使用默认值
+// 使用环境变量优先，其次默认服务器地址（如需本地调试请显式设置 EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:8000）
 export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL ||
-  (__DEV__ ? 'http://82.157.255.92:8000' : 'https://your-production-api.com');
+  process.env.EXPO_PUBLIC_API_BASE_URL || 'http://82.157.255.92:8000';
 
 export const ENV = {
   // API 配置
@@ -23,3 +22,9 @@ export const ENV = {
 };
 
 export default ENV;
+
+/**
+ * 切换说明:
+ * - 使用服务器: 不设置或设置 EXPO_PUBLIC_API_BASE_URL=http://82.157.255.92:8000
+ * - 本地调试: 设置 EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:8000 并确保后端监听 127.0.0.1:8000
+ */

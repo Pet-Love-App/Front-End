@@ -14,6 +14,8 @@ export interface CreateCommentRequest {
   targetId: number;
   /** 关联的对象类型 */
   targetType: 'post' | 'catfood' | 'report';
+  /** 被回复的评论ID（回复时必填） */
+  parentId?: number;
 }
 
 /**

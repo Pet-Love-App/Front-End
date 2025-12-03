@@ -1,9 +1,9 @@
 import { apiClient } from '../BaseApi';
 import type {
-  Comment,
-  CreateCommentRequest,
-  GetCommentsResponse,
-  UpdateCommentRequest,
+    Comment,
+    CreateCommentRequest,
+    GetCommentsResponse,
+    UpdateCommentRequest,
 } from './types';
 
 /**
@@ -18,7 +18,20 @@ class CommentService {
    * @returns 创建的评论
    */
   async createComment(params: CreateCommentRequest): Promise<Comment> {
-    return await apiClient.post<Comment>(`${this.basePath}/`, params);
+    const payload: any = {
+      content: params.content,
+      target_type: params.targetType,
+      target_id: params.targetId,
+    };
+    if (typeof params.parentId === 'number') {
+      payload.parent_id = params.parentId;
+    }
+    // 兼容可能支持 camelCase 的服务端
+    payload.targetType = params.targetType;
+    payload.targetId = params.targetId;
+    if (typeof params.parentId === 'number') payload.parentId = params.parentId;
+
+    return await apiClient.post<Comment>(`${this.basePath}/`, payload);
   }
 
   /**
@@ -130,10 +143,11 @@ export const toggleCommentLike = (commentId: number) => commentService.toggleLik
 
 // 重新导出类型
 export type {
-  Comment,
-  CommentAuthor,
-  CreateCommentRequest,
-  DeleteCommentResponse,
-  GetCommentsResponse,
-  UpdateCommentRequest,
+    Comment,
+    CommentAuthor,
+    CreateCommentRequest,
+    DeleteCommentResponse,
+    GetCommentsResponse,
+    UpdateCommentRequest
 } from './types';
+

@@ -34,12 +34,23 @@ export default function ReportCollectItem({
     return date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
   };
 
-  // 获取标签颜色
-  const getTagColor = (tag: string) => {
-    if (tag.includes('高蛋白') || tag.includes('优质')) return '$green10';
-    if (tag.includes('低碳水') || tag.includes('健康')) return '$blue10';
-    if (tag.includes('天然') || tag.includes('无添加')) return '$purple10';
-    return '$orange10';
+  // 获取标签颜色（返回不带 $ 的颜色名）
+  const getTagColor = (tag: string): string => {
+    if (tag.includes('高蛋白') || tag.includes('优质')) return 'green10';
+    if (tag.includes('低碳水') || tag.includes('健康')) return 'blue10';
+    if (tag.includes('天然') || tag.includes('无添加')) return 'purple10';
+    return 'orange10';
+  };
+
+  // 使用十六进制颜色映射代替 Tamagui token 拼接
+  const getHexColor = (colorName: string): string => {
+    const colorMap: Record<string, string> = {
+      green10: '#18794e',
+      blue10: '#0c5fbf',
+      purple10: '#8445e1',
+      orange10: '#c85a15',
+    };
+    return colorMap[colorName] || colorMap['orange10'];
   };
 
   // 提取主要营养信息
@@ -47,17 +58,22 @@ export default function ReportCollectItem({
     const { percent_data } = report;
     const summary = [];
 
-    if (percent_data.crude_protein !== null) {
+    // 防御性编程：检查 percent_data 是否存在
+    if (!percent_data) {
+      return '暂无营养数据';
+    }
+
+    if (percent_data.crude_protein !== null && percent_data.crude_protein !== undefined) {
       summary.push(`蛋白质 ${percent_data.crude_protein}%`);
     }
-    if (percent_data.crude_fat !== null) {
+    if (percent_data.crude_fat !== null && percent_data.crude_fat !== undefined) {
       summary.push(`脂肪 ${percent_data.crude_fat}%`);
     }
-    if (percent_data.carbohydrates !== null) {
+    if (percent_data.carbohydrates !== null && percent_data.carbohydrates !== undefined) {
       summary.push(`碳水 ${percent_data.carbohydrates}%`);
     }
 
-    return summary.slice(0, 3).join(' · ');
+    return summary.length > 0 ? summary.slice(0, 3).join(' · ') : '暂无营养数据';
   };
 
   return (
@@ -101,21 +117,25 @@ export default function ReportCollectItem({
           {/* 标签 */}
           {report.tags && report.tags.length > 0 && (
             <XStack gap="$2" flexWrap="wrap">
-              {report.tags.slice(0, 4).map((tag, index) => (
-                <YStack
-                  key={index}
-                  backgroundColor={getTagColor(tag) + '15'}
-                  paddingHorizontal="$2.5"
-                  paddingVertical="$1"
-                  borderRadius="$2"
-                  borderWidth={1}
-                  borderColor={getTagColor(tag) + '40'}
-                >
-                  <Text fontSize={12} fontWeight="600" color={getTagColor(tag)}>
-                    {tag}
-                  </Text>
-                </YStack>
-              ))}
+              {report.tags.slice(0, 4).map((tag, index) => {
+                const colorName = getTagColor(tag);
+                const hexColor = getHexColor(colorName);
+                return (
+                  <YStack
+                    key={index}
+                    backgroundColor={hexColor + '15'}
+                    paddingHorizontal="$2.5"
+                    paddingVertical="$1"
+                    borderRadius="$2"
+                    borderWidth={1}
+                    borderColor={hexColor + '40'}
+                  >
+                    <Text fontSize={12} fontWeight="600" color={hexColor}>
+                      {tag}
+                    </Text>
+                  </YStack>
+                );
+              })}
             </XStack>
           )}
 

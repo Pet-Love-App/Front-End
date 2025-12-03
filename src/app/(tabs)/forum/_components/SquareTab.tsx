@@ -8,9 +8,31 @@ interface Props {
   onOpenPost?: (post: Post) => void;
   externalReloadRef?: React.MutableRefObject<(() => void) | null>;
   order?: 'latest' | 'most_replied' | 'featured' | 'random';
+  filterTag?: string;
+  filterTags?: string[];
 }
 
-export function SquareTab({ onOpenPost, externalReloadRef, order = 'latest' }: Props) {
+const morandiColors = [
+  '#E6D5C3', // sand
+  '#D7CCC8', // warm gray
+  '#C5CAE9', // soft blue
+  '#B3E5FC', // pale sky
+  '#FFCCBC', // peach
+  '#CFD8DC', // slate
+  '#F8BBD0', // rose
+  '#DCEDC8', // green tea
+  '#FFE0B2', // apricot
+  '#D1C4E9', // lavender
+];
+
+const badgeColorFor = (key: string) => {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  const bg = morandiColors[hash % morandiColors.length];
+  return { bg, fg: '#3c2e20' };
+};
+
+export function SquareTab({ onOpenPost, externalReloadRef, order = 'latest', filterTag, filterTags }: Props) {
   const [list, setList] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -19,7 +41,10 @@ export function SquareTab({ onOpenPost, externalReloadRef, order = 'latest' }: P
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await forumService.getSquareList(order);
+      const params: any = { order };
+      if (filterTag) params.tag = filterTag;
+      if (filterTags && filterTags.length) params.tags = filterTags;
+      const res = await forumService.getSquareList(params);
       setList(res);
     } catch (e) {
       Alert.alert('错误', '加载失败');
@@ -27,7 +52,7 @@ export function SquareTab({ onOpenPost, externalReloadRef, order = 'latest' }: P
       setLoading(false);
       setRefreshing(false);
     }
-  }, [order]);
+  }, [order, filterTag, filterTags]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -45,6 +70,27 @@ export function SquareTab({ onOpenPost, externalReloadRef, order = 'latest' }: P
       Alert.alert('错误', '操作失败');
     }
   };
+
+  const renderBadges = (item: Post) => (
+    <XStack gap="$2" alignItems="center" flexWrap="wrap">
+      {item.category ? (() => {
+        const { bg, fg } = badgeColorFor(`cat:${item.category}`);
+        return (
+          <XStack key={`cat-${item.id}`} paddingVertical={4} paddingHorizontal={8} borderRadius={12} backgroundColor={bg}>
+            <Text color={fg}>#{item.category}</Text>
+          </XStack>
+        );
+      })() : null}
+      {item.tags?.map((t) => {
+        const { bg, fg } = badgeColorFor(`tag:${t}`);
+        return (
+          <XStack key={`${item.id}-${t}`} paddingVertical={4} paddingHorizontal={8} borderRadius={12} backgroundColor={bg}>
+            <Text color={fg}>#{t}</Text>
+          </XStack>
+        );
+      })}
+    </XStack>
+  );
 
   const renderMediaPreview = (item: Post) => {
     if (!item.media || item.media.length === 0) return null;
@@ -82,14 +128,7 @@ export function SquareTab({ onOpenPost, externalReloadRef, order = 'latest' }: P
           <Text color="$gray10">{new Date(item.created_at).toLocaleString()}</Text>
         </XStack>
         <Text>{item.content}</Text>
-        {(item.category || (item.tags && item.tags.length)) ? (
-          <XStack gap="$2" alignItems="center" flexWrap="wrap">
-            {item.category && <Text color="$orange10">#{item.category}</Text>}
-            {item.tags?.map((t) => (
-              <Text key={t} color="$gray10">#{t}</Text>
-            ))}
-          </XStack>
-        ) : null}
+        {(item.category || (item.tags && item.tags.length)) ? renderBadges(item) : null}
 
         {renderMediaPreview(item)}
 

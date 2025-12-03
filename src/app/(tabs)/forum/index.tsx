@@ -2,8 +2,8 @@ import type { Post } from '@/src/services/api/forum';
 import { forumService } from '@/src/services/api/forum';
 import type { PostCategory } from '@/src/services/api/forum/types';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useRef, useState } from 'react';
-import { Alert, Image } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, Image, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Card, Text, TextArea, XStack, YStack } from 'tamagui';
 import { FavoritesTab } from './_components/FavoritesTab';
@@ -33,6 +33,34 @@ export default function ForumScreen() {
   const [category, setCategory] = useState<PostCategory | undefined>(undefined);
   const [tagsText, setTagsText] = useState('');
 
+  // Tag filtering state
+  const [allTags, setAllTags] = useState<{ id: number; name: string }[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  useEffect(() => {
+    // load tags for filter UI
+    forumService
+      .getTags()
+      .then((res) => {
+        const list = Array.isArray(res) ? res : (res as any)?.results || [];
+        setAllTags(list.filter((t: any) => t && (t.name || typeof t === 'string')));
+      })
+      .catch(() => {
+        setAllTags([]);
+      });
+  }, []);
+
+  const toggleFilterTag = (name: string) => {
+    setSelectedTags((prev) => (prev.includes(name) ? prev.filter((t) => t !== name) : [...prev, name]));
+    // auto refresh square list
+    setTimeout(() => squareReloadRef.current?.(), 0);
+  };
+
+  const clearFilters = () => {
+    setSelectedTags([]);
+    setTimeout(() => squareReloadRef.current?.(), 0);
+  };
+
   const pickImages = async () => {
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -40,12 +68,29 @@ export default function ForumScreen() {
       quality: 0.8,
     });
     if (res.canceled) return;
-    const files = res.assets.map((a, idx) => ({
-      uri: a.uri,
-      name: (a.fileName || `media_${Date.now()}_${idx}`) + (a.type === 'video' ? '.mp4' : '.jpg'),
-      type: a.mimeType || (a.type === 'video' ? 'video/mp4' : 'image/jpeg'),
-    }));
-    setPickedFiles((prev) => [...prev, ...files]);
+    const MAX_FILES = 9;
+    const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+    const accepted: { uri: string; name: string; type: string }[] = [];
+    const current = pickedFiles.length;
+    for (let idx = 0; idx < res.assets.length; idx++) {
+      const a = res.assets[idx];
+      const mime = a.mimeType || (a.type === 'video' ? 'video/mp4' : 'image/jpeg');
+      const isOkType = mime.startsWith('image/') || mime.startsWith('video/');
+      const size = (a as any).fileSize || (a as any).size || 0;
+      if (!isOkType) continue;
+      if (size && size > MAX_SIZE_BYTES) continue;
+      if (current + accepted.length >= MAX_FILES) break;
+      accepted.push({
+        uri: a.uri,
+        name: (a.fileName || `media_${Date.now()}_${idx}`) + (a.type === 'video' ? '.mp4' : '.jpg'),
+        type: mime,
+      });
+    }
+    if (accepted.length === 0) {
+      Alert.alert('提示', '未选择符合要求的文件（仅限图片/视频，单文件≤10MB，最多9个）');
+      return;
+    }
+    setPickedFiles((prev) => [...prev, ...accepted]);
   };
 
   const parseTags = (text: string) =>
@@ -74,17 +119,22 @@ export default function ForumScreen() {
 
   const submitPost = async () => {
     const tags = parseTags(tagsText);
+    const MAX_FILES = 9;
     if (!content.trim() && pickedFiles.length === 0) {
       Alert.alert('提示', '请输入内容或选择媒体');
+      return;
+    }
+    if (pickedFiles.length > MAX_FILES) {
+      Alert.alert('提示', `最多可上传 ${MAX_FILES} 个文件`);
       return;
     }
     try {
       setSubmitting(true);
       if (editingPost) {
-        await forumService.updatePost(editingPost.id, { content, category, tags });
+        await forumService.updatePost(editingPost.id, { content, tags });
         Alert.alert('成功', '更新成功');
       } else {
-        await forumService.createPost({ content, category, tags }, pickedFiles);
+        await forumService.createPost({ content, tags }, pickedFiles);
         Alert.alert('成功', '发布成功');
       }
       setContent('');
@@ -130,12 +180,42 @@ export default function ForumScreen() {
               消息
             </Button>
           </XStack>
+
+          {/* Tag filter row */}
+          <YStack gap="$2">
+            <XStack alignItems="center" justifyContent="space-between">
+              <Text fontWeight="700" color={ForumColors.clay}>标签筛选</Text>
+              <Button size="$2" chromeless onPress={clearFilters} color={ForumColors.clay}>清空</Button>
+            </XStack>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 6 }}>
+              <XStack gap="$2" alignItems="center">
+                {(Array.isArray(allTags) ? allTags : []).map((t: any) => {
+                  const name = typeof t === 'string' ? t : t.name;
+                  const id = (t && t.id) || name;
+                  const active = selectedTags.includes(name);
+                  return (
+                    <Button
+                      key={id}
+                      size="$2"
+                      onPress={() => toggleFilterTag(name)}
+                      backgroundColor={active ? ForumColors.clay : '#fff'}
+                      color={active ? '#fff' : '#603e1f'}
+                      borderWidth={1}
+                      borderColor={ForumColors.clay + '55'}
+                    >
+                      #{name}
+                    </Button>
+                  );
+                })}
+              </XStack>
+            </ScrollView>
+          </YStack>
         </YStack>
       </YStack>
 
       {/* Content area below header */}
       <YStack flex={1} padding="$3" gap="$3">
-        {tab === 'square' && <SquareTab externalReloadRef={squareReloadRef} onOpenPost={(p) => setActivePost(p)} />}
+        {tab === 'square' && <SquareTab externalReloadRef={squareReloadRef} onOpenPost={(p) => setActivePost(p)} filterTags={selectedTags} />}
         {tab === 'favorites' && <FavoritesTab onOpenPost={(p) => setActivePost(p)} />}
         {tab === 'messages' && <MessagesTab onCreatePost={openCreatePanel} />}
       </YStack>

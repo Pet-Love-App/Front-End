@@ -1,98 +1,184 @@
 import { apiClient } from '../BaseApi';
-import type { CreatePostRequest, NotificationItem, Post, ToggleActionResponse } from './types';
+import type { NotificationItem, Post, ToggleActionResponse } from './types';
 
 class ForumService {
-  private readonly basePath = '/api/comments';
+  private readonly forumBase = '/api/forum';
+  private readonly commentsBase = '/api/comments';
 
-  // 发帖：multipart/form-data，字段名 media（可多个）
-  async createPost(data: CreatePostRequest, files?: { uri: string; name: string; type: string }[]) {
-    const form = new FormData();
-    if (data.content) form.append('content', data.content);
-    if (data.category) form.append('category', data.category);
-    if (data.tags && data.tags.length) {
-      // 后端常见处理：tags[]=a&tags[]=b
-      data.tags.forEach((t) => form.append('tags[]', t));
-    }
-    if (files && files.length) {
-      for (const f of files) form.append('media', f as any);
-    }
-    return apiClient.upload<Post>(`${this.basePath}/posts/`, form);
-  }
-
-  // 编辑帖子（改为 multipart/form-data）
-  async updatePost(postId: number, data: Partial<CreatePostRequest>) {
-    const form = new FormData();
-    if (typeof data.content === 'string') form.append('content', data.content);
-    if (data.category) form.append('category', data.category);
-    if (Array.isArray(data.tags)) {
-      data.tags.forEach((t) => form.append('tags[]', t));
-    }
-    // 使用 PATCH 发送 multipart/form-data（BaseApi.patch 已支持 FormData）
-    return apiClient.patch<Post>(`${this.basePath}/posts/${postId}/`, form as any);
-  }
-
-  // 删除帖子
-  async deletePost(postId: number) {
-    return apiClient.delete(`${this.basePath}/posts/${postId}/`);
-  }
-
-  // 将后端返回的帖子对象标准化，便于前端展示
+  // 将后端返回的帖子对象标准化
   private normalizePost(raw: any): Post {
-    const tags: string[] = Array.isArray(raw.tags)
-      ? raw.tags
-      : Array.isArray(raw.tag_list)
-      ? raw.tag_list
-      : typeof raw.tags === 'string'
-      ? String(raw.tags)
-          .split(/[，,\s]+/)
-          .map((s) => s.trim())
-          .filter(Boolean)
-      : typeof raw.tag_list === 'string'
-      ? String(raw.tag_list)
-          .split(/[，,\s]+/)
-          .map((s) => s.trim())
-          .filter(Boolean)
-      : [];
+    // 标准化 tags（string[] | object[] | string）
+    let tags: string[] = [];
+    if (Array.isArray(raw?.tags)) {
+      tags = raw.tags.map((t: any) => (typeof t === 'string' ? t : (t?.name || t?.title || t?.label || String(t?.id ?? '')))).filter(Boolean);
+    } else if (typeof raw?.tags === 'string') {
+      tags = String(raw.tags)
+        .split(/[，,\s]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
 
-    const comments_count =
-      raw.comments_count ?? raw.comment_count ?? raw.replies_count ?? raw.reply_count ?? 0;
-
-    const category = raw.category ?? raw.post_category ?? raw.topic ?? undefined;
+    const comments_count = raw?.comments_count ?? raw?.comment_count ?? raw?.replies_count ?? raw?.reply_count ?? 0;
+    const favorites_count = raw?.favorites_count ?? raw?.favorite_count ?? 0;
 
     return {
       ...raw,
       tags,
       comments_count,
-      category,
+      favorites_count,
     } as Post;
   }
 
-  // 广场列表：支持按 latest / most_replied / featured 排序；兼容分页
-  async getSquareList(order: 'latest' | 'most_replied' | 'featured' | 'random' = 'latest') {
-    const res: any = await apiClient.get(`${this.basePath}/posts/?order=${order}`);
+  // 帖子列表（支持标签与时间筛选）
+  async getSquareList(params: {
+    order?: 'latest' | 'most_replied' | 'featured' | 'random';
+    tag?: string;
+    tags?: string[];
+    tag_id?: number;
+    tag_ids?: number[];
+    start?: string; // 日期/ISO
+    end?: string; // 日期/ISO
+  } = {}) {
+    const qs = new URLSearchParams();
+    if ((params as any).order && typeof (params as any) === 'string') {
+      // 兼容旧调用方式：getSquareList('latest')
+      qs.append('ordering', (params as any) === 'most_replied' ? '-comments_count' : '-created_at');
+    } else {
+      if (params.tag) qs.append('tag', params.tag);
+      if (params.tags && params.tags.length) qs.append('tags', params.tags.join(','));
+      if (typeof params.tag_id === 'number') qs.append('tag_id', String(params.tag_id));
+      if (params.tag_ids && params.tag_ids.length) qs.append('tag_ids', params.tag_ids.join(','));
+      if (params.start) qs.append('start', params.start);
+      if (params.end) qs.append('end', params.end);
+
+      // 排序映射（如后端支持 ordering，可在此追加）
+      if (params.order === 'latest') qs.append('ordering', '-created_at');
+      else if (params.order === 'most_replied') qs.append('ordering', '-comments_count');
+    }
+
+    const url = qs.toString() ? `${this.forumBase}/posts/?${qs.toString()}` : `${this.forumBase}/posts/`;
+    const res: any = await apiClient.get(url);
     const list: any[] = Array.isArray(res) ? res : res?.results || [];
     return list.map((x) => this.normalizePost(x)) as Post[];
   }
 
   // 帖子详情
   async getPostDetail(id: number) {
-    const raw = await apiClient.get<any>(`${this.basePath}/posts/${id}/`);
+    const raw = await apiClient.get<any>(`${this.forumBase}/posts/${id}/`);
     return this.normalizePost(raw);
   }
 
-  // 收藏/取消收藏帖子
-  async toggleFavorite(postId: number) {
-    return apiClient.post<ToggleActionResponse>(`${this.basePath}/posts/${postId}/favorite/`, {});
+  // 创建帖子（仅提交 content/tags/media）
+  async createPost(
+    data: { content: string; tags?: string[] | string },
+    files?: { uri: string; name: string; type: string; size?: number }[]
+  ) {
+    const form = new FormData();
+
+    // 内容
+    const content = typeof data.content === 'string' ? data.content : '';
+    if (content) form.append('content', content);
+
+    // 标签处理：严格按照 API 文档要求
+    // 1. 将 tags 数组转换为逗号分隔的字符串
+    // 2. 如果没有标签，则提交一个空字符串 `tags=""`
+    let tagList: string[] = [];
+    if (Array.isArray(data.tags)) {
+      tagList = data.tags;
+    } else if (typeof data.tags === 'string' && data.tags.trim()) {
+      tagList = data.tags
+        .split(/[，,\s]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+    const uniqTags = Array.from(new Set(tagList.map((t) => t.trim()).filter(Boolean)));
+    const tagsAsString = uniqTags.join(',');
+    form.append('tags', tagsAsString);
+
+    // 文件校验与追加，仅使用 key "media"
+    const MAX_FILES = 9;
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    const safeFiles: { uri: string; name: string; type: string; size?: number }[] = [];
+    if (files && files.length) {
+      for (const f of files.slice(0, MAX_FILES)) {
+        const reason: string[] = [];
+        if (!f.uri || !f.uri.startsWith('file://')) reason.push('uri 非 file://');
+        if (!f.type || !(f.type.startsWith('image/') || f.type.startsWith('video/'))) reason.push('type 非 image/* 或 video/*');
+        if (typeof f.size === 'number' && f.size > MAX_SIZE) reason.push('size > 10MB');
+        if (reason.length) {
+          console.warn('文件被跳过:', { name: f.name, type: f.type, size: f.size, uri: f.uri, reason });
+          continue;
+        }
+        const file = {
+          uri: f.uri,
+          name: f.name || `upload_${Date.now()}`,
+          type: f.type,
+        } as any;
+        form.append('media', file);
+        safeFiles.push({ uri: f.uri, name: file.name, type: f.type, size: f.size });
+      }
+    }
+
+    // 临时调试日志：打印将要上传的内容
+    try {
+      // 延迟导入避免循环依赖，检查 token
+      const { useUserStore } = require('@/src/store/userStore');
+      const token = useUserStore.getState().accessToken;
+      console.group('[ForumService.createPost] 上传调试');
+      console.log('endpoint:', `${this.forumBase}/posts/`);
+      console.log('hasToken:', Boolean(token));
+      console.log('content.length:', content.length);
+      console.log('tags(submitted as comma-separated string):', `"${tagsAsString}"`);
+      console.log(
+        'files(to submit):',
+        safeFiles.map((f) => ({ name: f.name, type: f.type, size: f.size, uriPrefix: f.uri.slice(0, 10) }))
+      );
+      console.log('files.count:', safeFiles.length);
+      console.groupEnd();
+    } catch (e) {
+      // 忽略日志失败
+    }
+
+    return apiClient.upload<Post>(`${this.forumBase}/posts/`, form);
+  }
+
+  // 更新帖子（不提交 category）
+  async updatePost(postId: number, data: { content?: string; tags?: string[] | string }) {
+    const form = new FormData();
+    if (typeof data.content === 'string') form.append('content', data.content);
+    let tagsValue: string | undefined;
+    if (Array.isArray(data.tags)) tagsValue = data.tags.join(',');
+    else if (typeof data.tags === 'string') tagsValue = data.tags;
+    if (tagsValue !== undefined) form.append('tags', tagsValue);
+    return apiClient.patch<Post>(`${this.forumBase}/posts/${postId}/`, form as any);
+  }
+
+  // 删除帖子
+  async deletePost(postId: number) {
+    return apiClient.delete(`${this.forumBase}/posts/${postId}/`);
   }
 
   // 我的收藏
   async getMyFavorites() {
-    const res: any = await apiClient.get(`${this.basePath}/posts/favorites/`);
+    const res: any = await apiClient.get(`${this.forumBase}/posts/favorites/`);
     const list: any[] = Array.isArray(res) ? res : res?.results || [];
     return list.map((x) => this.normalizePost(x)) as Post[];
   }
 
-  // 评论列表（按目标过滤）可按赞、可返回子回复
+  // 收藏/取消收藏
+  async toggleFavorite(postId: number) {
+    return apiClient.post<ToggleActionResponse>(`${this.forumBase}/posts/${postId}/favorite/`);
+  }
+
+  // 标签
+  async getTags() {
+    return apiClient.get<{ id: number; name: string }[]>(`${this.forumBase}/tags/`);
+  }
+  async getTagDetail(id: number) {
+    return apiClient.get<{ id: number; name: string }>(`${this.forumBase}/tags/${id}/`);
+  }
+
+  // 评论（保持原有 /api/comments 路径，后端未提供新路径）
   async getCommentsForTarget(params: {
     targetType: 'post' | 'catfood' | 'report';
     targetId: number;
@@ -102,59 +188,50 @@ class ForumService {
     const { targetType, targetId, orderBy, includeReplies } = params;
     const orderParam = orderBy === 'likes' ? '&order_by=likes' : '';
     const repliesParam = includeReplies ? '&include_replies=true' : '';
-    return apiClient.get(`${this.basePath}/comments/?target_type=${targetType}&target_id=${targetId}${orderParam}${repliesParam}`);
+    return apiClient.get(`${this.commentsBase}/comments/?target_type=${targetType}&target_id=${targetId}${orderParam}${repliesParam}`);
   }
-
-  // 发表评论或回复评论（统一入口）——将字段转换为后端常见的 snake_case
-  async createComment(params: {
-    targetType: 'post' | 'catfood' | 'report';
-    targetId: number;
-    content: string;
-    parentId?: number;
-  }) {
+  async createComment(params: { targetType: 'post' | 'catfood' | 'report'; targetId: number; content: string; parentId?: number }) {
     const payload: any = {
       content: params.content,
-      target_type: params.targetType,
-      target_id: params.targetId,
+      targetType: params.targetType, // FIX: 后端需要 camelCase
+      targetId: params.targetId, // FIX: 后端需要 camelCase
     };
     if (typeof params.parentId === 'number') {
-      payload.parent_id = params.parentId;
+      payload.parentId = params.parentId; // FIX: 后端需要 camelCase
     }
-    // 同时兼容后端可能接受的 camelCase（若启用了 camelCase 解析中间件）
-    payload.targetType = params.targetType;
-    payload.targetId = params.targetId;
-    if (typeof params.parentId === 'number') payload.parentId = params.parentId;
-
-    return apiClient.post(`${this.basePath}/comments/`, payload);
+    // 调试日志
+    console.log('[ForumService.createComment] 发送评论/回复:', {
+      endpoint: `${this.commentsBase}/comments/`,
+      payload,
+    });
+    return apiClient.post(`${this.commentsBase}/comments/`, payload);
   }
-
-  // 编辑评论
   async updateComment(commentId: number, content: string) {
-    return apiClient.patch(`${this.basePath}/comments/${commentId}/`, { content });
+    return apiClient.patch(`${this.commentsBase}/comments/${commentId}/`, { content });
   }
-
-  // 删除评论
   async deleteComment(commentId: number) {
-    return apiClient.delete(`${this.basePath}/comments/${commentId}/`);
+    return apiClient.delete(`${this.commentsBase}/comments/${commentId}/`);
   }
-
-  // 点赞/取消点赞评论
   async toggleCommentLike(commentId: number) {
-    return apiClient.post<ToggleActionResponse>(`${this.basePath}/comments/${commentId}/like/`, {});
+    return apiClient.post<ToggleActionResponse>(`${this.commentsBase}/comments/${commentId}/like/`, {});
   }
 
-  // 消息中心（数组）
+  // 通知
   async getNotifications(unread?: boolean) {
     const suffix = typeof unread === 'boolean' ? `?unread=${unread}` : '';
-    return apiClient.get<NotificationItem[]>(`${this.basePath}/notifications/${suffix}`);
+    return apiClient.get<NotificationItem[]>(`${this.forumBase}/notifications/${suffix}`);
   }
-
+  async getNotificationDetail(id: number) {
+    return apiClient.get(`${this.forumBase}/notifications/${id}/`);
+  }
   async markNotificationRead(id: number) {
-    return apiClient.post(`${this.basePath}/notifications/${id}/read/`, {});
+    return apiClient.post(`${this.forumBase}/notifications/${id}/mark_read/`);
   }
-
   async markAllNotificationsRead() {
-    return apiClient.post(`${this.basePath}/notifications/read_all/`, {});
+    return apiClient.post(`${this.forumBase}/notifications/mark_all_read/`);
+  }
+  async getUnreadCount() {
+    return apiClient.get<{ count: number }>(`${this.forumBase}/notifications/unread_count/`);
   }
 }
 

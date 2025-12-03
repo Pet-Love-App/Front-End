@@ -1,3 +1,4 @@
+import Tag from '@/src/components/ui/Tag'; // 导入 Tag 组件
 import { forumService, type Post } from '@/src/services/api/forum';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -71,26 +72,16 @@ export function SquareTab({ onOpenPost, externalReloadRef, order = 'latest', fil
     }
   };
 
-  const renderBadges = (item: Post) => (
-    <XStack gap="$2" alignItems="center" flexWrap="wrap">
-      {item.category ? (() => {
-        const { bg, fg } = badgeColorFor(`cat:${item.category}`);
-        return (
-          <XStack key={`cat-${item.id}`} paddingVertical={4} paddingHorizontal={8} borderRadius={12} backgroundColor={bg}>
-            <Text color={fg}>#{item.category}</Text>
-          </XStack>
-        );
-      })() : null}
-      {item.tags?.map((t) => {
-        const { bg, fg } = badgeColorFor(`tag:${t}`);
-        return (
-          <XStack key={`${item.id}-${t}`} paddingVertical={4} paddingHorizontal={8} borderRadius={12} backgroundColor={bg}>
-            <Text color={fg}>#{t}</Text>
-          </XStack>
-        );
-      })}
-    </XStack>
-  );
+  const renderTags = (item: Post) => {
+    if (!item.tags || item.tags.length === 0) return null;
+    return (
+      <XStack gap="$2" alignItems="center" flexWrap="wrap" marginTop="$2">
+        {item.tags.map((tag, index) => (
+          <Tag key={`${item.id}-${tag}`} name={tag} index={index} />
+        ))}
+      </XStack>
+    );
+  };
 
   const renderMediaPreview = (item: Post) => {
     if (!item.media || item.media.length === 0) return null;
@@ -128,7 +119,8 @@ export function SquareTab({ onOpenPost, externalReloadRef, order = 'latest', fil
           <Text color="$gray10">{new Date(item.created_at).toLocaleString()}</Text>
         </XStack>
         <Text>{item.content}</Text>
-        {(item.category || (item.tags && item.tags.length)) ? renderBadges(item) : null}
+
+        {renderTags(item)}
 
         {renderMediaPreview(item)}
 

@@ -1,3 +1,4 @@
+import Tag from '@/src/components/ui/Tag'; // 导入 Tag 组件
 import type { Comment } from '@/src/services/api/comment';
 import type { Post } from '@/src/services/api/forum';
 import { forumService } from '@/src/services/api/forum';
@@ -168,14 +169,13 @@ export function PostDetailModal({ visible, post, onClose, headerOffset = 0, onEd
                   ))}
                 </XStack>
               )}
-              {(post.category || (post.tags && post.tags.length)) ? (
-                <XStack gap="$2" alignItems="center" flexWrap="wrap">
-                  {post.category && <Text color={ForumColors.clay}>#{post.category}</Text>}
-                  {post.tags?.map((t) => (
-                    <Text key={t} color={ForumColors.clay + '99'}>#{t}</Text>
+              {post.tags && post.tags.length > 0 && (
+                <XStack gap="$2" alignItems="center" flexWrap="wrap" marginTop="$2">
+                  {post.tags.map((tag, index) => (
+                    <Tag key={`${post.id}-${tag}`} name={tag} index={index} />
                   ))}
                 </XStack>
-              ) : null}
+              )}
             </YStack>
           </Card>
         </ScrollView>

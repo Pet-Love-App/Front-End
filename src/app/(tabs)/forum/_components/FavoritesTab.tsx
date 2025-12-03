@@ -1,3 +1,4 @@
+import Tag from '@/src/components/ui/Tag'; // 导入 Tag 组件
 import { forumService, type Post } from '@/src/services/api/forum';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -41,11 +42,23 @@ export function FavoritesTab({ onOpenPost }: Props) {
     }
   };
 
+  const renderTags = (item: Post) => {
+    if (!item.tags || item.tags.length === 0) return null;
+    return (
+      <XStack gap="$2" alignItems="center" flexWrap="wrap" marginTop="$2">
+        {item.tags.map((tag, index) => (
+          <Tag key={`${item.id}-${tag}`} name={tag} index={index} />
+        ))}
+      </XStack>
+    );
+  };
+
   const renderItem = ({ item }: { item: Post }) => (
     <Card margin="$3" padding="$3" elevate>
       <YStack gap="$2">
         <Text fontWeight="700">{item.author.username}</Text>
         <Text>{item.content}</Text>
+        {renderTags(item)}
         <XStack gap="$3" alignItems="center" justifyContent="space-between">
           <Text color="$gray10">{new Date(item.created_at).toLocaleString()}</Text>
           <XStack gap="$3" alignItems="center">

@@ -53,8 +53,14 @@ class PetService {
    * @param photoUri 可选的宠物照片 URI
    */
   async createPet(petData: PetInput, photoUri?: string): Promise<Pet> {
+    console.log('🐾 开始创建宠物...');
+    console.log('📍 API地址:', API_ENDPOINTS.PET.CREATE);
+    console.log('📦 宠物数据:', petData);
+    console.log('📸 照片URI:', photoUri);
+
     if (photoUri) {
       // 使用 multipart/form-data 创建宠物并上传照片
+      console.log('✅ 使用 FormData 模式（带照片）');
       const formData = new FormData();
       formData.append('name', petData.name);
       formData.append('species', petData.species || 'cat');
@@ -70,12 +76,14 @@ class PetService {
         type: `image/${fileType}`,
       } as any);
 
-      const data = await apiClient.upload(API_ENDPOINTS.PET.CREATE, formData);
+      const data = await apiClient.post(API_ENDPOINTS.PET.CREATE, formData);
       const pet = data.pet || data;
       return validateResponse<Pet>(pet, petSchema);
     } else {
       // 使用 JSON 创建宠物
+      console.log('✅ 使用 JSON 模式（无照片）');
       const data = await apiClient.post(API_ENDPOINTS.PET.CREATE, petData);
+      console.log('📥 后端响应:', JSON.stringify(data, null, 2));
       const pet = data.pet || data;
       return validateResponse<Pet>(pet, petSchema);
     }

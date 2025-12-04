@@ -12,7 +12,8 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import type { AIReportData } from '@/src/services/api';
+import type { AIReportData, Additive } from '@/src/services/api';
+import { additiveService } from '@/src/services/api';
 import { useState } from 'react';
 import { Alert, Dimensions } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
@@ -33,8 +34,10 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
 
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<Additive | null>(null);
+  const [baikeInfo, setBaikeInfo] = useState<{ title: string; extract: string } | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
   if (isLoading) {
     return (
@@ -61,14 +64,99 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
     return null;
   }
 
-  // 处理点击成分/添加剂
-  const handleItemPress = (itemName: string, type: 'additive' | 'ingredient') => {
-    // 简化版：显示名称
-    // 完整版可以调用 API 查询详细信息
-    Alert.alert(
-      type === 'additive' ? '添加剂' : '营养成分',
-      `${itemName}\n\n点击功能开发中，将显示详细信息`
-    );
+  // 处理点击添加剂
+  const handleAdditivePress = async (additiveName: string) => {
+    setIsLoadingDetail(true);
+    setSelectedItem(null);
+    setBaikeInfo(null);
+    setModalVisible(true);
+
+    try {
+      // 并行获取数据库信息和百度百科信息
+      const [additiveResult, baikeResult] = await Promise.allSettled([
+        additiveService.searchAdditive(additiveName),
+        additiveService.getIngredientInfo(additiveName),
+      ]);
+
+      // 处理添加剂数据库信息
+      if (additiveResult.status === 'fulfilled') {
+        const data = additiveResult.value;
+        console.log('📥 添加剂搜索结果:', data);
+
+        // 根据后端返回的数据结构处理
+        if (
+          data.match_type === 'exact' ||
+          data.match_type === 'fuzzy' ||
+          data.match_type === 'fuzzy_single'
+        ) {
+          // 单个结果
+          if (data.additive) {
+            setSelectedItem(data.additive);
+          }
+        } else if (data.match_type === 'multiple') {
+          // 多个结果，取第一个
+          if (data.additives && data.additives.length > 0) {
+            setSelectedItem(data.additives[0]);
+          }
+        } else if (data.match_type === 'not_found') {
+          // 未找到，创建一个基本对象
+          setSelectedItem({
+            name: additiveName,
+            en_name: '',
+            type: '未分类',
+            applicable_range: '暂无数据',
+          });
+        }
+      } else {
+        console.error('❌ 添加剂搜索失败:', additiveResult.reason);
+        // 创建一个基本对象
+        setSelectedItem({
+          name: additiveName,
+          en_name: '',
+          type: '未分类',
+          applicable_range: '暂无数据',
+        });
+      }
+
+      // 处理百度百科信息
+      if (baikeResult.status === 'fulfilled') {
+        const baikeData = baikeResult.value;
+        console.log('📥 百度百科搜索结果:', baikeData);
+
+        if (baikeData.ok && baikeData.extract) {
+          setBaikeInfo({
+            title: baikeData.title || additiveName,
+            extract: baikeData.extract,
+          });
+        }
+      } else {
+        console.error('❌ 百度百科搜索失败:', baikeResult.reason);
+      }
+    } catch (error) {
+      console.error('❌ 获取添加剂详情失败:', error);
+      // 创建一个基本对象以显示错误信息
+      setSelectedItem({
+        name: additiveName,
+        en_name: '',
+        type: '加载失败',
+        applicable_range: '请稍后重试',
+      });
+    } finally {
+      setIsLoadingDetail(false);
+    }
+  };
+
+  // 处理点击营养成分
+  const handleIngredientPress = (ingredientName: string) => {
+    // 营养成分暂时使用 Alert
+    Alert.alert('营养成分', `${ingredientName}\n\n营养成分详情功能开发中`);
+  };
+
+  // 关闭弹窗
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setSelectedItem(null);
+    setBaikeInfo(null);
   };
 
   // 获取营养成分占比数据
@@ -329,8 +417,9 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
                     borderRadius="$2"
                     borderWidth={1}
                     borderColor="$purple6"
-                    pressStyle={{ opacity: 0.7 }}
-                    onPress={() => handleItemPress(additive, 'additive')}
+                    pressStyle={{ opacity: 0.7, scale: 0.98 }}
+                    cursor="pointer"
+                    onPress={() => handleAdditivePress(additive)}
                   >
                     <Text fontSize="$2" color="$purple11">
                       {additive}
@@ -363,8 +452,9 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
                     borderRadius="$2"
                     borderWidth={1}
                     borderColor="$green6"
-                    pressStyle={{ opacity: 0.7 }}
-                    onPress={() => handleItemPress(ingredient, 'ingredient')}
+                    pressStyle={{ opacity: 0.7, scale: 0.98 }}
+                    cursor="pointer"
+                    onPress={() => handleIngredientPress(ingredient)}
                   >
                     <Text fontSize="$2" color="$green11">
                       {ingredient}
@@ -395,14 +485,12 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
         </YStack>
       </YStack>
 
-      {/* 详情弹窗 */}
+      {/* 添加剂详情弹窗 */}
       <AdditiveDetailModal
         visible={modalVisible}
         additive={selectedItem}
-        onClose={() => {
-          setModalVisible(false);
-          setSelectedItem(null);
-        }}
+        baikeInfo={baikeInfo}
+        onClose={handleCloseModal}
       />
     </Card>
   );

@@ -176,12 +176,12 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
       </Card.Header>
 
       {/* 营养信息指示 */}
-      {showNutritionInfo && (catfood.ingredient.length > 0 || catfood.percentage) && (
+      {showNutritionInfo && (catfood.ingredient?.length > 0 || catfood.percentage) && (
         <>
           <Separator />
           <Card.Footer padded>
             <XStack gap="$3" alignItems="center">
-              {catfood.ingredient.length > 0 && (
+              {catfood.ingredient?.length > 0 && (
                 <XStack alignItems="center" gap="$1">
                   <IconSymbol name="checkmark.seal.fill" size={14} color="$green10" />
                   <Text fontSize="$2" color="$green10">

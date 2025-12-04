@@ -49,7 +49,7 @@ export function PetCard({ pet, onPress }: PetCardProps) {
     >
       <XStack gap="$4" alignItems="center">
         {/* Pet Photo */}
-        {pet.photo ? (
+        {pet.photo_url ? (
           <YStack
             borderRadius="$3"
             overflow="hidden"
@@ -57,7 +57,7 @@ export function PetCard({ pet, onPress }: PetCardProps) {
             borderColor={withAlpha(colors.tint, 0.188)}
           >
             <Image
-              source={{ uri: pet.photo }}
+              source={{ uri: pet.photo_url }}
               style={{
                 width: 70,
                 height: 70,

@@ -4,7 +4,7 @@
 
 import { API_BASE_URL } from '@/src/config/env';
 import { apiClient } from '../BaseApi';
-import type { OcrRecognizeResponse, OcrResult } from './types';
+import type { OcrRecognizeResponse, OcrResult, OcrTextItem } from './types';
 
 /**
  * OCR API 服务类（适配新的 Supabase API）
@@ -39,15 +39,15 @@ class OcrService {
       );
 
       // 后端返回 { result: [...] }
-      const results = response.result || [];
+      const results: OcrTextItem[] = response.result || [];
 
       // 合并所有识别的文本
-      const text = results.map((r: any) => r.text).join('\n');
+      const text = results.map((r) => r.text).join('\n');
 
       // 计算平均置信度
       const avgConfidence =
         results.length > 0
-          ? results.reduce((sum: number, r: any) => sum + (r.confidence || 0), 0) / results.length
+          ? results.reduce((sum, r) => sum + (r.confidence || 0), 0) / results.length
           : 0;
 
       return {
@@ -93,15 +93,15 @@ class OcrService {
       const data: OcrRecognizeResponse = await response.json();
 
       // 后端返回 { result: [...] }
-      const results = data.result || [];
+      const results: OcrTextItem[] = data.result || [];
 
       // 合并所有识别的文本
-      const text = results.map((r: any) => r.text).join('\n');
+      const text = results.map((r) => r.text).join('\n');
 
       // 计算平均置信度
       const avgConfidence =
         results.length > 0
-          ? results.reduce((sum: number, r: any) => sum + (r.confidence || 0), 0) / results.length
+          ? results.reduce((sum, r) => sum + (r.confidence || 0), 0) / results.length
           : 0;
 
       return {
@@ -122,4 +122,4 @@ export const ocrService = new OcrService();
 export const recognizeImage = (imageUri: string) => ocrService.recognize(imageUri);
 
 // 重新导出类型
-export type { OcrRecognizeResponse, OcrResult } from './types';
+export type { OcrRecognizeResponse, OcrResult, OcrTextItem } from './types';

@@ -4,12 +4,8 @@
 
 import { apiClient } from '../BaseApi';
 import type {
-  CheckFavoriteReportResponse,
-  CheckFavoriteResponse,
   Favorite,
   FavoriteReport,
-  GetFavoriteReportsResponse,
-  GetFavoritesResponse,
   ToggleFavoriteReportResponse,
   ToggleFavoriteResponse,
 } from './types';
@@ -19,13 +15,16 @@ class CollectApi {
    * 获取当前用户的收藏列表
    */
   async getFavorites(): Promise<Favorite[]> {
-    const response = await apiClient.get<GetFavoritesResponse | Favorite[]>(
-      '/api/catfood/favorites/'
-    );
+    const response = await apiClient.get<any>('/api/catfoods/favorites/');
 
-    // 处理分页响应或直接数组响应
-    if (response && typeof response === 'object' && 'results' in response) {
-      return response.results || [];
+    // 适配后端返回格式: { favorites: [...] }
+    if (response && typeof response === 'object') {
+      if ('favorites' in response) {
+        return response.favorites || [];
+      }
+      if ('results' in response) {
+        return response.results || [];
+      }
     }
 
     // 如果是数组，直接返回
@@ -33,43 +32,13 @@ class CollectApi {
   }
 
   /**
-   * 收藏猫粮
-   */
-  async createFavorite(catfoodId: number): Promise<Favorite> {
-    const response = await apiClient.post<Favorite>('/api/catfood/favorites/', {
-      catfood_id: catfoodId,
-    });
-    return response;
-  }
-
-  /**
-   * 取消收藏
-   */
-  async deleteFavorite(favoriteId: number): Promise<void> {
-    await apiClient.delete(`/api/catfood/favorites/${favoriteId}/`);
-  }
-
-  /**
    * 切换收藏状态（收藏/取消收藏）
    */
   async toggleFavorite(catfoodId: number): Promise<ToggleFavoriteResponse> {
     const response = await apiClient.post<ToggleFavoriteResponse>(
-      '/api/catfood/favorites/toggle/',
-      {
-        catfood_id: catfoodId,
-      }
+      `/api/catfoods/${catfoodId}/favorite/`
     );
     return response;
-  }
-
-  /**
-   * 检查是否已收藏
-   */
-  async checkFavorite(catfoodId: number): Promise<boolean> {
-    const response = await apiClient.post<CheckFavoriteResponse>('/api/catfood/favorites/check/', {
-      catfood_id: catfoodId,
-    });
-    return response.is_favorited;
   }
 
   // ========== 报告收藏相关 ==========
@@ -78,18 +47,19 @@ class CollectApi {
    * 获取用户收藏的AI报告列表
    */
   async getFavoriteReports(): Promise<FavoriteReport[]> {
-    const response = await apiClient.get<GetFavoriteReportsResponse>('/api/ai/favorites/');
-    return response.results || [];
+    const response = await apiClient.get<any>('/api/ai/favorites/');
+    // 适配后端返回格式: { favorites: [...] }
+    return response.favorites || response.results || [];
   }
 
   /**
    * 切换AI报告收藏状态（收藏/取消收藏）
    */
-  async toggleFavoriteReport(reportId: number): Promise<ToggleFavoriteReportResponse> {
+  async toggleFavoriteReport(catfoodId: number): Promise<ToggleFavoriteReportResponse> {
     const response = await apiClient.post<ToggleFavoriteReportResponse>(
       '/api/ai/favorites/toggle/',
       {
-        report_id: reportId,
+        catfood_id: catfoodId,
       }
     );
     return response;
@@ -98,18 +68,8 @@ class CollectApi {
   /**
    * 删除AI报告收藏
    */
-  async deleteFavoriteReport(favoriteId: number): Promise<void> {
-    await apiClient.delete(`/api/ai/favorites/${favoriteId}/`);
-  }
-
-  /**
-   * 检查AI报告是否已收藏
-   */
-  async checkFavoriteReport(reportId: number): Promise<boolean> {
-    const response = await apiClient.get<CheckFavoriteReportResponse>(
-      `/api/ai/favorites/check/${reportId}/`
-    );
-    return response.is_favorited;
+  async deleteFavoriteReport(catfoodId: number): Promise<void> {
+    await apiClient.delete(`/api/ai/favorites/${catfoodId}/delete/`);
   }
 }
 

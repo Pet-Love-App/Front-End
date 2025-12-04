@@ -2,6 +2,7 @@
  * AI 报告 API 服务
  */
 
+import { API_ENDPOINTS } from '@/src/config/api';
 import { apiClient } from '../BaseApi';
 import type {
   AIReportData,
@@ -43,9 +44,10 @@ class AiReportService {
   async getReport(catfoodId: number): Promise<AIReportData> {
     try {
       console.log(`📥 获取猫粮 ${catfoodId} 的 AI 报告...`);
-      const response = await apiClient.get<AIReportData>(`/api/ai/${catfoodId}/`);
+      const response = await apiClient.get<{ report: AIReportData }>(`/api/ai/${catfoodId}/`);
       console.log('✅ 报告获取成功:', response);
-      return response;
+      // 后端返回 {report: ...}，需要提取 report 字段
+      return response.report;
     } catch (error) {
       console.error('❌ 获取报告失败:', error);
       throw error;
@@ -107,7 +109,7 @@ class AiReportService {
 
       // 后端返回的数据结构
       const backendResponse = await apiClient.post<BackendReportResponse>(
-        '/api/ai/llm/chat',
+        API_ENDPOINTS.AI_REPORT.LLM_CHAT,
         request
       );
 
@@ -145,10 +147,9 @@ class AiReportService {
    */
   async getIngredientInfo(ingredient: string): Promise<IngredientInfoResponse> {
     try {
-      const response = await apiClient.post<IngredientInfoResponse>(
-        '/api/additive/ingredient-info/',
-        { ingredient }
-      );
+      const response = await apiClient.post<IngredientInfoResponse>('/api/search/ingredient/info', {
+        ingredient,
+      });
       return response;
     } catch (error) {
       console.error('查询成分信息失败:', error);
@@ -188,17 +189,15 @@ class AiReportService {
   }
 
   /**
-   * 检查报告收藏状态
+   * 删除报告收藏
    * @param catfoodId 猫粮ID
-   * @returns 收藏状态
+   * @returns 删除结果
    */
-  async checkFavoriteStatus(catfoodId: number): Promise<{ favorited: boolean }> {
+  async deleteFavoriteReport(catfoodId: number): Promise<{ message: string }> {
     try {
-      return await apiClient.get<{ favorited: boolean }>(
-        `/api/ai/favorites/check/?catfood_id=${catfoodId}`
-      );
+      return await apiClient.delete<{ message: string }>(`/api/ai/favorites/${catfoodId}/delete/`);
     } catch (error) {
-      console.error('检查收藏状态失败:', error);
+      console.error('删除收藏失败:', error);
       throw error;
     }
   }

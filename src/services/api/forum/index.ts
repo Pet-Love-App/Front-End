@@ -2,7 +2,7 @@ import { apiClient } from '../BaseApi';
 import type { NotificationItem, Post, ToggleActionResponse } from './types';
 
 class ForumService {
-  private readonly forumBase = '/api/forum';
+  private readonly forumBase = '/api';
   private readonly commentsBase = '/api/comments';
 
   // 将后端返回的帖子对象标准化
@@ -10,7 +10,11 @@ class ForumService {
     // 标准化 tags（string[] | object[] | string）
     let tags: string[] = [];
     if (Array.isArray(raw?.tags)) {
-      tags = raw.tags.map((t: any) => (typeof t === 'string' ? t : (t?.name || t?.title || t?.label || String(t?.id ?? '')))).filter(Boolean);
+      tags = raw.tags
+        .map((t: any) =>
+          typeof t === 'string' ? t : t?.name || t?.title || t?.label || String(t?.id ?? '')
+        )
+        .filter(Boolean);
     } else if (typeof raw?.tags === 'string') {
       tags = String(raw.tags)
         .split(/[，,\s]+/)
@@ -18,7 +22,8 @@ class ForumService {
         .filter(Boolean);
     }
 
-    const comments_count = raw?.comments_count ?? raw?.comment_count ?? raw?.replies_count ?? raw?.reply_count ?? 0;
+    const comments_count =
+      raw?.comments_count ?? raw?.comment_count ?? raw?.replies_count ?? raw?.reply_count ?? 0;
     const favorites_count = raw?.favorites_count ?? raw?.favorite_count ?? 0;
 
     return {
@@ -30,15 +35,17 @@ class ForumService {
   }
 
   // 帖子列表（支持标签与时间筛选）
-  async getSquareList(params: {
-    order?: 'latest' | 'most_replied' | 'featured' | 'random';
-    tag?: string;
-    tags?: string[];
-    tag_id?: number;
-    tag_ids?: number[];
-    start?: string; // 日期/ISO
-    end?: string; // 日期/ISO
-  } = {}) {
+  async getSquareList(
+    params: {
+      order?: 'latest' | 'most_replied' | 'featured' | 'random';
+      tag?: string;
+      tags?: string[];
+      tag_id?: number;
+      tag_ids?: number[];
+      start?: string; // 日期/ISO
+      end?: string; // 日期/ISO
+    } = {}
+  ) {
     const qs = new URLSearchParams();
     if ((params as any).order && typeof (params as any) === 'string') {
       // 兼容旧调用方式：getSquareList('latest')
@@ -56,9 +63,12 @@ class ForumService {
       else if (params.order === 'most_replied') qs.append('ordering', '-comments_count');
     }
 
-    const url = qs.toString() ? `${this.forumBase}/posts/?${qs.toString()}` : `${this.forumBase}/posts/`;
+    const url = qs.toString()
+      ? `${this.forumBase}/posts/?${qs.toString()}`
+      : `${this.forumBase}/posts/`;
     const res: any = await apiClient.get(url);
-    const list: any[] = Array.isArray(res) ? res : res?.results || [];
+    // 适配后端返回格式: { posts: [...], page, per_page }
+    const list: any[] = Array.isArray(res) ? res : res?.posts || res?.results || [];
     return list.map((x) => this.normalizePost(x)) as Post[];
   }
 
@@ -103,10 +113,17 @@ class ForumService {
       for (const f of files.slice(0, MAX_FILES)) {
         const reason: string[] = [];
         if (!f.uri || !f.uri.startsWith('file://')) reason.push('uri 非 file://');
-        if (!f.type || !(f.type.startsWith('image/') || f.type.startsWith('video/'))) reason.push('type 非 image/* 或 video/*');
+        if (!f.type || !(f.type.startsWith('image/') || f.type.startsWith('video/')))
+          reason.push('type 非 image/* 或 video/*');
         if (typeof f.size === 'number' && f.size > MAX_SIZE) reason.push('size > 10MB');
         if (reason.length) {
-          console.warn('文件被跳过:', { name: f.name, type: f.type, size: f.size, uri: f.uri, reason });
+          console.warn('文件被跳过:', {
+            name: f.name,
+            type: f.type,
+            size: f.size,
+            uri: f.uri,
+            reason,
+          });
           continue;
         }
         const file = {
@@ -131,7 +148,12 @@ class ForumService {
       console.log('tags(submitted as comma-separated string):', `"${tagsAsString}"`);
       console.log(
         'files(to submit):',
-        safeFiles.map((f) => ({ name: f.name, type: f.type, size: f.size, uriPrefix: f.uri.slice(0, 10) }))
+        safeFiles.map((f) => ({
+          name: f.name,
+          type: f.type,
+          size: f.size,
+          uriPrefix: f.uri.slice(0, 10),
+        }))
       );
       console.log('files.count:', safeFiles.length);
       console.groupEnd();
@@ -158,13 +180,6 @@ class ForumService {
     return apiClient.delete(`${this.forumBase}/posts/${postId}/`);
   }
 
-  // 我的收藏
-  async getMyFavorites() {
-    const res: any = await apiClient.get(`${this.forumBase}/posts/favorites/`);
-    const list: any[] = Array.isArray(res) ? res : res?.results || [];
-    return list.map((x) => this.normalizePost(x)) as Post[];
-  }
-
   // 收藏/取消收藏
   async toggleFavorite(postId: number) {
     return apiClient.post<ToggleActionResponse>(`${this.forumBase}/posts/${postId}/favorite/`);
@@ -188,9 +203,16 @@ class ForumService {
     const { targetType, targetId, orderBy, includeReplies } = params;
     const orderParam = orderBy === 'likes' ? '&order_by=likes' : '';
     const repliesParam = includeReplies ? '&include_replies=true' : '';
-    return apiClient.get(`${this.commentsBase}/comments/?target_type=${targetType}&target_id=${targetId}${orderParam}${repliesParam}`);
+    return apiClient.get(
+      `${this.commentsBase}/comments/?target_type=${targetType}&target_id=${targetId}${orderParam}${repliesParam}`
+    );
   }
-  async createComment(params: { targetType: 'post' | 'catfood' | 'report'; targetId: number; content: string; parentId?: number }) {
+  async createComment(params: {
+    targetType: 'post' | 'catfood' | 'report';
+    targetId: number;
+    content: string;
+    parentId?: number;
+  }) {
     const payload: any = {
       content: params.content,
       targetType: params.targetType, // FIX: 后端需要 camelCase
@@ -213,7 +235,10 @@ class ForumService {
     return apiClient.delete(`${this.commentsBase}/comments/${commentId}/`);
   }
   async toggleCommentLike(commentId: number) {
-    return apiClient.post<ToggleActionResponse>(`${this.commentsBase}/comments/${commentId}/like/`, {});
+    return apiClient.post<ToggleActionResponse>(
+      `${this.commentsBase}/comments/${commentId}/like/`,
+      {}
+    );
   }
 
   // 通知
@@ -237,4 +262,3 @@ class ForumService {
 
 export const forumService = new ForumService();
 export type { NotificationItem, Post } from './types';
-

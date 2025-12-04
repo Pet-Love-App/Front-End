@@ -123,10 +123,10 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet }: PetInfoPanelProp
       >
         <XStack gap="$4" alignItems="center">
           {/* Pet Photo */}
-          {pet.photo ? (
+          {pet.photo_url ? (
             <YStack width={80} height={80} borderRadius="$4" overflow="hidden" borderWidth={0}>
               <Image
-                source={{ uri: pet.photo }}
+                source={{ uri: pet.photo_url }}
                 style={{ width: '100%', height: '100%' }}
                 resizeMode="cover"
               />

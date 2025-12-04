@@ -9,6 +9,28 @@ import type {
 } from './types';
 
 /**
+ * 转换后端数据格式为前端格式
+ * 将 image_url 转换为 imageUrl
+ */
+function transformCatFoodData(data: any): CatFood {
+  if (!data) return data;
+
+  const { image_url, ...rest } = data;
+  return {
+    ...rest,
+    imageUrl: image_url || null,
+  } as CatFood;
+}
+
+/**
+ * 批量转换猫粮数据
+ */
+function transformCatFoodList(list: any[]): CatFood[] {
+  if (!Array.isArray(list)) return [];
+  return list.map(transformCatFoodData);
+}
+
+/**
  * 猫粮 API 服务类（适配新的 Supabase API）
  */
 class CatFoodService {
@@ -19,10 +41,16 @@ class CatFoodService {
    * @returns 猫粮列表
    */
   async getCatFoods(page: number = 1, pageSize: number = 20): Promise<GetCatFoodsResponse> {
-    const data = await apiClient.get<GetCatFoodsResponse>(
-      `/api/catfood/?page=${page}&per_page=${pageSize}`
-    );
-    return data;
+    const data = await apiClient.get<any>(`/api/catfoods/?page=${page}&per_page=${pageSize}`);
+
+    // 适配后端返回格式: { catfoods, page, per_page, total }
+    // 转换为前端期望的格式: { results, count, next, previous }
+    return {
+      results: transformCatFoodList(data.catfoods || []),
+      count: data.total || 0,
+      next: data.page * data.per_page < data.total ? 'has_more' : null,
+      previous: data.page > 1 ? 'has_previous' : null,
+    };
   }
 
   /**
@@ -31,8 +59,8 @@ class CatFoodService {
    * @returns 猫粮详情
    */
   async getCatFood(id: number): Promise<CatFood> {
-    const data = await apiClient.get<any>(`/api/catfood/${id}/`);
-    return data.catfood || data;
+    const data = await apiClient.get<any>(`/api/catfoods/${id}/`);
+    return transformCatFoodData(data.catfood || data);
   }
 
   /**
@@ -41,8 +69,8 @@ class CatFoodService {
    * @returns 创建的猫粮
    */
   async createCatFood(data: CatFoodCreateUpdate): Promise<CatFood> {
-    const result = await apiClient.post<any>(`/api/catfood/create/`, data);
-    return result.catfood || result;
+    const result = await apiClient.post<any>(`/api/catfoods/create/`, data);
+    return transformCatFoodData(result.catfood || result);
   }
 
   /**
@@ -52,8 +80,8 @@ class CatFoodService {
    * @returns 更新后的猫粮
    */
   async updateCatFood(id: number, data: CatFoodCreateUpdate): Promise<CatFood> {
-    const result = await apiClient.put<any>(`/api/catfood/${id}/update/`, data);
-    return result.catfood || result;
+    const result = await apiClient.put<any>(`/api/catfoods/${id}/update/`, data);
+    return transformCatFoodData(result.catfood || result);
   }
 
   /**
@@ -63,8 +91,8 @@ class CatFoodService {
    * @returns 更新后的猫粮
    */
   async patchCatFood(id: number, data: Partial<CatFoodCreateUpdate>): Promise<CatFood> {
-    const result = await apiClient.patch<any>(`/api/catfood/${id}/update/`, data);
-    return result.catfood || result;
+    const result = await apiClient.patch<any>(`/api/catfoods/${id}/update/`, data);
+    return transformCatFoodData(result.catfood || result);
   }
 
   /**
@@ -72,36 +100,51 @@ class CatFoodService {
    * @param id 猫粮ID
    */
   async deleteCatFood(id: number): Promise<void> {
-    await apiClient.delete<void>(`/api/catfood/${id}/delete/`);
+    await apiClient.delete<void>(`/api/catfoods/${id}/delete/`);
   }
 
   /**
-   * 上传猫粮图片
+   * 评分猫粮
    * @param id 猫粮ID
-   * @param imageUri 图片本地 URI
-   * @returns 更新后的猫粮
+   * @param score 评分 (1-5)
+   * @param comment 评论（可选）
+   * @returns 评分结果
    */
-  async uploadCatFoodImage(id: number, imageUri: string): Promise<CatFood> {
-    const formData = new FormData();
-    const uriParts = imageUri.split('.');
-    const fileType = uriParts[uriParts.length - 1];
-
-    formData.append('image', {
-      uri: imageUri,
-      name: `catfood_image.${fileType}`,
-      type: `image/${fileType}`,
-    } as any);
-
-    const result = await apiClient.upload<any>(`/api/catfood/${id}/image/`, formData);
-    return result.catfood || result;
+  async rateCatFood(id: number, score: number, comment?: string): Promise<any> {
+    return await apiClient.post<any>(`/api/catfoods/${id}/rate/`, { score, comment });
   }
 
   /**
-   * 删除猫粮图片
+   * 收藏/取消收藏猫粮
    * @param id 猫粮ID
+   * @returns 收藏结果
    */
-  async deleteCatFoodImage(id: number): Promise<void> {
-    await apiClient.delete<void>(`/api/catfood/${id}/image/delete/`);
+  async toggleFavorite(id: number): Promise<{ favorited: boolean; message: string }> {
+    return await apiClient.post<{ favorited: boolean; message: string }>(
+      `/api/catfoods/${id}/favorite/`
+    );
+  }
+
+  /**
+   * 获取用户收藏的猫粮列表
+   * @returns 收藏列表
+   */
+  async getFavorites(): Promise<CatFood[]> {
+    const data = await apiClient.get<any>(`/api/catfoods/favorites/`);
+    return transformCatFoodList(data.catfoods || data);
+  }
+
+  /**
+   * 获取猫粮评分列表
+   * @param id 猫粮ID
+   * @param page 页码
+   * @param pageSize 每页数量
+   * @returns 评分列表
+   */
+  async getCatFoodRatings(id: number, page: number = 1, pageSize: number = 20): Promise<any> {
+    return await apiClient.get<any>(
+      `/api/catfoods/${id}/ratings/?page=${page}&per_page=${pageSize}`
+    );
   }
 
   /**
@@ -110,10 +153,23 @@ class CatFoodService {
    * @returns 搜索结果
    */
   async searchCatFood(params: SearchCatFoodParams): Promise<GetCatFoodsResponse> {
-    const { name, page = 1, page_size = 20 } = params;
-    return await apiClient.get<GetCatFoodsResponse>(
-      `/api/catfood/search/?q=${encodeURIComponent(name)}&page=${page}&per_page=${page_size}`
-    );
+    const { name, brand, tag, page = 1, page_size = 20 } = params;
+    const queryParams = new URLSearchParams();
+    if (name) queryParams.append('search', name);
+    if (brand) queryParams.append('brand', brand);
+    if (tag) queryParams.append('tag', tag);
+    queryParams.append('page', page.toString());
+    queryParams.append('per_page', page_size.toString());
+
+    const data = await apiClient.get<any>(`/api/catfoods/?${queryParams.toString()}`);
+
+    // 适配后端返回格式
+    return {
+      results: transformCatFoodList(data.catfoods || []),
+      count: data.total || 0,
+      next: data.page * data.per_page < data.total ? 'has_more' : null,
+      previous: data.page > 1 ? 'has_previous' : null,
+    };
   }
 
   /**
@@ -143,6 +199,30 @@ class CatFoodService {
       `/api/catfood/by-barcode/?barcode=${encodeURIComponent(barcode)}`
     );
     return data.catfood || data;
+  }
+
+  /**
+   * 扫描条形码（检查是否存在对应猫粮）
+   * @param barcode 条形码
+   * @returns 扫描结果
+   */
+  async scanBarcode(barcode: string): Promise<{ exists: boolean; catfood?: CatFood }> {
+    try {
+      const catfood = await this.getCatFoodByBarcode(barcode);
+      return {
+        exists: true,
+        catfood,
+      };
+    } catch (error: any) {
+      // 如果是404错误，表示不存在
+      if (error.statusCode === 404 || error.status === 404) {
+        return {
+          exists: false,
+        };
+      }
+      // 其他错误继续抛出
+      throw error;
+    }
   }
 
   /**
@@ -234,13 +314,11 @@ export const updateCatFood = (id: number, data: CatFoodCreateUpdate) =>
 export const patchCatFood = (id: number, data: Partial<CatFoodCreateUpdate>) =>
   catFoodService.patchCatFood(id, data);
 export const deleteCatFood = (id: number) => catFoodService.deleteCatFood(id);
-export const uploadCatFoodImage = (id: number, imageUri: string) =>
-  catFoodService.uploadCatFoodImage(id, imageUri);
-export const deleteCatFoodImage = (id: number) => catFoodService.deleteCatFoodImage(id);
 export const searchCatFood = (params: SearchCatFoodParams) => catFoodService.searchCatFood(params);
 export const getCatFoodComments = (id: number, page?: number, pageSize?: number) =>
   catFoodService.getCatFoodComments(id, page, pageSize);
 export const getCatFoodByBarcode = (barcode: string) => catFoodService.getCatFoodByBarcode(barcode);
+export const scanBarcode = (barcode: string) => catFoodService.scanBarcode(barcode);
 export const scanBarcodeImage = (imageUri: string) => catFoodService.scanBarcodeImage(imageUri);
 export const getLikedCatFoods = () => catFoodService.getLikedCatFoods();
 export const likeCatFood = (catfoodId: number) => catFoodService.likeCatFood(catfoodId);

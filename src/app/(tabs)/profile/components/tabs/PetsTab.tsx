@@ -145,8 +145,8 @@ export const PetsTab = memo(function PetsTab({ pets, isLoading, onAddPet }: Pets
                       borderWidth={isSelected ? 3 : 0}
                       borderColor={isSelected ? '#FEBE98' : 'transparent'}
                     >
-                      {pet.photo ? (
-                        <Avatar.Image src={pet.photo} />
+                      {pet.photo_url ? (
+                        <Avatar.Image src={pet.photo_url} />
                       ) : (
                         <Avatar.Fallback
                           backgroundColor="$orange3"

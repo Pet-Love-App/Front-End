@@ -18,7 +18,9 @@ export interface GetCatFoodsResponse {
  * 搜索猫粮参数
  */
 export interface SearchCatFoodParams {
-  name: string;
+  name?: string;
+  brand?: string;
+  tag?: string;
   page?: number;
   page_size?: number;
 }

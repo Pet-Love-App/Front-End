@@ -7,7 +7,6 @@ export type {
   ChangePasswordInput,
   JWTResponse,
   LoginInput,
-  RefreshTokenInput,
   RegisterInput,
 } from '@/src/schemas/auth.schema';
 

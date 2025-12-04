@@ -5,7 +5,7 @@
 
 // 认证服务
 export { ApiError, authService } from './auth';
-export type { JWTResponse, LoginInput, RefreshTokenInput, RegisterInput } from './auth';
+export type { JWTResponse, LoginInput, RegisterInput } from './auth';
 
 // 用户服务
 export { userService } from './user';
@@ -55,6 +55,7 @@ export {
   getCatFoods,
   patchCatFood,
   scanBarcode,
+  scanBarcodeImage,
   searchCatFood,
 } from './catfood';
 export type {
@@ -67,7 +68,7 @@ export type {
 
 // OCR 服务
 export { ocrService, recognizeImage } from './ocr';
-export type { OcrRecognizeResponse, OcrResult } from './ocr';
+export type { OcrRecognizeResponse, OcrResult, OcrTextItem } from './ocr';
 
 // AI 报告服务
 export { aiReportService } from './ai_report';

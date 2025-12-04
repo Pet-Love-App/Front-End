@@ -136,7 +136,10 @@ class BaseApi {
     };
 
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, config);
+      const fullUrl = `${this.baseURL}${endpoint}`;
+      console.log(`🌐 API请求: ${config.method || 'GET'} ${fullUrl}`);
+
+      const response = await fetch(fullUrl, config);
 
       // 处理 401 未授权（token 过期）
       if (response.status === 401 && token) {
@@ -217,6 +220,24 @@ class BaseApi {
           errorMessage = /<html/i.test(errorData)
             ? this.extractErrorFromHtml(errorData)
             : errorData;
+        }
+
+        // 检查是否是 token 无效错误（即使不是 401）
+        // 确保 errorMessage 是字符串类型
+        const messageStr =
+          typeof errorMessage === 'string' ? errorMessage : String(errorMessage || '');
+        const isTokenInvalid =
+          messageStr.includes('Invalid token') ||
+          messageStr.includes('invalid JWT') ||
+          messageStr.includes('signature is invalid') ||
+          messageStr.includes('token expired');
+
+        if (isTokenInvalid && token) {
+          console.error('❌ Token 无效，自动登出');
+          // 延迟导入避免循环依赖
+          const { useUserStore } = require('@/src/store/userStore');
+          await useUserStore.getState().logout();
+          throw new AppError('认证失败，请重新登录', ErrorCodes.AUTH_EXPIRED, 401);
         }
 
         // 创建标准化的错误对象
@@ -317,6 +338,11 @@ class BaseApi {
       // 如果已经是 AppError，直接抛出
       if (error instanceof AppError) {
         throw error;
+      }
+
+      // 网络错误处理
+      if (error.message && error.message.includes('Network request failed')) {
+        throw new AppError('网络连接失败，请检查网络设置', ErrorCodes.NETWORK_ERROR);
       }
 
       // 其他错误

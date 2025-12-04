@@ -20,13 +20,27 @@ export default function Index() {
   }
 
   useEffect(() => {
-    if (isAuthenticated) {
-      console.log('✅ 已登录，跳转到主页');
-      router.replace('/(tabs)/collect');
-    } else {
-      console.log('❌ 未登录，跳转到登录页');
-      router.replace('/login');
-    }
+    const checkAuth = async () => {
+      if (isAuthenticated) {
+        // 验证 token 是否有效
+        try {
+          console.log('✅ 检测到登录状态，验证 token...');
+          await useUserStore.getState().fetchCurrentUser();
+          console.log('✅ Token 有效，跳转到主页');
+          router.replace('/(tabs)/collect');
+        } catch (error) {
+          // Token 无效，自动登出并跳转到登录页
+          console.log('❌ Token 无效，自动登出');
+          await useUserStore.getState().logout();
+          router.replace('/login');
+        }
+      } else {
+        console.log('❌ 未登录，跳转到登录页');
+        router.replace('/login');
+      }
+    };
+
+    checkAuth();
   }, [isAuthenticated, _hasHydrated, router]);
 
   return (

@@ -19,16 +19,9 @@ export function usePetManagement() {
   const handleAddPet = async (petData: PetInput, photoUri: string | null) => {
     try {
       const payload = petInputSchema.parse(petData);
-      let created = await petService.createPet(payload);
 
-      // 上传照片
-      if (photoUri) {
-        try {
-          created = await petService.uploadPetPhoto(created.id, photoUri);
-        } catch (e) {
-          console.warn('宠物照片上传失败', e);
-        }
-      }
+      // 直接在创建时上传照片（后端支持 multipart/form-data）
+      const created = await petService.createPet(payload, photoUri || undefined);
 
       await fetchCurrentUser();
       Alert.alert('成功', '已创建宠物');

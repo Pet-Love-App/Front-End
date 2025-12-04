@@ -58,7 +58,7 @@ class AdditiveService {
    * @returns 成分信息
    */
   async getIngredientInfo(ingredient: string): Promise<any> {
-    return await apiClient.post<any>('/api/additive/ingredient-info/', { ingredient });
+    return await apiClient.post<any>('/api/search/ingredient/info', { ingredient });
   }
 }
 

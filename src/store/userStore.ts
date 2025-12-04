@@ -94,6 +94,12 @@ export const useUserStore = create<UserState>()(
           // 调用注册 API（返回 { user, session }）
           const { user: authUser, session } = await authService.register(validatedData);
 
+          // 如果没有 session，说明需要邮箱验证
+          if (!session) {
+            set({ isLoading: false });
+            throw new Error('注册成功！请查收验证邮件并完成邮箱验证。');
+          }
+
           // 保存 tokens 并自动登录
           set({
             accessToken: session.access_token,

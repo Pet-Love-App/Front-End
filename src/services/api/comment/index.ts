@@ -1,9 +1,9 @@
 import { apiClient } from '../BaseApi';
 import type {
-    Comment,
-    CreateCommentRequest,
-    GetCommentsResponse,
-    UpdateCommentRequest,
+  Comment,
+  CreateCommentRequest,
+  GetCommentsResponse,
+  UpdateCommentRequest,
 } from './types';
 
 /**
@@ -26,12 +26,8 @@ class CommentService {
     if (typeof params.parentId === 'number') {
       payload.parent_id = params.parentId;
     }
-    // 兼容可能支持 camelCase 的服务端
-    payload.targetType = params.targetType;
-    payload.targetId = params.targetId;
-    if (typeof params.parentId === 'number') payload.parentId = params.parentId;
 
-    return await apiClient.post<Comment>(`${this.basePath}/`, payload);
+    return await apiClient.post<Comment>(`${this.basePath}/create/`, payload);
   }
 
   /**
@@ -48,9 +44,18 @@ class CommentService {
     page: number = 1,
     pageSize: number = 20
   ): Promise<GetCommentsResponse> {
-    return await apiClient.get<GetCommentsResponse>(
+    const data = await apiClient.get<any>(
       `${this.basePath}/?target_type=${targetType}&target_id=${targetId}&page=${page}&page_size=${pageSize}`
     );
+
+    // 适配后端返回格式: { comments: [...] }
+    // 转换为前端期望的格式: { results: [...], count, next, previous }
+    return {
+      results: data.comments || [],
+      count: data.comments?.length || 0,
+      next: null,
+      previous: null,
+    };
   }
 
   /**
@@ -87,7 +92,7 @@ class CommentService {
    * @param commentId 评论 ID
    */
   async deleteComment(commentId: number): Promise<void> {
-    return await apiClient.delete<void>(`${this.basePath}/${commentId}/`);
+    return await apiClient.delete<void>(`${this.basePath}/${commentId}/delete/`);
   }
 
   /**
@@ -143,11 +148,10 @@ export const toggleCommentLike = (commentId: number) => commentService.toggleLik
 
 // 重新导出类型
 export type {
-    Comment,
-    CommentAuthor,
-    CreateCommentRequest,
-    DeleteCommentResponse,
-    GetCommentsResponse,
-    UpdateCommentRequest
+  Comment,
+  CommentAuthor,
+  CreateCommentRequest,
+  DeleteCommentResponse,
+  GetCommentsResponse,
+  UpdateCommentRequest,
 } from './types';
-

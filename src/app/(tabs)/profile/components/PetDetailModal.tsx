@@ -54,9 +54,9 @@ export function PetDetailModal({ pet, open, onOpenChange }: PetDetailModalProps)
           </Dialog.Title>
 
           <YStack gap="$3" alignItems="center">
-            {pet.photo ? (
+            {pet.photo_url ? (
               <Image
-                source={{ uri: pet.photo }}
+                source={{ uri: pet.photo_url }}
                 style={{
                   width: 200,
                   height: 200,

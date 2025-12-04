@@ -139,19 +139,66 @@ class AiReportService {
   }
 
   /**
-   * 查询成分信息（Wikipedia）
-   * @param request 成分查询请求
+   * 查询成分信息（Baidu AppBuilder API）
+   * @param ingredient 成分名称
    * @returns 成分信息
    */
-  async getIngredientInfo(request: IngredientInfoRequest): Promise<IngredientInfoResponse> {
+  async getIngredientInfo(ingredient: string): Promise<IngredientInfoResponse> {
     try {
       const response = await apiClient.post<IngredientInfoResponse>(
-        '/api/ai/ingredient/info',
-        request
+        '/api/additive/ingredient-info/',
+        { ingredient }
       );
       return response;
     } catch (error) {
       console.error('查询成分信息失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 获取收藏的AI报告列表
+   * @returns 收藏的报告列表
+   */
+  async getFavoriteReports(): Promise<any[]> {
+    try {
+      const response = await apiClient.get<any>('/api/ai/favorites/');
+      return response.results || response;
+    } catch (error) {
+      console.error('获取收藏报告列表失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 切换报告收藏状态
+   * @param catfoodId 猫粮ID
+   * @returns 收藏状态
+   */
+  async toggleFavoriteReport(catfoodId: number): Promise<{ favorited: boolean; message: string }> {
+    try {
+      return await apiClient.post<{ favorited: boolean; message: string }>(
+        '/api/ai/favorites/toggle/',
+        { catfood_id: catfoodId }
+      );
+    } catch (error) {
+      console.error('切换收藏状态失败:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 检查报告收藏状态
+   * @param catfoodId 猫粮ID
+   * @returns 收藏状态
+   */
+  async checkFavoriteStatus(catfoodId: number): Promise<{ favorited: boolean }> {
+    try {
+      return await apiClient.get<{ favorited: boolean }>(
+        `/api/ai/favorites/check/?catfood_id=${catfoodId}`
+      );
+    } catch (error) {
+      console.error('检查收藏状态失败:', error);
       throw error;
     }
   }

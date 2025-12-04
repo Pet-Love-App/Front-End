@@ -1,11 +1,5 @@
 import { API_ENDPOINTS } from '@/src/config/api';
-import {
-  jwtResponseSchema,
-  type JWTResponse,
-  type LoginInput,
-  type RefreshTokenInput,
-  type RegisterInput,
-} from '@/src/schemas/auth.schema';
+import { type JWTResponse, type LoginInput, type RegisterInput } from '@/src/schemas/auth.schema';
 import { ApiError } from './types';
 
 import { userSchema, type User } from '@/src/schemas/user.schema';
@@ -67,13 +61,14 @@ async function handleResponse<T>(response: Response, schema?: any): Promise<T> {
 }
 
 /**
- * 认证服务类
+ * 认证服务类（适配 Supabase Auth）
  */
 class AuthService {
   /**
    * 用户注册
+   * @param data 注册数据 { email, password, username }
    */
-  async register(data: RegisterInput): Promise<User> {
+  async register(data: RegisterInput): Promise<{ user: User; session: JWTResponse }> {
     const response = await fetch(API_ENDPOINTS.AUTH.REGISTER, {
       method: 'POST',
       headers: {
@@ -82,13 +77,14 @@ class AuthService {
       body: JSON.stringify(data),
     });
 
-    return handleResponse<User>(response, userSchema);
+    return handleResponse<{ user: User; session: JWTResponse }>(response);
   }
 
   /**
    * 用户登录
+   * @param data 登录数据 { email, password }
    */
-  async login(data: LoginInput): Promise<JWTResponse> {
+  async login(data: LoginInput): Promise<{ user: User; session: JWTResponse }> {
     const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
       method: 'POST',
       headers: {
@@ -97,48 +93,47 @@ class AuthService {
       body: JSON.stringify(data),
     });
 
-    return handleResponse<JWTResponse>(response, jwtResponseSchema);
+    return handleResponse<{ user: User; session: JWTResponse }>(response);
+  }
+
+  /**
+   * 用户登出
+   * @param token 访问令牌
+   */
+  async logout(token: string): Promise<void> {
+    const response = await fetch(API_ENDPOINTS.AUTH.LOGOUT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    await handleResponse(response);
   }
 
   /**
    * 刷新 Token
+   * @param refreshToken 刷新令牌
    */
-  async refreshToken(data: RefreshTokenInput): Promise<JWTResponse> {
+  async refreshToken(refreshToken: string): Promise<JWTResponse> {
     const response = await fetch(API_ENDPOINTS.AUTH.REFRESH_TOKEN, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ refresh_token: refreshToken }),
     });
 
-    return handleResponse<JWTResponse>(response, jwtResponseSchema);
-  }
-
-  /**
-   * 验证 Token
-   */
-  async verifyToken(token: string): Promise<boolean> {
-    try {
-      const response = await fetch(API_ENDPOINTS.AUTH.VERIFY_TOKEN, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token }),
-      });
-
-      return response.ok;
-    } catch {
-      return false;
-    }
+    return handleResponse<JWTResponse>(response);
   }
 
   /**
    * 获取当前用户信息
+   * @param token 访问令牌
    */
   async getCurrentUser(token: string): Promise<User> {
-    const response = await fetch(API_ENDPOINTS.USER.ME, {
+    const response = await fetch(API_ENDPOINTS.AUTH.GET_PROFILE, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -150,22 +145,106 @@ class AuthService {
   }
 
   /**
-   * 修改密码
+   * 更新用户资料
+   * @param token 访问令牌
+   * @param data 要更新的资料 { username?, bio? }
    */
-  async changePassword(token: string, currentPassword: string, newPassword: string): Promise<void> {
-    const response = await fetch(API_ENDPOINTS.AUTH.SET_PASSWORD, {
+  async updateProfile(token: string, data: { username?: string; bio?: string }): Promise<User> {
+    const response = await fetch(API_ENDPOINTS.AUTH.UPDATE_PROFILE, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    return handleResponse<User>(response, userSchema);
+  }
+
+  /**
+   * 上传头像
+   * @param token 访问令牌
+   * @param imageUri 图片本地 URI
+   */
+  async uploadAvatar(token: string, imageUri: string): Promise<{ avatar_url: string }> {
+    const formData = new FormData();
+    const uriParts = imageUri.split('.');
+    const fileType = uriParts[uriParts.length - 1];
+
+    formData.append('avatar', {
+      uri: imageUri,
+      name: `avatar.${fileType}`,
+      type: `image/${fileType}`,
+    } as any);
+
+    const response = await fetch(API_ENDPOINTS.AUTH.UPLOAD_AVATAR, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    return handleResponse<{ avatar_url: string }>(response);
+  }
+
+  /**
+   * 删除头像
+   * @param token 访问令牌
+   */
+  async deleteAvatar(token: string): Promise<{ message: string }> {
+    const response = await fetch(API_ENDPOINTS.AUTH.DELETE_AVATAR, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return handleResponse<{ message: string }>(response);
+  }
+
+  /**
+   * 修改密码
+   * @param token 访问令牌
+   * @param oldPassword 旧密码
+   * @param newPassword 新密码
+   */
+  async changePassword(
+    token: string,
+    oldPassword: string,
+    newPassword: string
+  ): Promise<{ message: string }> {
+    const response = await fetch(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        current_password: currentPassword,
+        old_password: oldPassword,
         new_password: newPassword,
       }),
     });
 
-    await handleResponse(response);
+    return handleResponse<{ message: string }>(response);
+  }
+
+  /**
+   * 重置密码（发送邮件）
+   * @param email 用户邮箱
+   */
+  async resetPassword(email: string): Promise<{ message: string }> {
+    const response = await fetch(API_ENDPOINTS.AUTH.RESET_PASSWORD, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    return handleResponse<{ message: string }>(response);
   }
 }
 

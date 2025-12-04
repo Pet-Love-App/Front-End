@@ -9,53 +9,29 @@ import type {
 } from './types';
 
 /**
- * 添加剂 API 服务类
+ * 添加剂 API 服务类（适配新的 Supabase API）
  */
 class AdditiveService {
   /**
    * 搜索添加剂
-   * 优先用 name 参数，请求 400 时回退到 keyword 参数
    * @param query 搜索关键词
    * @returns 搜索结果
    */
   async searchAdditive(query: string): Promise<AdditiveSearchResponse> {
-    try {
-      // 尝试使用 name 参数
-      return await apiClient.get<AdditiveSearchResponse>(
-        `/additive/search-additive/?name=${encodeURIComponent(query)}`
-      );
-    } catch (error: any) {
-      // 如果是 400 错误，尝试使用 keyword 参数
-      if (error?.message?.includes('400')) {
-        return await apiClient.get<AdditiveSearchResponse>(
-          `/additive/search-additive/?keyword=${encodeURIComponent(query)}`
-        );
-      }
-      throw error;
-    }
+    return await apiClient.get<AdditiveSearchResponse>(
+      `/api/additive/search-additive/?name=${encodeURIComponent(query)}`
+    );
   }
 
   /**
    * 搜索营养成分/原料
-   * 优先用 name 参数，请求 400 时回退到 keyword 参数
    * @param query 搜索关键词
    * @returns 搜索结果
    */
   async searchIngredient(query: string): Promise<IngredientSearchResponse> {
-    try {
-      // 尝试使用 name 参数
-      return await apiClient.get<IngredientSearchResponse>(
-        `/additive/search-ingredient/?name=${encodeURIComponent(query)}`
-      );
-    } catch (error: any) {
-      // 如果是 400 错误，尝试使用 keyword 参数
-      if (error?.message?.includes('400')) {
-        return await apiClient.get<IngredientSearchResponse>(
-          `/additive/search-ingredient/?keyword=${encodeURIComponent(query)}`
-        );
-      }
-      throw error;
-    }
+    return await apiClient.get<IngredientSearchResponse>(
+      `/api/additive/search-ingredient/?name=${encodeURIComponent(query)}`
+    );
   }
 
   /**
@@ -64,7 +40,7 @@ class AdditiveService {
    * @returns 添加操作结果
    */
   async addAdditive(params: AddAdditiveParams): Promise<AdditiveAddResponse> {
-    return await apiClient.post<AdditiveAddResponse>('/additive/add-additive/', params);
+    return await apiClient.post<AdditiveAddResponse>('/api/additive/add-additive/', params);
   }
 
   /**
@@ -73,7 +49,16 @@ class AdditiveService {
    * @returns 添加操作结果
    */
   async addIngredient(params: AddIngredientParams): Promise<IngredientAddResponse> {
-    return await apiClient.post<IngredientAddResponse>('/additive/add-ingredient/', params);
+    return await apiClient.post<IngredientAddResponse>('/api/additive/add-ingredient/', params);
+  }
+
+  /**
+   * 获取成分信息（Baidu AppBuilder API）
+   * @param ingredient 成分名称
+   * @returns 成分信息
+   */
+  async getIngredientInfo(ingredient: string): Promise<any> {
+    return await apiClient.post<any>('/api/additive/ingredient-info/', { ingredient });
   }
 }
 
@@ -85,6 +70,8 @@ export const searchAdditive = (query: string) => additiveService.searchAdditive(
 export const searchIngredient = (query: string) => additiveService.searchIngredient(query);
 export const addAdditive = (params: AddAdditiveParams) => additiveService.addAdditive(params);
 export const addIngredient = (params: AddIngredientParams) => additiveService.addIngredient(params);
+export const getIngredientInfo = (ingredient: string) =>
+  additiveService.getIngredientInfo(ingredient);
 
 // 重新导出类型
 export type {

@@ -7,11 +7,9 @@ import { apiClient } from '../BaseApi';
 import type { OcrRecognizeResponse, OcrResult } from './types';
 
 /**
- * OCR API 服务类
+ * OCR API 服务类（适配新的 Supabase API）
  */
 class OcrService {
-  private readonly basePath = '/ocr';
-
   /**
    * 识别图片中的文字
    * @param imageUri 图片本地 URI
@@ -36,13 +34,25 @@ class OcrService {
 
       // 调用 API
       const response = await apiClient.upload<OcrRecognizeResponse>(
-        `${this.basePath}/recognize/`,
+        '/api/ocr/recognize/',
         formData
       );
 
+      // 后端返回 { result: [...] }
+      const results = response.result || [];
+
+      // 合并所有识别的文本
+      const text = results.map((r: any) => r.text).join('\n');
+
+      // 计算平均置信度
+      const avgConfidence =
+        results.length > 0
+          ? results.reduce((sum: number, r: any) => sum + (r.confidence || 0), 0) / results.length
+          : 0;
+
       return {
-        text: response.text,
-        confidence: response.confidence,
+        text,
+        confidence: avgConfidence,
       };
     } catch (error) {
       console.error('OCR 识别失败:', error);
@@ -68,7 +78,7 @@ class OcrService {
         name: filename,
       } as any);
 
-      const response = await fetch(`${API_BASE_URL}${this.basePath}/recognize/`, {
+      const response = await fetch(`${API_BASE_URL}/api/ocr/recognize/`, {
         method: 'POST',
         body: formData,
         headers: {
@@ -82,9 +92,21 @@ class OcrService {
 
       const data: OcrRecognizeResponse = await response.json();
 
+      // 后端返回 { result: [...] }
+      const results = data.result || [];
+
+      // 合并所有识别的文本
+      const text = results.map((r: any) => r.text).join('\n');
+
+      // 计算平均置信度
+      const avgConfidence =
+        results.length > 0
+          ? results.reduce((sum: number, r: any) => sum + (r.confidence || 0), 0) / results.length
+          : 0;
+
       return {
-        text: data.text,
-        confidence: data.confidence,
+        text,
+        confidence: avgConfidence,
       };
     } catch (error) {
       console.error('OCR 识别失败:', error);

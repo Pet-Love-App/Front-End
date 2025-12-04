@@ -27,6 +27,7 @@
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
+    "@supabase/supabase-js": "^2.86.0",
     "@tamagui/animations-react-native": "^1.138.0",
     "@tamagui/button": "^1.138.0",
     "@tamagui/card": "^1.138.0",

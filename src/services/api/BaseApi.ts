@@ -1,8 +1,10 @@
 import { API_BASE_URL } from '@/src/config/env';
+import { AppError, ErrorCodes, logError } from '@/src/utils/errorHandler';
 
 /**
  * API 客户端基类
  * 自动从 Zustand store 获取 token 并添加到请求头
+ * 统一错误处理
  */
 class BaseApi {
   private baseURL: string;
@@ -19,6 +21,48 @@ class BaseApi {
     // 延迟导入避免循环依赖
     const { useUserStore } = require('@/src/store/userStore');
     return useUserStore.getState().accessToken;
+  }
+
+  /**
+   * 创建标准化的错误对象
+   */
+  private createError(message: string, status: number, data?: any): AppError {
+    let errorCode: string = ErrorCodes.UNKNOWN_ERROR;
+
+    // 根据状态码确定错误类型
+    switch (status) {
+      case 400:
+        errorCode = ErrorCodes.INVALID_INPUT;
+        break;
+      case 401:
+        errorCode = ErrorCodes.AUTH_REQUIRED;
+        break;
+      case 403:
+        errorCode = ErrorCodes.PERMISSION_DENIED;
+        break;
+      case 404:
+        errorCode = ErrorCodes.NOT_FOUND;
+        break;
+      case 409:
+        errorCode = ErrorCodes.ALREADY_EXISTS;
+        break;
+      case 422:
+        errorCode = ErrorCodes.VALIDATION_ERROR;
+        break;
+      case 500:
+        errorCode = ErrorCodes.SERVER_ERROR;
+        break;
+      case 503:
+        errorCode = ErrorCodes.SERVICE_UNAVAILABLE;
+        break;
+    }
+
+    const error = new AppError(message, errorCode, status, data);
+
+    // 记录错误日志
+    logError(error, 'API Request');
+
+    return error;
   }
 
   // 从 HTML（例如 Django Debug 页面）中提取简短错误标题
@@ -120,11 +164,20 @@ class BaseApi {
 
             if (!retryResponse.ok) {
               const errorData = await this.safeParseResponse(retryResponse).catch(() => ({}));
-              let message = (errorData && (errorData.detail || (errorData as any).message || (errorData as any).error)) as string | undefined;
+              let message = (errorData &&
+                (errorData.detail || (errorData as any).message || (errorData as any).error)) as
+                | string
+                | undefined;
               if (!message && typeof errorData === 'string' && errorData.length) {
-                message = /<html/i.test(errorData) ? this.extractErrorFromHtml(errorData) : errorData;
+                message = /<html/i.test(errorData)
+                  ? this.extractErrorFromHtml(errorData)
+                  : errorData;
               }
-              throw new Error(message || `请求失败: ${retryResponse.status}`);
+              throw this.createError(
+                message || `请求失败: ${retryResponse.status}`,
+                retryResponse.status,
+                errorData
+              );
             }
 
             return (await this.safeParseResponse(retryResponse)) as T;
@@ -135,7 +188,7 @@ class BaseApi {
           // 延迟导入避免循环依赖
           const { useUserStore } = require('@/src/store/userStore');
           await useUserStore.getState().logout();
-          throw new Error('认证失败，请重新登录');
+          throw new AppError('认证失败，请重新登录', ErrorCodes.AUTH_EXPIRED, 401);
         }
       }
 
@@ -150,46 +203,47 @@ class BaseApi {
           if ((errorData as any).detail) errorMessage = (errorData as any).detail;
           else if ((errorData as any).message) errorMessage = (errorData as any).message;
           else if ((errorData as any).error) errorMessage = (errorData as any).error;
+          else if ((errorData as any).errors) {
+            // 处理字段级错误
+            const fieldErrors = Object.entries((errorData as any).errors)
+              .map(
+                ([field, errors]) =>
+                  `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`
+              )
+              .join('\n');
+            errorMessage = fieldErrors || '输入数据有误';
+          }
         } else if (typeof errorData === 'string' && errorData.length) {
-          errorMessage = /<html/i.test(errorData) ? this.extractErrorFromHtml(errorData) : errorData;
+          errorMessage = /<html/i.test(errorData)
+            ? this.extractErrorFromHtml(errorData)
+            : errorData;
         }
 
-        // 只在非预期的错误时打印详细日志
-        // 404 可能是正常的业务逻辑（如"尚未评分"），由调用者决定是否记录
-        if (response.status !== 404) {
-          const hasPayload =
-            typeof errorData === 'string'
-              ? errorData.length > 0
-              : errorData && typeof errorData === 'object' && Object.keys(errorData).length > 0;
-          const payloadForLog =
-            typeof errorData === 'string'
-              ? (errorData.length > 2000 ? errorData.slice(0, 2000) + '...<trimmed>' : errorData)
-              : hasPayload
-              ? JSON.stringify(errorData, null, 2)
-              : '无详细错误信息';
-
-          console.error('API 错误详情:', payloadForLog);
-        }
-
-        // 创建一个包含状态码的错误对象
-        const error: any = new Error(errorMessage);
-        error.response = {
-          status: response.status,
-          data: errorData,
-        };
-        throw error;
+        // 创建标准化的错误对象
+        throw this.createError(errorMessage, response.status, errorData);
       }
 
       // 成功响应：安全解析
       const parsed = await this.safeParseResponse(response);
       return parsed as T;
     } catch (error: any) {
-      // 只在非预期的错误时打印日志
-      // 404 等业务逻辑错误由调用者决定是否记录
-      if (!error.response || error.response.status !== 404) {
-        console.error('API 请求错误:', error);
+      // 如果已经是 AppError，直接抛出
+      if (error instanceof AppError) {
+        throw error;
       }
-      throw error;
+
+      // 网络错误处理
+      if (error.message && error.message.includes('Network request failed')) {
+        throw new AppError('网络连接失败，请检查网络设置', ErrorCodes.NETWORK_ERROR);
+      }
+
+      if (error.message && error.message.includes('timeout')) {
+        throw new AppError('请求超时，请稍后重试', ErrorCodes.TIMEOUT_ERROR);
+      }
+
+      // 其他未知错误
+      logError(error, 'API Request');
+      throw new AppError(error.message || '请求失败', ErrorCodes.UNKNOWN_ERROR);
     }
   }
 
@@ -244,18 +298,30 @@ class BaseApi {
       });
 
       if (!response.ok) {
-        const error = await this.safeParseResponse(response).catch(() => ({}));
-        let message = (error && ((error as any).message || (error as any).detail)) as string | undefined;
-        if (!message && typeof error === 'string' && error.length) {
-          message = /<html/i.test(error) ? this.extractErrorFromHtml(error) : error;
+        const errorData = await this.safeParseResponse(response).catch(() => ({}));
+        let message = (errorData && ((errorData as any).message || (errorData as any).detail)) as
+          | string
+          | undefined;
+        if (!message && typeof errorData === 'string' && errorData.length) {
+          message = /<html/i.test(errorData) ? this.extractErrorFromHtml(errorData) : errorData;
         }
-        throw new Error(message || `请求失败: ${response.status}`);
+        throw this.createError(
+          message || `请求失败: ${response.status}`,
+          response.status,
+          errorData
+        );
       }
 
       return (await this.safeParseResponse(response)) as T;
-    } catch (error) {
-      console.error('API 请求错误:', error);
-      throw error;
+    } catch (error: any) {
+      // 如果已经是 AppError，直接抛出
+      if (error instanceof AppError) {
+        throw error;
+      }
+
+      // 其他错误
+      logError(error, 'Custom Headers Request');
+      throw new AppError(error.message || '请求失败', ErrorCodes.UNKNOWN_ERROR);
     }
   }
 
@@ -351,38 +417,40 @@ class BaseApi {
 
       if (!response.ok) {
         const errorPayload = await this.safeParseResponse(response).catch(() => ({}));
-        let message = (errorPayload && ((errorPayload as any).message || (errorPayload as any).detail)) as string | undefined;
+        let message = (errorPayload &&
+          ((errorPayload as any).message || (errorPayload as any).detail)) as string | undefined;
         if (!message && typeof errorPayload === 'string' && errorPayload.length) {
-          message = /<html/i.test(errorPayload) ? this.extractErrorFromHtml(errorPayload) : errorPayload;
+          message = /<html/i.test(errorPayload)
+            ? this.extractErrorFromHtml(errorPayload)
+            : errorPayload;
         }
 
         // 针对 500 错误给出更明确的指导
         if (response.status === 500) {
-          const serverErrorMessage = '后端服务器错误 (500)。这不是前端代码问题，请检查服务器日志获取详细错误栈。';
-          console.error('🔴 ' + serverErrorMessage);
-          throw new Error(serverErrorMessage);
+          const serverErrorMessage =
+            '后端服务器错误 (500)。这不是前端代码问题，请检查服务器日志获取详细错误栈。';
+          throw this.createError(serverErrorMessage, 500, errorPayload);
         }
 
         const statusInfo = `上传失败: ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`;
-        const payloadForLog =
-          typeof errorPayload === 'string'
-            ? (errorPayload.length > 2000 ? errorPayload.slice(0, 2000) + '...<trimmed>' : errorPayload)
-            : errorPayload && typeof errorPayload === 'object' && Object.keys(errorPayload).length > 0
-            ? JSON.stringify(errorPayload, null, 2)
-            : '无详细错误信息';
-        console.error('文件上传错误详情:', {
-          endpoint,
-          status: response.status,
-          statusText: response.statusText,
-          payload: payloadForLog,
-        });
-        throw new Error(message || statusInfo);
+        throw this.createError(message || statusInfo, response.status, errorPayload);
       }
 
       return (await this.safeParseResponse(response)) as T;
-    } catch (error) {
-      console.error('文件上传错误:', error);
-      throw error;
+    } catch (error: any) {
+      // 如果已经是 AppError，直接抛出
+      if (error instanceof AppError) {
+        throw error;
+      }
+
+      // 网络错误
+      if (error.message && error.message.includes('Network request failed')) {
+        throw new AppError('网络连接失败，无法上传文件', ErrorCodes.NETWORK_ERROR);
+      }
+
+      // 其他错误
+      logError(error, 'File Upload');
+      throw new AppError(error.message || '文件上传失败', ErrorCodes.UNKNOWN_ERROR);
     }
   }
 }

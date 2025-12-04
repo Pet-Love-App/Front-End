@@ -2,14 +2,18 @@ import { z } from 'zod';
 import { petSchema } from './pet.schema';
 
 /**
- * 用户信息 Schema
+ * 用户信息 Schema（适配 Supabase）
  * 包含用户基础信息、头像和宠物列表
  */
 export const userSchema = z.object({
-  id: z.number(),
+  id: z.string(), // Supabase 使用 UUID
+  email: z.string().email().optional(),
   username: z.string(),
-  avatar: z.string().nullable().optional(), // 头像 URL
+  bio: z.string().nullable().optional(), // 用户简介
+  avatar_url: z.string().nullable().optional(), // 头像 URL
   is_admin: z.boolean().optional().default(false), // 管理员标识
+  created_at: z.string().optional(), // 创建时间
+  updated_at: z.string().optional(), // 更新时间
   pets: z.array(petSchema).optional(), // 用户的宠物列表
 });
 

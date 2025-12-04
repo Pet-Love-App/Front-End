@@ -1,7 +1,6 @@
 import { loginSchema, registerSchema } from '@/src/schemas/auth.schema';
 import type { User } from '@/src/schemas/user.schema';
 import { ApiError, authService } from '@/src/services/api/auth';
-import { userService } from '@/src/services/api/user';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -14,13 +13,18 @@ interface UserState {
   isLoading: boolean;
   _hasHydrated: boolean;
 
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string, rePassword: string) => Promise<void>;
+  // 认证方法（适配 Supabase）
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshAccessToken: () => Promise<void>;
+
+  // 用户信息方法
   fetchCurrentUser: () => Promise<void>;
   uploadAvatar: (imageUri: string) => Promise<void>;
   deleteAvatar: () => Promise<void>;
+
+  // 状态管理方法
   setUser: (user: User | null) => void;
   setTokens: (accessToken: string | null, refreshToken: string | null) => void;
   setLoading: (loading: boolean) => void;
@@ -38,26 +42,26 @@ export const useUserStore = create<UserState>()(
       isLoading: false,
       _hasHydrated: false,
 
-      // 登录
-      login: async (username: string, password: string) => {
+      // 登录（适配 Supabase）
+      login: async (email: string, password: string) => {
         try {
           set({ isLoading: true });
 
           // 使用 Zod 验证输入
-          const validatedData = loginSchema.parse({ username, password });
+          const validatedData = loginSchema.parse({ email, password });
 
-          // 调用登录 API
-          const { access, refresh } = await authService.login(validatedData);
+          // 调用登录 API（返回 { user, session }）
+          const { user: authUser, session } = await authService.login(validatedData);
 
           // 保存 tokens
           set({
-            accessToken: access,
-            refreshToken: refresh,
+            accessToken: session.access_token,
+            refreshToken: session.refresh_token,
             isAuthenticated: true,
           });
 
           // 获取用户完整信息（含头像、宠物）
-          const user = await userService.getCurrentUser();
+          const user = await authService.getCurrentUser(session.access_token);
 
           set({
             user,
@@ -75,22 +79,35 @@ export const useUserStore = create<UserState>()(
         }
       },
 
-      // 注册
-      register: async (username: string, password: string, rePassword: string) => {
+      // 注册（适配 Supabase）
+      register: async (email: string, username: string, password: string) => {
         try {
           set({ isLoading: true });
 
           // 使用 Zod 验证输入
           const validatedData = registerSchema.parse({
+            email,
             username,
             password,
-            re_password: rePassword,
           });
 
-          // 调用注册 API
-          await authService.register(validatedData);
+          // 调用注册 API（返回 { user, session }）
+          const { user: authUser, session } = await authService.register(validatedData);
 
-          set({ isLoading: false });
+          // 保存 tokens 并自动登录
+          set({
+            accessToken: session.access_token,
+            refreshToken: session.refresh_token,
+            isAuthenticated: true,
+          });
+
+          // 获取用户完整信息
+          const user = await authService.getCurrentUser(session.access_token);
+
+          set({
+            user,
+            isLoading: false,
+          });
         } catch (error) {
           set({ isLoading: false });
           console.error('❌ 注册失败:', error);
@@ -103,7 +120,7 @@ export const useUserStore = create<UserState>()(
         }
       },
 
-      // 刷新访问令牌
+      // 刷新访问令牌（适配 Supabase）
       refreshAccessToken: async () => {
         try {
           const { refreshToken } = get();
@@ -111,13 +128,11 @@ export const useUserStore = create<UserState>()(
             throw new Error('没有刷新令牌');
           }
 
-          const { access, refresh } = await authService.refreshToken({
-            refresh: refreshToken,
-          });
+          const session = await authService.refreshToken(refreshToken);
 
           set({
-            accessToken: access,
-            refreshToken: refresh,
+            accessToken: session.access_token,
+            refreshToken: session.refresh_token,
           });
         } catch (error) {
           console.error('❌ Token 刷新失败:', error);
@@ -127,7 +142,7 @@ export const useUserStore = create<UserState>()(
         }
       },
 
-      // 获取当前用户信息
+      // 获取当前用户信息（适配 Supabase）
       fetchCurrentUser: async () => {
         try {
           const { accessToken } = get();
@@ -136,7 +151,7 @@ export const useUserStore = create<UserState>()(
           }
 
           // 获取完整用户信息（含头像、宠物）
-          const user = await userService.getCurrentUser();
+          const user = await authService.getCurrentUser(accessToken);
 
           set({
             user,
@@ -147,12 +162,17 @@ export const useUserStore = create<UserState>()(
         }
       },
 
-      // 上传头像
+      // 上传头像（适配 Supabase）
       uploadAvatar: async (imageUri: string) => {
         try {
           set({ isLoading: true });
 
-          const response = await userService.uploadAvatar(imageUri);
+          const { accessToken } = get();
+          if (!accessToken) {
+            throw new Error('未登录');
+          }
+
+          await authService.uploadAvatar(accessToken, imageUri);
 
           // 刷新用户信息
           await get().fetchCurrentUser();
@@ -165,12 +185,17 @@ export const useUserStore = create<UserState>()(
         }
       },
 
-      // 删除头像
+      // 删除头像（适配 Supabase）
       deleteAvatar: async () => {
         try {
           set({ isLoading: true });
 
-          await userService.deleteAvatar();
+          const { accessToken } = get();
+          if (!accessToken) {
+            throw new Error('未登录');
+          }
+
+          await authService.deleteAvatar(accessToken);
 
           // 刷新用户信息
           await get().fetchCurrentUser();
@@ -183,9 +208,22 @@ export const useUserStore = create<UserState>()(
         }
       },
 
-      // 登出
+      // 登出（适配 Supabase）
       logout: async () => {
         try {
+          const { accessToken } = get();
+
+          // 如果有 token，调用后端登出接口
+          if (accessToken) {
+            try {
+              await authService.logout(accessToken);
+            } catch (error) {
+              // 登出接口失败也继续清除本地状态
+              console.warn('⚠️ 后端登出失败，但继续清除本地状态:', error);
+            }
+          }
+
+          // 清除本地状态
           set({
             user: null,
             accessToken: null,

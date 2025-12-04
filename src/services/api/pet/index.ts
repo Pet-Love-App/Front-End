@@ -16,7 +16,7 @@ function validateResponse<T>(data: any, schema: any): T {
 }
 
 /**
- * 宠物服务类
+ * 宠物服务类（适配新的 Supabase API）
  */
 class PetService {
   /**
@@ -24,7 +24,9 @@ class PetService {
    */
   async getMyPets(): Promise<Pet[]> {
     const data = await apiClient.get(API_ENDPOINTS.PET.MY_PETS);
-    return data.map((pet: any) => validateResponse<Pet>(pet, petSchema));
+    // 后端返回 { pets: [...] }
+    const pets = data.pets || data;
+    return Array.isArray(pets) ? pets.map((pet: any) => validateResponse<Pet>(pet, petSchema)) : [];
   }
 
   /**
@@ -32,7 +34,8 @@ class PetService {
    */
   async getPets(): Promise<Pet[]> {
     const data = await apiClient.get(API_ENDPOINTS.PET.LIST);
-    return data.map((pet: any) => validateResponse<Pet>(pet, petSchema));
+    const pets = data.pets || data;
+    return Array.isArray(pets) ? pets.map((pet: any) => validateResponse<Pet>(pet, petSchema)) : [];
   }
 
   /**
@@ -40,30 +43,58 @@ class PetService {
    */
   async getPet(petId: number): Promise<Pet> {
     const data = await apiClient.get(API_ENDPOINTS.PET.DETAIL(petId));
-    return validateResponse<Pet>(data, petSchema);
+    const pet = data.pet || data;
+    return validateResponse<Pet>(pet, petSchema);
   }
 
   /**
-   * 创建宠物
+   * 创建宠物（支持直接上传照片）
+   * @param petData 宠物数据
+   * @param photoUri 可选的宠物照片 URI
    */
-  async createPet(petData: PetInput): Promise<Pet> {
-    const data = await apiClient.post(API_ENDPOINTS.PET.CREATE, petData);
-    return validateResponse<Pet>(data, petSchema);
+  async createPet(petData: PetInput, photoUri?: string): Promise<Pet> {
+    if (photoUri) {
+      // 使用 multipart/form-data 创建宠物并上传照片
+      const formData = new FormData();
+      formData.append('name', petData.name);
+      formData.append('species', petData.species || 'cat');
+      if (petData.breed) formData.append('breed', petData.breed);
+      if (petData.age) formData.append('age', petData.age.toString());
+      if (petData.description) formData.append('description', petData.description);
+
+      const uriParts = photoUri.split('.');
+      const fileType = uriParts[uriParts.length - 1];
+      formData.append('photo', {
+        uri: photoUri,
+        name: `pet_photo.${fileType}`,
+        type: `image/${fileType}`,
+      } as any);
+
+      const data = await apiClient.upload(API_ENDPOINTS.PET.CREATE, formData);
+      const pet = data.pet || data;
+      return validateResponse<Pet>(pet, petSchema);
+    } else {
+      // 使用 JSON 创建宠物
+      const data = await apiClient.post(API_ENDPOINTS.PET.CREATE, petData);
+      const pet = data.pet || data;
+      return validateResponse<Pet>(pet, petSchema);
+    }
   }
 
   /**
    * 更新宠物信息
    */
   async updatePet(petId: number, petData: Partial<PetInput>): Promise<Pet> {
-    const data = await apiClient.put(API_ENDPOINTS.PET.DETAIL(petId), petData);
-    return validateResponse<Pet>(data, petSchema);
+    const data = await apiClient.put(API_ENDPOINTS.PET.UPDATE(petId), petData);
+    const pet = data.pet || data;
+    return validateResponse<Pet>(pet, petSchema);
   }
 
   /**
    * 删除宠物
    */
   async deletePet(petId: number): Promise<DeleteResponse> {
-    const data = await apiClient.delete(API_ENDPOINTS.PET.DETAIL(petId));
+    const data = await apiClient.delete(API_ENDPOINTS.PET.DELETE(petId));
     return validateResponse<DeleteResponse>(data, deleteResponseSchema);
   }
 
@@ -84,11 +115,17 @@ class PetService {
       type: `image/${fileType}`,
     } as any);
 
-    // 使用 PATCH 方法更新宠物照片
-    const data = await apiClient.upload(API_ENDPOINTS.PET.DETAIL(petId), formData, {
-      method: 'PATCH',
-    });
-    return validateResponse<Pet>(data, petSchema);
+    const data = await apiClient.upload(API_ENDPOINTS.PET.UPLOAD_PHOTO(petId), formData);
+    const pet = data.pet || data;
+    return validateResponse<Pet>(pet, petSchema);
+  }
+
+  /**
+   * 删除宠物照片
+   * @param petId 宠物 ID
+   */
+  async deletePetPhoto(petId: number): Promise<{ message: string }> {
+    return await apiClient.delete(API_ENDPOINTS.PET.DELETE_PHOTO(petId));
   }
 }
 

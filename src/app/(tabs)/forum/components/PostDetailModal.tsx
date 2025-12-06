@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Dimensions, FlatList, Image, ScrollView } from 'react-native';
+import { Alert, Dimensions, FlatList, ScrollView } from 'react-native';
 import { Button, Card, Separator, Text, TextArea, XStack, YStack } from 'tamagui';
 import { ForumColors } from '@/src/app/(tabs)/forum/constants';
+import { OptimizedImage } from '@/src/components/ui/OptimizedImage';
 import Tag from '@/src/components/ui/Tag';
 import { Colors } from '@/src/constants/colors';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
@@ -35,7 +36,6 @@ export function PostDetailModal({
   const colors = Colors[colorScheme];
 
   const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(false);
   const [content, setContent] = useState('');
   const [replyTarget, setReplyTarget] = useState<Comment | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
@@ -84,7 +84,7 @@ export function PostDetailModal({
       setContent('');
       setReplyTarget(null);
       await load();
-    } catch (e) {
+    } catch (_e) {
       Alert.alert('错误', '发送失败');
     }
   };
@@ -99,7 +99,7 @@ export function PostDetailModal({
           c.id === commentId ? { ...c, likes: res.likes || 0, isLiked: res.liked } : c
         )
       );
-    } catch (e) {
+    } catch (_e) {
       Alert.alert('错误', '操作失败');
     }
   };
@@ -118,7 +118,7 @@ export function PostDetailModal({
             const { error } = await supabaseForumService.deletePost(post.id);
             if (error) throw error;
             onPostDeleted?.();
-          } catch (e) {
+          } catch (_e) {
             Alert.alert('错误', '删除失败');
           }
         },
@@ -145,7 +145,7 @@ export function PostDetailModal({
       );
       setEditingCommentId(null);
       setEditingContent('');
-    } catch (e) {
+    } catch (_e) {
       Alert.alert('错误', '更新失败');
     }
   };
@@ -161,7 +161,7 @@ export function PostDetailModal({
             const { error } = await supabaseCommentService.deleteComment(commentId);
             if (error) throw error;
             setComments((prev) => prev.filter((c) => c.id !== commentId));
-          } catch (e) {
+          } catch (_e) {
             Alert.alert('错误', '删除失败');
           }
         },
@@ -252,10 +252,11 @@ export function PostDetailModal({
                         borderColor={ForumColors.clay + '55'}
                         borderWidth={1}
                       >
-                        <Image
-                          source={{ uri: m.file }}
+                        <OptimizedImage
+                          source={m.file}
                           style={{ width: '100%', height: '100%' }}
-                          resizeMode="cover"
+                          contentFit="cover"
+                          cachePolicy="memory-disk"
                         />
                       </Card>
                     ) : (

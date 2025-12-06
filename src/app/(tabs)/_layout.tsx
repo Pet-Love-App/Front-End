@@ -50,7 +50,7 @@ export default function TabLayout() {
         name="scanner"
         options={{
           title: '',
-          tabBarIcon: ({ color, focused }) => (
+          tabBarIcon: ({ color: _color, focused: _focused }) => (
             <View
               style={{
                 width: 60,

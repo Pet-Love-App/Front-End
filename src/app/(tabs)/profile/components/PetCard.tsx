@@ -1,6 +1,6 @@
-import { Image } from 'react-native';
 import { Card, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { OptimizedImage } from '@/src/components/ui/OptimizedImage';
 import { Colors, withAlpha } from '@/src/constants/colors';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Pet } from '@/src/schemas/pet.schema';
@@ -15,19 +15,11 @@ interface PetCardProps {
  * 展示单个宠物的基本信息
  */
 export function PetCard({ pet, onPress }: PetCardProps) {
-  // 防御性检查：如果没有 pet，则不渲染
-  if (!pet) return null;
-
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
 
-  // 获取宠物图标
-  const getPetIcon = () => {
-    const species = pet.species?.toLowerCase();
-    if (species === 'cat') return 'pawprint.fill';
-    if (species === 'dog') return 'pawprint.fill';
-    return 'heart.fill';
-  };
+  // 防御性检查：如果没有 pet，则不渲染（在 hooks 之后检查）
+  if (!pet) return null;
 
   return (
     <Card
@@ -56,13 +48,14 @@ export function PetCard({ pet, onPress }: PetCardProps) {
             borderWidth={2}
             borderColor={withAlpha(colors.tint, 0.188)}
           >
-            <Image
-              source={{ uri: pet.photo_url }}
+            <OptimizedImage
+              source={pet.photo_url}
               style={{
                 width: 70,
                 height: 70,
               }}
-              resizeMode="cover"
+              contentFit="cover"
+              cachePolicy="memory-disk"
             />
           </YStack>
         ) : (

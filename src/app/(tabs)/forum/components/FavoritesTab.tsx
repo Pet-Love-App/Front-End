@@ -21,7 +21,7 @@ export function FavoritesTab({ onOpenPost }: FavoritesTabProps) {
       const { data, error } = await supabaseForumService.getMyFavorites();
       if (error) throw error;
       setList(data || []);
-    } catch (e) {
+    } catch (_e) {
       Alert.alert('错误', '加载失败');
     } finally {
       setLoading(false);
@@ -54,7 +54,7 @@ export function FavoritesTab({ onOpenPost }: FavoritesTabProps) {
       if (!wasFavorited && res.action === 'favorited') {
         setTimeout(() => animationRefs.current[postId]?.play(), 0);
       }
-    } catch (e) {
+    } catch (_e) {
       Alert.alert('错误', '操作失败');
     }
   };

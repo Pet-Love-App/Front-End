@@ -22,7 +22,8 @@ module.exports = [
       'prefer-const': 'warn', // 优先使用 const
       'no-var': 'error', // 禁止使用 var
       'no-debugger': 'warn', // 警告使用 debugger
-      'no-unused-vars': [
+      'no-unused-vars': 'off', // 关闭基础规则，使用 TypeScript 版本
+      '@typescript-eslint/no-unused-vars': [
         'warn',
         {
           argsIgnorePattern: '^_',

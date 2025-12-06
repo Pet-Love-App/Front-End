@@ -70,7 +70,7 @@ export function PostEditor({
         return;
       }
       editor.addFiles(files);
-    } catch (error) {
+    } catch (_error) {
       errorHandler.handle(error, { title: '选择媒体失败' });
     }
   };
@@ -79,7 +79,7 @@ export function PostEditor({
   const handleSubmit = async () => {
     try {
       await editor.submit(editingPost);
-    } catch (error) {
+    } catch (_error) {
       // 错误已在 Hook 中处理，这里不需要额外处理
     }
   };

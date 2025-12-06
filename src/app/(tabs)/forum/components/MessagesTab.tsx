@@ -19,7 +19,7 @@ export function MessagesTab({ onCreatePost }: MessagesTabProps) {
       const { data, error } = await supabaseForumService.getNotifications(true); // 默认拉取未读
       if (error) throw error;
       setList(data || []);
-    } catch (e) {
+    } catch (_e) {
       Alert.alert('错误', '加载失败');
     } finally {
       setLoading(false);

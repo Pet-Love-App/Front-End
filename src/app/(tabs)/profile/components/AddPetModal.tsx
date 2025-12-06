@@ -35,7 +35,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
 
   // 使用非受控组件，避免实时状态更新导致重渲染
   const nameRef = useRef<TextInput>(null);
-  const breedRef = useRef<TextInput>(null);
+  const _breedRef = useRef<TextInput>(null);
   const ageRef = useRef<TextInput>(null);
   const descriptionRef = useRef<TextInput>(null);
 
@@ -52,7 +52,6 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
   // 焦点状态
   const [nameFocused, setNameFocused] = useState(false);
   const [ageFocused, setAgeFocused] = useState(false);
-  const [descriptionFocused, setDescriptionFocused] = useState(false);
 
   const pickPetImage = async () => {
     try {
@@ -71,8 +70,8 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
       if ('canceled' in result && !result.canceled && result.assets?.[0]) {
         setPhotoUri(result.assets[0].uri);
       }
-    } catch (e) {
-      console.warn(e);
+    } catch (_e) {
+      console.warn(_e);
     }
   };
 
@@ -107,7 +106,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
       setSpecies('cat');
       setPhotoUri(null);
       onOpenChange(false);
-    } catch (e) {
+    } catch (_e) {
       // Error handled in parent
     } finally {
       setSubmitting(false);

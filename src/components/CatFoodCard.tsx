@@ -1,7 +1,7 @@
 import React from 'react';
-import { Image } from 'react-native';
 import { Card, Separator, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { ProductImage } from '@/src/components/ui/OptimizedImage';
 import type { CatFood } from '@/src/types/catFood';
 
 interface CatFoodCardProps {
@@ -96,13 +96,14 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
               hoverStyle={{ opacity: 0.8 }}
               pressStyle={{ opacity: 0.6 }}
             >
-              <Image
-                source={{ uri: catfood.imageUrl }}
+              <ProductImage
+                source={catfood.imageUrl}
                 style={{
                   width: 80,
                   height: 80,
-                  borderRadius: 8,
                 }}
+                borderRadius={8}
+                cachePolicy="memory-disk"
               />
             </YStack>
           ) : (

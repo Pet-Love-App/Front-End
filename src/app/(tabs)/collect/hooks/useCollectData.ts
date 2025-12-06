@@ -44,7 +44,7 @@ export function useCollectData() {
     setRefreshing(true);
     try {
       await fetchFavorites();
-    } catch (err) {
+    } catch (_err) {
       Alert.alert('刷新失败', '请检查网络连接后重试');
     } finally {
       setRefreshing(false);

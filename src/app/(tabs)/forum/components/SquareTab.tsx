@@ -7,8 +7,6 @@ import { Colors } from '@/src/constants/colors';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { supabaseForumService, type Post } from '@/src/lib/supabase';
 
-import { ForumColors, MORANDI_COLORS } from '../constants';
-
 interface SquareTabProps {
   onOpenPost?: (post: Post) => void;
   externalReloadRef?: React.MutableRefObject<(() => void) | null>;
@@ -16,15 +14,6 @@ interface SquareTabProps {
   filterTag?: string;
   filterTags?: string[];
 }
-
-const getBadgeColor = (key: string, isDark: boolean) => {
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  }
-  const bg = MORANDI_COLORS[hash % MORANDI_COLORS.length];
-  return { bg, fg: isDark ? '#ECEDEE' : ForumColors.text };
-};
 
 export function SquareTab({
   onOpenPost,
@@ -55,7 +44,7 @@ export function SquareTab({
       const { data, error } = await supabaseForumService.getPosts(params);
       if (error) throw error;
       setList(data || []);
-    } catch (e) {
+    } catch (_e) {
       Alert.alert('错误', '加载失败');
     } finally {
       setLoading(false);
@@ -99,7 +88,7 @@ export function SquareTab({
       if (!wasFavorited && res.action === 'favorited') {
         setTimeout(() => animationRefs.current[postId]?.play(), 0);
       }
-    } catch (e) {
+    } catch (_e) {
       Alert.alert('错误', '操作失败');
     }
   };

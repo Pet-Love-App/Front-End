@@ -1,9 +1,8 @@
 /**
  * 论坛主页面
- * 组件化重构后的版本，遵循企业最佳实践
  */
 
-import type { Post } from '@/src/services/api/forum';
+import type { Post } from '@/src/lib/supabase';
 import React, { useRef, useState } from 'react';
 import { YStack } from 'tamagui';
 import {

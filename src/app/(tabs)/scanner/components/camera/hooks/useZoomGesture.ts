@@ -1,10 +1,5 @@
 /**
- * useZoomGesture - 相机缩放手势控制 Hook
- *
- * 企业最佳实践：
- * - 单一职责：专注于手势识别和缩放控制
- * - 可复用性：独立的手势逻辑，可在其他组件使用
- * - 类型安全：完整的 TypeScript 类型定义
+ * 相机缩放手势控制 Hook
  */
 
 import * as Haptics from 'expo-haptics';

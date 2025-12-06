@@ -1,5 +1,5 @@
-import { petInputSchema, type Pet, type PetInput } from '@/src/schemas/pet.schema';
-import { petService } from '@/src/services/api';
+import { supabasePetService, type Pet } from '@/src/lib/supabase';
+import { petInputSchema, type PetInput } from '@/src/schemas/pet.schema';
 import { useUserStore } from '@/src/store/userStore';
 import { useState } from 'react';
 import { Alert } from 'react-native';
@@ -20,12 +20,31 @@ export function usePetManagement() {
     try {
       const payload = petInputSchema.parse(petData);
 
-      // 直接在创建时上传照片（后端支持 multipart/form-data）
-      const created = await petService.createPet(payload, photoUri || undefined);
+      // 创建宠物
+      const { data: pet, error: createError } = await supabasePetService.createPet(payload);
+      if (createError || !pet) {
+        throw new Error(createError?.message || '创建失败');
+      }
 
+      // 如果有照片，上传照片
+      if (photoUri) {
+        const { data: petWithPhoto, error: uploadError } = await supabasePetService.uploadPetPhoto(
+          pet.id,
+          photoUri
+        );
+        if (uploadError) {
+          console.warn('照片上传失败:', uploadError);
+        } else if (petWithPhoto) {
+          setSelectedPet(petWithPhoto);
+          await fetchCurrentUser();
+          Alert.alert('成功', '已创建宠物');
+          return;
+        }
+      }
+
+      setSelectedPet(pet);
       await fetchCurrentUser();
       Alert.alert('成功', '已创建宠物');
-      setSelectedPet(created);
     } catch (e: any) {
       Alert.alert('创建失败', e?.message ?? '请检查表单后重试');
       throw e;

@@ -1,4 +1,4 @@
-import { forumService, type NotificationItem } from '@/src/services/api/forum';
+import { supabaseForumService, type NotificationItem } from '@/src/lib/supabase';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, RefreshControl } from 'react-native';
 import { Button, Card, Spinner, Text, XStack, YStack } from 'tamagui';
@@ -15,8 +15,9 @@ export function MessagesTab({ onCreatePost }: MessagesTabProps) {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await forumService.getNotifications(true); // 默认拉取未读
-      setList(res);
+      const { data, error } = await supabaseForumService.getNotifications(true); // 默认拉取未读
+      if (error) throw error;
+      setList(data || []);
     } catch (e) {
       Alert.alert('错误', '加载失败');
     } finally {

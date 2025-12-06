@@ -1,12 +1,6 @@
+import type { Additive } from '@/src/lib/supabase';
 import { Modal, ScrollView, TouchableOpacity } from 'react-native';
 import { Button, Card, Separator, Text, XStack, YStack } from 'tamagui';
-
-interface Additive {
-  name: string;
-  type?: string;
-  en_name?: string;
-  applicable_range?: string;
-}
 
 interface BaikeInfo {
   title: string;
@@ -91,9 +85,9 @@ export function AdditiveDetailModal({
                     <Text fontSize="$5" fontWeight="600" color="$blue10">
                       📊 数据库信息
                     </Text>
-                    {additive.en_name && <DetailRow label="英文名：" value={additive.en_name} />}
+                    {additive.enName && <DetailRow label="英文名：" value={additive.enName} />}
                     <DetailRow label="类别：" value={additive.type || '未分类'} />
-                    <DetailRow label="适用范围：" value={additive.applicable_range || '暂无说明'} />
+                    <DetailRow label="适用范围：" value={additive.applicableRange || '暂无说明'} />
                   </YStack>
                 )}
 

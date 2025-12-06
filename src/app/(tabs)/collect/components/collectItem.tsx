@@ -91,7 +91,7 @@ export default function CollectListItem({ favorite, onDelete }: CollectListItemP
             <XStack alignItems="center" gap="$1" marginTop="$1">
               <IconSymbol name="clock" size={14} color={colors.icon + '80'} />
               <Text fontSize={12} color={colors.icon + '80'}>
-                收藏于 {formatDate(favorite.created_at)}
+                收藏于 {formatDate(favorite.createdAt)}
               </Text>
             </XStack>
           </YStack>

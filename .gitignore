@@ -44,3 +44,4 @@ app-example
 
 # documentation (internal development notes)
 /docs
+/coverage

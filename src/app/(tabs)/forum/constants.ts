@@ -8,7 +8,7 @@ import {
   TAG_COLORS,
   ForumColors as UnifiedForumColors,
 } from '@/src/constants/colors';
-import type { PostCategory } from '@/src/services/api/forum/types';
+import type { PostCategory } from '@/src/lib/supabase';
 
 // ===== 主题颜色 (使用统一颜色系统) =====
 export const ForumColors = UnifiedForumColors;

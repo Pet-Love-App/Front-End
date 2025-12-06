@@ -2,9 +2,12 @@ import { ForumColors } from '@/src/app/(tabs)/forum/constants';
 import Tag from '@/src/components/ui/Tag';
 import { Colors } from '@/src/constants/colors';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import type { Comment } from '@/src/services/api/comment';
-import type { Post } from '@/src/services/api/forum';
-import { forumService } from '@/src/services/api/forum';
+import {
+  supabaseCommentService,
+  supabaseForumService,
+  type Comment,
+  type Post,
+} from '@/src/lib/supabase';
 import { useUserStore } from '@/src/store/userStore';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, Dimensions, FlatList, Image, ScrollView } from 'react-native';
@@ -44,14 +47,12 @@ export function PostDetailModal({
     if (!post) return;
     try {
       setLoading(true);
-      const res = (await forumService.getCommentsForTarget({
+      const { data, error } = await supabaseCommentService.getComments({
         targetType: 'post',
         targetId: post.id,
-        orderBy: 'likes',
-        includeReplies: true,
-      })) as unknown as Comment[] | { results: Comment[] };
-      const list = Array.isArray(res) ? res : (res as any).results || [];
-      setComments(list);
+      });
+      if (error) throw error;
+      setComments(data || []);
     } finally {
       setLoading(false);
     }
@@ -72,12 +73,13 @@ export function PostDetailModal({
   const submit = async () => {
     if (!post || !content.trim()) return;
     try {
-      await forumService.createComment({
+      const { error } = await supabaseCommentService.createComment({
         targetType: 'post',
         targetId: post.id,
         content: content.trim(),
         parentId: replyTarget?.id || undefined,
       });
+      if (error) throw error;
       setContent('');
       setReplyTarget(null);
       await load();
@@ -88,10 +90,12 @@ export function PostDetailModal({
 
   const toggleLike = async (commentId: number) => {
     try {
-      const res = await forumService.toggleCommentLike(commentId);
+      const { data: res, error } = await supabaseCommentService.toggleCommentLike(commentId);
+      if (error) throw error;
+      if (!res) return;
       setComments((prev) =>
         prev.map((c) =>
-          c.id === commentId ? { ...c, likes: res.likes || 0, isLiked: res.action === 'liked' } : c
+          c.id === commentId ? { ...c, likes: res.likes || 0, isLiked: res.liked } : c
         )
       );
     } catch (e) {
@@ -110,7 +114,8 @@ export function PostDetailModal({
         style: 'destructive',
         onPress: async () => {
           try {
-            await forumService.deletePost(post.id);
+            const { error } = await supabaseForumService.deletePost(post.id);
+            if (error) throw error;
             onPostDeleted?.();
           } catch (e) {
             Alert.alert('错误', '删除失败');
@@ -132,7 +137,8 @@ export function PostDetailModal({
     const text = editingContent.trim();
     if (!text) return;
     try {
-      await forumService.updateComment(editingCommentId, text);
+      const { error } = await supabaseCommentService.updateComment(editingCommentId, text);
+      if (error) throw error;
       setComments((prev) =>
         prev.map((c) => (c.id === editingCommentId ? { ...c, content: text } : c))
       );
@@ -151,7 +157,8 @@ export function PostDetailModal({
         style: 'destructive',
         onPress: async () => {
           try {
-            await forumService.deleteComment(commentId);
+            const { error } = await supabaseCommentService.deleteComment(commentId);
+            if (error) throw error;
             setComments((prev) => prev.filter((c) => c.id !== commentId));
           } catch (e) {
             Alert.alert('错误', '删除失败');
@@ -234,8 +241,8 @@ export function PostDetailModal({
               <Text color={ForumColors.text}>{post.content}</Text>
               {!!post.media?.length && (
                 <XStack gap="$2" flexWrap="wrap">
-                  {post.media.map((m) =>
-                    m.media_type === 'image' ? (
+                  {post.media.map((m: any) =>
+                    m.mediaType === 'image' ? (
                       <Card
                         key={m.id}
                         width={110}
@@ -265,7 +272,7 @@ export function PostDetailModal({
               )}
               {post.tags && post.tags.length > 0 && (
                 <XStack gap="$2" alignItems="center" flexWrap="wrap" marginTop="$2">
-                  {post.tags.map((tag, index) => (
+                  {post.tags.map((tag: any, index: number) => (
                     <Tag key={`${post.id}-${tag}`} name={tag} index={index} />
                   ))}
                 </XStack>

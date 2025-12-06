@@ -1,3 +1,4 @@
+import { logger } from '@/src/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -20,7 +21,7 @@ export const useThemeStore = create<ThemeState>()(
       // 设置主题模式
       setThemeMode: (mode: ThemeMode) => {
         set({ themeMode: mode });
-        console.log('✅ 主题模式已切换:', mode);
+        logger.info('主题模式已切换', { mode });
       },
 
       // 水化状态
@@ -38,7 +39,7 @@ export const useThemeStore = create<ThemeState>()(
       }),
       // 水化完成后的回调
       onRehydrateStorage: () => (state) => {
-        console.log('💧 主题状态恢复完成:', {
+        logger.info('主题状态恢复完成', {
           themeMode: state?.themeMode,
         });
         state?.setHasHydrated(true);

@@ -2,10 +2,6 @@
  * NutritionInputPrompt Component
  *
  * 当猫粮缺少营养成分信息时，引导用户录入数据的提示组件
- * 企业最佳实践：
- * - 非侵入式设计：小巧简洁，不影响用户主流程
- * - 清晰的行动召唤：提供明确的操作路径
- * - 组件化：独立封装，可复用
  */
 
 import { IconSymbol } from '@/src/components/ui/IconSymbol';

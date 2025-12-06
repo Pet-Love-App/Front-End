@@ -5,12 +5,12 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
+import { supabaseAuthService, supabaseProfileService } from '@/src/lib/supabase';
 import {
   changePasswordSchema,
   updateUsernameSchema,
   type ChangePasswordInput,
 } from '@/src/schemas/user.schema';
-import { userService } from '@/src/services/api';
 import { useUserStore } from '@/src/store/userStore';
 import { useState } from 'react';
 import { Alert, Dimensions, ScrollView, StyleSheet, TextInput } from 'react-native';
@@ -67,7 +67,14 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
       }
 
       setIsUpdatingUsername(true);
-      await userService.updateUsername(username.trim());
+      const { error } = await supabaseProfileService.updateProfile({
+        username: username.trim(),
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
       await fetchCurrentUser();
       Alert.alert('✅ 成功', '用户名已更新');
       handleClose();
@@ -103,7 +110,15 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
       changePasswordSchema.parse(passwordData);
 
       setIsChangingPassword(true);
-      await userService.changePassword(passwordData);
+
+      // 注意：Supabase 修改密码不需要验证当前密码（用户已登录）
+      const { error } = await supabaseAuthService.updatePassword({
+        newPassword: newPassword,
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
 
       Alert.alert('✅ 成功', '密码已修改，请使用新密码重新登录', [
         {
@@ -120,7 +135,7 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
       if (error.errors) {
         Alert.alert('❌ 验证失败', error.errors[0]?.message || '密码格式不正确');
       } else {
-        Alert.alert('❌ 修改失败', error.message || '无法修改密码，请检查当前密码是否正确');
+        Alert.alert('❌ 修改失败', error.message || '无法修改密码');
       }
     } finally {
       setIsChangingPassword(false);

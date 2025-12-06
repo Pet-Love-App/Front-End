@@ -5,7 +5,7 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import type { Comment } from '@/src/services/api/comment';
+import type { Comment } from '@/src/lib/supabase';
 import { memo } from 'react';
 import { Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { Separator, Text, XStack, YStack } from 'tamagui';

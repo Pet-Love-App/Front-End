@@ -111,7 +111,7 @@ export const API_ENDPOINTS = {
     LIST: `/api/notifications/`, // 获取通知列表
     UNREAD_COUNT: `/api/notifications/unread-count/`, // 获取未读通知数量
     MARK_READ: (notificationId: number) => `/api/notifications/${notificationId}/read/`, // 标记为已读
-    MARK_ALL_READ: `/api/notifications/mark-all-read/`, // 标记所有为已读
+    MARK_ALL_READ: `/api/notifications/read-all/`, // 标记所有为已读
     DELETE: (notificationId: number) => `/api/notifications/${notificationId}/delete/`, // 删除通知
   },
 

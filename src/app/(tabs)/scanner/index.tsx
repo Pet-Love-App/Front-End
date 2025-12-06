@@ -1,17 +1,5 @@
 /**
  * ScannerScreen - 智能扫描主页面
- *
- * 企业最佳实践：
- * - 职责分离：主文件仅负责组装和协调
- * - 业务逻辑提取到hooks
- * - 清晰的组件导入结构
- * - 状态机模式管理扫描流程
- *
- * 架构说明：
- * - hooks/ - 业务逻辑层
- * - components/ - UI组件层（camera/modals/results）
- * - screens/ - 页面组件层
- * - types/ - 类型定义层
  */
 
 import { useExpoCamera as useCamera } from '@/src/hooks/useExpoCamera';

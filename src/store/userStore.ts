@@ -1,48 +1,65 @@
+/**
+ * 用户状态管理 Store
+ */
+
+import type { UserWithPets } from '@/src/lib/supabase';
+import { supabaseAuthService, supabaseProfileService } from '@/src/lib/supabase';
 import { loginSchema, registerSchema } from '@/src/schemas/auth.schema';
-import type { User } from '@/src/schemas/user.schema';
-import { ApiError, authService } from '@/src/services/api/auth';
+import { logger } from '@/src/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { Session } from '@supabase/supabase-js';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+// ==================== 类型定义 ====================
+
 interface UserState {
-  user: User | null;
-  accessToken: string | null;
-  refreshToken: string | null;
+  // 用户信息
+  user: UserWithPets | null;
+  session: Session | null;
+
+  // 状态标志
   isAuthenticated: boolean;
   isLoading: boolean;
   _hasHydrated: boolean;
 
-  // 认证方法（适配 Supabase）
+  // 认证方法
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  refreshAccessToken: () => Promise<void>;
 
   // 用户信息方法
   fetchCurrentUser: () => Promise<void>;
+  updateProfile: (params: { username?: string; bio?: string; phone?: string }) => Promise<void>;
   uploadAvatar: (imageUri: string) => Promise<void>;
   deleteAvatar: () => Promise<void>;
 
+  // 密码管理
+  updatePassword: (newPassword: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+
   // 状态管理方法
-  setUser: (user: User | null) => void;
-  setTokens: (accessToken: string | null, refreshToken: string | null) => void;
+  setUser: (user: UserWithPets | null) => void;
+  setSession: (session: Session | null) => void;
   setLoading: (loading: boolean) => void;
   setHasHydrated: (hasHydrated: boolean) => void;
 }
 
+// ==================== Store 实现 ====================
+
 export const useUserStore = create<UserState>()(
   persist(
     (set, get) => ({
-      // 初始状态
+      // ==================== 初始状态 ====================
       user: null,
-      accessToken: null,
-      refreshToken: null,
+      session: null,
       isAuthenticated: false,
       isLoading: false,
       _hasHydrated: false,
 
-      // 登录（适配 Supabase）
+      // ==================== 认证方法 ====================
+
+      /** 用户登录 */
       login: async (email: string, password: string) => {
         try {
           set({ isLoading: true });
@@ -50,36 +67,31 @@ export const useUserStore = create<UserState>()(
           // 使用 Zod 验证输入
           const validatedData = loginSchema.parse({ email, password });
 
-          // 调用登录 API（返回 { user, session }）
-          const { user: authUser, session } = await authService.login(validatedData);
+          // 调用 Supabase Auth 登录
+          const { data, error } = await supabaseAuthService.login(validatedData);
 
-          // 保存 tokens
+          if (error || !data) {
+            throw new Error(error?.message || '登录失败');
+          }
+
+          // 保存 session
           set({
-            accessToken: session.access_token,
-            refreshToken: session.refresh_token,
+            session: data.session,
             isAuthenticated: true,
           });
 
           // 获取用户完整信息（含头像、宠物）
-          const user = await authService.getCurrentUser(session.access_token);
+          await get().fetchCurrentUser();
 
-          set({
-            user,
-            isLoading: false,
-          });
+          set({ isLoading: false });
         } catch (error) {
           set({ isLoading: false });
-          console.error('❌ 登录失败:', error);
-
-          // 处理不同类型的错误
-          if (error instanceof ApiError) {
-            throw new Error(error.message);
-          }
+          logger.error('登录失败', error as Error);
           throw error;
         }
       },
 
-      // 注册（适配 Supabase）
+      /** 用户注册 */
       register: async (email: string, username: string, password: string) => {
         try {
           set({ isLoading: true });
@@ -91,173 +103,198 @@ export const useUserStore = create<UserState>()(
             password,
           });
 
-          // 调用注册 API（返回 { user, session }）
-          const { user: authUser, session } = await authService.register(validatedData);
+          // 调用 Supabase Auth 注册
+          const { data, error } = await supabaseAuthService.register(validatedData);
+
+          if (error || !data) {
+            throw new Error(error?.message || '注册失败');
+          }
 
           // 如果没有 session，说明需要邮箱验证
-          if (!session) {
+          if (!data.session) {
             set({ isLoading: false });
             throw new Error('注册成功！请查收验证邮件并完成邮箱验证。');
           }
 
-          // 保存 tokens 并自动登录
+          // 保存 session 并自动登录
           set({
-            accessToken: session.access_token,
-            refreshToken: session.refresh_token,
+            session: data.session,
             isAuthenticated: true,
           });
 
           // 获取用户完整信息
-          const user = await authService.getCurrentUser(session.access_token);
-
-          set({
-            user,
-            isLoading: false,
-          });
-        } catch (error) {
-          set({ isLoading: false });
-          console.error('❌ 注册失败:', error);
-
-          // 处理不同类型的错误
-          if (error instanceof ApiError) {
-            throw new Error(error.message);
-          }
-          throw error;
-        }
-      },
-
-      // 刷新访问令牌（适配 Supabase）
-      refreshAccessToken: async () => {
-        try {
-          const { refreshToken } = get();
-          if (!refreshToken) {
-            throw new Error('没有刷新令牌');
-          }
-
-          const session = await authService.refreshToken(refreshToken);
-
-          set({
-            accessToken: session.access_token,
-            refreshToken: session.refresh_token,
-          });
-        } catch (error) {
-          console.error('❌ Token 刷新失败:', error);
-          // Token 刷新失败，清除登录状态
-          get().logout();
-          throw error;
-        }
-      },
-
-      // 获取当前用户信息（适配 Supabase）
-      fetchCurrentUser: async () => {
-        try {
-          const { accessToken } = get();
-          if (!accessToken) {
-            throw new Error('未登录');
-          }
-
-          // 获取完整用户信息（含头像、宠物）
-          const user = await authService.getCurrentUser(accessToken);
-
-          set({
-            user,
-          });
-        } catch (error) {
-          console.error('❌ 用户信息获取失败:', error);
-          throw error;
-        }
-      },
-
-      // 上传头像（适配 Supabase）
-      uploadAvatar: async (imageUri: string) => {
-        try {
-          set({ isLoading: true });
-
-          const { accessToken } = get();
-          if (!accessToken) {
-            throw new Error('未登录');
-          }
-
-          await authService.uploadAvatar(accessToken, imageUri);
-
-          // 刷新用户信息
           await get().fetchCurrentUser();
 
           set({ isLoading: false });
         } catch (error) {
           set({ isLoading: false });
-          console.error('❌ 头像上传失败:', error);
+          logger.error('注册失败', error as Error);
           throw error;
         }
       },
 
-      // 删除头像（适配 Supabase）
-      deleteAvatar: async () => {
-        try {
-          set({ isLoading: true });
-
-          const { accessToken } = get();
-          if (!accessToken) {
-            throw new Error('未登录');
-          }
-
-          await authService.deleteAvatar(accessToken);
-
-          // 刷新用户信息
-          await get().fetchCurrentUser();
-
-          set({ isLoading: false });
-        } catch (error) {
-          set({ isLoading: false });
-          console.error('❌ 头像删除失败:', error);
-          throw error;
-        }
-      },
-
-      // 登出（适配 Supabase）
+      /** 用户登出 */
       logout: async () => {
         try {
-          const { accessToken } = get();
-
-          // 如果有 token，调用后端登出接口
-          if (accessToken) {
-            try {
-              await authService.logout(accessToken);
-            } catch (error) {
-              // 登出接口失败也继续清除本地状态
-              console.warn('⚠️ 后端登出失败，但继续清除本地状态:', error);
-            }
-          }
+          // 调用 Supabase Auth 登出
+          await supabaseAuthService.logout();
 
           // 清除本地状态
           set({
             user: null,
-            accessToken: null,
-            refreshToken: null,
+            session: null,
             isAuthenticated: false,
           });
         } catch (error) {
-          console.error('❌ 登出失败:', error);
+          logger.error('登出失败', error as Error);
+          // 即使登出失败，也清除本地状态
+          set({
+            user: null,
+            session: null,
+            isAuthenticated: false,
+          });
+        }
+      },
+
+      // ==================== 用户信息方法 ====================
+
+      /** 获取当前用户完整信息 */
+      fetchCurrentUser: async () => {
+        try {
+          const { data, error } = await supabaseProfileService.getCurrentProfile();
+
+          if (error || !data) {
+            logger.error('获取用户信息失败', new Error(error?.message || '获取用户信息失败'));
+            throw new Error(error?.message || '获取用户信息失败');
+          }
+
+          set({ user: data });
+        } catch (error) {
+          logger.error('用户信息获取失败', error as Error);
           throw error;
         }
       },
 
-      // 设置用户
-      setUser: (user: User | null) => {
+      /** 更新用户资料 */
+      updateProfile: async (params: { username?: string; bio?: string; phone?: string }) => {
+        try {
+          set({ isLoading: true });
+
+          const { error } = await supabaseProfileService.updateProfile(params);
+
+          if (error) {
+            throw new Error(error.message || '更新资料失败');
+          }
+
+          // 刷新用户信息
+          await get().fetchCurrentUser();
+
+          set({ isLoading: false });
+        } catch (error) {
+          set({ isLoading: false });
+          logger.error('更新资料失败', error as Error);
+          throw error;
+        }
+      },
+
+      /** 上传头像 */
+      uploadAvatar: async (imageUri: string) => {
+        try {
+          set({ isLoading: true });
+
+          const { error } = await supabaseProfileService.uploadAvatar(imageUri);
+
+          if (error) {
+            throw new Error(error.message || '上传头像失败');
+          }
+
+          // 刷新用户信息
+          await get().fetchCurrentUser();
+
+          set({ isLoading: false });
+        } catch (error) {
+          set({ isLoading: false });
+          logger.error('头像上传失败', error as Error);
+          throw error;
+        }
+      },
+
+      /** 删除头像 */
+      deleteAvatar: async () => {
+        try {
+          set({ isLoading: true });
+
+          const { error } = await supabaseProfileService.deleteAvatar();
+
+          if (error) {
+            throw new Error(error.message || '删除头像失败');
+          }
+
+          // 刷新用户信息
+          await get().fetchCurrentUser();
+
+          set({ isLoading: false });
+        } catch (error) {
+          set({ isLoading: false });
+          logger.error('头像删除失败', error as Error);
+          throw error;
+        }
+      },
+
+      // ==================== 密码管理 ====================
+
+      /** 更新密码（需要已登录） */
+      updatePassword: async (newPassword: string) => {
+        try {
+          set({ isLoading: true });
+
+          const { error } = await supabaseAuthService.updatePassword({ newPassword });
+
+          if (error) {
+            throw new Error(error.message || '修改密码失败');
+          }
+
+          set({ isLoading: false });
+        } catch (error) {
+          set({ isLoading: false });
+          logger.error('修改密码失败', error as Error);
+          throw error;
+        }
+      },
+
+      /** 发送密码重置邮件 */
+      resetPassword: async (email: string) => {
+        try {
+          set({ isLoading: true });
+
+          const { error } = await supabaseAuthService.resetPassword({ email });
+
+          if (error) {
+            throw new Error(error.message || '发送重置邮件失败');
+          }
+
+          set({ isLoading: false });
+        } catch (error) {
+          set({ isLoading: false });
+          logger.error('发送重置邮件失败', error as Error);
+          throw error;
+        }
+      },
+
+      // ==================== 状态管理方法 ====================
+
+      setUser: (user: UserWithPets | null) => {
         set({ user, isAuthenticated: !!user });
       },
 
-      // 设置 tokens
-      setTokens: (accessToken: string | null, refreshToken: string | null) => {
-        set({ accessToken, refreshToken });
+      setSession: (session: Session | null) => {
+        set({ session, isAuthenticated: !!session });
       },
 
-      // 设置加载状态
       setLoading: (loading: boolean) => {
         set({ isLoading: loading });
       },
 
-      // 设置水化状态
       setHasHydrated: (hasHydrated: boolean) => {
         set({ _hasHydrated: hasHydrated });
       },
@@ -267,19 +304,38 @@ export const useUserStore = create<UserState>()(
       storage: createJSONStorage(() => AsyncStorage),
       // 只持久化这些字段
       partialize: (state) => ({
+        // 注意：session 不需要持久化，Supabase SDK 会自动处理
         user: state.user,
-        accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
       // 水化完成后的回调
       onRehydrateStorage: () => (state) => {
-        // Zustand 状态恢复完成
-        // console.log('💧 Zustand 状态恢复完成:', {
-        //   isAuthenticated: state?.isAuthenticated,
-        //   hasUser: !!state?.user,
-        // });
         state?.setHasHydrated(true);
+
+        // Supabase SDK 会自动从 AsyncStorage 恢复 Session
+        // 检查是否有有效的 Session
+        if (state?.isAuthenticated) {
+          supabaseAuthService
+            .getSession()
+            .then(({ data: session }) => {
+              if (session) {
+                state.setSession(session);
+                // 刷新用户信息
+                state.fetchCurrentUser().catch((error) => {
+                  logger.warn('刷新用户信息失败', { error: String(error) });
+                });
+              } else {
+                // Session 已过期，清除登录状态
+                state.setUser(null);
+                state.setSession(null);
+              }
+            })
+            .catch((error) => {
+              logger.warn('获取 Session 失败', { error: String(error) });
+              state.setUser(null);
+              state.setSession(null);
+            });
+        }
       },
     }
   )

@@ -1,19 +1,12 @@
 /**
- * AIReportSection Component
- *
  * AI 报告嵌入式展示组件
- * 企业最佳实践：
- * - 组件化：独立的 AI 报告展示板块
- * - 可复用：可在多个页面中使用
- * - 响应式：适配不同屏幕尺寸
- * - 性能优化：条件渲染，仅在有数据时加载
  */
 
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import type { AIReportData, Additive } from '@/src/services/api';
-import { additiveService } from '@/src/services/api';
+import { supabaseAdditiveService, type Additive } from '@/src/lib/supabase';
+import type { AIReportData } from '@/src/services/api';
 import { useState } from 'react';
 import { Alert, Dimensions } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
@@ -74,53 +67,64 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
     try {
       // 并行获取数据库信息和百度百科信息
       const [additiveResult, baikeResult] = await Promise.allSettled([
-        additiveService.searchAdditive(additiveName),
-        additiveService.getIngredientInfo(additiveName),
+        supabaseAdditiveService.searchAdditive(additiveName),
+        // getIngredientInfo 仍然使用 Django 后端（保护 API 密钥）
+        // 暂时注释掉，需要单独处理
+        Promise.resolve({ ok: false }),
       ]);
 
       // 处理添加剂数据库信息
       if (additiveResult.status === 'fulfilled') {
-        const data = additiveResult.value;
-        console.log('📥 添加剂搜索结果:', data);
+        const result = additiveResult.value;
+        console.log('📥 添加剂搜索结果:', result);
 
-        // 根据后端返回的数据结构处理
-        if (
-          data.match_type === 'exact' ||
-          data.match_type === 'fuzzy' ||
-          data.match_type === 'fuzzy_single'
-        ) {
-          // 单个结果
-          if (data.additive) {
-            setSelectedItem(data.additive);
+        if (result.data) {
+          const data = result.data;
+          // 根据 Supabase 返回的数据结构处理
+          if (
+            data.matchType === 'exact' ||
+            data.matchType === 'fuzzy' ||
+            data.matchType === 'fuzzy_single'
+          ) {
+            // 单个结果
+            if (data.additive) {
+              setSelectedItem(data.additive);
+            }
+          } else if (data.matchType === 'multiple') {
+            // 多个结果，取第一个
+            if (data.additives && data.additives.length > 0) {
+              setSelectedItem(data.additives[0]);
+            }
+          } else if (data.matchType === 'not_found') {
+            // 未找到，创建一个基本对象
+            setSelectedItem({
+              id: 0, // 占位符ID，表示未找到
+              name: additiveName,
+              enName: '',
+              type: '未分类',
+              applicableRange: '暂无数据',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            });
           }
-        } else if (data.match_type === 'multiple') {
-          // 多个结果，取第一个
-          if (data.additives && data.additives.length > 0) {
-            setSelectedItem(data.additives[0]);
-          }
-        } else if (data.match_type === 'not_found') {
-          // 未找到，创建一个基本对象
+        } else if (result.error) {
+          console.error('❌ 添加剂搜索失败:', result.error);
+          // 创建一个基本对象
           setSelectedItem({
+            id: 0, // 占位符ID，表示未找到
             name: additiveName,
-            en_name: '',
+            enName: '',
             type: '未分类',
-            applicable_range: '暂无数据',
+            applicableRange: '暂无数据',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           });
         }
-      } else {
-        console.error('❌ 添加剂搜索失败:', additiveResult.reason);
-        // 创建一个基本对象
-        setSelectedItem({
-          name: additiveName,
-          en_name: '',
-          type: '未分类',
-          applicable_range: '暂无数据',
-        });
       }
 
       // 处理百度百科信息
       if (baikeResult.status === 'fulfilled') {
-        const baikeData = baikeResult.value;
+        const baikeData = baikeResult.value as { ok?: boolean; title?: string; extract?: string };
         console.log('📥 百度百科搜索结果:', baikeData);
 
         if (baikeData.ok && baikeData.extract) {
@@ -136,10 +140,13 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
       console.error('❌ 获取添加剂详情失败:', error);
       // 创建一个基本对象以显示错误信息
       setSelectedItem({
+        id: 0, // 占位符ID，表示加载失败
         name: additiveName,
-        en_name: '',
+        enName: '',
         type: '加载失败',
-        applicable_range: '请稍后重试',
+        applicableRange: '请稍后重试',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
     } finally {
       setIsLoadingDetail(false);
@@ -160,7 +167,7 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
   };
 
   // 获取营养成分占比数据
-  // 企业最佳实践：严格验证数据完整性
+  // 验证数据完整性
   const hasNutritionData =
     report.percentage === true &&
     report.percent_data &&
@@ -527,7 +534,6 @@ const NUTRITION_NAME_MAP: Record<string, string> = {
 
 /**
  * 准备饼图数据
- * 企业最佳实践：严格的数据验证和类型安全
  */
 function preparePieChartData(percentData: Record<string, number | null>) {
   // 数据验证

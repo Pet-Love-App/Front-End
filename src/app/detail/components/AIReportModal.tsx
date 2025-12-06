@@ -1,14 +1,10 @@
 /**
  * AIReportModal Component
  *
- * 企业最佳实践：
- * - 组件化：独立的 AI 报告展示模态框
- * - 响应式设计：适配不同屏幕尺寸
- * - 良好的用户体验：分区展示、易读性强
  */
 
 import type { AIReportData } from '@/src/services/api';
-import { useCollectStore } from '@/src/store/collectStore';
+import { aiReportService } from '@/src/services/api';
 import { Feather } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { Alert, Modal, ScrollView } from 'react-native';
@@ -32,16 +28,20 @@ export function AIReportModal({ visible, report, onClose }: AIReportModalProps) 
   const [isFavorited, setIsFavorited] = useState(false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
-  // 从 store 获取收藏相关方法
-  const toggleFavoriteReport = useCollectStore((state) => state.toggleFavoriteReport);
-  const isFavoritedReport = useCollectStore((state) => state.isFavoritedReport);
-
   // 检查是否已收藏
   useEffect(() => {
-    if (report?.id) {
-      setIsFavorited(isFavoritedReport(report.id));
-    }
-  }, [report?.id, isFavoritedReport]);
+    const checkFavorite = async () => {
+      if (report?.id) {
+        try {
+          const result = await aiReportService.checkFavoriteReport(report.id);
+          setIsFavorited(result);
+        } catch (error) {
+          console.error('检查收藏状态失败:', error);
+        }
+      }
+    };
+    checkFavorite();
+  }, [report?.id]);
 
   // 切换收藏状态
   const handleToggleFavorite = async () => {
@@ -49,9 +49,9 @@ export function AIReportModal({ visible, report, onClose }: AIReportModalProps) 
 
     setIsTogglingFavorite(true);
     try {
-      const newState = await toggleFavoriteReport(report.id);
-      setIsFavorited(newState);
-      Alert.alert('✅ 成功', newState ? '已收藏此报告' : '已取消收藏');
+      const result = await aiReportService.toggleFavoriteReport(report.id);
+      setIsFavorited(result.is_favorited);
+      Alert.alert('✅ 成功', result.is_favorited ? '已收藏此报告' : '已取消收藏');
     } catch (error) {
       Alert.alert('❌ 失败', '操作失败，请重试');
       console.error('切换报告收藏失败:', error);

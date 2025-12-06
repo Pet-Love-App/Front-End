@@ -3,32 +3,47 @@
  * 提供百度百科等外部搜索功能
  */
 
-import { apiClient } from '../BaseApi';
-import type { BaikeSearchRequest, BaikeSearchResponse } from './types';
+import { devError, devLog } from '../core';
+import { apiClient } from '../core/httpClient';
+
+// ========== 类型定义 ==========
+
+export interface BaikeSearchRequest {
+  ingredient: string;
+}
+
+export interface BaikeSearchResponse {
+  /** 请求是否成功 */
+  ok: boolean;
+  /** 百科标题 */
+  title?: string;
+  /** 百科摘要/提取内容 */
+  extract?: string;
+  /** 百科 URL */
+  url?: string;
+  /** 错误信息 */
+  error?: string;
+}
+
+// ========== 服务实现 ==========
 
 class SearchService {
   /**
    * 搜索百度百科成分信息
-   * @param request 搜索请求
-   * @returns 百度百科信息
    */
   async searchBaike(request: BaikeSearchRequest): Promise<BaikeSearchResponse> {
     try {
-      console.log('\n========== 🔍 百度百科搜索请求 ==========');
-      console.log('📤 搜索关键词:', request.ingredient);
+      devLog('百度百科搜索', request.ingredient);
 
       const response = await apiClient.post<BaikeSearchResponse>(
         '/api/search/ingredient/info',
         request
       );
 
-      console.log('📥 百度百科搜索响应:');
-      console.log(JSON.stringify(response, null, 2));
-      console.log('========================================\n');
-
+      devLog('百度百科搜索结果', response);
       return response;
     } catch (error) {
-      console.error('❌ 百度百科搜索失败:', error);
+      devError('百度百科搜索失败', error);
       throw error;
     }
   }
@@ -36,6 +51,3 @@ class SearchService {
 
 // 导出单例
 export const searchService = new SearchService();
-
-// 便捷导出
-export { type BaikeSearchRequest, type BaikeSearchResponse };

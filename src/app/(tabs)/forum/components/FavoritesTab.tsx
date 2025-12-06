@@ -1,5 +1,5 @@
 import Tag from '@/src/components/ui/Tag';
-import { forumService, type Post } from '@/src/services/api/forum';
+import { supabaseForumService, type Post } from '@/src/lib/supabase';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, FlatList, RefreshControl } from 'react-native';
@@ -18,8 +18,9 @@ export function FavoritesTab({ onOpenPost }: FavoritesTabProps) {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await forumService.getMyFavorites();
-      setList(res);
+      const { data, error } = await supabaseForumService.getMyFavorites();
+      if (error) throw error;
+      setList(data || []);
     } catch (e) {
       Alert.alert('错误', '加载失败');
     } finally {
@@ -34,7 +35,9 @@ export function FavoritesTab({ onOpenPost }: FavoritesTabProps) {
 
   const toggleFavorite = async (postId: number, wasFavorited: boolean) => {
     try {
-      const res = await forumService.toggleFavorite(postId);
+      const { data: res, error } = await supabaseForumService.toggleFavorite(postId);
+      if (error) throw error;
+      if (!res) return;
       setList((prev) =>
         prev
           .filter((p) => !(p.id === postId && res.action === 'unfavorited'))
@@ -42,8 +45,8 @@ export function FavoritesTab({ onOpenPost }: FavoritesTabProps) {
             p.id === postId
               ? {
                   ...p,
-                  is_favorited: res.action === 'favorited',
-                  favorites_count: res.favorites_count ?? p.favorites_count,
+                  isFavorited: res.action === 'favorited',
+                  favoritesCount: res.favoritesCount ?? p.favoritesCount,
                 }
               : p
           )
@@ -74,19 +77,19 @@ export function FavoritesTab({ onOpenPost }: FavoritesTabProps) {
         <Text>{item.content}</Text>
         {renderTags(item)}
         <XStack gap="$3" alignItems="center" justifyContent="space-between">
-          <Text color="$gray10">{new Date(item.created_at).toLocaleString()}</Text>
+          <Text color="$gray10">{new Date(item.createdAt).toLocaleString()}</Text>
           <XStack gap="$3" alignItems="center">
             <Button
               size="$2"
-              onPress={() => toggleFavorite(item.id, item.is_favorited)}
-              backgroundColor={item.is_favorited ? '$yellow4' : '$background'}
+              onPress={() => toggleFavorite(item.id, item.isFavorited)}
+              backgroundColor={item.isFavorited ? '$yellow4' : '$background'}
             >
               <XStack alignItems="center" gap="$1">
-                <Text fontSize="$5" color={item.is_favorited ? '$yellow10' : '$gray10'}>
-                  {item.is_favorited ? '★' : '☆'}
+                <Text fontSize="$5" color={item.isFavorited ? '$yellow10' : '$gray10'}>
+                  {item.isFavorited ? '★' : '☆'}
                 </Text>
                 <Text fontSize="$3" color="$gray11">
-                  {item.favorites_count}
+                  {item.favoritesCount}
                 </Text>
               </XStack>
               <YStack

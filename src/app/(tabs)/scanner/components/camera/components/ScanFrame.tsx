@@ -1,10 +1,5 @@
 /**
  * ScanFrame - 扫描框组件
- *
- * 企业最佳实践：
- * - 单一职责：显示扫描框和动画
- * - Props类型化：清晰的接口定义
- * - 动画支持：React Native Animated
  */
 
 import { ScanType } from '@/src/types/camera';

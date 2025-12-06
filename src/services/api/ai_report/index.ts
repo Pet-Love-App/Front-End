@@ -3,7 +3,7 @@
  */
 
 import { API_ENDPOINTS } from '@/src/config/api';
-import { apiClient } from '../BaseApi';
+import { apiClient } from '../core/httpClient';
 import type {
   AIReportData,
   BackendReportResponse,

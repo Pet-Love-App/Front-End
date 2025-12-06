@@ -1,10 +1,5 @@
 /**
  * AIReportButton Component
- *
- * 企业最佳实践：
- * - 单一职责：只负责渲染 AI 报告按钮
- * - 可复用的 UI 组件
- * - 清晰的 props 接口
  */
 
 import { Feather } from '@expo/vector-icons';

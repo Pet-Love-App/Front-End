@@ -1,10 +1,5 @@
 /**
  * CameraControls - 相机控制按钮组
- *
- * 企业最佳实践：
- * - 单一职责：仅负责相机控制UI
- * - Props类型化：清晰的接口定义
- * - 可复用性：独立的UI组件
  */
 
 import { IconSymbol } from '@/src/components/ui/IconSymbol';

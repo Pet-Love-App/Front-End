@@ -1,0 +1,19 @@
+# 生产构建时忽略的文件
+
+# 测试相关
+**/__tests__/
+**/__mocks__/
+coverage/
+
+# 开发工具
+.vscode/
+.idea/
+
+# 文档
+*.md
+!README.md
+
+# 示例和模板
+examples/
+templates/
+

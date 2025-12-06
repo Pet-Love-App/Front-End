@@ -1,7 +1,7 @@
 import Tag from '@/src/components/ui/Tag';
 import { Colors } from '@/src/constants/colors';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import { forumService, type Post } from '@/src/services/api/forum';
+import { supabaseForumService, type Post } from '@/src/lib/supabase';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, FlatList, Image, RefreshControl } from 'react-native';
@@ -44,11 +44,16 @@ export function SquareTab({
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const params: any = { order };
+      const params: {
+        order: 'latest' | 'most_replied' | 'featured' | 'random';
+        tag?: string;
+        tags?: string[];
+      } = { order };
       if (filterTag) params.tag = filterTag;
       if (filterTags && filterTags.length) params.tags = filterTags;
-      const res = await forumService.getSquareList(params);
-      setList(res);
+      const { data, error } = await supabaseForumService.getPosts(params);
+      if (error) throw error;
+      setList(data || []);
     } catch (e) {
       Alert.alert('错误', '加载失败');
     } finally {
@@ -74,7 +79,8 @@ export function SquareTab({
 
   const toggleFavorite = async (postId: number, wasFavorited: boolean) => {
     try {
-      const res = await forumService.toggleFavorite(postId);
+      const { data: res, error } = await supabaseForumService.toggleFavorite(postId);
+      if (error) throw error;
       setList((prev) =>
         prev.map((p) =>
           p.id === postId

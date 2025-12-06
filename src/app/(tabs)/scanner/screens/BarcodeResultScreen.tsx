@@ -1,14 +1,9 @@
 /**
  * BarcodeResultScreen - 条形码扫描结果页面
- *
- * 企业最佳实践：
- * - 单一职责：仅负责展示条形码扫描结果
- * - Props类型化：清晰的接口定义
- * - 可复用性：独立组件，易于测试
  */
 
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { scanBarcode } from '@/src/services/api';
+import { supabase } from '@/src/lib/supabase';
 // @ts-ignore: expo-clipboard may not have type declarations
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
@@ -45,10 +40,20 @@ export function BarcodeResultScreen({ scannedCode, insets, onGoBack }: BarcodeRe
     const searchCatFood = async () => {
       setIsSearching(true);
       try {
-        const response = await scanBarcode(scannedCode);
-        if (response.exists && response.catfood) {
+        // 使用 Supabase 直接查询条形码
+        const { data, error } = await supabase
+          .from('catfoods')
+          .select('id, name')
+          .eq('barcode', scannedCode)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          throw error;
+        }
+
+        if (data) {
           setCatFoodFound(true);
-          setCatFoodName(response.catfood.name);
+          setCatFoodName(data.name);
         } else {
           setCatFoodFound(false);
         }
@@ -81,11 +86,19 @@ export function BarcodeResultScreen({ scannedCode, insets, onGoBack }: BarcodeRe
    */
   const handleViewCatFood = async () => {
     try {
-      const response = await scanBarcode(scannedCode);
-      if (response.exists && response.catfood) {
+      // 使用 Supabase 直接查询条形码
+      const { data, error } = await supabase
+        .from('catfoods')
+        .select('id')
+        .eq('barcode', scannedCode)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
         router.push({
           pathname: '/detail',
-          params: { id: response.catfood.id },
+          params: { id: data.id },
         } as any);
       }
     } catch (error) {

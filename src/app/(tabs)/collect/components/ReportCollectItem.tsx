@@ -86,7 +86,7 @@ export default function ReportCollectItem({
               <XStack alignItems="center" gap="$1">
                 <IconSymbol name="clock" size={14} color={colors.icon + '80'} />
                 <Text fontSize={12} color={colors.icon + '80'}>
-                  收藏于 {formatDate(favoriteReport.created_at)}
+                  收藏于 {formatDate(favoriteReport.createdAt)}
                 </Text>
               </XStack>
             </YStack>

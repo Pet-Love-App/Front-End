@@ -1,9 +1,5 @@
 /**
  * CameraBottomBar - 相机底部操作栏
- *
- * 企业最佳实践：
- * - 单一职责：底部操作按钮
- * - Props类型化：清晰的接口定义
  */
 
 import { IconSymbol } from '@/src/components/ui/IconSymbol';

@@ -8,12 +8,8 @@ import {
   NutrientAnalysisSection,
   SafetyAnalysisSection,
 } from '@/src/app/detail/components';
-import {
-  searchAdditive,
-  searchIngredient,
-  searchService,
-  type GenerateReportResponse,
-} from '@/src/services/api';
+import { supabaseAdditiveService } from '@/src/lib/supabase';
+import { searchService, type GenerateReportResponse } from '@/src/services/api';
 import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -57,15 +53,19 @@ export function AiReportDetail({
 
       // 并行调用两个接口
       const [dbResponse, baikeResponse] = await Promise.allSettled([
-        searchAdditive(additiveName),
+        supabaseAdditiveService.searchAdditive(additiveName),
         searchService.searchBaike({ ingredient: additiveName }),
       ]);
 
       let hasData = false;
 
       // 处理数据库结果
-      if (dbResponse.status === 'fulfilled' && dbResponse.value.additive) {
-        setSelectedAdditive(dbResponse.value.additive);
+      if (
+        dbResponse.status === 'fulfilled' &&
+        dbResponse.value.data &&
+        dbResponse.value.data.additive
+      ) {
+        setSelectedAdditive(dbResponse.value.data.additive);
         hasData = true;
       } else {
         setSelectedAdditive(null);
@@ -106,18 +106,23 @@ export function AiReportDetail({
 
       // 并行调用两个接口
       const [dbResponse, baikeResponse] = await Promise.allSettled([
-        searchIngredient(ingredientName),
+        supabaseAdditiveService.searchIngredient(ingredientName),
         searchService.searchBaike({ ingredient: ingredientName }),
       ]);
 
       let hasData = false;
 
       // 处理数据库结果
-      if (dbResponse.status === 'fulfilled' && dbResponse.value.ingredient) {
+      if (
+        dbResponse.status === 'fulfilled' &&
+        dbResponse.value.data &&
+        dbResponse.value.data.ingredient
+      ) {
+        const ingredient = dbResponse.value.data.ingredient;
         const additive = {
-          name: dbResponse.value.ingredient.name,
-          type: dbResponse.value.ingredient.type,
-          applicable_range: dbResponse.value.ingredient.desc,
+          name: ingredient.name,
+          type: ingredient.type,
+          applicable_range: ingredient.desc,
         };
         setSelectedAdditive(additive);
         hasData = true;
@@ -154,7 +159,7 @@ export function AiReportDetail({
   }, []);
 
   // 使用动态 percent_data
-  // 企业最佳实践：验证数据完整性
+  // 验证数据完整性
   const hasActualNutritionData =
     report.percentage === true &&
     report.percent_data &&

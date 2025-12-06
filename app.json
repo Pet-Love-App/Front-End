@@ -19,7 +19,17 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static"
+      "output": "static",
+      "bundler": "metro"
+    },
+    "assetBundlePatterns": [
+      "assets/images/**/*",
+      "assets/animations/**/*",
+      "assets/fonts/**/*"
+    ],
+    "packagerOpts": {
+      "sourceExts": ["js", "json", "ts", "tsx"],
+      "assetExts": ["png", "jpg", "jpeg", "ttf", "woff", "woff2", "json"]
     },
     "plugins": [
       "expo-router",
@@ -53,6 +63,17 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/your-project-id"
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
     }
   }
 }

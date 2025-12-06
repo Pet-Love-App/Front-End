@@ -1,6 +1,6 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useResponsiveLayout } from '@/src/hooks/useResponsiveLayout';
-import { commentService, ratingApi } from '@/src/services/api';
+import { supabaseCatfoodService, supabaseCommentService } from '@/src/lib/supabase';
 import { useCatFoodStore } from '@/src/store/catFoodStore';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable } from 'react-native';
@@ -62,23 +62,24 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
     const loadMyRating = async () => {
       try {
         console.log('🔍 开始加载用户评分...');
-        const rating = await ratingApi.getMyRating(catfoodId);
+        const { data: rating, error } = await supabaseCatfoodService.getUserRating(
+          String(catfoodId)
+        );
+        if (error) {
+          console.log('ℹ️ 用户尚未评分（正常）');
+          return;
+        }
         if (rating) {
           console.log('✅ 加载到已有评分:', rating);
           setMyRating(rating.score);
-          setMyComment(rating.comment);
+          setMyComment(rating.comment || '');
           setMyRatingId(rating.id);
           setHasRated(true);
         } else {
           console.log('ℹ️ 用户尚未评分');
         }
       } catch (error: any) {
-        // 404错误表示尚未评分，这是正常情况，不需要报错
-        if (error.response?.status === 404 || error.message?.includes('尚未评分')) {
-          console.log('ℹ️ 用户尚未评分（正常）');
-        } else {
-          console.error('⚠️ 加载评分时出错:', error);
-        }
+        console.error('⚠️ 加载评分时出错:', error);
       }
     };
     loadMyRating();
@@ -102,7 +103,16 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
         setHasRated(true);
 
         console.log('📡 开始提交评分...');
-        await ratingApi.rateCatFood(catfoodId, score, myComment);
+        const { error } = await supabaseCatfoodService.createRating(
+          String(catfoodId),
+          score,
+          myComment
+        );
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
         console.log('✅ 评分提交成功');
 
         // 刷新猫粮数据以更新平均分
@@ -113,7 +123,6 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
         // 不弹窗，只在控制台记录成功
       } catch (error: any) {
         console.error('❌ 评分失败:', error);
-        console.error('错误详情:', error.response?.data || error.message);
 
         // 回滚UI
         setMyRating(0);
@@ -121,12 +130,8 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
 
         // 只在出错时才弹窗提示
         let errorMessage = '评分失败，请稍后重试';
-        if (error.response?.status === 401) {
+        if (error.message?.includes('未登录')) {
           errorMessage = '请先登录后再评分';
-        } else if (error.response?.status === 404) {
-          errorMessage = '猫粮不存在';
-        } else if (error.response?.data?.detail) {
-          errorMessage = error.response.data.detail;
         } else if (error.message) {
           errorMessage = error.message;
         }
@@ -152,16 +157,27 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
       setLoading(true);
 
       // 提交评分
-      await ratingApi.rateCatFood(catfoodId, myRating, myComment);
+      const { error: ratingError } = await supabaseCatfoodService.createRating(
+        String(catfoodId),
+        myRating,
+        myComment
+      );
+
+      if (ratingError) {
+        throw new Error(ratingError.message);
+      }
 
       // 如果有评论内容，同时创建评论记录（显示在评论区）
       if (myComment.trim()) {
         try {
-          await commentService.createComment({
+          const { error: commentError } = await supabaseCommentService.createComment({
             targetType: 'catfood',
             targetId: catfoodId,
             content: `⭐ ${myRating}星评价：${myComment}`,
           });
+          if (commentError) {
+            console.warn('创建评论失败，但评分已成功:', commentError);
+          }
         } catch (commentError) {
           console.warn('创建评论失败，但评分已成功:', commentError);
           // 评论创建失败不影响评分成功
@@ -203,7 +219,13 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
             setLoading(true);
             console.log('🗑️ 开始删除评分，ID:', myRatingId);
 
-            await ratingApi.deleteRating(myRatingId);
+            // 删除评分
+            const { error } = await supabaseCatfoodService.deleteRating(String(catfoodId));
+
+            if (error) {
+              throw new Error(error.message);
+            }
+
             console.log('✅ 评分删除成功');
 
             // 重置状态

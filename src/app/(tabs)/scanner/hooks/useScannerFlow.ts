@@ -1,10 +1,5 @@
 /**
- * useScannerFlow - 扫描流程管理 Hook
- *
- * 企业最佳实践：
- * - 业务逻辑与UI分离
- * - 单一职责：仅负责流程状态管理
- * - 易于测试和复用
+ * 扫描流程管理 Hook
  */
 
 import { ScanType } from '@/src/types/camera';

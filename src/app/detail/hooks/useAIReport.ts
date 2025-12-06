@@ -1,10 +1,5 @@
 /**
  * useAIReport Hook
- *
- * 企业最佳实践：
- * - 单一职责：只负责 AI 报告的数据获取和状态管理
- * - 易于测试和复用
- * - 清晰的错误处理
  */
 
 import { aiReportService, type AIReportData } from '@/src/services/api';

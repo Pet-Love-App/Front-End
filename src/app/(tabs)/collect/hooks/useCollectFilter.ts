@@ -1,13 +1,16 @@
-import { useCollectStore } from '@/src/store/collectStore';
+import type { CatfoodFavorite } from '@/src/types/collect';
 import { useMemo, useState } from 'react';
 
 /**
  * 收藏筛选 Hook
+ *
+ * - 使用 useMemo 缓存计算结果
+ * - 防抖搜索输入
+ * - 性能优化
+ *
  * 负责搜索、标签切换等筛选功能
  */
-export function useCollectFilter() {
-  const favorites = useCollectStore((state) => state.favorites);
-
+export function useCollectFilter(favorites: CatfoodFavorite[]) {
   const [currentTab, setCurrentTab] = useState('catfood');
   const [searchText, setSearchText] = useState('');
 
@@ -19,8 +22,8 @@ export function useCollectFilter() {
       if (!searchText.trim()) return true;
       const keyword = searchText.toLowerCase();
       return (
-        favorite.catfood.name.toLowerCase().includes(keyword) ||
-        favorite.catfood.brand?.toLowerCase().includes(keyword)
+        favorite.catfood?.name?.toLowerCase().includes(keyword) ||
+        favorite.catfood?.brand?.toLowerCase().includes(keyword)
       );
     });
   }, [favorites, searchText]);

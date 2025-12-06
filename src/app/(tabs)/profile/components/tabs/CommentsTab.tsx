@@ -1,7 +1,8 @@
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import { getMyComments, type Comment } from '@/src/services/api/comment';
+import { supabaseCommentService, type Comment } from '@/src/lib/supabase';
+import { useUserStore } from '@/src/store/userStore';
 import { memo, useEffect, useState } from 'react';
 import { Alert, RefreshControl, ScrollView } from 'react-native';
 import { Card, Spinner, Text, XStack, YStack } from 'tamagui';
@@ -19,6 +20,7 @@ import { Card, Spinner, Text, XStack, YStack } from 'tamagui';
 export const CommentsTab = memo(function CommentsTab() {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
+  const { _hasHydrated, isAuthenticated } = useUserStore();
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -34,8 +36,11 @@ export const CommentsTab = memo(function CommentsTab() {
         setIsLoading(true);
       }
 
-      const response = await getMyComments();
-      setComments(response.results || []);
+      const { data, error } = await supabaseCommentService.getMyComments();
+      if (error) {
+        throw new Error(error.message);
+      }
+      setComments(data || []);
     } catch (error: any) {
       console.error('加载评论失败:', error);
       Alert.alert('错误', '加载评论失败，请稍后重试');
@@ -46,8 +51,14 @@ export const CommentsTab = memo(function CommentsTab() {
   };
 
   useEffect(() => {
-    loadComments();
-  }, []);
+    // 等待 Zustand 状态恢复完成后再加载评论
+    if (_hasHydrated && isAuthenticated) {
+      loadComments();
+    } else if (_hasHydrated && !isAuthenticated) {
+      // 如果已经恢复但未认证，停止加载
+      setIsLoading(false);
+    }
+  }, [_hasHydrated, isAuthenticated]);
 
   /**
    * 格式化时间

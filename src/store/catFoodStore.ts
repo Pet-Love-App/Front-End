@@ -13,13 +13,14 @@
  * @module catFoodStore
  */
 
+import { useMemo } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+
 import { supabaseCatfoodService } from '@/src/lib/supabase';
 import type { CatFood } from '@/src/types/catFood';
 import { logger } from '@/src/utils/logger';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useMemo } from 'react';
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
 
 // ==================== 类型定义 ====================
 

@@ -1,8 +1,8 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { Card, Text, XStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { Card, Text, XStack } from 'tamagui';
 
 interface SettingItemProps {
   icon: string;

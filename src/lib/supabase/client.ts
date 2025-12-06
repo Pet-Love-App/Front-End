@@ -2,9 +2,10 @@
  * Supabase 客户端配置
  */
 
-import { logger } from '@/src/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
+
+import { logger } from '@/src/utils/logger';
 
 // Supabase 配置（从环境变量读取）
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || '';

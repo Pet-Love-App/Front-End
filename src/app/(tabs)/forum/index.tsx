@@ -2,9 +2,11 @@
  * 论坛主页面
  */
 
-import type { Post } from '@/src/lib/supabase';
 import React, { useRef, useState } from 'react';
 import { YStack } from 'tamagui';
+
+import type { Post } from '@/src/lib/supabase';
+
 import {
   FavoritesTab,
   ForumHeader,

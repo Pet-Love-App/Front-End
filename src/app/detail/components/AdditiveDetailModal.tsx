@@ -1,6 +1,7 @@
-import type { Additive } from '@/src/lib/supabase';
 import { Modal, ScrollView, TouchableOpacity } from 'react-native';
 import { Button, Card, Separator, Text, XStack, YStack } from 'tamagui';
+
+import type { Additive } from '@/src/lib/supabase';
 
 interface BaikeInfo {
   title: string;

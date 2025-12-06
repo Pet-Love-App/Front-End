@@ -12,6 +12,14 @@ import {
   type PaginationParams,
 } from '../helpers';
 
+import type {
+  DbCatfoodAdditiveRelation,
+  DbCatfoodFavorite,
+  DbCatfoodIngredientRelation,
+  DbCatfoodLike,
+  DbCatfoodTagRelation,
+} from '../types/database';
+
 /**
  * 猫粮数据类型（数据库schema）
  */
@@ -69,7 +77,7 @@ export const listCatfoods = async (params: ListCatfoodsParams = {}) => {
     }
 
     // 转换为camelCase
-    const camelData = convertKeysToCamel(data || []);
+    const camelData = convertKeysToCamel(data || []) as any[];
 
     logger.success('catfoods', 'list', camelData?.length);
     return { data: camelData, error: null };
@@ -155,9 +163,10 @@ export const getCatfoodDetail = async (id: string) => {
     // 展平ingredients和additives
     const processedData = {
       ...catfood,
-      ingredients: catfood.ingredients?.map((ci: any) => ci.ingredient) || [],
-      additives: catfood.additives?.map((ca: any) => ca.additive) || [],
-      tags: catfood.tags?.map((ct: any) => ct.tag) || [],
+      ingredients:
+        catfood.ingredients?.map((ci: DbCatfoodIngredientRelation) => ci.ingredient) || [],
+      additives: catfood.additives?.map((ca: DbCatfoodAdditiveRelation) => ca.additive) || [],
+      tags: catfood.tags?.map((ct: DbCatfoodTagRelation) => ct.tag) || [],
       isLiked,
       isFavorited,
       // 构建percentData
@@ -352,7 +361,7 @@ export const getUserFavorites = async (params: PaginationParams = {}) => {
 
     // 处理数据结构
     const processedData =
-      data?.map((fav: any) => ({
+      (data as unknown as DbCatfoodFavorite[])?.map((fav) => ({
         ...fav.catfood,
         favoriteId: fav.id,
         favoritedAt: fav.created_at,
@@ -368,7 +377,7 @@ export const getUserFavorites = async (params: PaginationParams = {}) => {
       })) || [];
 
     // 转换为camelCase
-    const camelData = convertKeysToCamel(processedData);
+    const camelData = convertKeysToCamel(processedData) as any[];
 
     logger.success('favorites', 'list', camelData.length);
     return { data: camelData, error: null };
@@ -433,7 +442,7 @@ export const getUserLikes = async (params: PaginationParams = {}) => {
 
     // 处理数据结构
     const processedData =
-      data?.map((like: any) => ({
+      (data as unknown as DbCatfoodLike[])?.map((like) => ({
         ...like.catfood,
         likeId: like.id,
         likedAt: like.created_at,
@@ -449,7 +458,7 @@ export const getUserLikes = async (params: PaginationParams = {}) => {
       })) || [];
 
     // 转换为camelCase
-    const camelData = convertKeysToCamel(processedData);
+    const camelData = convertKeysToCamel(processedData) as any[];
 
     logger.success('likes', 'list', camelData.length);
     return { data: camelData, error: null };

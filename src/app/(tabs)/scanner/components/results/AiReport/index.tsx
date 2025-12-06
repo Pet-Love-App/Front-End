@@ -3,6 +3,10 @@
  *
  * 复用detail页面现有组件，保持一致性
  */
+import { useCallback, useState } from 'react';
+import { Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 import {
   AdditiveDetailModal,
   NutrientAnalysisSection,
@@ -10,10 +14,7 @@ import {
 } from '@/src/app/detail/components';
 import { supabaseAdditiveService } from '@/src/lib/supabase';
 import { searchService, type GenerateReportResponse } from '@/src/services/api';
-import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
+
 import { ActionButtons } from './ActionButtons';
 import { IdentifiedItemsSection } from './IdentifiedItemsSection';
 import { NutritionAnalysisCharts } from './NutritionAnalysisCharts';

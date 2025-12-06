@@ -1,7 +1,8 @@
-import { logger } from '@/src/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+
+import { logger } from '@/src/utils/logger';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 

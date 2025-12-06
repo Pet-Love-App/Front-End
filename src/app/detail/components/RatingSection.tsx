@@ -1,10 +1,10 @@
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, Pressable } from 'react-native';
+import { Button, Card, Separator, Text, TextArea, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useResponsiveLayout } from '@/src/hooks/useResponsiveLayout';
 import { supabaseCatfoodService, supabaseCommentService } from '@/src/lib/supabase';
 import { useCatFoodStore } from '@/src/store/catFoodStore';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable } from 'react-native';
-import { Button, Card, Separator, Text, TextArea, XStack, YStack } from 'tamagui';
 
 interface RatingSectionProps {
   catfoodId: number;

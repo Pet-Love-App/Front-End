@@ -1,9 +1,9 @@
+import { Image } from 'react-native';
+import { Button, Card, Separator, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Favorite } from '@/src/services/api';
-import { Image } from 'react-native';
-import { Button, Card, Separator, Text, XStack, YStack } from 'tamagui';
 
 interface CollectListItemProps {
   favorite: Favorite;

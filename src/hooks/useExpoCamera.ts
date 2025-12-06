@@ -1,9 +1,10 @@
-import type { CameraState, ExpoBarcodeResult } from '@/src/types/camera';
-import { ScanType } from '@/src/types/camera';
-import { Camera, CameraView, PermissionStatus } from 'expo-camera';
-import * as ImageManipulator from 'expo-image-manipulator';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Dimensions } from 'react-native';
+import { Camera, CameraView, PermissionStatus } from 'expo-camera';
+import * as ImageManipulator from 'expo-image-manipulator';
+
+import type { CameraState, ExpoBarcodeResult } from '@/src/types/camera';
+import { ScanType } from '@/src/types/camera';
 
 /**
  * Expo 相机功能的自定义 Hook

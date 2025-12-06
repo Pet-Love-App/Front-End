@@ -1,8 +1,9 @@
-import { Colors } from '@/src/constants/theme';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { useEffect, useState } from 'react';
 import { Dimensions } from 'react-native';
 import { Button, Dialog, TextArea, XStack, YStack } from 'tamagui';
+
+import { Colors } from '@/src/constants/theme';
+import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 
 interface EditDetailsModalProps {
   open: boolean;

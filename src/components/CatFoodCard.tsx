@@ -1,8 +1,8 @@
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import type { CatFood } from '@/src/types/catFood';
 import React from 'react';
 import { Image } from 'react-native';
 import { Card, Separator, Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import type { CatFood } from '@/src/types/catFood';
 
 interface CatFoodCardProps {
   /** 猫粮数据 */

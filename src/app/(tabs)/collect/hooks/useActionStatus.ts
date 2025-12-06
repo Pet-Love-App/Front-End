@@ -2,8 +2,9 @@
  * 点赞/收藏状态管理 Hook
  */
 
-import { supabaseCatfoodService } from '@/src/lib/supabase';
 import { useCallback, useEffect, useState } from 'react';
+
+import { supabaseCatfoodService } from '@/src/lib/supabase';
 
 interface ActionStatus {
   liked: boolean;

@@ -1,9 +1,9 @@
+import { Modal, Pressable, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Button, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Modal, Pressable, StyleSheet } from 'react-native';
-import { Button, Text, XStack, YStack } from 'tamagui';
 
 interface CameraPermissionModalProps {
   visible: boolean;

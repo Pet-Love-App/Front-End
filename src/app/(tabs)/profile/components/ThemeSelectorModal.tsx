@@ -1,8 +1,8 @@
+import { Button, Card, Dialog, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { ThemeMode } from '@/src/store/themeStore';
-import { Button, Card, Dialog, Text, XStack, YStack } from 'tamagui';
 
 interface ThemeSelectorModalProps {
   open: boolean;

@@ -2,9 +2,11 @@
  * 扫描流程管理 Hook
  */
 
+import { useCallback, useState } from 'react';
+
 import { ScanType } from '@/src/types/camera';
 import type { CatFood } from '@/src/types/catFood';
-import { useCallback, useState } from 'react';
+
 import type { ScanFlowState } from '../types';
 
 interface UseScannerFlowProps {

@@ -2,15 +2,15 @@
  * BarcodeResultScreen - 条形码扫描结果页面
  */
 
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { supabase } from '@/src/lib/supabase';
 // @ts-ignore: expo-clipboard may not have type declarations
-import * as Clipboard from 'expo-clipboard';
-import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView } from 'react-native';
 import type { EdgeInsets } from 'react-native-safe-area-context';
+import * as Clipboard from 'expo-clipboard';
+import { useRouter } from 'expo-router';
 import { Button, Card, Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { supabase } from '@/src/lib/supabase';
 
 /**
  * 组件 Props 接口

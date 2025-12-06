@@ -17,6 +17,8 @@ import {
   type SupabaseResponse,
 } from '../helpers';
 
+import type { DbNotification, DbPost, DbPostFavorite, DbPostMedia } from '../types/database';
+
 // ==================== 类型定义 ====================
 
 /**
@@ -170,8 +172,8 @@ class SupabaseForumService {
       }
 
       // 转换数据
-      const posts = data
-        ? data.map((post) => {
+      const posts: Post[] = data
+        ? data.map((post: DbPost): Post => {
             return convertKeysToCamel({
               ...post,
               author: post.author
@@ -181,8 +183,10 @@ class SupabaseForumService {
                     avatar: post.author.avatar_url,
                   }
                 : null,
-              media: post.post_media ? post.post_media.map((m) => convertKeysToCamel(m)) : [],
-            });
+              media: post.post_media
+                ? post.post_media.map((m: DbPostMedia) => convertKeysToCamel(m))
+                : [],
+            }) as Post;
           })
         : [];
 
@@ -240,8 +244,10 @@ class SupabaseForumService {
               avatar: data.author.avatar_url,
             }
           : null,
-        media: data.post_media ? data.post_media.map((m) => convertKeysToCamel(m)) : [],
-      });
+        media: data.post_media
+          ? data.post_media.map((m: DbPostMedia) => convertKeysToCamel(m))
+          : [],
+      }) as Post;
 
       logger.success('posts', 'detail');
       return { data: post, error: null, success: true };
@@ -308,7 +314,7 @@ class SupabaseForumService {
               avatar: data.author.avatar_url,
             }
           : null,
-      });
+      }) as Post;
 
       logger.success('posts', 'create');
       return { data: post, error: null, success: true };
@@ -380,7 +386,7 @@ class SupabaseForumService {
               avatar: data.author.avatar_url,
             }
           : null,
-      });
+      }) as Post;
 
       logger.success('posts', 'update');
       return { data: post, error: null, success: true };
@@ -551,11 +557,11 @@ class SupabaseForumService {
         return wrapResponse(null, error) as unknown as SupabaseResponse<Post[]>;
       }
 
-      const posts = data
-        ? data
+      const posts: Post[] = data
+        ? (data as unknown as DbPostFavorite[])
             .filter((fav) => fav.post) // 过滤掉已删除的帖子
             .map((fav) => {
-              const post = fav.post;
+              const post = fav.post!;
               return convertKeysToCamel({
                 ...post,
                 author: post.author
@@ -565,7 +571,7 @@ class SupabaseForumService {
                       avatar: post.author.avatar_url,
                     }
                   : null,
-              });
+              }) as Post;
             })
         : [];
 
@@ -617,7 +623,9 @@ class SupabaseForumService {
         return wrapResponse(null, error) as unknown as SupabaseResponse<NotificationItem[]>;
       }
 
-      const notifications = data ? data.map((item) => convertKeysToCamel(item)) : [];
+      const notifications: NotificationItem[] = data
+        ? data.map((item: DbNotification) => convertKeysToCamel(item) as NotificationItem)
+        : [];
 
       logger.success('notifications', 'list', notifications.length);
       return { data: notifications, error: null, success: true };

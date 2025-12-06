@@ -3,12 +3,12 @@
  * 包含收藏和点赞功能
  */
 
-import { useActionStatus } from '@/src/app/(tabs)/collect/hooks/useActionStatus';
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Separator, Text, XStack, YStack } from 'tamagui';
+import { useActionStatus } from '@/src/app/(tabs)/collect/hooks/useActionStatus';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface ActionBarProps {
   /** 猫粮 ID */

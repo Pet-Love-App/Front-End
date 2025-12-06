@@ -2,13 +2,14 @@
  * 测试 Supabase 辅助函数
  */
 
-import type { PostgrestError } from '@supabase/supabase-js';
 import {
   calculatePagination,
   convertKeysToCamel,
   handleSupabaseError,
   wrapResponse,
 } from '../helpers';
+
+import type { PostgrestError } from '@supabase/supabase-js';
 
 describe('Supabase Helpers', () => {
   describe('calculatePagination', () => {

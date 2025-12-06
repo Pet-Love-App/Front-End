@@ -2,13 +2,14 @@
  * 评论列表组件
  * 职责：展示评论列表和空状态
  */
+import { memo } from 'react';
+import { ActivityIndicator } from 'react-native';
+import { Button, Text, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Comment } from '@/src/lib/supabase';
-import { memo } from 'react';
-import { ActivityIndicator } from 'react-native';
-import { Button, Text, YStack } from 'tamagui';
+
 import { CommentItem } from './CommentItem';
 
 interface CommentListProps {

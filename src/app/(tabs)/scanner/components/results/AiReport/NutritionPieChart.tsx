@@ -1,11 +1,11 @@
 /**
  * 营养成分饼状图组件
  */
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import type { GenerateReportResponse } from '@/src/services/api';
 import { Dimensions } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { Card, Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import type { GenerateReportResponse } from '@/src/services/api';
 
 interface NutritionPieChartProps {
   report: GenerateReportResponse;

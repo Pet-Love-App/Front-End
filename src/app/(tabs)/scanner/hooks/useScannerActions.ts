@@ -2,6 +2,9 @@
  * 扫描操作 Hook
  */
 
+import { useCallback, useState } from 'react';
+import { Alert } from 'react-native';
+
 import { supabase, supabaseAdditiveService } from '@/src/lib/supabase';
 import {
   aiReportService,
@@ -10,8 +13,7 @@ import {
   type OcrResult,
 } from '@/src/services/api';
 import type { CatFood } from '@/src/types/catFood';
-import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
+
 import type { ScanFlowState } from '../types';
 
 interface UseScannerActionsProps {

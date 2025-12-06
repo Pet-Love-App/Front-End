@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { TamaguiProvider } from 'tamagui';
+
 import { useCustomFonts } from '../hooks/useFonts';
 import { useThemeAwareColorScheme } from '../hooks/useThemeAwareColorScheme';
 

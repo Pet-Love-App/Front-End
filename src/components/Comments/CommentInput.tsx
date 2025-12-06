@@ -2,12 +2,12 @@
  * 评论输入组件
  * 职责：处理评论输入和提交
  */
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { Colors } from '@/src/constants/theme';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { memo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, TextInput } from 'react-native';
 import { Button, Text as TamaguiText, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { Colors } from '@/src/constants/theme';
+import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 
 interface CommentInputProps {
   isAuthenticated: boolean;

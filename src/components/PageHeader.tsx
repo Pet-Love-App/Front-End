@@ -9,14 +9,16 @@
  * 4. 扩展头部：带自定义右侧元素
  */
 
-import { Colors } from '@/src/constants/theme';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import type { EdgeInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Card, Text, XStack, YStack } from 'tamagui';
+
+import { Colors } from '@/src/constants/theme';
+import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
+
 import { IconSymbol } from './ui/IconSymbol';
 
 /**

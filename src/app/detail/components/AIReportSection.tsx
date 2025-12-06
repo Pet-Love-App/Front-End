@@ -2,15 +2,16 @@
  * AI 报告嵌入式展示组件
  */
 
+import { useState } from 'react';
+import { Alert, Dimensions } from 'react-native';
+import { PieChart } from 'react-native-chart-kit';
+import { Card, H4, H5, Separator, Spinner, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { supabaseAdditiveService, type Additive } from '@/src/lib/supabase';
 import type { AIReportData } from '@/src/services/api';
-import { useState } from 'react';
-import { Alert, Dimensions } from 'react-native';
-import { PieChart } from 'react-native-chart-kit';
-import { Card, H4, H5, Separator, Spinner, Text, XStack, YStack } from 'tamagui';
+
 import { AdditiveDetailModal } from './AdditiveDetailModal';
 
 interface AIReportSectionProps {

@@ -1,9 +1,10 @@
-import { registerSchema } from '@/src/schemas/auth.schema';
-import { useUserStore } from '@/src/store/userStore';
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert } from 'react-native';
+import { useRouter } from 'expo-router';
 import { ZodError } from 'zod';
+
+import { useUserStore } from '@/src/store/userStore';
+import { registerSchema } from '@/src/schemas/auth.schema';
 
 /**
  * 注册表单 Hook

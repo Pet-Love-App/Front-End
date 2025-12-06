@@ -1,10 +1,11 @@
+import { memo, useCallback, useState } from 'react';
+import { Dimensions } from 'react-native';
+import { Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Pet } from '@/src/schemas/pet.schema';
-import { memo, useCallback, useState } from 'react';
-import { Dimensions } from 'react-native';
-import { Text, XStack, YStack } from 'tamagui';
+
 import { CommentsTab } from './tabs/CommentsTab';
 import { LikesTab } from './tabs/LikesTab';
 import { PetsTab } from './tabs/PetsTab';

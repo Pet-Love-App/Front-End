@@ -2,9 +2,10 @@
  * 评论业务逻辑 Hook
  * 职责：封装评论相关的数据获取和操作逻辑
  */
-import { supabaseCommentService, type Comment } from '@/src/lib/supabase';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
+
+import { supabaseCommentService, type Comment } from '@/src/lib/supabase';
 
 interface UseCommentsOptions {
   targetType: 'catfood' | 'post' | 'report';

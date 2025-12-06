@@ -4,11 +4,13 @@
  * 性能优化：使用 React.memo 避免不必要的重新渲染
  */
 
-import { Colors } from '@/src/constants/colors';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Text, XStack, YStack } from 'tamagui';
+
+import { Colors } from '@/src/constants/colors';
+import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
+
 import { ForumColors } from '../constants';
 import { TagFilter } from './TagFilter';
 

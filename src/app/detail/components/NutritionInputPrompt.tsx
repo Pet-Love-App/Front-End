@@ -4,11 +4,11 @@
  * 当猫粮缺少营养成分信息时，引导用户录入数据的提示组件
  */
 
+import { router } from 'expo-router';
+import { Card, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import { router } from 'expo-router';
-import { Card, Text, XStack, YStack } from 'tamagui';
 
 interface NutritionInputPromptProps {
   /** 猫粮ID，用于录入后关联数据 */

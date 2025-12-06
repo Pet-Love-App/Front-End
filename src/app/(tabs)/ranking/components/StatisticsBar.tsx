@@ -1,5 +1,5 @@
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface StatisticsBarProps {
   searchQuery: string;

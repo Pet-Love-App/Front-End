@@ -1,6 +1,7 @@
-import { useUserStore } from '@/src/store/userStore';
-import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
+import { useRouter } from 'expo-router';
+
+import { useUserStore } from '@/src/store/userStore';
 
 /**
  * Profile 数据管理 Hook

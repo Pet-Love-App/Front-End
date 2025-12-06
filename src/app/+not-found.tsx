@@ -1,6 +1,6 @@
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useRouter } from 'expo-router';
 import { Button, Text, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 export default function NotFoundScreen() {
   const router = useRouter();

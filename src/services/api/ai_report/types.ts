@@ -170,3 +170,39 @@ export interface CheckReportExistsResponse {
   /** 错误信息（如果猫粮不存在） */
   error?: string;
 }
+
+/**
+ * 收藏的猫粮数据（简化版）
+ */
+export interface Favorite {
+  id: string;
+  catfoodId: string;
+  catfood: {
+    id: string;
+    name: string;
+    brand: string;
+    description?: string;
+    imageUrl?: string;
+    price?: number;
+    likeCount?: number;
+  };
+  createdAt: string;
+}
+
+/**
+ * 收藏的 AI 报告数据
+ */
+export interface FavoriteReport {
+  id: number;
+  reportId: number;
+  catfoodId?: number;
+  report: Partial<AIReportData> & {
+    id: number;
+    catfood_id?: number;
+    catfood_name?: string;
+    catfoodName?: string;
+    createdAt?: string;
+    [key: string]: any;
+  };
+  createdAt: string;
+}

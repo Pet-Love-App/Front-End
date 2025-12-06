@@ -1,17 +1,18 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, FlatList, Image, RefreshControl } from 'react-native';
+import LottieView from 'lottie-react-native';
+import { Button, Card, Spinner, Text, XStack, YStack } from 'tamagui';
 import Tag from '@/src/components/ui/Tag';
 import { Colors } from '@/src/constants/colors';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { supabaseForumService, type Post } from '@/src/lib/supabase';
-import LottieView from 'lottie-react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, FlatList, Image, RefreshControl } from 'react-native';
-import { Button, Card, Spinner, Text, XStack, YStack } from 'tamagui';
+
 import { ForumColors, MORANDI_COLORS } from '../constants';
 
 interface SquareTabProps {
   onOpenPost?: (post: Post) => void;
   externalReloadRef?: React.MutableRefObject<(() => void) | null>;
-  order?: 'latest' | 'most_replied' | 'featured' | 'random';
+  order?: 'latest' | 'most_replied' | 'featured';
   filterTag?: string;
   filterTags?: string[];
 }
@@ -45,7 +46,7 @@ export function SquareTab({
     try {
       setLoading(true);
       const params: {
-        order: 'latest' | 'most_replied' | 'featured' | 'random';
+        order: 'latest' | 'most_replied' | 'featured';
         tag?: string;
         tags?: string[];
       } = { order };
@@ -80,14 +81,17 @@ export function SquareTab({
   const toggleFavorite = async (postId: number, wasFavorited: boolean) => {
     try {
       const { data: res, error } = await supabaseForumService.toggleFavorite(postId);
-      if (error) throw error;
+      if (error || !res) {
+        Alert.alert('错误', '操作失败');
+        return;
+      }
       setList((prev) =>
         prev.map((p) =>
           p.id === postId
             ? {
                 ...p,
-                is_favorited: res.action === 'favorited',
-                favorites_count: res.favorites_count ?? p.favorites_count,
+                isFavorited: res.action === 'favorited',
+                favoritesCount: res.favoritesCount ?? p.favoritesCount,
               }
             : p
         )
@@ -120,7 +124,7 @@ export function SquareTab({
     return (
       <XStack gap="$2" flexWrap="wrap">
         {thumbs.map((m, idx) =>
-          m.media_type === 'image' ? (
+          m.mediaType === 'image' ? (
             <Card key={m.id} width={110} height={110} overflow="hidden">
               <Image
                 source={{ uri: m.file }}
@@ -171,7 +175,7 @@ export function SquareTab({
       <YStack gap="$2">
         <XStack alignItems="center" justifyContent="space-between">
           <Text fontWeight="700">{item.author.username}</Text>
-          <Text color="$gray10">{new Date(item.created_at).toLocaleString()}</Text>
+          <Text color="$gray10">{new Date(item.createdAt).toLocaleString()}</Text>
         </XStack>
         <Text>{item.content}</Text>
 
@@ -180,21 +184,21 @@ export function SquareTab({
 
         <XStack gap="$3" alignItems="center" justifyContent="space-between">
           <XStack gap="$3" alignItems="center">
-            <Text color="$gray10">{item.comments_count ?? 0} 回复</Text>
-            <Text color="$gray10">{item.favorites_count} 收藏</Text>
+            <Text color="$gray10">{item.commentsCount ?? 0} 回复</Text>
+            <Text color="$gray10">{item.favoritesCount} 收藏</Text>
           </XStack>
           <XStack gap="$3" alignItems="center">
             <Button
               size="$2"
-              onPress={() => toggleFavorite(item.id, item.is_favorited)}
-              backgroundColor={item.is_favorited ? '$yellow4' : '$background'}
+              onPress={() => toggleFavorite(item.id, item.isFavorited)}
+              backgroundColor={item.isFavorited ? '$yellow4' : '$background'}
             >
               <XStack alignItems="center" gap="$1">
-                <Text fontSize="$5" color={item.is_favorited ? '$yellow10' : '$gray10'}>
-                  {item.is_favorited ? '★' : '☆'}
+                <Text fontSize="$5" color={item.isFavorited ? '$yellow10' : '$gray10'}>
+                  {item.isFavorited ? '★' : '☆'}
                 </Text>
                 <Text fontSize="$3" color="$gray11">
-                  {item.favorites_count}
+                  {item.favoritesCount}
                 </Text>
               </XStack>
               <YStack

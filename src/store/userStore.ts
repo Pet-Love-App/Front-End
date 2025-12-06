@@ -2,14 +2,16 @@
  * 用户状态管理 Store
  */
 
-import type { UserWithPets } from '@/src/lib/supabase';
-import { supabaseAuthService, supabaseProfileService } from '@/src/lib/supabase';
-import { loginSchema, registerSchema } from '@/src/schemas/auth.schema';
-import { logger } from '@/src/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { Session } from '@supabase/supabase-js';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+
+import type { UserWithPets } from '@/src/lib/supabase';
+import { supabaseAuthService, supabaseProfileService } from '@/src/lib/supabase';
+import { logger } from '@/src/utils/logger';
+import { loginSchema, registerSchema } from '@/src/schemas/auth.schema';
+
+import type { Session } from '@supabase/supabase-js';
 
 // ==================== 类型定义 ====================
 

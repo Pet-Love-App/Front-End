@@ -2,14 +2,17 @@
  * AI 报告 API 服务
  */
 
-import { API_ENDPOINTS } from '@/src/config/api';
 import { logger } from '@/src/utils/logger';
+import { API_ENDPOINTS } from '@/src/config/api';
 
 import { apiClient } from '../core/httpClient';
+
 import type {
   AIReportData,
   BackendReportResponse,
   CheckReportExistsResponse,
+  Favorite,
+  FavoriteReport,
   GenerateReportRequest,
   GenerateReportResponse,
   IngredientInfoRequest,
@@ -142,7 +145,7 @@ class AiReportService {
       });
       return response;
     } catch (error) {
-      logger.error('查询成分信息失败', error as Error, { ingredient: request.ingredient });
+      logger.error('查询成分信息失败', error as Error, { ingredient });
       throw error;
     }
   }
@@ -200,6 +203,8 @@ export const aiReportService = new AiReportService();
 export {
   type AIReportData,
   type CheckReportExistsResponse,
+  type Favorite,
+  type FavoriteReport,
   type GenerateReportRequest,
   type GenerateReportResponse,
   type IngredientInfoRequest,

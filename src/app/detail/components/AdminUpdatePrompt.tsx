@@ -4,9 +4,9 @@
  * 管理员专用：允许重新扫描并更新已有营养成分信息
  */
 
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { router } from 'expo-router';
 import { Card, Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface AdminUpdatePromptProps {
   /** 猫粮ID */

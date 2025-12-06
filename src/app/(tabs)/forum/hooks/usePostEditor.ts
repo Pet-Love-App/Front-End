@@ -3,9 +3,11 @@
  * 管理帖子创建/编辑的所有状态和逻辑
  */
 
-import { supabaseForumService, type Post, type PostCategory } from '@/src/lib/supabase';
-import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
+
+import { supabaseForumService, type Post, type PostCategory } from '@/src/lib/supabase';
+
 import { MEDIA_LIMITS } from '../constants';
 
 export interface MediaFile {

@@ -4,8 +4,10 @@
  */
 
 import { logger as appLogger } from '@/src/utils/logger';
-import type { PostgrestError } from '@supabase/supabase-js';
+
 import { supabase } from './client';
+
+import type { PostgrestError } from '@supabase/supabase-js';
 
 /**
  * Supabase 响应类型

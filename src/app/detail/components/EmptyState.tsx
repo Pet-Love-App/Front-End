@@ -1,5 +1,5 @@
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Text, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 export function EmptyState() {
   return (

@@ -1,8 +1,9 @@
+import { Dimensions, Image } from 'react-native';
+import { Button, Dialog, Text, XStack, YStack } from 'tamagui';
+
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Pet } from '@/src/schemas/pet.schema';
-import { Dimensions, Image } from 'react-native';
-import { Button, Dialog, Text, XStack, YStack } from 'tamagui';
 
 interface PetDetailModalProps {
   pet: Pet | null;

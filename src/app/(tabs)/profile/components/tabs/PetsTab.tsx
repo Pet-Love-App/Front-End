@@ -1,10 +1,11 @@
+import { memo, useState } from 'react';
+import { ScrollView, TouchableOpacity } from 'react-native';
+import { Avatar, Spinner, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Pet } from '@/src/schemas/pet.schema';
-import { memo, useState } from 'react';
-import { ScrollView, TouchableOpacity } from 'react-native';
-import { Avatar, Spinner, Text, XStack, YStack } from 'tamagui';
+
 import { PetInfoPanel } from '../PetInfoPanel';
 
 /**

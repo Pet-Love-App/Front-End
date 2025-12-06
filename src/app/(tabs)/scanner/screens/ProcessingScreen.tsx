@@ -2,10 +2,10 @@
  * ProcessingScreen - OCR 处理中状态页面
  */
 
-import { LottieAnimation } from '@/src/components/LottieAnimation';
 import React from 'react';
 import type { EdgeInsets } from 'react-native-safe-area-context';
 import { Text, XStack, YStack } from 'tamagui';
+import { LottieAnimation } from '@/src/components/LottieAnimation';
 
 /**
  * 组件 Props 接口

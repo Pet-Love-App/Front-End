@@ -1,8 +1,9 @@
-import { supabaseCatfoodService } from '@/src/lib/supabase';
-import type { CatfoodFavorite } from '@/src/types/collect';
-import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+
+import { supabaseCatfoodService } from '@/src/lib/supabase';
+import type { CatfoodFavorite } from '@/src/types/collect';
 
 /**
  * 收藏数据管理 Hook

@@ -1,13 +1,13 @@
+import { memo, useEffect, useState } from 'react';
+import { Alert, Image, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Card, Spinner, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { supabaseCatfoodService } from '@/src/lib/supabase';
 import { useUserStore } from '@/src/store/userStore';
 import type { CatFood } from '@/src/types/catFood';
-import { useRouter } from 'expo-router';
-import { memo, useEffect, useState } from 'react';
-import { Alert, Image, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
-import { Card, Spinner, Text, XStack, YStack } from 'tamagui';
 
 /**
  * 点赞 Tab 组件

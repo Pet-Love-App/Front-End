@@ -3,13 +3,14 @@
  *
  */
 
-import type { AIReportData } from '@/src/services/api';
-import { aiReportService } from '@/src/services/api';
-import { Feather } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { Alert, Modal, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Feather } from '@expo/vector-icons';
 import { Button, H3, H5, Separator, Spinner, Text, XStack, YStack } from 'tamagui';
+
+import { aiReportService } from '@/src/services/api';
+import type { AIReportData } from '@/src/services/api';
 
 interface AIReportModalProps {
   /** 是否显示 */

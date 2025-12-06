@@ -5,6 +5,8 @@
 import { supabase } from '../client';
 import { convertKeysToCamel, logger, wrapResponse, type SupabaseResponse } from '../helpers';
 
+import type { DbComment } from '../types/database';
+
 // ==================== 类型定义 ====================
 
 /**
@@ -128,8 +130,8 @@ class SupabaseCommentService {
       }
 
       // 转换数据
-      const comments = data
-        ? data.map((comment: any) => {
+      const comments: Comment[] = data
+        ? data.map((comment: DbComment) => {
             return convertKeysToCamel({
               ...comment,
               author: comment.author
@@ -139,7 +141,7 @@ class SupabaseCommentService {
                     avatarUrl: comment.author.avatar_url,
                   }
                 : null,
-            });
+            }) as Comment;
           })
         : [];
 
@@ -209,7 +211,7 @@ class SupabaseCommentService {
               avatarUrl: data.author.avatar_url,
             }
           : null,
-      });
+      }) as Comment;
 
       logger.success('comments', 'createComment');
       return { data: comment, error: null, success: true };
@@ -276,7 +278,7 @@ class SupabaseCommentService {
               avatarUrl: data.author.avatar_url,
             }
           : null,
-      });
+      }) as Comment;
 
       logger.success('comments', 'updateComment');
       return { data: comment, error: null, success: true };
@@ -451,8 +453,8 @@ class SupabaseCommentService {
         return wrapResponse<Comment[]>(null, error);
       }
 
-      const comments = data
-        ? data.map((comment: any) => {
+      const comments: Comment[] = data
+        ? data.map((comment: DbComment) => {
             return convertKeysToCamel({
               ...comment,
               author: comment.author
@@ -462,7 +464,7 @@ class SupabaseCommentService {
                     avatarUrl: comment.author.avatar_url,
                   }
                 : null,
-            });
+            }) as Comment;
           })
         : [];
 

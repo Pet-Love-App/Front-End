@@ -1,3 +1,6 @@
+import { RefreshControl } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Input, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 import CollectListItem from '@/src/app/(tabs)/collect/components/collectItem';
 import ReportCollectItem from '@/src/app/(tabs)/collect/components/ReportCollectItem';
 import { AIReportModal } from '@/src/app/detail/components/AIReportModal';
@@ -5,9 +8,7 @@ import { PageHeader } from '@/src/components/PageHeader';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import { RefreshControl } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Input, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
+
 import { useCollectData, useCollectFilter, useReportCollectData } from '../hooks';
 
 /**
@@ -20,7 +21,7 @@ export function CollectScreen() {
   const colors = Colors[colorScheme];
 
   // 使用自定义 hooks
-  const { isLoading, error, refreshing, handleRefresh, handleDelete, handlePress } =
+  const { favorites, isLoading, error, refreshing, handleRefresh, handleDelete, handlePress } =
     useCollectData();
 
   // 报告收藏数据
@@ -44,7 +45,7 @@ export function CollectScreen() {
     setSearchText,
     filteredFavorites,
     favoritesCount,
-  } = useCollectFilter();
+  } = useCollectFilter(favorites);
 
   // 渲染空状态
   const renderEmptyState = (message: string, icon: string) => (
@@ -89,7 +90,10 @@ export function CollectScreen() {
             animation="quick"
             onPress={() => handlePress(favorite.catfood.id)}
           >
-            <CollectListItem favorite={favorite} onDelete={() => handleDelete(favorite.id)} />
+            <CollectListItem
+              favorite={favorite}
+              onDelete={() => handleDelete(favorite.id, favorite.catfood.id)}
+            />
           </YStack>
         ))}
       </YStack>
@@ -117,10 +121,11 @@ export function CollectScreen() {
     const filteredReports = favoriteReports.filter((fav) => {
       if (!searchText.trim()) return true;
       const search = searchText.toLowerCase();
+      const catfoodName = fav.report.catfood_name || fav.report.catfoodName || '';
       return (
-        fav.report.catfood_name.toLowerCase().includes(search) ||
+        catfoodName.toLowerCase().includes(search) ||
         fav.report.safety?.toLowerCase().includes(search) ||
-        fav.report.tags?.some((tag) => tag.toLowerCase().includes(search))
+        fav.report.tags?.some((tag: string) => tag.toLowerCase().includes(search))
       );
     });
 
@@ -144,7 +149,13 @@ export function CollectScreen() {
             <ReportCollectItem
               favoriteReport={favoriteReport}
               onDelete={() => handleDeleteReport(favoriteReport.id)}
-              onPress={() => handlePressReport(favoriteReport.report)}
+              onPress={() =>
+                handlePressReport(
+                  favoriteReport.catfoodId ||
+                    favoriteReport.report.catfood_id ||
+                    favoriteReport.reportId
+                )
+              }
             />
           </YStack>
         ))}

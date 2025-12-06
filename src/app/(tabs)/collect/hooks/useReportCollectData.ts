@@ -1,8 +1,8 @@
-import type { AIReportData } from '@/src/services/api';
-import { aiReportService } from '@/src/services/api';
-import type { ReportFavorite } from '@/src/types/collect';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
+
+import type { AIReportData, FavoriteReport } from '@/src/services/api';
+import { aiReportService } from '@/src/services/api';
 
 /**
  * 报告收藏数据管理 Hook
@@ -11,7 +11,7 @@ export function useReportCollectData() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedReport, setSelectedReport] = useState<AIReportData | null>(null);
   const [isReportModalVisible, setIsReportModalVisible] = useState(false);
-  const [favoriteReports, setFavoriteReports] = useState<ReportFavorite[]>([]);
+  const [favoriteReports, setFavoriteReports] = useState<FavoriteReport[]>([]);
   const [isLoadingReports, setIsLoadingReports] = useState(true);
   const [reportError, setReportError] = useState<string | null>(null);
 
@@ -40,7 +40,7 @@ export function useReportCollectData() {
     setRefreshing(true);
     try {
       await fetchFavoriteReports();
-    } catch (err) {
+    } catch {
       Alert.alert('刷新失败', '请检查网络连接后重试');
     } finally {
       setRefreshing(false);
@@ -48,7 +48,7 @@ export function useReportCollectData() {
   }, [fetchFavoriteReports]);
 
   // 删除报告收藏
-  const handleDelete = useCallback((favoriteId: number, reportId: number) => {
+  const handleDelete = useCallback((favoriteId: number) => {
     Alert.alert('确认删除', '您确定要取消收藏此报告吗？', [
       { text: '取消', style: 'cancel' },
       {
@@ -69,10 +69,21 @@ export function useReportCollectData() {
     ]);
   }, []);
 
-  // 点击报告，直接打开报告详情模态框
-  const handlePress = useCallback((report: AIReportData) => {
-    setSelectedReport(report);
-    setIsReportModalVisible(true);
+  // 点击报告，获取完整报告数据并打开报告详情模态框
+  const handlePress = useCallback(async (catfoodId: number) => {
+    try {
+      // 显示加载状态
+      setIsReportModalVisible(true);
+      setSelectedReport(null);
+
+      // 获取完整的报告数据
+      const fullReport = await aiReportService.getReport(catfoodId);
+      setSelectedReport(fullReport);
+    } catch (err) {
+      console.error('获取报告详情失败:', err);
+      Alert.alert('❌ 失败', '获取报告详情失败，请重试');
+      setIsReportModalVisible(false);
+    }
   }, []);
 
   // 关闭报告模态框

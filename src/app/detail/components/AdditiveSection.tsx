@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { Card, Text, YStack } from 'tamagui';
+
 import { AdditiveBubble } from './AdditiveBubble';
 
 interface Additive {

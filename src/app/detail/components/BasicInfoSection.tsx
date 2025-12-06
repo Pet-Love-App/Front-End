@@ -1,6 +1,6 @@
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Card, Separator, Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface BasicInfoSectionProps {
   brand: string;

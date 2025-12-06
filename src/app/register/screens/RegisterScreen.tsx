@@ -1,6 +1,7 @@
-import { LottieAnimation } from '@/src/components/LottieAnimation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Input, Spinner, Text, YStack } from 'tamagui';
+import { LottieAnimation } from '@/src/components/LottieAnimation';
+
 import { useRegisterForm } from '../hooks';
 
 /**

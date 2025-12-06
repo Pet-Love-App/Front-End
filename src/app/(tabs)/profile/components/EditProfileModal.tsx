@@ -2,19 +2,19 @@
  * 用户资料编辑模态框
  * 支持修改用户名和密码
  */
+import { useState } from 'react';
+import { Alert, Dimensions, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { Button, Dialog, Separator, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { supabaseAuthService, supabaseProfileService } from '@/src/lib/supabase';
+import { useUserStore } from '@/src/store/userStore';
 import {
   changePasswordSchema,
   updateUsernameSchema,
   type ChangePasswordInput,
 } from '@/src/schemas/user.schema';
-import { useUserStore } from '@/src/store/userStore';
-import { useState } from 'react';
-import { Alert, Dimensions, ScrollView, StyleSheet, TextInput } from 'react-native';
-import { Button, Dialog, Separator, Text, XStack, YStack } from 'tamagui';
 
 interface EditProfileModalProps {
   open: boolean;

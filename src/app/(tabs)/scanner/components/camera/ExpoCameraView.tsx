@@ -2,13 +2,14 @@
  * ExpoCameraView - 相机视图主组件
  */
 
-import type { ExpoBarcodeResult } from '@/src/types/camera';
-import { ScanType } from '@/src/types/camera';
-import { CameraType, CameraView } from 'expo-camera';
-import * as Haptics from 'expo-haptics';
 import React, { useCallback, useRef, useState } from 'react';
 import { Animated, LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { CameraType, CameraView } from 'expo-camera';
+import * as Haptics from 'expo-haptics';
 import { YStack } from 'tamagui';
+
+import { ScanType } from '@/src/types/camera';
+import type { ExpoBarcodeResult } from '@/src/types/camera';
 
 import { CameraBottomBar } from './components/CameraBottomBar';
 import { CameraControls } from './components/CameraControls';

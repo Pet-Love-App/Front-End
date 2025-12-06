@@ -2,9 +2,9 @@
  * 相机缩放手势控制 Hook
  */
 
-import * as Haptics from 'expo-haptics';
 import { useCallback, useRef } from 'react';
 import { PanResponder } from 'react-native';
+import * as Haptics from 'expo-haptics';
 
 interface UseZoomGestureProps {
   zoom: number;

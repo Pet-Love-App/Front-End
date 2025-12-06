@@ -1,5 +1,6 @@
-import type { CatfoodFavorite } from '@/src/types/collect';
 import { useMemo, useState } from 'react';
+
+import type { CatfoodFavorite } from '@/src/types/collect';
 
 /**
  * 收藏筛选 Hook

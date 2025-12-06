@@ -2,14 +2,16 @@
  * ScannerScreen - 智能扫描主页面
  */
 
+import React, { useCallback, useEffect } from 'react';
+import { Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+
 import { useExpoCamera as useCamera } from '@/src/hooks/useExpoCamera';
 import { useCatFoodStore } from '@/src/store/catFoodStore';
 import { useUserStore } from '@/src/store/userStore';
 import { ScanType, type ExpoBarcodeResult } from '@/src/types/camera';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useEffect } from 'react';
-import { Alert } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import {
   AiReportDetail,
   CameraPermissionModal,

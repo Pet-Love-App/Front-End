@@ -2,6 +2,9 @@
  * OCR API 服务
  */
 
+import { logger } from '@/src/utils/logger';
+import { API_BASE_URL } from '@/src/config/env';
+
 import { apiClient } from '../core/httpClient';
 
 // ========== 类型定义 ==========

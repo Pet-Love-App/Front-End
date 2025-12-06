@@ -1,6 +1,6 @@
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Pressable, ScrollView } from 'react-native';
 import { Text, XStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface FilterChipsProps {
   sortBy: 'score' | 'likes';

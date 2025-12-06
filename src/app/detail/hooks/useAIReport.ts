@@ -2,8 +2,9 @@
  * useAIReport Hook
  */
 
-import { aiReportService, type AIReportData } from '@/src/services/api';
 import { useEffect, useState } from 'react';
+
+import { aiReportService, type AIReportData } from '@/src/services/api';
 
 interface UseAIReportReturn {
   /** AI 报告数据 */

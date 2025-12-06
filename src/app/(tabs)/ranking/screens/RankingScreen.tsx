@@ -10,14 +10,15 @@
  * - 可维护性：小文件、易于理解和修改
  */
 
-import { CatFoodCard } from '@/src/components/CatFoodCard';
-import { PageHeader } from '@/src/components/PageHeader';
-import type { CatFood } from '@/src/types/catFood';
-import { useRouter } from 'expo-router';
 import React from 'react';
 import { FlatList, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { YStack } from 'tamagui';
+import { CatFoodCard } from '@/src/components/CatFoodCard';
+import { PageHeader } from '@/src/components/PageHeader';
+import type { CatFood } from '@/src/types/catFood';
+
 import {
   EmptyState,
   ImagePreviewModal,

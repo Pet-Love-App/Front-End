@@ -1,11 +1,11 @@
+import { memo, useEffect, useState } from 'react';
+import { Alert, RefreshControl, ScrollView } from 'react-native';
+import { Card, Spinner, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { supabaseCommentService, type Comment } from '@/src/lib/supabase';
 import { useUserStore } from '@/src/store/userStore';
-import { memo, useEffect, useState } from 'react';
-import { Alert, RefreshControl, ScrollView } from 'react-native';
-import { Card, Spinner, Text, XStack, YStack } from 'tamagui';
 
 /**
  * 评论 Tab 组件

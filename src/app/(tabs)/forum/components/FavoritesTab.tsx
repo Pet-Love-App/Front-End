@@ -1,9 +1,9 @@
-import Tag from '@/src/components/ui/Tag';
-import { supabaseForumService, type Post } from '@/src/lib/supabase';
-import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, FlatList, RefreshControl } from 'react-native';
+import LottieView from 'lottie-react-native';
 import { Button, Card, Spinner, Text, XStack, YStack } from 'tamagui';
+import Tag from '@/src/components/ui/Tag';
+import { supabaseForumService, type Post } from '@/src/lib/supabase';
 
 interface FavoritesTabProps {
   onOpenPost?: (post: Post) => void;

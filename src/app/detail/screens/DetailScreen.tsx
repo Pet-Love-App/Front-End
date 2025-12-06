@@ -1,9 +1,10 @@
-import { CommentSection } from '@/src/components/Comments';
-import { useUserStore } from '@/src/store/userStore';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, YStack } from 'tamagui';
+import { CommentSection } from '@/src/components/Comments';
+import { useUserStore } from '@/src/store/userStore';
+
 import {
   ActionBar,
   AdditiveDetailModal,

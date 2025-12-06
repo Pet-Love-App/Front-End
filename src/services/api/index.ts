@@ -47,6 +47,8 @@ export { aiReportService } from './ai_report';
 export type {
   AIReportData,
   CheckReportExistsResponse,
+  Favorite,
+  FavoriteReport,
   GenerateReportRequest,
   GenerateReportResponse,
   IngredientInfoRequest,

@@ -1,8 +1,9 @@
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { CameraView } from 'expo-camera';
+
 import { LottieAnimation } from '@/src/components/lottie-animation';
 import { IconSymbol } from '@/src/components/ui/icon-symbol';
 import type { CameraFacing } from '@/src/types/camera';
-import { CameraView } from 'expo-camera';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 
 interface CameraViewComponentProps {

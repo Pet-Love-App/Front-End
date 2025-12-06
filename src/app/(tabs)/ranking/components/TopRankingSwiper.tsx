@@ -10,14 +10,14 @@
  * - 视觉层次：缩放、透明度、垂直位移实现前后远近效果
  */
 
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, Image, ListRenderItem, Pressable } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Card, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { RANK_COLORS } from '@/src/constants/colors';
 import { useResponsiveLayout } from '@/src/hooks/useResponsiveLayout';
 import type { CatFood } from '@/src/types/catFood';
-import { LinearGradient } from 'expo-linear-gradient';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Image, ListRenderItem, Pressable } from 'react-native';
-import { Card, Text, XStack, YStack } from 'tamagui';
 
 interface TopRankingSwiperProps {
   /** 猫粮数据列表 */

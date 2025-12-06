@@ -1,8 +1,9 @@
-import { useUserStore } from '@/src/store/userStore';
-import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Spinner, YStack } from 'tamagui';
+
+import { useUserStore } from '@/src/store/userStore';
 
 export default function Index() {
   const insets = useSafeAreaInsets();

@@ -2,12 +2,12 @@
  * InitialScreen - Scanner 初始欢迎页面
  */
 
-import { PageHeader } from '@/src/components/PageHeader';
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import React from 'react';
 import { ScrollView } from 'react-native';
 import type { EdgeInsets } from 'react-native-safe-area-context';
 import { Button, Text, XStack, YStack } from 'tamagui';
+import { PageHeader } from '@/src/components/PageHeader';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 /**
  * 组件 Props 接口

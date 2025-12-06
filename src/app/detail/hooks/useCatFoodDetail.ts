@@ -1,7 +1,8 @@
-import { useCatFoodStore } from '@/src/store/catFoodStore';
-import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Alert } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+
+import { useCatFoodStore } from '@/src/store/catFoodStore';
 
 /**
  * 猫粮详情数据管理 Hook

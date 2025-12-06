@@ -2,10 +2,11 @@
  * ScanFrame - 扫描框组件
  */
 
-import { ScanType } from '@/src/types/camera';
 import React, { useRef } from 'react';
 import { Animated, LayoutChangeEvent, View } from 'react-native';
 import { Text, YStack } from 'tamagui';
+
+import { ScanType } from '@/src/types/camera';
 
 interface ScanFrameProps {
   scanType: ScanType;

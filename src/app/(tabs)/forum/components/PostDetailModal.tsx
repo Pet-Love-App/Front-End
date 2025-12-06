@@ -1,3 +1,6 @@
+import React, { useCallback, useEffect, useState } from 'react';
+import { Alert, Dimensions, FlatList, Image, ScrollView } from 'react-native';
+import { Button, Card, Separator, Text, TextArea, XStack, YStack } from 'tamagui';
 import { ForumColors } from '@/src/app/(tabs)/forum/constants';
 import Tag from '@/src/components/ui/Tag';
 import { Colors } from '@/src/constants/colors';
@@ -7,11 +10,9 @@ import {
   supabaseForumService,
   type Comment,
   type Post,
+  type PostMedia,
 } from '@/src/lib/supabase';
 import { useUserStore } from '@/src/store/userStore';
-import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Dimensions, FlatList, Image, ScrollView } from 'react-native';
-import { Button, Card, Separator, Text, TextArea, XStack, YStack } from 'tamagui';
 
 interface PostDetailModalProps {
   visible: boolean;
@@ -241,7 +242,7 @@ export function PostDetailModal({
               <Text color={ForumColors.text}>{post.content}</Text>
               {!!post.media?.length && (
                 <XStack gap="$2" flexWrap="wrap">
-                  {post.media.map((m: any) =>
+                  {post.media.map((m: PostMedia) =>
                     m.mediaType === 'image' ? (
                       <Card
                         key={m.id}
@@ -272,7 +273,7 @@ export function PostDetailModal({
               )}
               {post.tags && post.tags.length > 0 && (
                 <XStack gap="$2" alignItems="center" flexWrap="wrap" marginTop="$2">
-                  {post.tags.map((tag: any, index: number) => (
+                  {post.tags.map((tag: string, index: number) => (
                     <Tag key={`${post.id}-${tag}`} name={tag} index={index} />
                   ))}
                 </XStack>

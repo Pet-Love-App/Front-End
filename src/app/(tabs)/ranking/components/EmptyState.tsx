@@ -1,6 +1,6 @@
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Pressable } from 'react-native';
 import { Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface EmptyStateProps {
   type: 'search' | 'complete' | 'default';

@@ -1,7 +1,8 @@
-import { supabaseForumService, type NotificationItem } from '@/src/lib/supabase';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, RefreshControl } from 'react-native';
 import { Button, Card, Spinner, Text, XStack, YStack } from 'tamagui';
+
+import { supabaseForumService, type NotificationItem } from '@/src/lib/supabase';
 
 interface MessagesTabProps {
   onCreatePost?: () => void;
@@ -44,12 +45,12 @@ export function MessagesTab({ onCreatePost }: MessagesTabProps) {
         </XStack>
         <Text>{item.actor?.username || ''}</Text>
         {!!getNotificationContent(item) && <Text>{getNotificationContent(item)}</Text>}
-        <Text color="$gray10">{new Date(item.created_at).toLocaleString()}</Text>
+        <Text color="$gray10">{new Date(item.createdAt).toLocaleString()}</Text>
         {item.unread ? (
           <Button
             size="$3"
             onPress={() =>
-              forumService
+              supabaseForumService
                 .markNotificationRead(item.id)
                 .then(() => load())
                 .catch(() => Alert.alert('错误', '标记已读失败'))
@@ -76,7 +77,7 @@ export function MessagesTab({ onCreatePost }: MessagesTabProps) {
         <Button
           size="$3"
           onPress={() =>
-            forumService
+            supabaseForumService
               .markAllNotificationsRead()
               .then(() => load())
               .catch(() => Alert.alert('错误', '操作失败'))

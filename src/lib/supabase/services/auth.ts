@@ -6,9 +6,10 @@
  * - 自动 Session 管理
  */
 
-import type { AuthError, Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { supabase } from '../client';
 import { logger } from '../helpers';
+
+import type { AuthError, Session, User as SupabaseUser } from '@supabase/supabase-js';
 
 // ==================== 类型定义 ====================
 

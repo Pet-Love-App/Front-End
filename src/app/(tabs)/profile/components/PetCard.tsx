@@ -1,9 +1,9 @@
+import { Image } from 'react-native';
+import { Card, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors, withAlpha } from '@/src/constants/colors';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Pet } from '@/src/schemas/pet.schema';
-import { Image } from 'react-native';
-import { Card, Text, XStack, YStack } from 'tamagui';
 
 interface PetCardProps {
   pet: Pet;

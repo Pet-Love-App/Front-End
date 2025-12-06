@@ -1,6 +1,7 @@
-import { ThemedText } from '@/src/components/ThemedText';
-import LottieView from 'lottie-react-native';
 import { StyleSheet, View, ViewStyle } from 'react-native';
+import LottieView from 'lottie-react-native';
+
+import { ThemedText } from '@/src/components/ThemedText';
 
 interface LottieAnimationProps {
   source: any;

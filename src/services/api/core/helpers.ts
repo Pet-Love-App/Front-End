@@ -3,6 +3,8 @@
  * 统一的数据转换、错误处理等
  */
 
+import { logger } from '@/src/utils/logger';
+
 import type { ApiErrorDetail, ApiResponse, PaginatedResponse } from './types';
 
 /**
@@ -205,7 +207,7 @@ export function safeParseSchema<T>(data: unknown, schema: { parse: (data: unknow
   try {
     return schema.parse(data);
   } catch (error) {
-    console.error('Schema 验证失败:', error);
+    logger.error('Schema 验证失败', error as Error, { data });
     throw new Error('服务器返回数据格式错误');
   }
 }
@@ -214,18 +216,14 @@ export function safeParseSchema<T>(data: unknown, schema: { parse: (data: unknow
  * 开发环境日志
  */
 export const devLog = (message: string, data?: unknown): void => {
-  if (__DEV__) {
-    console.log(`🔧 [API] ${message}`, data !== undefined ? data : '');
-  }
+  logger.debug(`[API] ${message}`, data !== undefined ? { data } : undefined);
 };
 
 /**
  * 开发环境错误日志
  */
 export const devError = (message: string, error?: unknown): void => {
-  if (__DEV__) {
-    console.error(`❌ [API] ${message}`, error !== undefined ? error : '');
-  }
+  logger.error(`[API] ${message}`, error as Error);
 };
 
 /**

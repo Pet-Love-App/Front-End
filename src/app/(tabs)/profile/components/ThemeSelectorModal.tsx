@@ -11,12 +11,12 @@ interface ThemeSelectorModalProps {
   onThemeChange: (theme: ThemeMode) => void;
 }
 
-const THEME_OPTIONS: Array<{
+const THEME_OPTIONS: {
   mode: ThemeMode;
   label: string;
   icon: string;
   description: string;
-}> = [
+}[] = [
   { mode: 'light', label: '浅色', icon: 'sun.max.fill', description: '明亮清晰的界面' },
   { mode: 'dark', label: '深色', icon: 'moon.fill', description: '护眼深色主题' },
   {

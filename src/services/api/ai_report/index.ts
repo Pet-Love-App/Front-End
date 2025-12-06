@@ -3,6 +3,8 @@
  */
 
 import { API_ENDPOINTS } from '@/src/config/api';
+import { logger } from '@/src/utils/logger';
+
 import { apiClient } from '../core/httpClient';
 import type {
   AIReportData,
@@ -24,14 +26,14 @@ class AiReportService {
    */
   async checkReportExists(catfoodId: number): Promise<CheckReportExistsResponse> {
     try {
-      console.log(`🔍 检查猫粮 ${catfoodId} 的报告是否存在...`);
+      logger.debug('检查猫粮报告是否存在', { catfoodId });
       const response = await apiClient.get<CheckReportExistsResponse>(
         `/api/ai/${catfoodId}/exists/`
       );
-      console.log('✅ 检查结果:', response);
+      logger.info('检查结果', { catfoodId, response });
       return response;
     } catch (error) {
-      console.error('❌ 检查报告存在性失败:', error);
+      logger.error('检查报告存在性失败', error as Error, { catfoodId });
       throw error;
     }
   }
@@ -43,13 +45,13 @@ class AiReportService {
    */
   async getReport(catfoodId: number): Promise<AIReportData> {
     try {
-      console.log(`📥 获取猫粮 ${catfoodId} 的 AI 报告...`);
+      logger.debug('获取猫粮 AI 报告', { catfoodId });
       const response = await apiClient.get<{ report: AIReportData }>(`/api/ai/${catfoodId}/`);
-      console.log('✅ 报告获取成功:', response);
+      logger.info('报告获取成功', { catfoodId });
       // 后端返回 {report: ...}，需要提取 report 字段
       return response.report;
     } catch (error) {
-      console.error('❌ 获取报告失败:', error);
+      logger.error('获取报告失败', error as Error, { catfoodId });
       throw error;
     }
   }
@@ -61,19 +63,15 @@ class AiReportService {
    */
   async saveReport(request: SaveReportRequest): Promise<SaveReportResponse> {
     try {
-      console.log('\n========== 💾 保存 AI 报告到数据库 ==========');
-      console.log('📤 请求参数:');
-      console.log(JSON.stringify(request, null, 2));
+      logger.debug('保存 AI 报告到数据库', { request });
 
       const response = await apiClient.post<SaveReportResponse>('/api/ai/save/', request);
 
-      console.log('✅ 报告保存成功:');
-      console.log(JSON.stringify(response, null, 2));
-      console.log('========================================\n');
+      logger.info('报告保存成功', { catfoodId: request.catfood_id });
 
       return response;
     } catch (error) {
-      console.error('❌ 保存报告失败:', error);
+      logger.error('保存报告失败', error as Error, { catfoodId: request.catfood_id });
       throw error;
     }
   }
@@ -85,12 +83,12 @@ class AiReportService {
    */
   async deleteReport(catfoodId: number): Promise<{ message: string }> {
     try {
-      console.log(`🗑️ 删除猫粮 ${catfoodId} 的报告...`);
+      logger.debug('删除猫粮报告', { catfoodId });
       const response = await apiClient.delete<{ message: string }>(`/api/ai/${catfoodId}/delete/`);
-      console.log('✅ 删除成功:', response);
+      logger.info('删除成功', { catfoodId });
       return response;
     } catch (error) {
-      console.error('❌ 删除报告失败:', error);
+      logger.error('删除报告失败', error as Error, { catfoodId });
       throw error;
     }
   }
@@ -102,10 +100,7 @@ class AiReportService {
    */
   async generateReport(request: GenerateReportRequest): Promise<GenerateReportResponse> {
     try {
-      console.log('\n========== 🚀 AI报告生成请求 ==========');
-      console.log('📤 完整请求参数:');
-      console.log(JSON.stringify(request, null, 2));
-      console.log('========================================\n');
+      logger.debug('AI报告生成请求', { request });
 
       // 后端返回的数据结构
       const backendResponse = await apiClient.post<BackendReportResponse>(
@@ -113,9 +108,7 @@ class AiReportService {
         request
       );
 
-      console.log('\n========== 📥 后端完整响应数据 ==========');
-      console.log(JSON.stringify(backendResponse, null, 2));
-      console.log('========================================\n');
+      logger.debug('后端响应数据', { backendResponse });
 
       // 转换为前端期望的数据结构
       const frontendResponse: GenerateReportResponse = {
@@ -128,14 +121,11 @@ class AiReportService {
         tags: backendResponse.tags || [],
       };
 
-      console.log('✅ 数据转换完成\n');
+      logger.info('AI报告生成成功');
 
       return frontendResponse;
     } catch (error) {
-      console.error('❌ 生成AI报告失败:', error);
-      if (error instanceof Error) {
-        console.error('错误详情:', error.message);
-      }
+      logger.error('生成AI报告失败', error as Error);
       throw error;
     }
   }
@@ -152,7 +142,7 @@ class AiReportService {
       });
       return response;
     } catch (error) {
-      console.error('查询成分信息失败:', error);
+      logger.error('查询成分信息失败', error as Error, { ingredient: request.ingredient });
       throw error;
     }
   }
@@ -166,7 +156,7 @@ class AiReportService {
       const response = await apiClient.get<any>('/api/ai/favorites/');
       return response.results || response;
     } catch (error) {
-      console.error('获取收藏报告列表失败:', error);
+      logger.error('获取收藏报告列表失败', error as Error);
       throw error;
     }
   }
@@ -183,7 +173,7 @@ class AiReportService {
         { catfood_id: catfoodId }
       );
     } catch (error) {
-      console.error('切换收藏状态失败:', error);
+      logger.error('切换收藏状态失败', error as Error, { catfoodId });
       throw error;
     }
   }
@@ -197,7 +187,7 @@ class AiReportService {
     try {
       return await apiClient.delete<{ message: string }>(`/api/ai/favorites/${catfoodId}/delete/`);
     } catch (error) {
-      console.error('删除收藏失败:', error);
+      logger.error('删除收藏失败', error as Error, { catfoodId });
       throw error;
     }
   }

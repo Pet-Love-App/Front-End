@@ -54,7 +54,7 @@ class OcrService {
 
       return { text, confidence: avgConfidence };
     } catch (error) {
-      console.error('OCR 识别失败:', error);
+      logger.error('OCR 识别失败', error as Error);
       throw new Error('识别失败，请重试');
     }
   }
@@ -96,7 +96,7 @@ class OcrService {
 
       return { text, confidence: avgConfidence };
     } catch (error) {
-      console.error('OCR 识别失败:', error);
+      logger.error('OCR 识别失败', error as Error);
       throw new Error('识别失败，请重试');
     }
   }

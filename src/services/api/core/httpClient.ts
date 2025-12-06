@@ -9,6 +9,8 @@
 
 import { API_BASE_URL } from '@/src/config/env';
 import { AppError, ErrorCodes, logError } from '@/src/utils/errorHandler';
+import { logger } from '@/src/utils/logger';
+
 import { createErrorDetail, toCamelCase, toSnakeCase, wrapError, wrapSuccess } from './helpers';
 import type { ApiResponse } from './types';
 
@@ -118,7 +120,7 @@ class LowLevelApiClient {
       try {
         return JSON.parse(raw);
       } catch (err) {
-        console.warn('解析 JSON 响应失败，返回原始文本', raw.slice(0, 200));
+        logger.warn('解析 JSON 响应失败，返回原始文本', { preview: raw.slice(0, 200) });
         return raw;
       }
     }
@@ -158,13 +160,13 @@ class LowLevelApiClient {
 
     try {
       const fullUrl = `${this.baseURL}${endpoint}`;
-      console.log(`🌐 API请求: ${config.method || 'GET'} ${fullUrl}`);
+      logger.debug('API请求', { method: config.method || 'GET', url: fullUrl });
 
       const response = await fetch(fullUrl, config);
 
       // 处理 401 (token 过期)
       if (response.status === 401 && token) {
-        console.log('🔄 Token 过期，尝试刷新...');
+        logger.info('Token 过期，尝试刷新...');
         try {
           const { useUserStore } = require('@/src/store/userStore');
           await useUserStore.getState().refreshAccessToken();
@@ -197,7 +199,7 @@ class LowLevelApiClient {
             return (await this.safeParseResponse(retryResponse)) as T;
           }
         } catch (error) {
-          console.error('❌ Token 刷新失败，需要重新登录');
+          logger.error('Token 刷新失败，需要重新登录', error as Error);
           const { useUserStore } = require('@/src/store/userStore');
           await useUserStore.getState().logout();
           throw new AppError('认证失败，请重新登录', ErrorCodes.AUTH_EXPIRED, 401);
@@ -238,7 +240,7 @@ class LowLevelApiClient {
           messageStr.includes('token expired');
 
         if (isTokenInvalid && token) {
-          console.error('❌ Token 无效，自动登出');
+          logger.error('Token 无效，自动登出', new Error('Token invalid'));
           const { useUserStore } = require('@/src/store/userStore');
           await useUserStore.getState().logout();
           throw new AppError('认证失败，请重新登录', ErrorCodes.AUTH_EXPIRED, 401);

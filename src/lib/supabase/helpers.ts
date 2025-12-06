@@ -3,6 +3,7 @@
  * 提供常用的数据库操作封装
  */
 
+import { logger as appLogger } from '@/src/utils/logger';
 import type { PostgrestError } from '@supabase/supabase-js';
 import { supabase } from './client';
 
@@ -34,8 +35,11 @@ export const wrapResponse = <T>(
  */
 export const handleSupabaseError = (error: PostgrestError | null, context: string) => {
   if (error) {
-    console.error(`❌ Supabase错误 [${context}]:`, error.message);
-    console.error('详情:', error);
+    appLogger.error(`Supabase错误 [${context}]`, new Error(error.message), {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
     return {
       message: error.message,
       code: error.code,
@@ -149,20 +153,16 @@ export const isAuthenticated = async () => {
 };
 
 /**
- * 日志工具
+ * 日志工具（使用统一的 logger）
  */
 export const logger = {
-  query: (table: string, operation: string, params?: any) => {
-    if (__DEV__) {
-      console.log(`🔍 Supabase Query: ${table}.${operation}`, params || '');
-    }
+  query: (table: string, operation: string, params?: unknown) => {
+    appLogger.debug('Supabase Query', { table, operation, params: params || null });
   },
   success: (table: string, operation: string, count?: number) => {
-    if (__DEV__) {
-      console.log(`✅ Supabase Success: ${table}.${operation}`, count ? `(${count} rows)` : '');
-    }
+    appLogger.info('Supabase Success', { table, operation, count });
   },
-  error: (table: string, operation: string, error: any) => {
-    console.error(`❌ Supabase Error: ${table}.${operation}`, error);
+  error: (table: string, operation: string, error: unknown) => {
+    appLogger.error('Supabase Error', error as Error, { table, operation });
   },
 };

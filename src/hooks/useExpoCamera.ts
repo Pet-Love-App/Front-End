@@ -180,8 +180,8 @@ export function useExpoCamera(initialScanType: ScanType = ScanType.BARCODE) {
           // 将屏幕框坐标转换为照片坐标
           let photoFrameX = frameLayout.x * scaleX;
           let photoFrameY = frameLayout.y * scaleY;
-          let photoFrameWidth = frameLayout.width * scaleX;
-          let photoFrameHeight = frameLayout.height * scaleY;
+          const photoFrameWidth = frameLayout.width * scaleX;
+          const photoFrameHeight = frameLayout.height * scaleY;
 
           // 加上偏移量，得到完整照片中的坐标
           photoFrameX += photoOffsetX;
@@ -195,8 +195,8 @@ export function useExpoCamera(initialScanType: ScanType = ScanType.BARCODE) {
           });
 
           // 确保在照片范围内
-          let cropX = Math.max(0, photoFrameX);
-          let cropY = Math.max(0, photoFrameY);
+          const cropX = Math.max(0, photoFrameX);
+          const cropY = Math.max(0, photoFrameY);
           let cropWidth = photoFrameWidth;
           let cropHeight = photoFrameHeight;
 

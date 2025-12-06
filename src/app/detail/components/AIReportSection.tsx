@@ -541,7 +541,7 @@ function preparePieChartData(percentData: Record<string, number | null>) {
     return [];
   }
 
-  const data: Array<{ name: string; value: number }> = [];
+  const data: { name: string; value: number }[] = [];
 
   // 动态处理所有字段，严格验证
   Object.entries(percentData).forEach(([key, value]) => {

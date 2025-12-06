@@ -2,6 +2,7 @@
  * Supabase 客户端配置
  */
 
+import { logger } from '@/src/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 
@@ -11,11 +12,7 @@ const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // 开发环境下的配置检查
 if (__DEV__ && (!SUPABASE_URL || !SUPABASE_ANON_KEY)) {
-  console.warn(
-    '⚠️ Supabase 配置缺失。请在 .env 文件中设置:\n' +
-      'EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co\n' +
-      'EXPO_PUBLIC_SUPABASE_ANON_KEY=your_anon_key'
-  );
+  logger.warn('Supabase 配置缺失。请在 .env 文件中设置 SUPABASE_URL 和 SUPABASE_ANON_KEY');
 }
 
 /** Supabase 客户端实例 */
@@ -48,12 +45,12 @@ export const getSession = async () => {
   try {
     const { data, error } = await supabase.auth.getSession();
     if (error) {
-      console.error('❌ 获取 Session 失败:', error);
+      logger.error('获取 Session 失败', error as Error);
       return null;
     }
     return data.session;
   } catch (error) {
-    console.error('❌ 获取 Session 异常:', error);
+    logger.error('获取 Session 异常', error as Error);
     return null;
   }
 };
@@ -88,16 +85,14 @@ export const setSupabaseAuth = async (
     });
 
     if (error) {
-      console.error('❌ 设置 Supabase Session 失败:', error);
+      logger.error('设置 Supabase Session 失败', error as Error);
       return false;
     }
 
-    if (__DEV__) {
-      console.log('✅ Supabase 认证已同步');
-    }
+    logger.info('Supabase 认证已同步');
     return true;
   } catch (error) {
-    console.error('❌ 设置 Supabase Session 异常:', error);
+    logger.error('设置 Supabase Session 异常', error as Error);
     return false;
   }
 };
@@ -109,11 +104,9 @@ export const setSupabaseAuth = async (
 export const clearSupabaseAuth = async (): Promise<void> => {
   try {
     await supabase.auth.signOut();
-    if (__DEV__) {
-      console.log('✅ Supabase Session 已清除');
-    }
+    logger.info('Supabase Session 已清除');
   } catch (error) {
-    console.error('❌ 清除 Supabase Session 失败:', error);
+    logger.error('清除 Supabase Session 失败', error as Error);
   }
 };
 
@@ -123,10 +116,8 @@ export const clearSupabaseAuth = async (): Promise<void> => {
  */
 export const initSupabaseAuth = async (): Promise<void> => {
   // Session 会自动从 AsyncStorage 恢复，无需手动操作
-  if (__DEV__) {
-    const session = await getSession();
-    console.log('🔄 Supabase Session 状态:', session ? '已登录' : '未登录');
-  }
+  const session = await getSession();
+  logger.info('Supabase Session 状态', { isLoggedIn: !!session });
 };
 
 export default supabase;

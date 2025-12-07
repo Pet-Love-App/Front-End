@@ -1,11 +1,10 @@
 /**
  * 营养分析图表组合组件 - 包含饼状图、柱状图和数据表格
- * 企业最佳实践：支持动态字段，适配新的 percent_data 结构
  */
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Dimensions } from 'react-native';
 import { BarChart, PieChart } from 'react-native-chart-kit';
 import { Card, Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface NutritionAnalysisChartsProps {
   data: Record<string, number | null>;

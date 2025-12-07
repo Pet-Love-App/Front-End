@@ -1,8 +1,8 @@
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import type { CatFood } from '@/src/types/catFood';
 import React from 'react';
-import { Image } from 'react-native';
 import { Card, Separator, Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { ProductImage } from '@/src/components/ui/OptimizedImage';
+import type { CatFood } from '@/src/types/catFood';
 
 interface CatFoodCardProps {
   /** 猫粮数据 */
@@ -96,13 +96,14 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
               hoverStyle={{ opacity: 0.8 }}
               pressStyle={{ opacity: 0.6 }}
             >
-              <Image
-                source={{ uri: catfood.imageUrl }}
+              <ProductImage
+                source={catfood.imageUrl}
                 style={{
                   width: 80,
                   height: 80,
-                  borderRadius: 8,
                 }}
+                borderRadius={8}
+                cachePolicy="memory-disk"
               />
             </YStack>
           ) : (
@@ -176,12 +177,12 @@ export const CatFoodCard: React.FC<CatFoodCardProps> = ({
       </Card.Header>
 
       {/* 营养信息指示 */}
-      {showNutritionInfo && (catfood.ingredient.length > 0 || catfood.percentage) && (
+      {showNutritionInfo && (catfood.ingredient?.length > 0 || catfood.percentage) && (
         <>
           <Separator />
           <Card.Footer padded>
             <XStack gap="$3" alignItems="center">
-              {catfood.ingredient.length > 0 && (
+              {catfood.ingredient?.length > 0 && (
                 <XStack alignItems="center" gap="$1">
                   <IconSymbol name="checkmark.seal.fill" size={14} color="$green10" />
                   <Text fontSize="$2" color="$green10">

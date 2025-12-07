@@ -2,13 +2,14 @@
  * 单条评论组件
  * 职责：展示单条评论的UI和交互
  */
+import { memo } from 'react';
+import { StyleSheet, TouchableOpacity } from 'react-native';
+import { Separator, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { AvatarImage } from '@/src/components/ui/OptimizedImage';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import type { Comment } from '@/src/services/api/comment';
-import { memo } from 'react';
-import { Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { Separator, Text, XStack, YStack } from 'tamagui';
+import type { Comment } from '@/src/lib/supabase';
 
 interface CommentItemProps {
   comment: Comment;
@@ -112,13 +113,7 @@ const CommentAvatar = memo(function CommentAvatar({ avatar, authorName }: Commen
   const colors = Colors[colorScheme];
 
   if (avatar) {
-    return (
-      <Image
-        source={{ uri: avatar }}
-        style={styles.avatar}
-        defaultSource={require('@/assets/appIcon.png')}
-      />
-    );
+    return <AvatarImage source={avatar} size={40} cachePolicy="memory-disk" />;
   }
 
   return (

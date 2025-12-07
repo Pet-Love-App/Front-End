@@ -1,8 +1,8 @@
+import { Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Button } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useUserStore } from '@/src/store/userStore';
-import { useRouter } from 'expo-router';
-import { Alert } from 'react-native';
-import { Button } from 'tamagui';
 
 export function LogoutButton() {
   const router = useRouter();

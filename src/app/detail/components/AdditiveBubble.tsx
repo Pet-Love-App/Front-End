@@ -9,16 +9,13 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Text } from 'tamagui';
 
+import type { Additive } from '@/src/lib/supabase';
+
 interface AdditiveBubbleProps {
-  additive: {
-    name: string;
-    type?: string;
-    en_name?: string;
-    applicable_range?: string;
-  };
+  additive: Additive;
   index: number;
   total: number;
-  onPress: (additive: any) => void;
+  onPress: (additive: Additive) => void;
 }
 
 // 柔和的橙黄色调色板
@@ -70,6 +67,7 @@ export function AdditiveBubble({ additive, index, total, onPress }: AdditiveBubb
       -1,
       true
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({

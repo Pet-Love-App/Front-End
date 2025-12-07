@@ -42,5 +42,22 @@ app-example
 /ios
 /android
 
-# documentation (internal development notes)
-/docs
+# IDE
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# tests
+/coverage
+
+# build artifacts
+build/
+.next/
+
+# lock files (using .npmrc instead)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+docs/

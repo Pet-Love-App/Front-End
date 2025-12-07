@@ -2,16 +2,16 @@
  * OCR 识别结果展示组件
  * 展示识别的文本内容，提供生成 AI 报告的入口
  */
+import { memo, useState } from 'react';
+import { Alert, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Clipboard from 'expo-clipboard';
+import { Button, Card, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { OcrResult } from '@/src/services/api';
 // @ts-ignore: expo-clipboard may not have type declarations
-import * as Clipboard from 'expo-clipboard';
-import { memo, useState } from 'react';
-import { Alert, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Card, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 
 interface OcrResultViewProps {
   ocrResult: OcrResult;

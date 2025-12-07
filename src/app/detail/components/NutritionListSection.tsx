@@ -1,5 +1,6 @@
-import { Ingredient } from '@/src/services/api/additive/types';
 import { Card, Separator, Text, XStack, YStack } from 'tamagui';
+
+import type { Ingredient } from '@/src/services/api';
 
 interface NutritionListSectionProps {
   ingredients: Ingredient[];

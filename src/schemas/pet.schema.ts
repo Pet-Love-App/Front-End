@@ -8,10 +8,10 @@ export const petSchema = z.object({
   name: z.string(),
   species: z.string(),
   species_display: z.string().optional(),
-  breed: z.string().optional(),
+  breed: z.string().optional().nullable(),
   age: z.number().nullable().optional(),
-  photo: z.string().nullable().optional(),
-  description: z.string().optional(),
+  photo_url: z.string().nullable().optional(), // 后端返回 photo_url
+  description: z.string().optional().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
 });

@@ -1,6 +1,7 @@
-import { LottieAnimation } from '@/src/components/LottieAnimation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Input, Spinner, Text, YStack } from 'tamagui';
+import { LottieAnimation } from '@/src/components/LottieAnimation';
+
 import { useRegisterForm } from '../hooks';
 
 /**
@@ -10,14 +11,14 @@ export function RegisterScreen() {
   const insets = useSafeAreaInsets();
 
   const {
+    email,
     username,
     password,
-    confirmPassword,
     errors,
     isLoading,
+    handleEmailChange,
     handleUsernameChange,
     handlePasswordChange,
-    handleConfirmPasswordChange,
     handleRegister,
     navigateBack,
   } = useRegisterForm();
@@ -49,7 +50,26 @@ export function RegisterScreen() {
         <YStack marginBottom="$3">
           <Input
             size="$5"
-            placeholder="用户名（字母、数字、下划线）"
+            placeholder="邮箱地址"
+            value={email}
+            onChangeText={handleEmailChange}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+            disabled={isLoading}
+            borderColor={errors.email ? '$red10' : undefined}
+          />
+          {errors.email && (
+            <Text color="$red10" fontSize="$2" marginTop="$1">
+              {errors.email}
+            </Text>
+          )}
+        </YStack>
+
+        <YStack marginBottom="$3">
+          <Input
+            size="$5"
+            placeholder="用户名（3-150个字符，字母、数字、下划线）"
             value={username}
             onChangeText={handleUsernameChange}
             autoCapitalize="none"
@@ -63,7 +83,7 @@ export function RegisterScreen() {
           )}
         </YStack>
 
-        <YStack marginBottom="$3">
+        <YStack marginBottom="$4">
           <Input
             size="$5"
             placeholder="密码（至少6位，包含字母和数字）"
@@ -76,23 +96,6 @@ export function RegisterScreen() {
           {errors.password && (
             <Text color="$red10" fontSize="$2" marginTop="$1">
               {errors.password}
-            </Text>
-          )}
-        </YStack>
-
-        <YStack marginBottom="$4">
-          <Input
-            size="$5"
-            placeholder="确认密码"
-            value={confirmPassword}
-            onChangeText={handleConfirmPasswordChange}
-            secureTextEntry
-            disabled={isLoading}
-            borderColor={errors.re_password ? '$red10' : undefined}
-          />
-          {errors.re_password && (
-            <Text color="$red10" fontSize="$2" marginTop="$1">
-              {errors.re_password}
             </Text>
           )}
         </YStack>

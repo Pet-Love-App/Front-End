@@ -1,140 +1,223 @@
-import { API_BASE_URL } from '@/src/config/env';
-
 /**
  * API 端点常量定义
  * 统一管理所有 API 路径
- * 注意：后端已迁移到 Supabase，API 路径已更新
+ *
+ * 📌 迁移状态说明：
+ * - ✅ 仍在使用：OCR、AI_REPORT、ADDITIVE.INGREDIENT_INFO（Django 后端）
+ * - ❌ 已弃用：其他所有端点均已迁移到 Supabase（见 src/lib/supabase/services/）
  */
 export const API_ENDPOINTS = {
-  // ==================== 认证相关 (Supabase Auth) ====================
-  AUTH: {
-    REGISTER: `${API_BASE_URL}/api/auth/register/`, // 用户注册
-    LOGIN: `${API_BASE_URL}/api/auth/login/`, // 登录获取 token
-    LOGOUT: `${API_BASE_URL}/api/auth/logout/`, // 登出
-    REFRESH_TOKEN: `${API_BASE_URL}/api/auth/refresh/`, // 刷新 access token
-    GET_PROFILE: `${API_BASE_URL}/api/auth/profile/`, // 获取用户资料
-    UPDATE_PROFILE: `${API_BASE_URL}/api/auth/profile/update/`, // 更新用户资料
-    UPLOAD_AVATAR: `${API_BASE_URL}/api/auth/avatar/`, // 上传头像
-    DELETE_AVATAR: `${API_BASE_URL}/api/auth/avatar/delete/`, // 删除头像
-    CHANGE_PASSWORD: `${API_BASE_URL}/api/auth/password/change/`, // 修改密码
-    RESET_PASSWORD: `${API_BASE_URL}/api/auth/password/reset/`, // 重置密码
-  },
+  // ==================== 🚀 仍在使用（Django 后端） ====================
 
-  // ==================== 用户相关 ====================
-  USER: {
-    ME: `${API_BASE_URL}/api/auth/profile/`, // 获取当前用户完整信息（含头像、宠物）
-    DETAIL: (userId: string) => `${API_BASE_URL}/api/auth/profile/`, // 获取指定用户信息（Supabase 使用 UUID）
-    AVATAR: `${API_BASE_URL}/api/auth/avatar/`, // 上传/更新/删除头像
-    UPDATE_PROFILE: `${API_BASE_URL}/api/auth/profile/update/`, // 更新用户资料
-  },
-
-  // ==================== 宠物相关 ====================
-  PET: {
-    LIST: `${API_BASE_URL}/api/pets/`, // 获取宠物列表
-    CREATE: `${API_BASE_URL}/api/pets/create/`, // 创建宠物
-    DETAIL: (petId: number) => `${API_BASE_URL}/api/pets/${petId}/`, // 获取宠物详情
-    UPDATE: (petId: number) => `${API_BASE_URL}/api/pets/${petId}/update/`, // 更新宠物
-    DELETE: (petId: number) => `${API_BASE_URL}/api/pets/${petId}/delete/`, // 删除宠物
-    UPLOAD_PHOTO: (petId: number) => `${API_BASE_URL}/api/pets/${petId}/photo/`, // 上传宠物照片
-    DELETE_PHOTO: (petId: number) => `${API_BASE_URL}/api/pets/${petId}/photo/delete/`, // 删除宠物照片
-    MY_PETS: `${API_BASE_URL}/api/pets/`, // 获取我的宠物列表
-  },
-
-  // ==================== 猫粮相关 ====================
-  CATFOOD: {
-    LIST: `${API_BASE_URL}/api/catfood/`, // 获取猫粮列表
-    CREATE: `${API_BASE_URL}/api/catfood/create/`, // 创建猫粮
-    DETAIL: (id: number) => `${API_BASE_URL}/api/catfood/${id}/`, // 获取猫粮详情
-    UPDATE: (id: number) => `${API_BASE_URL}/api/catfood/${id}/update/`, // 更新猫粮
-    DELETE: (id: number) => `${API_BASE_URL}/api/catfood/${id}/delete/`, // 删除猫粮
-    UPLOAD_IMAGE: (id: number) => `${API_BASE_URL}/api/catfood/${id}/image/`, // 上传猫粮图片
-    DELETE_IMAGE: (id: number) => `${API_BASE_URL}/api/catfood/${id}/image/delete/`, // 删除猫粮图片
-    SEARCH: `${API_BASE_URL}/api/catfood/search/`, // 搜索猫粮（按名称或品牌）
-    COMMENTS: (id: number) => `${API_BASE_URL}/api/catfood/${id}/comments/`, // 获取猫粮的评论列表
-    // 猫粮点赞相关
-    LIKES: `${API_BASE_URL}/api/catfood/likes/`, // 获取用户点赞的猫粮列表
-    LIKE: `${API_BASE_URL}/api/catfood/likes/`, // 点赞猫粮
-    UNLIKE: (likeId: number) => `${API_BASE_URL}/api/catfood/likes/${likeId}/`, // 取消点赞
-    TOGGLE_LIKE: `${API_BASE_URL}/api/catfood/likes/toggle/`, // 切换点赞状态
-    CHECK_LIKE: `${API_BASE_URL}/api/catfood/likes/check/`, // 检查点赞状态
-    LIKES_COUNT: (id: number) => `${API_BASE_URL}/api/catfood/likes/count/${id}/`, // 获取点赞数量
-    // 条形码相关
-    BY_BARCODE: `${API_BASE_URL}/api/catfood/by-barcode/`, // 通过条形码查询猫粮
-    SCAN_BARCODE: `${API_BASE_URL}/api/catfood/scan-barcode/`, // 扫描条形码图片识别
-  },
-
-  // ==================== 评论相关 ====================
-  COMMENT: {
-    LIST: `${API_BASE_URL}/api/comments/`, // 获取评论列表（可按 target_type 和 target_id 过滤）
-    CREATE: `${API_BASE_URL}/api/comments/create/`, // 创建评论
-    DETAIL: (id: number) => `${API_BASE_URL}/api/comments/${id}/`, // 获取评论详情
-    UPDATE: (id: number) => `${API_BASE_URL}/api/comments/${id}/update/`, // 更新评论
-    DELETE: (id: number) => `${API_BASE_URL}/api/comments/${id}/delete/`, // 删除评论
-    // 评论点赞相关
-    LIKES: `${API_BASE_URL}/api/comments/likes/`, // 获取用户点赞的评论列表
-    LIKE: `${API_BASE_URL}/api/comments/likes/`, // 点赞评论
-    UNLIKE: (likeId: number) => `${API_BASE_URL}/api/comments/likes/${likeId}/`, // 取消点赞
-    TOGGLE_LIKE: `${API_BASE_URL}/api/comments/likes/toggle/`, // 切换点赞状态
-    CHECK_LIKE: `${API_BASE_URL}/api/comments/likes/check/`, // 检查点赞状态
-  },
-
-  // ==================== 添加剂相关 ====================
-  ADDITIVE: {
-    SEARCH_INGREDIENT: `${API_BASE_URL}/api/additive/search-ingredient/`, // 搜索营养成分
-    SEARCH_ADDITIVE: `${API_BASE_URL}/api/additive/search-additive/`, // 搜索添加剂
-    ADD_INGREDIENT: `${API_BASE_URL}/api/additive/add-ingredient/`, // 添加营养成分
-    ADD_ADDITIVE: `${API_BASE_URL}/api/additive/add-additive/`, // 添加添加剂
-    INGREDIENT_INFO: `${API_BASE_URL}/api/additive/ingredient-info/`, // 获取成分信息（Baidu API）
-  },
-
-  // ==================== AI 报告相关 ====================
+  /**
+   * AI 报告相关
+   * 使用 LLM 生成猫粮成分分析报告
+   */
   AI_REPORT: {
-    LLM_CHAT: `${API_BASE_URL}/api/ai/llm/chat/`, // LLM 聊天生成报告
-    SAVE: `${API_BASE_URL}/api/ai/save/`, // 保存报告
-    GET: (catfoodId: number) => `${API_BASE_URL}/api/ai/${catfoodId}/`, // 获取报告
-    DELETE: (catfoodId: number) => `${API_BASE_URL}/api/ai/${catfoodId}/delete/`, // 删除报告
-    EXISTS: (catfoodId: number) => `${API_BASE_URL}/api/ai/${catfoodId}/exists/`, // 检查报告是否存在
-    // 报告收藏相关
-    FAVORITES: `${API_BASE_URL}/api/ai/favorites/`, // 获取收藏的报告列表
-    TOGGLE_FAVORITE: `${API_BASE_URL}/api/ai/favorites/toggle/`, // 切换收藏状态
-    CHECK_FAVORITE: `${API_BASE_URL}/api/ai/favorites/check/`, // 检查收藏状态
+    /** 调用 LLM 生成报告 */
+    LLM_CHAT: `/api/ai/llm/chat/`,
+    /** 保存报告到数据库 */
+    SAVE: `/api/ai/save/`,
+    /** 获取报告详情 */
+    GET: (catfoodId: number) => `/api/ai/${catfoodId}/`,
+    /** 删除报告 */
+    DELETE: (catfoodId: number) => `/api/ai/${catfoodId}/delete/`,
+    /** 检查报告是否存在 */
+    EXISTS: (catfoodId: number) => `/api/ai/${catfoodId}/exists/`,
+    /** 获取收藏的报告列表 */
+    FAVORITES: `/api/ai/favorites/`,
+    /** 切换收藏状态 */
+    TOGGLE_FAVORITE: `/api/ai/favorites/toggle/`,
+    /** 删除收藏 */
+    DELETE_FAVORITE: (catfoodId: number) => `/api/ai/favorites/${catfoodId}/delete/`,
   },
 
-  // ==================== OCR 相关 ====================
+  /**
+   * OCR 相关
+   * 图片文字识别
+   */
   OCR: {
-    RECOGNIZE: `${API_BASE_URL}/api/ocr/recognize/`, // OCR 识别
+    /** OCR 识别配料表 */
+    RECOGNIZE: `/api/ocr/recognize/`,
   },
 
-  // ==================== 论坛相关 ====================
+  /**
+   * 添加剂/成分信息查询
+   * 使用百度 API 查询成分详细信息
+   */
+  ADDITIVE: {
+    /** 获取成分信息（百度 API） */
+    INGREDIENT_INFO: `/api/search/ingredient/info`,
+  },
+
+  // ==================== ⚠️ 已弃用（已迁移到 Supabase）====================
+  // 以下端点已不再使用，保留仅为兼容性考虑
+  // 新功能请使用 src/lib/supabase/services/ 下的对应服务
+
+  /**
+   * @deprecated 使用 src/lib/supabase/services/auth.ts 中的 supabaseAuthService
+   */
+  AUTH: {
+    /** @deprecated */
+    REGISTER: `/api/auth/register/`,
+    /** @deprecated */
+    LOGIN: `/api/auth/login/`,
+    /** @deprecated */
+    LOGOUT: `/api/auth/logout/`,
+    /** @deprecated */
+    REFRESH_TOKEN: `/api/auth/refresh/`,
+    /** @deprecated */
+    GET_PROFILE: `/api/auth/profile/`,
+    /** @deprecated */
+    UPDATE_PROFILE: `/api/auth/profile/update/`,
+    /** @deprecated */
+    UPLOAD_AVATAR: `/api/auth/avatar/`,
+    /** @deprecated */
+    DELETE_AVATAR: `/api/auth/avatar/delete/`,
+    /** @deprecated */
+    CHANGE_PASSWORD: `/api/auth/password/change/`,
+    /** @deprecated */
+    RESET_PASSWORD: `/api/auth/password/reset/`,
+  },
+
+  /**
+   * @deprecated 使用 src/lib/supabase/services/profile.ts 中的 supabaseProfileService
+   */
+  USER: {
+    /** @deprecated */
+    ME: `/api/auth/profile/`,
+    /** @deprecated */
+    DETAIL: (userId: string) => `/api/auth/profile/`,
+    /** @deprecated */
+    AVATAR: `/api/auth/avatar/`,
+    /** @deprecated */
+    UPDATE_PROFILE: `/api/auth/profile/update/`,
+  },
+
+  /**
+   * @deprecated 使用 src/lib/supabase/services/pet.ts 中的 supabasePetService
+   */
+  PET: {
+    /** @deprecated */
+    LIST: `/api/pets/`,
+    /** @deprecated */
+    CREATE: `/api/pets/create/`,
+    /** @deprecated */
+    DETAIL: (petId: number) => `/api/pets/${petId}/`,
+    /** @deprecated */
+    UPDATE: (petId: number) => `/api/pets/${petId}/`,
+    /** @deprecated */
+    DELETE: (petId: number) => `/api/pets/${petId}/delete/`,
+    /** @deprecated */
+    UPLOAD_PHOTO: (petId: number) => `/api/pets/${petId}/photo/`,
+    /** @deprecated */
+    DELETE_PHOTO: (petId: number) => `/api/pets/${petId}/photo/delete/`,
+    /** @deprecated */
+    MY_PETS: `/api/pets/`,
+  },
+
+  /**
+   * @deprecated 使用 src/lib/supabase/services/catfood.ts 中的 supabaseCatfoodService
+   */
+  CATFOOD: {
+    /** @deprecated */
+    LIST: `/api/catfoods/`,
+    /** @deprecated */
+    CREATE: `/api/catfoods/create/`,
+    /** @deprecated */
+    DETAIL: (id: number) => `/api/catfoods/${id}/`,
+    /** @deprecated */
+    UPDATE: (id: number) => `/api/catfoods/${id}/update/`,
+    /** @deprecated */
+    DELETE: (id: number) => `/api/catfoods/${id}/delete/`,
+    /** @deprecated */
+    RATE: (id: number) => `/api/catfoods/${id}/rate/`,
+    /** @deprecated */
+    FAVORITE: (id: number) => `/api/catfoods/${id}/favorite/`,
+    /** @deprecated */
+    FAVORITES: `/api/catfoods/favorites/`,
+    /** @deprecated */
+    RATINGS: (id: number) => `/api/catfoods/${id}/ratings/`,
+    /** @deprecated */
+    COMMENTS: (id: number) => `/api/catfood/${id}/comments/`,
+    /** @deprecated */
+    LIKES: `/api/catfood/likes/`,
+    /** @deprecated */
+    UNLIKE: (likeId: number) => `/api/catfood/likes/${likeId}/`,
+    /** @deprecated */
+    TOGGLE_LIKE: `/api/catfood/likes/toggle/`,
+    /** @deprecated */
+    CHECK_LIKE: `/api/catfood/likes/check/`,
+    /** @deprecated */
+    LIKES_COUNT: (id: number) => `/api/catfood/likes/count/${id}/`,
+    /** @deprecated */
+    BY_BARCODE: `/api/catfood/by-barcode/`,
+    /** @deprecated */
+    SCAN_BARCODE: `/api/catfood/scan-barcode/`,
+  },
+
+  /**
+   * @deprecated 使用 src/lib/supabase/services/comment.ts 中的 supabaseCommentService
+   */
+  COMMENT: {
+    /** @deprecated */
+    LIST: `/api/comments/`,
+    /** @deprecated */
+    CREATE: `/api/comments/create/`,
+    /** @deprecated */
+    DELETE: (id: number) => `/api/comments/${id}/delete/`,
+    /** @deprecated */
+    LIKE: (id: number) => `/api/comments/${id}/like/`,
+  },
+
+  /**
+   * @deprecated 使用 src/lib/supabase/services/forum.ts 中的 supabaseForumService
+   */
   FORUM: {
-    POSTS: `${API_BASE_URL}/api/forum/posts/`, // 获取帖子列表
-    CREATE_POST: `${API_BASE_URL}/api/forum/posts/create/`, // 创建帖子
-    POST_DETAIL: (postId: number) => `${API_BASE_URL}/api/forum/posts/${postId}/`, // 获取帖子详情
-    UPDATE_POST: (postId: number) => `${API_BASE_URL}/api/forum/posts/${postId}/update/`, // 更新帖子
-    DELETE_POST: (postId: number) => `${API_BASE_URL}/api/forum/posts/${postId}/delete/`, // 删除帖子
-    UPLOAD_MEDIA: (postId: number) => `${API_BASE_URL}/api/forum/posts/${postId}/media/`, // 上传帖子媒体
-    // 帖子收藏相关
-    FAVORITES: `${API_BASE_URL}/api/forum/favorites/`, // 获取收藏的帖子列表
-    TOGGLE_FAVORITE: `${API_BASE_URL}/api/forum/favorites/toggle/`, // 切换收藏状态
-    CHECK_FAVORITE: `${API_BASE_URL}/api/forum/favorites/check/`, // 检查收藏状态
+    /** @deprecated */
+    POSTS: `/api/posts/`,
+    /** @deprecated */
+    CREATE_POST: `/api/posts/create/`,
+    /** @deprecated */
+    POST_DETAIL: (postId: number) => `/api/posts/${postId}/`,
+    /** @deprecated */
+    DELETE_POST: (postId: number) => `/api/posts/${postId}/delete/`,
+    /** @deprecated */
+    FAVORITE_POST: (postId: number) => `/api/posts/${postId}/favorite/`,
   },
 
-  // ==================== 通知相关 ====================
+  /**
+   * @deprecated 通知功能暂未实现
+   */
   NOTIFICATION: {
-    LIST: `${API_BASE_URL}/api/notifications/`, // 获取通知列表
-    UNREAD_COUNT: `${API_BASE_URL}/api/notifications/unread-count/`, // 获取未读通知数量
-    MARK_READ: (notificationId: number) =>
-      `${API_BASE_URL}/api/notifications/${notificationId}/read/`, // 标记为已读
-    MARK_ALL_READ: `${API_BASE_URL}/api/notifications/mark-all-read/`, // 标记所有为已读
-    DELETE: (notificationId: number) =>
-      `${API_BASE_URL}/api/notifications/${notificationId}/delete/`, // 删除通知
+    /** @deprecated */
+    LIST: `/api/notifications/`,
+    /** @deprecated */
+    UNREAD_COUNT: `/api/notifications/unread-count/`,
+    /** @deprecated */
+    MARK_READ: (notificationId: number) => `/api/notifications/${notificationId}/read/`,
+    /** @deprecated */
+    MARK_ALL_READ: `/api/notifications/read-all/`,
+    /** @deprecated */
+    DELETE: (notificationId: number) => `/api/notifications/${notificationId}/delete/`,
   },
 
-  // ==================== 声誉相关 ====================
+  /**
+   * @deprecated 使用 src/lib/supabase/services/reputation.ts 中的 supabaseReputationService
+   */
   REPUTATION: {
-    SUMMARY: `${API_BASE_URL}/api/reputation/summary/`, // 获取用户声誉摘要
-    BADGES: `${API_BASE_URL}/api/reputation/badges/`, // 获取所有徽章
-    USER_BADGES: `${API_BASE_URL}/api/reputation/user-badges/`, // 获取用户徽章
+    /** @deprecated */
+    ME: `/api/reputation/me/`,
+    /** @deprecated */
+    USER: (userId: string) => `/api/reputation/users/${userId}/`,
+    /** @deprecated */
+    MY_BADGES: `/api/reputation/my-badges/`,
+    /** @deprecated */
+    BADGES: `/api/reputation/badges/`,
+    /** @deprecated */
+    EQUIP_BADGE: (badgeCode: string) => `/api/reputation/badges/${badgeCode}/equip/`,
+    /** @deprecated */
+    UNEQUIP_BADGE: (badgeCode: string) => `/api/reputation/badges/${badgeCode}/unequip/`,
   },
 };
 

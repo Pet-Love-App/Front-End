@@ -226,15 +226,35 @@ export function handleError(error: any): string {
 export function logError(error: any, context?: string) {
   const appError = parseApiError(error);
 
-  console.error(`[Error${context ? ` - ${context}` : ''}]:`, {
+  const errorLog = {
     code: appError.code,
     message: appError.message,
     status: appError.status,
     details: appError.details,
     timestamp: new Date().toISOString(),
-  });
+  };
 
-  // TODO: 在生产环境中可以将错误发送到错误追踪服务（如 Sentry）
+  console.error(`[Error${context ? ` - ${context}` : ''}]:`, errorLog);
+
+  // 在生产环境中将错误发送到错误追踪服务
+  if (__DEV__) {
+    // 开发环境：仅控制台输出
+    console.debug('[Dev] Full error details:', errorLog);
+  } else {
+    // 生产环境：可以集成 Sentry 或其他错误追踪服务
+    // 示例：
+    // if (typeof Sentry !== 'undefined') {
+    //   Sentry.captureException(appError, {
+    //     extra: errorLog,
+    //   });
+    // }
+
+    // 对于严重错误（5xx），可以考虑发送到后端日志系统
+    if (appError.status >= 500) {
+      // 可以调用后端日志接口记录严重错误
+      // logErrorToBackend(errorLog).catch(console.error);
+    }
+  }
 }
 
 /**

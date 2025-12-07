@@ -8,7 +8,7 @@ import {
   TAG_COLORS,
   ForumColors as UnifiedForumColors,
 } from '@/src/constants/colors';
-import type { PostCategory } from '@/src/services/api/forum/types';
+import type { PostCategory } from '@/src/lib/supabase';
 
 // ===== 主题颜色 (使用统一颜色系统) =====
 export const ForumColors = UnifiedForumColors;
@@ -29,11 +29,11 @@ export const MEDIA_LIMITS = {
 } as const;
 
 // ===== 帖子分类配置 (使用统一颜色系统) =====
-export const POST_CATEGORIES: ReadonlyArray<{
+export const POST_CATEGORIES: readonly {
   key: PostCategory;
   label: string;
   color?: string;
-}> = [
+}[] = [
   { key: 'help', label: '求助', color: FUNCTIONAL_COLORS.help },
   { key: 'share', label: '分享', color: FUNCTIONAL_COLORS.share },
   { key: 'science', label: '科普', color: FUNCTIONAL_COLORS.science },

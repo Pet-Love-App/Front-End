@@ -1,14 +1,19 @@
+import React, { useCallback, useEffect, useState } from 'react';
+import { Alert, Dimensions, FlatList, ScrollView } from 'react-native';
+import { Button, Card, Separator, Text, TextArea, XStack, YStack } from 'tamagui';
 import { ForumColors } from '@/src/app/(tabs)/forum/constants';
+import { OptimizedImage } from '@/src/components/ui/OptimizedImage';
 import Tag from '@/src/components/ui/Tag';
 import { Colors } from '@/src/constants/colors';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import type { Comment } from '@/src/services/api/comment';
-import type { Post } from '@/src/services/api/forum';
-import { forumService } from '@/src/services/api/forum';
+import {
+  supabaseCommentService,
+  supabaseForumService,
+  type Comment,
+  type Post,
+  type PostMedia,
+} from '@/src/lib/supabase';
 import { useUserStore } from '@/src/store/userStore';
-import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Dimensions, FlatList, Image, ScrollView } from 'react-native';
-import { Button, Card, Separator, Text, TextArea, XStack, YStack } from 'tamagui';
 
 interface PostDetailModalProps {
   visible: boolean;
@@ -31,7 +36,6 @@ export function PostDetailModal({
   const colors = Colors[colorScheme];
 
   const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(false);
   const [content, setContent] = useState('');
   const [replyTarget, setReplyTarget] = useState<Comment | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
@@ -43,17 +47,14 @@ export function PostDetailModal({
   const load = useCallback(async () => {
     if (!post) return;
     try {
-      setLoading(true);
-      const res = (await forumService.getCommentsForTarget({
+      const { data, error } = await supabaseCommentService.getComments({
         targetType: 'post',
         targetId: post.id,
-        orderBy: 'likes',
-        includeReplies: true,
-      })) as unknown as Comment[] | { results: Comment[] };
-      const list = Array.isArray(res) ? res : (res as any).results || [];
-      setComments(list);
-    } finally {
-      setLoading(false);
+      });
+      if (error) throw error;
+      setComments(data || []);
+    } catch (err) {
+      console.error('加载评论失败', err);
     }
   }, [post]);
 
@@ -72,29 +73,32 @@ export function PostDetailModal({
   const submit = async () => {
     if (!post || !content.trim()) return;
     try {
-      await forumService.createComment({
+      const { error } = await supabaseCommentService.createComment({
         targetType: 'post',
         targetId: post.id,
         content: content.trim(),
         parentId: replyTarget?.id || undefined,
       });
+      if (error) throw error;
       setContent('');
       setReplyTarget(null);
       await load();
-    } catch (e) {
+    } catch (_e) {
       Alert.alert('错误', '发送失败');
     }
   };
 
   const toggleLike = async (commentId: number) => {
     try {
-      const res = await forumService.toggleCommentLike(commentId);
+      const { data: res, error } = await supabaseCommentService.toggleCommentLike(commentId);
+      if (error) throw error;
+      if (!res) return;
       setComments((prev) =>
         prev.map((c) =>
-          c.id === commentId ? { ...c, likes: res.likes || 0, isLiked: res.action === 'liked' } : c
+          c.id === commentId ? { ...c, likes: res.likes || 0, isLiked: res.liked } : c
         )
       );
-    } catch (e) {
+    } catch (_e) {
       Alert.alert('错误', '操作失败');
     }
   };
@@ -110,9 +114,10 @@ export function PostDetailModal({
         style: 'destructive',
         onPress: async () => {
           try {
-            await forumService.deletePost(post.id);
+            const { error } = await supabaseForumService.deletePost(post.id);
+            if (error) throw error;
             onPostDeleted?.();
-          } catch (e) {
+          } catch (_e) {
             Alert.alert('错误', '删除失败');
           }
         },
@@ -132,13 +137,14 @@ export function PostDetailModal({
     const text = editingContent.trim();
     if (!text) return;
     try {
-      await forumService.updateComment(editingCommentId, text);
+      const { error } = await supabaseCommentService.updateComment(editingCommentId, text);
+      if (error) throw error;
       setComments((prev) =>
         prev.map((c) => (c.id === editingCommentId ? { ...c, content: text } : c))
       );
       setEditingCommentId(null);
       setEditingContent('');
-    } catch (e) {
+    } catch (_e) {
       Alert.alert('错误', '更新失败');
     }
   };
@@ -151,9 +157,10 @@ export function PostDetailModal({
         style: 'destructive',
         onPress: async () => {
           try {
-            await forumService.deleteComment(commentId);
+            const { error } = await supabaseCommentService.deleteComment(commentId);
+            if (error) throw error;
             setComments((prev) => prev.filter((c) => c.id !== commentId));
-          } catch (e) {
+          } catch (_e) {
             Alert.alert('错误', '删除失败');
           }
         },
@@ -234,8 +241,8 @@ export function PostDetailModal({
               <Text color={ForumColors.text}>{post.content}</Text>
               {!!post.media?.length && (
                 <XStack gap="$2" flexWrap="wrap">
-                  {post.media.map((m) =>
-                    m.media_type === 'image' ? (
+                  {post.media.map((m: PostMedia) =>
+                    m.mediaType === 'image' ? (
                       <Card
                         key={m.id}
                         width={110}
@@ -244,10 +251,11 @@ export function PostDetailModal({
                         borderColor={ForumColors.clay + '55'}
                         borderWidth={1}
                       >
-                        <Image
-                          source={{ uri: m.file }}
+                        <OptimizedImage
+                          source={m.fileUrl}
                           style={{ width: '100%', height: '100%' }}
-                          resizeMode="cover"
+                          contentFit="cover"
+                          cachePolicy="memory-disk"
                         />
                       </Card>
                     ) : (
@@ -265,7 +273,7 @@ export function PostDetailModal({
               )}
               {post.tags && post.tags.length > 0 && (
                 <XStack gap="$2" alignItems="center" flexWrap="wrap" marginTop="$2">
-                  {post.tags.map((tag, index) => (
+                  {post.tags.map((tag: string, index: number) => (
                     <Tag key={`${post.id}-${tag}`} name={tag} index={index} />
                   ))}
                 </XStack>

@@ -1,14 +1,9 @@
 /**
  * AIReportButton Component
- *
- * 企业最佳实践：
- * - 单一职责：只负责渲染 AI 报告按钮
- * - 可复用的 UI 组件
- * - 清晰的 props 接口
  */
 
-import { Feather } from '@expo/vector-icons';
 import React from 'react';
+import { Feather } from '@expo/vector-icons';
 import { Button, Spinner, Text, XStack, YStack } from 'tamagui';
 
 interface AIReportButtonProps {
@@ -24,8 +19,6 @@ interface AIReportButtonProps {
  * AI 报告按钮组件
  */
 export function AIReportButton({ hasReport, isLoading, onPress }: AIReportButtonProps) {
-  console.log('🎨 [AIReportButton] 渲染状态:', { hasReport, isLoading });
-
   if (isLoading) {
     return (
       <YStack
@@ -47,11 +40,9 @@ export function AIReportButton({ hasReport, isLoading, onPress }: AIReportButton
   }
 
   if (!hasReport) {
-    console.log('⚠️ [AIReportButton] 没有报告，不显示按钮');
     return null; // 没有报告时不显示按钮
   }
 
-  console.log('✅ [AIReportButton] 显示报告按钮');
   return (
     <Button
       size="$4"

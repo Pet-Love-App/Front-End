@@ -1,6 +1,6 @@
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import React from 'react';
 import { Input, XStack, type SizeTokens } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface SearchBoxProps {
   /** 输入框大小 */

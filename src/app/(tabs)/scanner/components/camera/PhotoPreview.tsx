@@ -1,8 +1,8 @@
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import React from 'react';
 import { Image, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface PhotoPreviewProps {
   /** 照片 URI */

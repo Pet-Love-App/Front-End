@@ -1,47 +1,54 @@
-import type { AIReportData } from '@/src/services/api';
-import { useCollectStore } from '@/src/store/collectStore';
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
+
+import type { AIReportData, FavoriteReport } from '@/src/services/api';
+import { aiReportService } from '@/src/services/api';
 
 /**
  * 报告收藏数据管理 Hook
- * 负责报告收藏数据的获取、刷新和删除
  */
 export function useReportCollectData() {
-  const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const [selectedReport, setSelectedReport] = useState<AIReportData | null>(null);
   const [isReportModalVisible, setIsReportModalVisible] = useState(false);
+  const [favoriteReports, setFavoriteReports] = useState<FavoriteReport[]>([]);
+  const [isLoadingReports, setIsLoadingReports] = useState(true);
+  const [reportError, setReportError] = useState<string | null>(null);
 
-  // 使用 collectStore - 使用选择器避免不必要的重渲染
-  const favoriteReports = useCollectStore((state) => state.favoriteReports);
-  const isLoadingReports = useCollectStore((state) => state.isLoadingReports);
-  const reportError = useCollectStore((state) => state.reportError);
-  const fetchFavoriteReports = useCollectStore((state) => state.fetchFavoriteReports);
-  const removeFavoriteReport = useCollectStore((state) => state.removeFavoriteReport);
+  // 获取报告收藏列表
+  const fetchFavoriteReports = useCallback(async () => {
+    try {
+      setIsLoadingReports(true);
+      setReportError(null);
+      const reports = await aiReportService.getFavoriteReports();
+      setFavoriteReports(Array.isArray(reports) ? reports : []);
+    } catch (err) {
+      console.error('获取报告收藏列表失败:', err);
+      setReportError('获取报告收藏列表失败');
+    } finally {
+      setIsLoadingReports(false);
+    }
+  }, []);
 
   // 初始加载数据
   useEffect(() => {
-    fetchFavoriteReports().catch((err) => {
-      console.error('获取报告收藏列表失败:', err);
-    });
+    fetchFavoriteReports();
   }, [fetchFavoriteReports]);
 
   // 下拉刷新
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       await fetchFavoriteReports();
-    } catch (err) {
+    } catch {
       Alert.alert('刷新失败', '请检查网络连接后重试');
     } finally {
       setRefreshing(false);
     }
-  };
+  }, [fetchFavoriteReports]);
 
   // 删除报告收藏
-  const handleDelete = async (favoriteId: number) => {
+  const handleDelete = useCallback((favoriteId: number) => {
     Alert.alert('确认删除', '您确定要取消收藏此报告吗？', [
       { text: '取消', style: 'cancel' },
       {
@@ -49,7 +56,9 @@ export function useReportCollectData() {
         style: 'destructive',
         onPress: async () => {
           try {
-            await removeFavoriteReport(favoriteId);
+            await aiReportService.deleteFavoriteReport(favoriteId);
+            // 乐观更新：立即从列表中移除
+            setFavoriteReports((prev) => prev.filter((fav) => fav.id !== favoriteId));
             Alert.alert('✅ 成功', '已取消收藏');
           } catch (err) {
             Alert.alert('❌ 失败', '取消收藏失败，请重试');
@@ -58,19 +67,30 @@ export function useReportCollectData() {
         },
       },
     ]);
-  };
+  }, []);
 
-  // 点击报告，直接打开报告详情模态框
-  const handlePress = (report: AIReportData) => {
-    setSelectedReport(report);
-    setIsReportModalVisible(true);
-  };
+  // 点击报告，获取完整报告数据并打开报告详情模态框
+  const handlePress = useCallback(async (catfoodId: number) => {
+    try {
+      // 显示加载状态
+      setIsReportModalVisible(true);
+      setSelectedReport(null);
+
+      // 获取完整的报告数据
+      const fullReport = await aiReportService.getReport(catfoodId);
+      setSelectedReport(fullReport);
+    } catch (err) {
+      console.error('获取报告详情失败:', err);
+      Alert.alert('❌ 失败', '获取报告详情失败，请重试');
+      setIsReportModalVisible(false);
+    }
+  }, []);
 
   // 关闭报告模态框
-  const closeReportModal = () => {
+  const closeReportModal = useCallback(() => {
     setIsReportModalVisible(false);
     setSelectedReport(null);
-  };
+  }, []);
 
   return {
     favoriteReports,

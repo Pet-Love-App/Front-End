@@ -1,24 +1,19 @@
 /**
- * useScannerActions - 扫描操作 Hook
- *
- * 企业最佳实践：
- * - 业务逻辑与UI分离
- * - 单一职责：处理OCR、拍照、AI报告等操作
- * - 易于测试和复用
+ * 扫描操作 Hook
  */
 
+import { useCallback, useState } from 'react';
+import { Alert } from 'react-native';
+
+import { supabase, supabaseAdditiveService } from '@/src/lib/supabase';
 import {
   aiReportService,
-  patchCatFood,
   recognizeImage,
-  searchAdditive,
-  searchIngredient,
   type GenerateReportResponse,
   type OcrResult,
 } from '@/src/services/api';
 import type { CatFood } from '@/src/types/catFood';
-import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
+
 import type { ScanFlowState } from '../types';
 
 interface UseScannerActionsProps {
@@ -211,13 +206,13 @@ export function useScannerActions({
         if (aiReport.identified_nutrients && aiReport.identified_nutrients.length > 0) {
           for (const nutrientName of aiReport.identified_nutrients) {
             try {
-              const searchResult = await searchIngredient(nutrientName);
-              if (searchResult && searchResult.length > 0) {
-                ingredientIds.push(searchResult[0].id);
+              const { data, error } = await supabaseAdditiveService.searchIngredient(nutrientName);
+              if (!error && data && data.ingredient?.id && !data.notFound) {
+                ingredientIds.push(data.ingredient.id);
               } else {
                 notFoundIngredients.push(nutrientName);
               }
-            } catch (err) {
+            } catch {
               notFoundIngredients.push(nutrientName);
             }
           }
@@ -230,23 +225,44 @@ export function useScannerActions({
         if (aiReport.additives && aiReport.additives.length > 0) {
           for (const additiveName of aiReport.additives) {
             try {
-              const searchResult = await searchAdditive(additiveName);
-              if (searchResult && searchResult.length > 0) {
-                additiveIds.push(searchResult[0].id);
+              const { data, error } = await supabaseAdditiveService.searchAdditive(additiveName);
+              if (!error && data && data.additive?.id && !data.notFound) {
+                additiveIds.push(data.additive.id);
               } else {
                 notFoundAdditives.push(additiveName);
               }
-            } catch (err) {
+            } catch {
               notFoundAdditives.push(additiveName);
             }
           }
         }
 
-        // ========== 步骤 3: 调用 PATCH 接口更新猫粮信息 ==========
-        await patchCatFood(selectedCatFood.id, {
-          ingredient: ingredientIds,
-          additive: additiveIds,
-        });
+        // ========== 步骤 3: 使用 Supabase 更新猫粮关联 ==========
+        // 更新成分关联
+        if (ingredientIds.length > 0) {
+          // 删除旧关联
+          await supabase.from('catfood_ingredients').delete().eq('catfood_id', selectedCatFood.id);
+          // 创建新关联
+          await supabase.from('catfood_ingredients').insert(
+            ingredientIds.map((ingredientId) => ({
+              catfood_id: selectedCatFood.id,
+              ingredient_id: ingredientId,
+            }))
+          );
+        }
+
+        // 更新添加剂关联
+        if (additiveIds.length > 0) {
+          // 删除旧关联
+          await supabase.from('catfood_additives').delete().eq('catfood_id', selectedCatFood.id);
+          // 创建新关联
+          await supabase.from('catfood_additives').insert(
+            additiveIds.map((additiveId) => ({
+              catfood_id: selectedCatFood.id,
+              additive_id: additiveId,
+            }))
+          );
+        }
 
         // ========== 步骤 4: 提示用户 ==========
         let message = '猫粮成分和添加剂关联已更新';

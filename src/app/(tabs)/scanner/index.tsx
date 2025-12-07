@@ -1,27 +1,17 @@
 /**
  * ScannerScreen - 智能扫描主页面
- *
- * 企业最佳实践：
- * - 职责分离：主文件仅负责组装和协调
- * - 业务逻辑提取到hooks
- * - 清晰的组件导入结构
- * - 状态机模式管理扫描流程
- *
- * 架构说明：
- * - hooks/ - 业务逻辑层
- * - components/ - UI组件层（camera/modals/results）
- * - screens/ - 页面组件层
- * - types/ - 类型定义层
  */
+
+import React, { useCallback, useEffect } from 'react';
+import { Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { useExpoCamera as useCamera } from '@/src/hooks/useExpoCamera';
 import { useCatFoodStore } from '@/src/store/catFoodStore';
 import { useUserStore } from '@/src/store/userStore';
 import { ScanType, type ExpoBarcodeResult } from '@/src/types/camera';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useEffect } from 'react';
-import { Alert } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import {
   AiReportDetail,
   CameraPermissionModal,
@@ -100,26 +90,16 @@ export default function ScannerScreen() {
    * 自动进入相应的扫描模式
    */
   useEffect(() => {
-    console.log('📱 Scanner页面参数:', params);
-
     if (params.catfoodId && params.scanType) {
-      console.log('✅ 收到详情页参数，准备跳转:', {
-        catfoodId: params.catfoodId,
-        scanType: params.scanType,
-        catfoodName: params.catfoodName,
-      });
-
       // 使用setTimeout确保组件完全加载后再执行跳转
       setTimeout(() => {
         // 根据scanType设置扫描模式
         if (params.scanType === 'barcode') {
           // 扫描条形码模式 - 直接进入拍照
-          console.log('🔵 进入条形码扫描模式');
           setScanType(ScanType.BARCODE);
           transitionTo('taking-photo');
         } else if (params.scanType === 'ingredients') {
           // 扫描配料表模式（需要先选择猫粮）
-          console.log('🟢 进入配料表扫描模式');
           // 创建一个临时猫粮对象
           const tempCatFood = {
             id: parseInt(params.catfoodId || '0'),
@@ -130,8 +110,6 @@ export default function ScannerScreen() {
           transitionTo('taking-photo');
         }
       }, 100);
-    } else {
-      console.log('⚠️ 参数不完整或未传递:', params);
     }
   }, [
     params.catfoodId,
@@ -150,7 +128,6 @@ export default function ScannerScreen() {
   const handleBarCodeScannedCallback = useCallback(
     (result: ExpoBarcodeResult) => {
       if (flowState !== 'taking-photo') return;
-      console.log('ScannerScreen: 扫描到条形码', result.data);
       onBarcodeScanned(result.data);
     },
     [flowState, onBarcodeScanned]
@@ -262,7 +239,7 @@ export default function ScannerScreen() {
         onSave={handleSaveReportWrapper}
         onRetake={handleRetakePhoto}
         isSaving={isProcessing}
-        isAdmin={user?.is_admin || false}
+        isAdmin={user?.isAdmin || false}
         hasExistingReport={!!selectedCatFood?.percentage}
       />
     );

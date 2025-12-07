@@ -1,15 +1,12 @@
 /**
- * useScannerFlow - 扫描流程管理 Hook
- *
- * 企业最佳实践：
- * - 业务逻辑与UI分离
- * - 单一职责：仅负责流程状态管理
- * - 易于测试和复用
+ * 扫描流程管理 Hook
  */
+
+import { useCallback, useState } from 'react';
 
 import { ScanType } from '@/src/types/camera';
 import type { CatFood } from '@/src/types/catFood';
-import { useCallback, useState } from 'react';
+
 import type { ScanFlowState } from '../types';
 
 interface UseScannerFlowProps {

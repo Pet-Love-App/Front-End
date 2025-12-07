@@ -2,17 +2,13 @@
  * NutritionInputPrompt Component
  *
  * 当猫粮缺少营养成分信息时，引导用户录入数据的提示组件
- * 企业最佳实践：
- * - 非侵入式设计：小巧简洁，不影响用户主流程
- * - 清晰的行动召唤：提供明确的操作路径
- * - 组件化：独立封装，可复用
  */
 
+import { router } from 'expo-router';
+import { Card, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import { router } from 'expo-router';
-import { Card, Text, XStack, YStack } from 'tamagui';
 
 interface NutritionInputPromptProps {
   /** 猫粮ID，用于录入后关联数据 */
@@ -33,7 +29,6 @@ export function NutritionInputPrompt({ catfoodId, catfoodName }: NutritionInputP
    * 跳转到拍照扫描页面 - 录入配料表
    */
   const handleScanIngredients = () => {
-    console.log('跳转到扫描页面 - 配料表模式', { catfoodId, catfoodName });
     router.push({
       pathname: '/(tabs)/scanner',
       params: {
@@ -48,7 +43,6 @@ export function NutritionInputPrompt({ catfoodId, catfoodName }: NutritionInputP
    * 跳转到拍照扫描页面 - 录入条形码
    */
   const handleScanBarcode = () => {
-    console.log('跳转到扫描页面 - 条形码模式', { catfoodId, catfoodName });
     router.push({
       pathname: '/(tabs)/scanner',
       params: {

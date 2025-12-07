@@ -1,10 +1,10 @@
+import { memo, useCallback, useState } from 'react';
+import { Modal, ScrollView, TextInput, TouchableOpacity } from 'react-native';
+import { Button, Card, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { getBreedsBySpecies, type PetSpecies } from '@/src/constants/petBreeds';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import { memo, useCallback, useState } from 'react';
-import { Modal, ScrollView, TextInput, TouchableOpacity } from 'react-native';
-import { Button, Card, Text, XStack, YStack } from 'tamagui';
 
 /**
  * 品种选择器组件的 Props 接口

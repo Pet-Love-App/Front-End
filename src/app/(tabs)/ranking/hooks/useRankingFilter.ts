@@ -1,5 +1,6 @@
-import type { CatFood } from '@/src/types/catFood';
 import { useCallback, useMemo, useState } from 'react';
+
+import type { CatFood } from '@/src/types/catFood';
 
 /**
  * 排行榜筛选 Hook

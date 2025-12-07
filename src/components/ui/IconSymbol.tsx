@@ -1,7 +1,7 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { SymbolViewProps, SymbolWeight } from 'expo-symbols';
 import { ComponentProps } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
+import { SymbolViewProps, SymbolWeight } from 'expo-symbols';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof Ionicons>['name']>;
 type IconSymbolName = keyof typeof MAPPING;

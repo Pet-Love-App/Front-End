@@ -1,6 +1,7 @@
-import { LottieAnimation } from '@/src/components/LottieAnimation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Input, Spinner, Text, YStack } from 'tamagui';
+import { LottieAnimation } from '@/src/components/LottieAnimation';
+
 import { useLoginForm } from '../hooks';
 
 /**
@@ -10,11 +11,11 @@ export function LoginScreen() {
   const insets = useSafeAreaInsets();
 
   const {
-    username,
+    email,
     password,
     errors,
     isLoading,
-    handleUsernameChange,
+    handleEmailChange,
     handlePasswordChange,
     handleLogin,
     navigateToRegister,
@@ -47,16 +48,18 @@ export function LoginScreen() {
         <YStack marginBottom="$3">
           <Input
             size="$5"
-            placeholder="用户名"
-            value={username}
-            onChangeText={handleUsernameChange}
+            placeholder="邮箱地址"
+            value={email}
+            onChangeText={handleEmailChange}
             autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
             disabled={isLoading}
-            borderColor={errors.username ? '$red10' : undefined}
+            borderColor={errors.email ? '$red10' : undefined}
           />
-          {errors.username && (
+          {errors.email && (
             <Text color="$red10" fontSize="$2" marginTop="$1">
-              {errors.username}
+              {errors.email}
             </Text>
           )}
         </YStack>

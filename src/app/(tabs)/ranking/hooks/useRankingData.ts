@@ -1,5 +1,6 @@
-import { useAllCatFoods, useCatFoodStore } from '@/src/store/catFoodStore';
 import { useEffect } from 'react';
+
+import { useAllCatFoods, useCatFoodStore } from '@/src/store/catFoodStore';
 
 /**
  * 排行榜数据管理 Hook

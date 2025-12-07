@@ -3,7 +3,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
 import { ScrollView, YStack } from 'tamagui';
 import { CommentSection } from '@/src/components/Comments';
+import { SkeletonAIReport } from '@/src/components/lazy';
 import { useUserStore } from '@/src/store/userStore';
+import { useLazyLoad } from '@/src/hooks';
 
 import {
   ActionBar,
@@ -26,7 +28,7 @@ import { useAdditiveModal, useAIReport, useCatFoodDetail } from '../hooks';
 
 /**
  * Detail 主屏幕组件
- * 显示猫粮的详细信息
+ * 显示猫粮的详细信息，支持懒加载
  */
 export function DetailScreen() {
   const insets = useSafeAreaInsets();
@@ -41,7 +43,12 @@ export function DetailScreen() {
 
   // 用户信息（用于管理员权限检查）
   const user = useUserStore((state) => state.user);
-  const isAdmin = user?.is_admin || false;
+  const isAdmin = user?.isAdmin || false;
+
+  // 懒加载控制：延迟渲染重型组件
+  const { isReady: isAIReportReady } = useLazyLoad({ delay: 100 });
+  const { isReady: isChartReady } = useLazyLoad({ delay: 200 });
+  const { isReady: isCommentsReady } = useLazyLoad({ delay: 300 });
 
   // 渲染内容
   const renderContent = () => {
@@ -63,10 +70,10 @@ export function DetailScreen() {
           paddingBottom: 16,
         }}
       >
-        {/* 头部信息 */}
+        {/* 头部信息 - 优先渲染 */}
         <ReportHeader name={catFood.name} tags={catFood.tags || []} imageUrl={catFood.imageUrl} />
 
-        {/* 基本信息 */}
+        {/* 基本信息 - 优先渲染 */}
         <BasicInfoSection
           brand={catFood.brand}
           score={catFood.score}
@@ -74,8 +81,16 @@ export function DetailScreen() {
           catfoodId={catFood.id}
         />
 
-        {/* AI 报告板块 - 如果有报告则显示（包含安全性、营养分析、添加剂、营养成分等） */}
-        {hasReport && report && <AIReportSection report={report} isLoading={isLoadingReport} />}
+        {/* AI 报告板块 - 懒加载 */}
+        {hasReport && report && (
+          <>
+            {isAIReportReady ? (
+              <AIReportSection report={report} isLoading={isLoadingReport} />
+            ) : (
+              <SkeletonAIReport />
+            )}
+          </>
+        )}
 
         {/* 管理员更新提示 - 仅当有营养信息且用户是管理员时显示 */}
         {isAdmin && (hasReport || catFood.percentage) && (
@@ -96,8 +111,8 @@ export function DetailScreen() {
               <AdditiveSection additives={catFood.additive} onAdditivePress={handleAdditivePress} />
             )}
 
-            {/* 营养成分分析图表 */}
-            {catFood.percentage && catFood.percentData && (
+            {/* 营养成分分析图表 - 懒加载 */}
+            {catFood.percentage && catFood.percentData && isChartReady && (
               <NutritionChartSection percentData={catFood.percentData} />
             )}
 
@@ -119,8 +134,10 @@ export function DetailScreen() {
         {/* 评分区 */}
         {catFood && <RatingSection catfoodId={catFood.id} />}
 
-        {/* 评论区 */}
-        {catFood && <CommentSection targetType="catfood" targetId={catFood.id} />}
+        {/* 评论区 - 懒加载 */}
+        {catFood && isCommentsReady && (
+          <CommentSection targetType="catfood" targetId={catFood.id} />
+        )}
 
         {/* 底部安全区间距 */}
         <YStack height={Math.max(24, insets.bottom + 16)} />

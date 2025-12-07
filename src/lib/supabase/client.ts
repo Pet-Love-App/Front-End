@@ -11,9 +11,18 @@ import { logger } from '@/src/utils/logger';
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
-// 开发环境下的配置检查
-if (__DEV__ && (!SUPABASE_URL || !SUPABASE_ANON_KEY)) {
-  logger.warn('Supabase 配置缺失。请在 .env 文件中设置 SUPABASE_URL 和 SUPABASE_ANON_KEY');
+// 配置验证
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  console.error('❌ Supabase 配置缺失！');
+  console.error('请在 .env 文件中添加：');
+  console.error('EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co');
+  console.error('EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key');
+  console.error('然后重启: npm start -- --clear');
+}
+
+// URL 格式验证
+if (SUPABASE_URL && !SUPABASE_URL.startsWith('https://')) {
+  console.error('❌ SUPABASE_URL 格式错误，应该以 https:// 开头');
 }
 
 /** Supabase 客户端实例 */

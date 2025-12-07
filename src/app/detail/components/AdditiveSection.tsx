@@ -1,14 +1,9 @@
 import { StyleSheet, View } from 'react-native';
 import { Card, Text, YStack } from 'tamagui';
 
-import { AdditiveBubble } from './AdditiveBubble';
+import type { Additive } from '@/src/lib/supabase';
 
-interface Additive {
-  name: string;
-  type?: string;
-  en_name?: string;
-  applicable_range?: string;
-}
+import { AdditiveBubble } from './AdditiveBubble';
 
 interface AdditiveSectionProps {
   additives: Additive[];

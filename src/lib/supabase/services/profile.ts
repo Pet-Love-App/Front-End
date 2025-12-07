@@ -89,23 +89,10 @@ class SupabaseProfileService {
         };
       }
 
-      // 查询 profile 和关联的 pets
+      // 查询 profile（暂时不关联 pets，避免关系错误）
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select(
-          `
-          *,
-          pets (
-            id,
-            name,
-            species,
-            breed,
-            age,
-            photo_url,
-            description
-          )
-        `
-        )
+        .select('*')
         .eq('id', user.id)
         .single();
 
@@ -123,11 +110,22 @@ class SupabaseProfileService {
       }
 
       // 转换为 camelCase 并添加 email
-      const result: UserWithPets = {
-        ...convertKeysToCamel(profile),
+      const camelProfile = convertKeysToCamel(profile);
+
+      // 单独查询用户的宠物列表（保持 snake_case，与 Pet schema 一致）
+      const { data: petsData } = await supabase
+        .from('pets')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      const pets = petsData || [];
+
+      const result = {
+        ...(camelProfile as object),
         email: user.email,
-        pets: profile.pets ? convertKeysToCamel(profile.pets) : [],
-      };
+        pets,
+      } as unknown as UserWithPets;
 
       logger.success('profiles', 'getCurrentProfile');
       return { data: result, error: null, success: true };
@@ -165,10 +163,10 @@ class SupabaseProfileService {
         return wrapResponse<UserWithPets>(null, error);
       }
 
-      const result: UserWithPets = {
-        ...convertKeysToCamel(data),
+      const result = {
+        ...(convertKeysToCamel(data) as object),
         pets: [],
-      };
+      } as unknown as UserWithPets;
 
       logger.success('profiles', 'createProfile');
       return { data: result, error: null, success: true };
@@ -219,7 +217,7 @@ class SupabaseProfileService {
       }
 
       logger.success('profiles', 'updateProfile');
-      return { data: convertKeysToCamel(data), error: null, success: true };
+      return { data: convertKeysToCamel(data) as Profile, error: null, success: true };
     } catch (err) {
       logger.error('profiles', 'updateProfile', err);
       return {
@@ -257,12 +255,10 @@ class SupabaseProfileService {
       const blob = await response.blob();
 
       // 上传到 Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, blob, {
-          contentType: 'image/jpeg',
-          upsert: true,
-        });
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, blob, {
+        contentType: 'image/jpeg',
+        upsert: true,
+      });
 
       if (uploadError) {
         logger.error('profiles', 'uploadAvatar', uploadError);
@@ -388,7 +384,7 @@ class SupabaseProfileService {
       }
 
       logger.success('profiles', 'getProfileById');
-      return { data: convertKeysToCamel(data), error: null, success: true };
+      return { data: convertKeysToCamel(data) as Profile, error: null, success: true };
     } catch (err) {
       logger.error('profiles', 'getProfileById', err);
       return {

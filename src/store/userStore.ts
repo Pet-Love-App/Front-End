@@ -19,6 +19,7 @@ interface UserState {
   // 用户信息
   user: UserWithPets | null;
   session: Session | null;
+  accessToken: string | null;
 
   // 状态标志
   isAuthenticated: boolean;
@@ -29,6 +30,7 @@ interface UserState {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshAccessToken: () => Promise<void>;
 
   // 用户信息方法
   fetchCurrentUser: () => Promise<void>;
@@ -55,6 +57,7 @@ export const useUserStore = create<UserState>()(
       // ==================== 初始状态 ====================
       user: null,
       session: null,
+      accessToken: null,
       isAuthenticated: false,
       isLoading: false,
       _hasHydrated: false,
@@ -145,6 +148,7 @@ export const useUserStore = create<UserState>()(
           set({
             user: null,
             session: null,
+            accessToken: null,
             isAuthenticated: false,
           });
         } catch (error) {
@@ -153,8 +157,32 @@ export const useUserStore = create<UserState>()(
           set({
             user: null,
             session: null,
+            accessToken: null,
             isAuthenticated: false,
           });
+        }
+      },
+
+      /** 刷新访问令牌 */
+      refreshAccessToken: async () => {
+        try {
+          const { data, error } = await supabaseAuthService.refreshSession();
+
+          if (error || !data) {
+            logger.warn('刷新令牌失败', { error: error?.message });
+            // Token 刷新失败，清除登录状态
+            get().logout();
+            throw new Error('登录已过期，请重新登录');
+          }
+
+          // 更新 session 和 accessToken
+          set({
+            session: data,
+            accessToken: data.access_token,
+          });
+        } catch (error) {
+          logger.error('刷新令牌失败', error as Error);
+          throw error;
         }
       },
 
@@ -290,7 +318,11 @@ export const useUserStore = create<UserState>()(
       },
 
       setSession: (session: Session | null) => {
-        set({ session, isAuthenticated: !!session });
+        set({
+          session,
+          accessToken: session?.access_token || null,
+          isAuthenticated: !!session,
+        });
       },
 
       setLoading: (loading: boolean) => {

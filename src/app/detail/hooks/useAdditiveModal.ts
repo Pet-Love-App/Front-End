@@ -1,11 +1,6 @@
 import { useState } from 'react';
 
-interface Additive {
-  name: string;
-  type?: string;
-  en_name?: string;
-  applicable_range?: string;
-}
+import type { Additive } from '@/src/lib/supabase';
 
 /**
  * 添加剂详情模态框管理 Hook

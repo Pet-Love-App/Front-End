@@ -19,6 +19,9 @@ export default function ReportCollectItem({
   const colors = Colors[colorScheme];
   const { report } = favoriteReport;
 
+  // 防御性检查：如果没有 report 数据，不渲染
+  if (!report) return null;
+
   // 格式化日期
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

@@ -32,7 +32,7 @@ export type PostCategory = 'help' | 'share' | 'science' | 'warning';
 export interface PostMedia {
   id: number;
   mediaType: 'image' | 'video';
-  file: string;
+  fileUrl: string;
   createdAt: string;
 }
 
@@ -122,7 +122,7 @@ class SupabaseForumService {
     logger.query('posts', 'list', params);
 
     try {
-      const { page = 1, pageSize = 20, order = 'latest', tag, tags, category } = params;
+      const { page = 1, pageSize = 20, order: _order = 'latest', tag, tags, category } = params;
       const { from, to } = calculatePagination({ page, pageSize });
 
       let query = supabase
@@ -138,31 +138,22 @@ class SupabaseForumService {
           post_media (
             id,
             media_type,
-            file,
+            file_url,
             created_at
           )
         `
         )
         .range(from, to);
 
-      // 排序
-      if (order === 'latest') {
-        query = query.order('created_at', { ascending: false });
-      } else if (order === 'most_replied') {
-        query = query.order('comments_count', { ascending: false });
-      }
+      // 排序（注意：posts 表只有 created_at 和 updated_at 字段，无法按评论数排序）
+      // 如需按评论数排序，需要创建数据库视图或使用 RPC
+      query = query.order('created_at', { ascending: false });
 
-      // 分类过滤
-      if (category) {
-        query = query.eq('category', category);
-      }
-
-      // 标签过滤（简单实现：检查 tags 数组是否包含指定标签）
-      if (tag) {
-        query = query.contains('tags', [tag]);
-      } else if (tags && tags.length > 0) {
-        query = query.overlaps('tags', tags);
-      }
+      // 注意：posts 表没有 category 和 tags 字段
+      // 如需支持分类和标签过滤，需要先在数据库添加这些字段
+      void category; // 暂时忽略分类参数
+      void tag; // 暂时忽略标签参数
+      void tags; // 暂时忽略标签数组参数
 
       const { data, error } = await query;
 
@@ -222,7 +213,7 @@ class SupabaseForumService {
           post_media (
             id,
             media_type,
-            file,
+            file_url,
             created_at
           )
         `

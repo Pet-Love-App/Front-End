@@ -116,7 +116,7 @@ export function SquareTab({
           m.mediaType === 'image' ? (
             <Card key={m.id} width={110} height={110} overflow="hidden">
               <Image
-                source={{ uri: m.file }}
+                source={{ uri: m.fileUrl }}
                 style={{ width: '100%', height: '100%' }}
                 resizeMode="cover"
               />

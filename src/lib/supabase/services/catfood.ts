@@ -24,23 +24,22 @@ import type {
  * 猫粮数据类型（数据库schema）
  */
 export interface CatfoodDB {
-  id: string;
+  id: number;
   name: string;
-  brand: string;
-  description?: string;
-  price?: number;
-  weight?: string;
-  image_url?: string;
-  barcode?: string;
-  safety?: string;
-  nutrient?: string;
-  crude_protein?: number;
-  crude_fat?: number;
-  carbohydrates?: number;
-  crude_fiber?: number;
-  crude_ash?: number;
-  others?: number;
-  like_count: number;
+  brand?: string | null;
+  barcode?: string | null;
+  image_url?: string | null;
+  score?: number | null;
+  count_num?: number | null;
+  percentage?: boolean | null;
+  crude_protein?: number | null;
+  crude_fat?: number | null;
+  carbohydrates?: number | null;
+  crude_fiber?: number | null;
+  crude_ash?: number | null;
+  others?: number | null;
+  safety?: string | null;
+  nutrient?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -64,12 +63,39 @@ export const listCatfoods = async (params: ListCatfoodsParams = {}) => {
   logger.query('catfoods', 'list', params);
 
   try {
-    // 使用我们创建的Database Function
-    const { data, error } = await supabase.rpc('get_catfoods_with_stats', {
-      p_limit: pageSize,
-      p_offset: (page - 1) * pageSize,
-      p_search: search || null,
-    });
+    const { from, to } = calculatePagination({ page, pageSize });
+
+    let query = supabase
+      .from('catfoods')
+      .select(
+        `
+        id,
+        name,
+        brand,
+        barcode,
+        image_url,
+        score,
+        count_num,
+        percentage,
+        crude_protein,
+        crude_fat,
+        carbohydrates,
+        crude_fiber,
+        crude_ash,
+        others,
+        safety,
+        nutrient,
+        created_at
+      `
+      )
+      .range(from, to)
+      .order('created_at', { ascending: false });
+
+    if (search) {
+      query = query.ilike('name', `%${search}%`);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       logger.error('catfoods', 'list', error);
@@ -101,26 +127,32 @@ export const getCatfoodDetail = async (id: string) => {
         `
         *,
         ingredients:catfood_ingredients(
+          amount,
+          order,
           ingredient:ingredients(
             id,
             name,
-            category,
+            type,
+            label,
             description
           )
         ),
         additives:catfood_additives(
+          amount,
+          order,
           additive:additives(
             id,
             name,
-            category,
-            description,
-            safety_level
+            en_name,
+            applicable_range,
+            type
           )
         ),
-        tags:catfood_tags(
-          tag:tags(
+        tags:catfood_tag_relations(
+          tag:catfood_tags(
             id,
-            name
+            name,
+            description
           )
         )
       `
@@ -152,7 +184,7 @@ export const getCatfoodDetail = async (id: string) => {
 
       // 查询收藏状态
       const { data: favData } = await supabase
-        .from('favorites')
+        .from('catfood_favorites')
         .select('id')
         .eq('catfood_id', id)
         .eq('user_id', user.id)
@@ -281,7 +313,7 @@ export const checkFavorite = async (catfoodId: string) => {
     }
 
     const { data, error } = await supabase
-      .from('favorites')
+      .from('catfood_favorites')
       .select('id')
       .eq('catfood_id', catfoodId)
       .eq('user_id', user.id)
@@ -302,17 +334,16 @@ export const checkFavorite = async (catfoodId: string) => {
  */
 export const getLikeCount = async (catfoodId: string) => {
   try {
-    const { data, error } = await supabase
-      .from('catfoods')
-      .select('like_count')
-      .eq('id', catfoodId)
-      .single();
+    const { count, error } = await supabase
+      .from('catfood_likes')
+      .select('*', { count: 'exact', head: true })
+      .eq('catfood_id', catfoodId);
 
     if (error) {
       return { data: 0, error: handleSupabaseError(error, 'get_like_count') };
     }
 
-    return { data: data?.like_count || 0, error: null };
+    return { data: count || 0, error: null };
   } catch (err) {
     return { data: 0, error: { message: String(err) } };
   }
@@ -329,7 +360,7 @@ export const getUserFavorites = async (params: PaginationParams = {}) => {
 
   try {
     const { data, error } = await supabase
-      .from('favorites')
+      .from('catfood_favorites')
       .select(
         `
         id,
@@ -338,10 +369,9 @@ export const getUserFavorites = async (params: PaginationParams = {}) => {
           id,
           name,
           brand,
-          description,
           image_url,
-          price,
-          like_count,
+          barcode,
+          score,
           crude_protein,
           crude_fat,
           carbohydrates,
@@ -359,22 +389,32 @@ export const getUserFavorites = async (params: PaginationParams = {}) => {
       return { data: null, error: handleSupabaseError(error, 'get_user_favorites') };
     }
 
-    // 处理数据结构
+    // 处理数据结构，过滤掉 catfood 为 null 的记录
     const processedData =
-      (data as unknown as DbCatfoodFavorite[])?.map((fav) => ({
-        ...fav.catfood,
-        favoriteId: fav.id,
-        favoritedAt: fav.created_at,
-        // 构建percentData
-        percentData: {
-          ...(fav.catfood.crude_protein && { protein: fav.catfood.crude_protein }),
-          ...(fav.catfood.crude_fat && { fat: fav.catfood.crude_fat }),
-          ...(fav.catfood.carbohydrates && { carbohydrates: fav.catfood.carbohydrates }),
-          ...(fav.catfood.crude_fiber && { fiber: fav.catfood.crude_fiber }),
-          ...(fav.catfood.crude_ash && { ash: fav.catfood.crude_ash }),
-          ...(fav.catfood.others && { others: fav.catfood.others }),
-        },
-      })) || [];
+      (data as unknown as DbCatfoodFavorite[])
+        ?.filter(
+          (
+            fav
+          ): fav is DbCatfoodFavorite & { catfood: NonNullable<DbCatfoodFavorite['catfood']> } =>
+            fav.catfood != null
+        )
+        .map((fav) => {
+          const catfood = fav.catfood;
+          return {
+            ...catfood,
+            favoriteId: fav.id,
+            favoritedAt: fav.created_at,
+            // 构建percentData
+            percentData: {
+              ...(catfood.crude_protein && { protein: catfood.crude_protein }),
+              ...(catfood.crude_fat && { fat: catfood.crude_fat }),
+              ...(catfood.carbohydrates && { carbohydrates: catfood.carbohydrates }),
+              ...(catfood.crude_fiber && { fiber: catfood.crude_fiber }),
+              ...(catfood.crude_ash && { ash: catfood.crude_ash }),
+              ...(catfood.others && { others: catfood.others }),
+            },
+          };
+        }) || [];
 
     // 转换为camelCase
     const camelData = convertKeysToCamel(processedData) as any[];
@@ -418,10 +458,9 @@ export const getUserLikes = async (params: PaginationParams = {}) => {
           id,
           name,
           brand,
-          description,
           image_url,
-          price,
-          like_count,
+          barcode,
+          score,
           crude_protein,
           crude_fat,
           carbohydrates,
@@ -440,22 +479,30 @@ export const getUserLikes = async (params: PaginationParams = {}) => {
       return { data: null, error: handleSupabaseError(error, 'get_user_likes') };
     }
 
-    // 处理数据结构
+    // 处理数据结构，过滤掉 catfood 为 null 的记录
     const processedData =
-      (data as unknown as DbCatfoodLike[])?.map((like) => ({
-        ...like.catfood,
-        likeId: like.id,
-        likedAt: like.created_at,
-        // 构建percentData
-        percentData: {
-          ...(like.catfood.crude_protein && { protein: like.catfood.crude_protein }),
-          ...(like.catfood.crude_fat && { fat: like.catfood.crude_fat }),
-          ...(like.catfood.carbohydrates && { carbohydrates: like.catfood.carbohydrates }),
-          ...(like.catfood.crude_fiber && { fiber: like.catfood.crude_fiber }),
-          ...(like.catfood.crude_ash && { ash: like.catfood.crude_ash }),
-          ...(like.catfood.others && { others: like.catfood.others }),
-        },
-      })) || [];
+      (data as unknown as DbCatfoodLike[])
+        ?.filter(
+          (like): like is DbCatfoodLike & { catfood: NonNullable<DbCatfoodLike['catfood']> } =>
+            like.catfood != null
+        )
+        .map((like) => {
+          const catfood = like.catfood;
+          return {
+            ...catfood,
+            likeId: like.id,
+            likedAt: like.created_at,
+            // 构建percentData
+            percentData: {
+              ...(catfood.crude_protein && { protein: catfood.crude_protein }),
+              ...(catfood.crude_fat && { fat: catfood.crude_fat }),
+              ...(catfood.carbohydrates && { carbohydrates: catfood.carbohydrates }),
+              ...(catfood.crude_fiber && { fiber: catfood.crude_fiber }),
+              ...(catfood.crude_ash && { ash: catfood.crude_ash }),
+              ...(catfood.others && { others: catfood.others }),
+            },
+          };
+        }) || [];
 
     // 转换为camelCase
     const camelData = convertKeysToCamel(processedData) as any[];
@@ -484,7 +531,7 @@ export const createRating = async (catfoodId: string, score: number, review?: st
 
     // 使用upsert，如果已有评分则更新
     const { data, error } = await supabase
-      .from('ratings')
+      .from('catfood_ratings')
       .upsert(
         {
           catfood_id: catfoodId,
@@ -527,7 +574,7 @@ export const getUserRating = async (catfoodId: string) => {
     }
 
     const { data, error } = await supabase
-      .from('ratings')
+      .from('catfood_ratings')
       .select('*')
       .eq('catfood_id', catfoodId)
       .eq('user_id', user.id)
@@ -562,7 +609,7 @@ export const deleteRating = async (catfoodId: string) => {
     }
 
     const { error } = await supabase
-      .from('ratings')
+      .from('catfood_ratings')
       .delete()
       .eq('catfood_id', catfoodId)
       .eq('user_id', user.id);

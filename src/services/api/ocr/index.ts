@@ -43,19 +43,16 @@ class OcrService {
         name: filename,
       } as unknown as Blob);
 
-      const response = await apiClient.upload<OcrRecognizeResponse>(
-        '/api/ocr/recognize/',
-        formData
-      );
-      const results: OcrTextItem[] = response.result || [];
+      const response = await apiClient.upload<any>('/api/ocr/recognize/', formData);
 
-      const text = results.map((r) => r.text).join('\n');
-      const avgConfidence =
-        results.length > 0
-          ? results.reduce((sum, r) => sum + (r.confidence || 0), 0) / results.length
-          : 0;
+      // 后端返回格式: { ok: true, data: { text: "...", length: 100 } }
+      const data = response.data || response;
+      const text = data.text || '';
+      const confidence = data.confidence || 0.95; // 默认置信度
 
-      return { text, confidence: avgConfidence };
+      logger.info('OCR 识别成功', { textLength: text.length, confidence });
+
+      return { text, confidence };
     } catch (error) {
       logger.error('OCR 识别失败', error as Error);
       throw new Error('识别失败，请重试');
@@ -88,16 +85,16 @@ class OcrService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data: OcrRecognizeResponse = await response.json();
-      const results: OcrTextItem[] = data.result || [];
+      const responseData = await response.json();
 
-      const text = results.map((r) => r.text).join('\n');
-      const avgConfidence =
-        results.length > 0
-          ? results.reduce((sum, r) => sum + (r.confidence || 0), 0) / results.length
-          : 0;
+      // 后端返回格式: { ok: true, data: { text: "...", length: 100 } }
+      const data = responseData.data || responseData;
+      const text = data.text || '';
+      const confidence = data.confidence || 0.95; // 默认置信度
 
-      return { text, confidence: avgConfidence };
+      logger.info('OCR 识别成功', { textLength: text.length, confidence });
+
+      return { text, confidence };
     } catch (error) {
       logger.error('OCR 识别失败', error as Error);
       throw new Error('识别失败，请重试');

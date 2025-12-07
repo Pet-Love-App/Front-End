@@ -30,11 +30,17 @@ class AiReportService {
   async checkReportExists(catfoodId: number): Promise<CheckReportExistsResponse> {
     try {
       logger.debug('检查猫粮报告是否存在', { catfoodId });
-      const response = await apiClient.get<CheckReportExistsResponse>(
-        `/api/ai/${catfoodId}/exists/`
-      );
-      logger.info('检查结果', { catfoodId, response });
-      return response;
+      // 后端返回 { ok: true, message: "...", data: { exists: boolean } }
+      const response = await apiClient.get<{
+        ok: boolean;
+        message: string;
+        data: { exists: boolean };
+      }>(`/api/ai/${catfoodId}/exists/`);
+      logger.info('检查结果', { catfoodId, exists: response.data?.exists });
+      return {
+        exists: response.data?.exists ?? false,
+        catfood_id: catfoodId,
+      };
     } catch (error) {
       logger.error('检查报告存在性失败', error as Error, { catfoodId });
       throw error;
@@ -49,10 +55,12 @@ class AiReportService {
   async getReport(catfoodId: number): Promise<AIReportData> {
     try {
       logger.debug('获取猫粮 AI 报告', { catfoodId });
-      const response = await apiClient.get<{ report: AIReportData }>(`/api/ai/${catfoodId}/`);
-      logger.info('报告获取成功', { catfoodId });
-      // 后端返回 {report: ...}，需要提取 report 字段
-      return response.report;
+      // 后端返回 { ok: true, message: "...", data: {...} }
+      const response = await apiClient.get<{ ok: boolean; message: string; data: AIReportData }>(
+        `/api/ai/${catfoodId}/`
+      );
+      logger.info('报告获取成功', { catfoodId, hasData: !!response.data });
+      return response.data;
     } catch (error) {
       logger.error('获取报告失败', error as Error, { catfoodId });
       throw error;
@@ -113,18 +121,24 @@ class AiReportService {
 
       logger.debug('后端响应数据', { backendResponse });
 
+      // 提取实际数据（后端返回 { ok, message, data }）
+      const reportData = backendResponse.data || backendResponse;
+
       // 转换为前端期望的数据结构
       const frontendResponse: GenerateReportResponse = {
-        additives: backendResponse.additive || [],
-        identified_nutrients: backendResponse.ingredient || [],
-        safety: backendResponse.safety || '',
-        nutrient: backendResponse.nutrient || '',
-        percentage: backendResponse.percentage ?? null,
-        percent_data: backendResponse.percent_data || {},
-        tags: backendResponse.tags || [],
+        additives: reportData.additive || [],
+        identified_nutrients: reportData.ingredient || [],
+        safety: reportData.safety || '',
+        nutrient: reportData.nutrient || '',
+        percentage: reportData.percentage ?? null,
+        percent_data: reportData.percent_data || {},
+        tags: reportData.tags || [],
       };
 
-      logger.info('AI报告生成成功');
+      logger.info('AI报告生成成功', {
+        additivesCount: frontendResponse.additives.length,
+        ingredientsCount: frontendResponse.identified_nutrients.length,
+      });
 
       return frontendResponse;
     } catch (error) {

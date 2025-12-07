@@ -47,15 +47,14 @@ export function PostDetailModal({
   const load = useCallback(async () => {
     if (!post) return;
     try {
-      setLoading(true);
       const { data, error } = await supabaseCommentService.getComments({
         targetType: 'post',
         targetId: post.id,
       });
       if (error) throw error;
       setComments(data || []);
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error('加载评论失败', err);
     }
   }, [post]);
 
@@ -253,7 +252,7 @@ export function PostDetailModal({
                         borderWidth={1}
                       >
                         <OptimizedImage
-                          source={m.file}
+                          source={m.fileUrl}
                           style={{ width: '100%', height: '100%' }}
                           contentFit="cover"
                           cachePolicy="memory-disk"

@@ -51,6 +51,7 @@ class LowLevelApiClient {
    * 使用延迟导入避免循环依赖
    */
   private getToken(): string | null {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { useUserStore } = require('@/src/store/userStore');
     return useUserStore.getState().accessToken;
   }
@@ -120,7 +121,7 @@ class LowLevelApiClient {
     if (contentType.includes('application/json')) {
       try {
         return JSON.parse(raw);
-      } catch (err) {
+      } catch {
         logger.warn('解析 JSON 响应失败，返回原始文本', { preview: raw.slice(0, 200) });
         return raw;
       }
@@ -161,7 +162,12 @@ class LowLevelApiClient {
 
     try {
       const fullUrl = `${this.baseURL}${endpoint}`;
-      logger.debug('API请求', { method: config.method || 'GET', url: fullUrl });
+      logger.debug('API请求', {
+        method: config.method || 'GET',
+        url: fullUrl,
+        hasToken: !!token,
+        tokenPreview: token ? `${token.substring(0, 20)}...` : 'none',
+      });
 
       const response = await fetch(fullUrl, config);
 
@@ -169,6 +175,7 @@ class LowLevelApiClient {
       if (response.status === 401 && token) {
         logger.info('Token 过期，尝试刷新...');
         try {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           const { useUserStore } = require('@/src/store/userStore');
           await useUserStore.getState().refreshAccessToken();
 
@@ -201,6 +208,7 @@ class LowLevelApiClient {
           }
         } catch (error) {
           logger.error('Token 刷新失败，需要重新登录', error as Error);
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           const { useUserStore } = require('@/src/store/userStore');
           await useUserStore.getState().logout();
           throw new AppError('认证失败，请重新登录', ErrorCodes.AUTH_EXPIRED, 401);
@@ -211,13 +219,29 @@ class LowLevelApiClient {
       if (!response.ok) {
         const errorData = await this.safeParseResponse(response).catch(() => ({}));
 
+        // 记录完整的错误响应以便调试
+        logger.debug('API 错误响应', {
+          status: response.status,
+          url: response.url,
+          errorData: errorData,
+        });
+
         let errorMessage = `请求失败: ${response.status}`;
 
         if (errorData && typeof errorData === 'object') {
-          if (errorData.detail) errorMessage = errorData.detail;
-          else if (errorData.message) errorMessage = errorData.message;
-          else if (errorData.error) errorMessage = errorData.error;
-          else if (errorData.errors) {
+          if (typeof errorData.detail === 'string') {
+            errorMessage = errorData.detail;
+          } else if (typeof errorData.message === 'string') {
+            errorMessage = errorData.message;
+          } else if (typeof errorData.error === 'string') {
+            errorMessage = errorData.error;
+          } else if (errorData.detail && typeof errorData.detail === 'object') {
+            // 处理嵌套的 detail 对象
+            errorMessage = JSON.stringify(errorData.detail);
+          } else if (errorData.message && typeof errorData.message === 'object') {
+            // 处理嵌套的 message 对象
+            errorMessage = JSON.stringify(errorData.message);
+          } else if (errorData.errors) {
             const fieldErrors = Object.entries(errorData.errors)
               .map(
                 ([field, errors]) =>
@@ -225,6 +249,13 @@ class LowLevelApiClient {
               )
               .join('\n');
             errorMessage = fieldErrors || '输入数据有误';
+          } else {
+            // 如果都没有，尝试序列化整个 errorData
+            try {
+              errorMessage = JSON.stringify(errorData);
+            } catch {
+              errorMessage = `请求失败: ${response.status}`;
+            }
           }
         } else if (typeof errorData === 'string' && errorData.length) {
           errorMessage = /<html/i.test(errorData)
@@ -232,8 +263,10 @@ class LowLevelApiClient {
             : errorData;
         }
 
+        // 确保 errorMessage 是字符串
         const messageStr =
-          typeof errorMessage === 'string' ? errorMessage : String(errorMessage || '');
+          typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage);
+
         const isTokenInvalid =
           messageStr.includes('Invalid token') ||
           messageStr.includes('invalid JWT') ||
@@ -242,12 +275,13 @@ class LowLevelApiClient {
 
         if (isTokenInvalid && token) {
           logger.error('Token 无效，自动登出', new Error('Token invalid'));
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           const { useUserStore } = require('@/src/store/userStore');
           await useUserStore.getState().logout();
           throw new AppError('认证失败，请重新登录', ErrorCodes.AUTH_EXPIRED, 401);
         }
 
-        throw this.createError(errorMessage, response.status, errorData);
+        throw this.createError(messageStr, response.status, errorData);
       }
 
       const parsed = await this.safeParseResponse(response);

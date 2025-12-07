@@ -1,10 +1,7 @@
 /**
- * AI 报告详情页面 - 主组件
- *
- * 复用detail页面现有组件，保持一致性
+ * AI 报告详情页面
  */
-import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 import {
@@ -12,8 +9,9 @@ import {
   NutrientAnalysisSection,
   SafetyAnalysisSection,
 } from '@/src/app/detail/components';
-import { supabaseAdditiveService } from '@/src/lib/supabase';
-import { searchService, type GenerateReportResponse } from '@/src/services/api';
+import { hasValidNutritionData } from '@/src/constants/nutrition';
+import type { GenerateReportResponse } from '@/src/services/api';
+import { useItemDetail } from '@/src/hooks';
 
 import { ActionButtons } from './ActionButtons';
 import { IdentifiedItemsSection } from './IdentifiedItemsSection';
@@ -25,13 +23,12 @@ export interface AiReportDetailProps {
   onRetake?: () => void;
   onClose?: () => void;
   isSaving?: boolean;
-  isAdmin?: boolean; // 是否为管理员用户
-  hasExistingReport?: boolean; // 猫粮是否已有报告
+  /** 是否为管理员用户 */
+  isAdmin?: boolean;
+  /** 猫粮是否已有报告 */
+  hasExistingReport?: boolean;
 }
 
-/**
- * AI 报告详情页面
- */
 export function AiReportDetail({
   report,
   onSave,
@@ -42,133 +39,20 @@ export function AiReportDetail({
   hasExistingReport = false,
 }: AiReportDetailProps) {
   const insets = useSafeAreaInsets();
-  const [selectedAdditive, setSelectedAdditive] = useState<any>(null);
-  const [baikeInfo, setBaikeInfo] = useState<{ title: string; extract: string } | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [loadingItem, setLoadingItem] = useState<string | null>(null);
 
-  // 处理添加剂点击 - 同时查询数据库和百度百科
-  const handleAdditiveClick = useCallback(async (additiveName: string) => {
-    try {
-      setLoadingItem(additiveName);
+  const {
+    item: selectedAdditive,
+    baikeInfo,
+    modalVisible,
+    loadingItemName: loadingItem,
+    fetchAdditive: handleAdditiveClick,
+    fetchIngredient: handleIngredientClick,
+    closeModal,
+  } = useItemDetail();
 
-      // 并行调用两个接口
-      const [dbResponse, baikeResponse] = await Promise.allSettled([
-        supabaseAdditiveService.searchAdditive(additiveName),
-        searchService.searchBaike({ ingredient: additiveName }),
-      ]);
-
-      let hasData = false;
-
-      // 处理数据库结果
-      if (
-        dbResponse.status === 'fulfilled' &&
-        dbResponse.value.data &&
-        dbResponse.value.data.additive
-      ) {
-        setSelectedAdditive(dbResponse.value.data.additive);
-        hasData = true;
-      } else {
-        setSelectedAdditive(null);
-      }
-
-      // 处理百度百科结果
-      if (
-        baikeResponse.status === 'fulfilled' &&
-        baikeResponse.value.ok &&
-        baikeResponse.value.extract
-      ) {
-        setBaikeInfo({
-          title: baikeResponse.value.title || additiveName,
-          extract: baikeResponse.value.extract,
-        });
-        hasData = true;
-      } else {
-        setBaikeInfo(null);
-      }
-
-      if (hasData) {
-        setModalVisible(true);
-      } else {
-        Alert.alert('提示', '未找到该添加剂的详细信息');
-      }
-    } catch (error) {
-      console.error('查询添加剂失败:', error);
-      Alert.alert('查询失败', '无法获取添加剂详情');
-    } finally {
-      setLoadingItem(null);
-    }
-  }, []);
-
-  // 处理成分点击 - 同时查询数据库和百度百科
-  const handleIngredientClick = useCallback(async (ingredientName: string) => {
-    try {
-      setLoadingItem(ingredientName);
-
-      // 并行调用两个接口
-      const [dbResponse, baikeResponse] = await Promise.allSettled([
-        supabaseAdditiveService.searchIngredient(ingredientName),
-        searchService.searchBaike({ ingredient: ingredientName }),
-      ]);
-
-      let hasData = false;
-
-      // 处理数据库结果
-      if (
-        dbResponse.status === 'fulfilled' &&
-        dbResponse.value.data &&
-        dbResponse.value.data.ingredient
-      ) {
-        const ingredient = dbResponse.value.data.ingredient;
-        const additive = {
-          name: ingredient.name,
-          type: ingredient.type,
-          applicable_range: ingredient.desc,
-        };
-        setSelectedAdditive(additive);
-        hasData = true;
-      } else {
-        setSelectedAdditive(null);
-      }
-
-      // 处理百度百科结果
-      if (
-        baikeResponse.status === 'fulfilled' &&
-        baikeResponse.value.ok &&
-        baikeResponse.value.extract
-      ) {
-        setBaikeInfo({
-          title: baikeResponse.value.title || ingredientName,
-          extract: baikeResponse.value.extract,
-        });
-        hasData = true;
-      } else {
-        setBaikeInfo(null);
-      }
-
-      if (hasData) {
-        setModalVisible(true);
-      } else {
-        Alert.alert('提示', '未找到该成分的详细信息');
-      }
-    } catch (error) {
-      console.error('查询成分失败:', error);
-      Alert.alert('查询失败', '无法获取成分详情');
-    } finally {
-      setLoadingItem(null);
-    }
-  }, []);
-
-  // 使用动态 percent_data
-  // 验证数据完整性
-  const hasActualNutritionData =
-    report.percentage === true &&
-    report.percent_data &&
-    typeof report.percent_data === 'object' &&
-    Object.keys(report.percent_data).length > 0;
-
-  // 只有当有实际营养数据时才使用 percentData
-  const percentData = hasActualNutritionData ? report.percent_data : null;
+  // 检查是否有有效营养数据
+  const hasNutritionData = hasValidNutritionData(report.percentage, report.percent_data);
+  const percentData = hasNutritionData ? report.percent_data : null;
 
   return (
     <>
@@ -260,16 +144,12 @@ export function AiReportDetail({
         </ScrollView>
       </YStack>
 
-      {/* 详情弹窗 - 复用report页面组件，并添加百度百科信息 */}
+      {/* 详情弹窗 */}
       <AdditiveDetailModal
         visible={modalVisible}
         additive={selectedAdditive}
         baikeInfo={baikeInfo}
-        onClose={() => {
-          setModalVisible(false);
-          setSelectedAdditive(null);
-          setBaikeInfo(null);
-        }}
+        onClose={closeModal}
       />
     </>
   );

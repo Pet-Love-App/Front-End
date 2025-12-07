@@ -3,17 +3,20 @@ import { Button, Card, Separator, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import type { Favorite } from '@/src/services/api';
+import type { CatfoodFavorite } from '@/src/types/collect';
 
 interface CollectListItemProps {
-  favorite: Favorite;
-  onDelete?: (favoriteId: number) => void;
+  favorite: CatfoodFavorite;
+  onDelete?: (favoriteId: string, catfoodId: string) => void;
 }
 
 export default function CollectListItem({ favorite, onDelete }: CollectListItemProps) {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
   const { catfood } = favorite;
+
+  // 防御性检查：如果没有 catfood 数据，不渲染
+  if (!catfood) return null;
 
   // 格式化日期
   const formatDate = (dateString: string) => {
@@ -97,23 +100,25 @@ export default function CollectListItem({ favorite, onDelete }: CollectListItemP
           </YStack>
 
           {/* 评分显示 */}
-          <YStack alignItems="center" gap="$1" minWidth={60}>
-            <YStack
-              backgroundColor={getScoreColor(catfood.score) + '15'}
-              paddingHorizontal="$3"
-              paddingVertical="$2"
-              borderRadius="$4"
-              borderWidth={2}
-              borderColor={getScoreColor(catfood.score)}
-            >
-              <Text fontSize={24} fontWeight="800" color={getScoreColor(catfood.score)}>
-                {catfood.score}
+          {catfood.score != null && (
+            <YStack alignItems="center" gap="$1" minWidth={60}>
+              <YStack
+                backgroundColor={getScoreColor(catfood.score) + '15'}
+                paddingHorizontal="$3"
+                paddingVertical="$2"
+                borderRadius="$4"
+                borderWidth={2}
+                borderColor={getScoreColor(catfood.score)}
+              >
+                <Text fontSize={24} fontWeight="800" color={getScoreColor(catfood.score)}>
+                  {catfood.score}
+                </Text>
+              </YStack>
+              <Text fontSize={12} color={colors.icon} fontWeight="500">
+                综合评分
               </Text>
             </YStack>
-            <Text fontSize={12} color={colors.icon} fontWeight="500">
-              综合评分
-            </Text>
-          </YStack>
+          )}
         </XStack>
       </Card.Header>
 
@@ -127,7 +132,7 @@ export default function CollectListItem({ favorite, onDelete }: CollectListItemP
                 chromeless
                 color={colors.icon}
                 icon={<IconSymbol name="heart.slash" size={16} color={colors.icon} />}
-                onPress={() => onDelete(favorite.id)}
+                onPress={() => onDelete(favorite.id, catfood.id)}
                 pressStyle={{ scale: 0.95, opacity: 0.7 }}
               >
                 取消收藏

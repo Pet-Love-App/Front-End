@@ -12,13 +12,28 @@ export interface CatfoodFavorite {
     id: string;
     name: string;
     brand: string;
-    description?: string;
     imageUrl?: string;
-    price?: number;
-    likeCount?: number;
+    score?: number;
+    barcode?: string;
+    crudeProtein?: number;
+    crudeFat?: number;
+    carbohydrates?: number;
+    crudeFiber?: number;
+    crudeAsh?: number;
+    others?: number;
+    percentData?: {
+      protein?: number;
+      fat?: number;
+      carbohydrates?: number;
+      fiber?: number;
+      ash?: number;
+      others?: number;
+    };
     [key: string]: any;
   };
   createdAt: string;
+  favoriteId?: string;
+  favoritedAt?: string;
 }
 
 /**

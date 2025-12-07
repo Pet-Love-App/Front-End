@@ -19,8 +19,6 @@ interface AIReportButtonProps {
  * AI 报告按钮组件
  */
 export function AIReportButton({ hasReport, isLoading, onPress }: AIReportButtonProps) {
-  console.log('🎨 [AIReportButton] 渲染状态:', { hasReport, isLoading });
-
   if (isLoading) {
     return (
       <YStack
@@ -42,11 +40,9 @@ export function AIReportButton({ hasReport, isLoading, onPress }: AIReportButton
   }
 
   if (!hasReport) {
-    console.log('⚠️ [AIReportButton] 没有报告，不显示按钮');
     return null; // 没有报告时不显示按钮
   }
 
-  console.log('✅ [AIReportButton] 显示报告按钮');
   return (
     <Button
       size="$4"

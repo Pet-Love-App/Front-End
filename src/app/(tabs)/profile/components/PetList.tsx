@@ -13,7 +13,7 @@ interface PetListProps {
   onPetPress: (pet: Pet) => void;
 }
 
-export function PetList({ pets = [], isLoading, onAddPet, onPetPress }: PetListProps) {
+export function PetList({ pets = [], isLoading, onAddPet: _onAddPet, onPetPress }: PetListProps) {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
 

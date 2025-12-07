@@ -7,7 +7,7 @@ import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 
 import { supabaseAdditiveService, type Additive } from '@/src/lib/supabase';
-import { aiReportService, searchService } from '@/src/services/api';
+import { searchService } from '@/src/services/api';
 import { logger } from '@/src/utils/logger';
 
 export interface BaikeInfo {

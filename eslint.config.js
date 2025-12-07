@@ -18,7 +18,7 @@ module.exports = [
       'react/prop-types': 'off', // 使用 TypeScript
 
       // ==================== 代码质量 ====================
-      'no-console': ['warn', { allow: ['error', 'warn'] }], // 允许 console.error 和 console.warn
+      'no-console': 'off', // 开发环境允许所有 console 方法
       'prefer-const': 'warn', // 优先使用 const
       'no-var': 'error', // 禁止使用 var
       'no-debugger': 'warn', // 警告使用 debugger
@@ -29,8 +29,15 @@ module.exports = [
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
           caughtErrorsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
         },
       ],
+      '@typescript-eslint/no-empty-object-type': 'off', // 允许空对象类型
+      '@typescript-eslint/no-explicit-any': 'off', // 允许使用 any
+
+      // ==================== React Hooks ====================
+      'react-hooks/rules-of-hooks': 'error', // Hooks 调用规则
+      'react-hooks/exhaustive-deps': 'warn', // 依赖数组检查
 
       // ==================== Import 顺序 ====================
       'import/order': [

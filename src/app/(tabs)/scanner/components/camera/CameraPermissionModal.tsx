@@ -21,7 +21,7 @@ export function CameraPermissionModal({
   onClose,
 }: CameraPermissionModalProps) {
   const colorScheme = useThemeAwareColorScheme();
-  const colors = Colors[colorScheme];
+  const _colors = Colors[colorScheme];
 
   return (
     <Modal

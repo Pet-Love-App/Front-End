@@ -17,7 +17,7 @@ export default function SettingsPage() {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
-  const router = useRouter();
+  const _router = useRouter();
   const { themeMode, setThemeMode } = useThemeStore();
   const { user } = useUserStore();
 

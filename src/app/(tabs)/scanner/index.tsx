@@ -90,26 +90,16 @@ export default function ScannerScreen() {
    * 自动进入相应的扫描模式
    */
   useEffect(() => {
-    console.log('📱 Scanner页面参数:', params);
-
     if (params.catfoodId && params.scanType) {
-      console.log('✅ 收到详情页参数，准备跳转:', {
-        catfoodId: params.catfoodId,
-        scanType: params.scanType,
-        catfoodName: params.catfoodName,
-      });
-
       // 使用setTimeout确保组件完全加载后再执行跳转
       setTimeout(() => {
         // 根据scanType设置扫描模式
         if (params.scanType === 'barcode') {
           // 扫描条形码模式 - 直接进入拍照
-          console.log('🔵 进入条形码扫描模式');
           setScanType(ScanType.BARCODE);
           transitionTo('taking-photo');
         } else if (params.scanType === 'ingredients') {
           // 扫描配料表模式（需要先选择猫粮）
-          console.log('🟢 进入配料表扫描模式');
           // 创建一个临时猫粮对象
           const tempCatFood = {
             id: parseInt(params.catfoodId || '0'),
@@ -120,8 +110,6 @@ export default function ScannerScreen() {
           transitionTo('taking-photo');
         }
       }, 100);
-    } else {
-      console.log('⚠️ 参数不完整或未传递:', params);
     }
   }, [
     params.catfoodId,
@@ -140,7 +128,6 @@ export default function ScannerScreen() {
   const handleBarCodeScannedCallback = useCallback(
     (result: ExpoBarcodeResult) => {
       if (flowState !== 'taking-photo') return;
-      console.log('ScannerScreen: 扫描到条形码', result.data);
       onBarcodeScanned(result.data);
     },
     [flowState, onBarcodeScanned]
@@ -252,7 +239,7 @@ export default function ScannerScreen() {
         onSave={handleSaveReportWrapper}
         onRetake={handleRetakePhoto}
         isSaving={isProcessing}
-        isAdmin={user?.is_admin || false}
+        isAdmin={user?.isAdmin || false}
         hasExistingReport={!!selectedCatFood?.percentage}
       />
     );

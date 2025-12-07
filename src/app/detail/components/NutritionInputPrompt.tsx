@@ -29,7 +29,6 @@ export function NutritionInputPrompt({ catfoodId, catfoodName }: NutritionInputP
    * 跳转到拍照扫描页面 - 录入配料表
    */
   const handleScanIngredients = () => {
-    console.log('跳转到扫描页面 - 配料表模式', { catfoodId, catfoodName });
     router.push({
       pathname: '/(tabs)/scanner',
       params: {
@@ -44,7 +43,6 @@ export function NutritionInputPrompt({ catfoodId, catfoodName }: NutritionInputP
    * 跳转到拍照扫描页面 - 录入条形码
    */
   const handleScanBarcode = () => {
-    console.log('跳转到扫描页面 - 条形码模式', { catfoodId, catfoodName });
     router.push({
       pathname: '/(tabs)/scanner',
       params: {

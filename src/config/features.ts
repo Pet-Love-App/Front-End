@@ -44,14 +44,4 @@ export const FEATURES = {
   ENABLE_PERFORMANCE_MONITORING: __DEV__,
 };
 
-/**
- * 日志记录功能开关状态
- */
-if (__DEV__) {
-  console.log('🎛️ 功能开关状态:');
-  console.log('  - USE_SUPABASE:', FEATURES.USE_SUPABASE);
-  console.log('  - ENABLE_REALTIME:', FEATURES.ENABLE_REALTIME);
-  console.log('  - ENABLE_PERFORMANCE_MONITORING:', FEATURES.ENABLE_PERFORMANCE_MONITORING);
-}
-
 export default FEATURES;

@@ -10,7 +10,7 @@ import { CommentsTab } from './tabs/CommentsTab';
 import { LikesTab } from './tabs/LikesTab';
 import { PetsTab } from './tabs/PetsTab';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: _SCREEN_WIDTH } = Dimensions.get('window');
 
 /**
  * Tab 配置

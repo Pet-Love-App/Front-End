@@ -1,1 +1,16 @@
-{ "recommendations": ["expo.vscode-expo-tools"] }
+{
+  "recommendations": [
+    // React Native / Expo
+    "expo.vscode-expo-tools",
+
+    // 代码质量
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+
+    // TypeScript
+    "yoavbls.pretty-ts-errors",
+
+    // Git
+    "eamodio.gitlens"
+  ]
+}

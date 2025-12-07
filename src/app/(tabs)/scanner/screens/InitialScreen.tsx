@@ -1,19 +1,13 @@
 /**
  * InitialScreen - Scanner 初始欢迎页面
- *
- * 企业最佳实践：
- * - 单一职责：仅负责展示欢迎界面
- * - Props类型化：清晰的接口定义
- * - 响应式布局：适配不同屏幕尺寸
- * - 安全区域适配：使用 insets
  */
 
-import { PageHeader } from '@/src/components/PageHeader';
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import React from 'react';
 import { ScrollView } from 'react-native';
 import type { EdgeInsets } from 'react-native-safe-area-context';
 import { Button, Text, XStack, YStack } from 'tamagui';
+import { PageHeader } from '@/src/components/PageHeader';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 /**
  * 组件 Props 接口

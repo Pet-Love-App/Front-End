@@ -2,9 +2,10 @@
  * 评论业务逻辑 Hook
  * 职责：封装评论相关的数据获取和操作逻辑
  */
-import { commentService, type Comment } from '@/src/services/api/comment';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
+
+import { supabaseCommentService, type Comment } from '@/src/lib/supabase';
 
 interface UseCommentsOptions {
   targetType: 'catfood' | 'post' | 'report';
@@ -53,10 +54,21 @@ export function useComments({
           setIsLoading(true);
         }
 
-        const response = await commentService.getComments(targetType, targetId, pageNum, pageSize);
+        const { data, error } = await supabaseCommentService.getComments({
+          targetType,
+          targetId,
+          parentId: null, // 只获取顶级评论
+          orderBy: 'created_at',
+          limit: pageSize,
+          offset: (pageNum - 1) * pageSize,
+        });
 
-        // 防御性编程：确保 results 是数组
-        const results = Array.isArray(response?.results) ? response.results : [];
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        // 防御性编程：确保 data 是数组
+        const results = Array.isArray(data) ? data : [];
 
         if (refresh || pageNum === 1) {
           setComments(results);
@@ -64,9 +76,9 @@ export function useComments({
           setComments((prev) => [...prev, ...results]);
         }
 
-        setHasMore(!!response?.next);
+        setHasMore(results.length === pageSize);
         setPage(pageNum);
-        setTotalCount(response?.count || 0);
+        setTotalCount(results.length); // Note: Supabase 版本需要单独查询 count
       } catch (error) {
         console.error('加载评论失败:', error);
         // 出错时设置为空数组，避免 undefined
@@ -86,11 +98,15 @@ export function useComments({
   const createComment = useCallback(
     async (content: string) => {
       try {
-        await commentService.createComment({
+        const { error } = await supabaseCommentService.createComment({
           content,
           targetId,
           targetType,
         });
+
+        if (error) {
+          throw new Error(error.message);
+        }
 
         // 静默刷新评论列表，不弹窗提示
         await loadComments(1, true);
@@ -107,7 +123,10 @@ export function useComments({
    */
   const deleteComment = useCallback(async (commentId: number) => {
     try {
-      await commentService.deleteComment(commentId);
+      const { error } = await supabaseCommentService.deleteComment(commentId);
+      if (error) {
+        throw new Error(error.message);
+      }
       setComments((prev) => prev.filter((c) => c.id !== commentId));
       setTotalCount((prev) => Math.max(0, prev - 1));
       // 静默删除，不弹窗提示
@@ -122,7 +141,15 @@ export function useComments({
    */
   const toggleLike = useCallback(async (commentId: number) => {
     try {
-      const result = await commentService.toggleLike(commentId);
+      const { data, error } = await supabaseCommentService.toggleCommentLike(commentId);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (!data) {
+        throw new Error('操作失败');
+      }
 
       // 更新本地状态
       setComments((prev) =>
@@ -130,8 +157,8 @@ export function useComments({
           comment.id === commentId
             ? {
                 ...comment,
-                likes: result.likes,
-                isLiked: result.action === 'liked',
+                likes: data.likes,
+                isLiked: data.liked,
               }
             : comment
         )

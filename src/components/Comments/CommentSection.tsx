@@ -2,14 +2,15 @@
  * 评论区主组件
  * 职责：组合子组件，协调评论相关的用户交互
  */
+import { memo, useCallback } from 'react';
+import { Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Card, Separator, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { useUserStore } from '@/src/store/userStore';
-import { useRouter } from 'expo-router';
-import { memo, useCallback } from 'react';
-import { Alert } from 'react-native';
-import { Card, Separator, Text, XStack, YStack } from 'tamagui';
+
 import { CommentInput } from './CommentInput';
 import { CommentList } from './CommentList';
 import { useComments } from './useComments';

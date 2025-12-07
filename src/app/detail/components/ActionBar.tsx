@@ -3,82 +3,34 @@
  * 包含收藏和点赞功能
  */
 
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { useCollectStore } from '@/src/store/collectStore';
-import { useLikeStore } from '@/src/store/likeStore';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Separator, Text, XStack, YStack } from 'tamagui';
+import { useActionStatus } from '@/src/app/(tabs)/collect/hooks/useActionStatus';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface ActionBarProps {
   /** 猫粮 ID */
   catfoodId: number;
 }
 
-/**
- * ActionBar - 企业级详情页操作栏
- *
- * 特性：
- * - 收藏功能（已接入后端）
- * - 点赞功能（已接入后端）
- * - 固定在底部
- * - 动画效果
- * - 状态管理
- * - 错误处理
- */
+/** ActionBar - 详情页操作栏 */
 export function ActionBar({ catfoodId }: ActionBarProps) {
   const insets = useSafeAreaInsets();
 
-  // 收藏状态管理
-  const toggleFavorite = useCollectStore((state) => state.toggleFavorite);
-  const isFavorited = useCollectStore((state) => state.isFavorited(catfoodId));
-  const [localFavorited, setLocalFavorited] = useState(isFavorited);
-  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  // 使用统一的状态管理 Hook
+  const { liked, likeCount, favorited, toggleLike, toggleFavorite } = useActionStatus(
+    catfoodId.toString()
+  );
 
-  // 点赞状态管理
-  const toggleLike = useLikeStore((state) => state.toggleLike);
-  const isLiked = useLikeStore((state) => state.isLiked(catfoodId));
-  const getLikeCount = useLikeStore((state) => state.getLikeCount);
-  // 直接从 store 中读取缓存的点赞数（会自动响应变化）
-  const cachedLikeCount = useLikeStore((state) => state.likeCounts[catfoodId]);
-  const [localLiked, setLocalLiked] = useState(isLiked);
-  const [localLikeCount, setLocalLikeCount] = useState(cachedLikeCount || 0);
+  // 加载状态
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
 
-  // 动画值
-  const [favoriteScale] = useState(new Animated.Value(1));
-  const [likeScale] = useState(new Animated.Value(1));
-
-  // 同步收藏状态
-  useEffect(() => {
-    setLocalFavorited(isFavorited);
-  }, [isFavorited]);
-
-  // 同步点赞状态
-  useEffect(() => {
-    setLocalLiked(isLiked);
-  }, [isLiked]);
-
-  // 初始化点赞数量
-  useEffect(() => {
-    const fetchLikeCount = async () => {
-      try {
-        const count = await getLikeCount(catfoodId);
-        setLocalLikeCount(count);
-      } catch (error) {
-        console.error('获取点赞数量失败:', error);
-      }
-    };
-    fetchLikeCount();
-  }, [catfoodId, getLikeCount]);
-
-  // 监听 store 中的点赞数变化，自动更新
-  useEffect(() => {
-    if (cachedLikeCount !== undefined) {
-      setLocalLikeCount(cachedLikeCount);
-    }
-  }, [cachedLikeCount]);
+  // 动画值 - 使用 useMemo 避免重复创建
+  const favoriteScale = useMemo(() => new Animated.Value(1), []);
+  const likeScale = useMemo(() => new Animated.Value(1), []);
 
   // 收藏动画
   const animateFavorite = useCallback(() => {
@@ -118,32 +70,16 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
 
     try {
       setFavoriteLoading(true);
-
-      // 乐观更新
-      const newFavoriteState = !localFavorited;
-      setLocalFavorited(newFavoriteState);
       animateFavorite();
-
-      // 调用 API
-      const isFavoritedResult = await toggleFavorite(catfoodId);
-
-      // 同步实际状态
-      if (isFavoritedResult !== newFavoriteState) {
-        setLocalFavorited(isFavoritedResult);
-      }
-
+      await toggleFavorite();
       // 静默更新，不弹窗提示
     } catch (error) {
       console.error('收藏操作失败:', error);
-
-      // 回滚状态
-      setLocalFavorited(!localFavorited);
-
       Alert.alert('操作失败', '收藏操作失败，请稍后重试');
     } finally {
       setFavoriteLoading(false);
     }
-  }, [catfoodId, localFavorited, favoriteLoading, toggleFavorite, animateFavorite]);
+  }, [favoriteLoading, toggleFavorite, animateFavorite]);
 
   // 处理点赞
   const handleLike = useCallback(async () => {
@@ -151,35 +87,16 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
 
     try {
       setLikeLoading(true);
-
-      // 乐观更新
-      const newLikedState = !localLiked;
-      setLocalLiked(newLikedState);
-      setLocalLikeCount((prev) => (newLikedState ? prev + 1 : prev - 1));
       animateLike();
-
-      // 调用 API
-      const result = await toggleLike(catfoodId);
-
-      // 同步实际状态
-      if (result.isLiked !== newLikedState) {
-        setLocalLiked(result.isLiked);
-      }
-      setLocalLikeCount(result.likeCount);
-
+      await toggleLike();
       // 静默更新，不弹窗提示
     } catch (error) {
       console.error('点赞操作失败:', error);
-
-      // 回滚状态
-      setLocalLiked(!localLiked);
-      setLocalLikeCount((prev) => (localLiked ? prev + 1 : prev - 1));
-
       Alert.alert('操作失败', '点赞操作失败，请稍后重试');
     } finally {
       setLikeLoading(false);
     }
-  }, [catfoodId, localLiked, likeLoading, toggleLike, animateLike]);
+  }, [likeLoading, toggleLike, animateLike]);
 
   return (
     <>
@@ -210,27 +127,27 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
           <YStack flex={1}>
             <Button
               size="$5"
-              backgroundColor={localFavorited ? '$yellow9' : 'transparent'}
+              backgroundColor={favorited ? '$yellow9' : 'transparent'}
               borderWidth={2}
-              borderColor={localFavorited ? '$yellow9' : '$gray7'}
+              borderColor={favorited ? '$yellow9' : '$gray7'}
               onPress={handleFavorite}
               disabled={favoriteLoading}
               pressStyle={{
                 scale: 0.97,
-                backgroundColor: localFavorited ? '$yellow10' : '$gray3',
+                backgroundColor: favorited ? '$yellow10' : '$gray3',
               }}
               icon={
                 <Animated.View style={{ transform: [{ scale: favoriteScale }] }}>
                   <IconSymbol
-                    name={localFavorited ? 'star.fill' : 'star'}
+                    name={favorited ? 'star.fill' : 'star'}
                     size={22}
-                    color={localFavorited ? 'white' : '$gray11'}
+                    color={favorited ? 'white' : '$gray11'}
                   />
                 </Animated.View>
               }
             >
-              <Text color={localFavorited ? 'white' : '$gray11'} fontSize="$4" fontWeight="700">
-                {favoriteLoading ? '处理中...' : localFavorited ? '已收藏' : '收藏'}
+              <Text color={favorited ? 'white' : '$gray11'} fontSize="$4" fontWeight="700">
+                {favoriteLoading ? '处理中...' : favorited ? '已收藏' : '收藏'}
               </Text>
             </Button>
           </YStack>
@@ -239,38 +156,38 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
           <YStack flex={1}>
             <Button
               size="$5"
-              backgroundColor={localLiked ? '$red9' : 'transparent'}
+              backgroundColor={liked ? '$red9' : 'transparent'}
               borderWidth={2}
-              borderColor={localLiked ? '$red9' : '$gray7'}
+              borderColor={liked ? '$red9' : '$gray7'}
               onPress={handleLike}
               disabled={likeLoading}
               pressStyle={{
                 scale: 0.97,
-                backgroundColor: localLiked ? '$red10' : '$gray3',
+                backgroundColor: liked ? '$red10' : '$gray3',
               }}
               icon={
                 <Animated.View style={{ transform: [{ scale: likeScale }] }}>
                   <IconSymbol
-                    name={localLiked ? 'heart.fill' : 'heart'}
+                    name={liked ? 'heart.fill' : 'heart'}
                     size={22}
-                    color={localLiked ? 'white' : '$gray11'}
+                    color={liked ? 'white' : '$gray11'}
                   />
                 </Animated.View>
               }
             >
               <XStack alignItems="center" gap="$2">
-                <Text color={localLiked ? 'white' : '$gray11'} fontSize="$4" fontWeight="700">
-                  {likeLoading ? '处理中...' : localLiked ? '已点赞' : '点赞'}
+                <Text color={liked ? 'white' : '$gray11'} fontSize="$4" fontWeight="700">
+                  {likeLoading ? '处理中...' : liked ? '已点赞' : '点赞'}
                 </Text>
-                {localLikeCount > 0 && (
+                {likeCount > 0 && (
                   <YStack
                     paddingHorizontal="$2"
                     paddingVertical="$1"
-                    backgroundColor={localLiked ? 'rgba(255,255,255,0.2)' : '$gray4'}
+                    backgroundColor={liked ? 'rgba(255,255,255,0.2)' : '$gray4'}
                     borderRadius="$10"
                   >
-                    <Text color={localLiked ? 'white' : '$gray11'} fontSize="$2" fontWeight="bold">
-                      {localLikeCount}
+                    <Text color={liked ? 'white' : '$gray11'} fontSize="$2" fontWeight="bold">
+                      {likeCount}
                     </Text>
                   </YStack>
                 )}

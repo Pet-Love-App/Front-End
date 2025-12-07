@@ -1,79 +1,54 @@
 /**
  * API 服务统一导出
- * 方便从一个地方导入所有服务
+ *
+ * 注意：以下服务已迁移到 Supabase，请直接使用 Supabase 服务：
+ * - 认证服务: import { supabaseAuthService } from '@/src/lib/supabase';
+ * - 用户服务: import { supabaseProfileService } from '@/src/lib/supabase';
+ * - 宠物服务: import { supabasePetService } from '@/src/lib/supabase';
+ * - 评论服务: import { supabaseCommentService } from '@/src/lib/supabase';
+ * - 猫粮服务: import { supabaseCatfoodService } from '@/src/lib/supabase';
+ * - 点赞/收藏/评分: 已集成在 supabaseCatfoodService 中
  */
 
-// 认证服务
-export { ApiError, authService } from './auth';
-export type { JWTResponse, LoginInput, RefreshTokenInput, RegisterInput } from './auth';
-
-// 用户服务
-export { userService } from './user';
-export type { AvatarUploadResponse, DeleteResponse, User } from './user';
-
-// 宠物服务
-export { petService } from './pet';
-export type { Pet, PetInput } from './pet';
-
-// 添加剂服务
-export { additiveService, searchAdditive, searchIngredient } from './additive';
-export type { Additive, Ingredient } from './additive';
-
-// 收藏服务
-export { collectApi } from './collect';
-export type {
-  CheckFavoriteReportResponse,
-  CheckFavoriteResponse,
-  Favorite,
-  FavoriteReport,
-  GetFavoriteReportsResponse,
-  GetFavoritesResponse,
-  ToggleFavoriteReportResponse,
-  ToggleFavoriteResponse,
-} from './collect';
-
-// 点赞服务
-export { likeApi } from './like';
-export type { CheckLikeResponse, GetLikeCountResponse, Like, ToggleLikeResponse } from './like';
-
-// 评论服务
-export { commentService } from './comment';
-export type {
-  Comment,
-  CommentAuthor,
-  CreateCommentRequest,
-  DeleteCommentResponse,
-  GetCommentsResponse,
-  UpdateCommentRequest,
-} from './comment';
-
-// 猫粮服务
+// ==================== 核心模块 ====================
 export {
-  catFoodService,
-  getCatFood,
-  getCatFoodByBarcode,
-  getCatFoods,
-  patchCatFood,
-  scanBarcode,
-  searchCatFood,
-} from './catfood';
+  apiClient,
+  buildQueryString,
+  devError,
+  devLog,
+  extractData,
+  extractList,
+  httpClient,
+  normalizePaginatedResponse,
+  safeParseSchema,
+  toCamelCase,
+  toSnakeCase,
+  wrapError,
+  wrapResponse,
+  wrapSuccess,
+} from './core';
 export type {
-  CatFood,
-  GetCatFoodsResponse,
-  ScanBarcodeRequest,
-  ScanBarcodeResponse,
-  SearchCatFoodParams,
-} from './catfood';
+  ApiErrorDetail,
+  ApiResponse,
+  DeleteResponse,
+  ListResponse,
+  PaginatedResponse,
+  PaginationParams,
+  RequestOptions,
+  ToggleResponse,
+} from './core';
 
-// OCR 服务
+// ==================== OCR 服务 ====================
 export { ocrService, recognizeImage } from './ocr';
-export type { OcrRecognizeResponse, OcrResult } from './ocr';
+export type { OcrRecognizeResponse, OcrResult, OcrTextItem } from './ocr';
 
-// AI 报告服务
+// ==================== AI 报告服务 ====================
 export { aiReportService } from './ai_report';
 export type {
   AIReportData,
   CheckReportExistsResponse,
+  Favorite,
+  FavoriteReport,
   GenerateReportRequest,
   GenerateReportResponse,
   IngredientInfoRequest,
@@ -82,10 +57,6 @@ export type {
   SaveReportResponse,
 } from './ai_report';
 
-// 搜索服务
+// ==================== 搜索服务 ====================
 export { searchService } from './search';
 export type { BaikeSearchRequest, BaikeSearchResponse } from './search';
-
-// 评分服务
-export { ratingApi } from './rating';
-export type { CreateRatingRequest, Rating, RatingResponse } from './rating';

@@ -1,8 +1,8 @@
+import { Button, Card, Separator, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors, SEMANTIC_COLORS } from '@/src/constants/colors';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { FavoriteReport } from '@/src/services/api';
-import { Button, Card, Separator, Text, XStack, YStack } from 'tamagui';
 
 interface ReportCollectItemProps {
   favoriteReport: FavoriteReport;
@@ -18,6 +18,9 @@ export default function ReportCollectItem({
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
   const { report } = favoriteReport;
+
+  // 防御性检查：如果没有 report 数据，不渲染
+  if (!report) return null;
 
   // 格式化日期
   const formatDate = (dateString: string) => {
@@ -86,7 +89,7 @@ export default function ReportCollectItem({
               <XStack alignItems="center" gap="$1">
                 <IconSymbol name="clock" size={14} color={colors.icon + '80'} />
                 <Text fontSize={12} color={colors.icon + '80'}>
-                  收藏于 {formatDate(favoriteReport.created_at)}
+                  收藏于 {formatDate(favoriteReport.createdAt)}
                 </Text>
               </XStack>
             </YStack>
@@ -106,7 +109,7 @@ export default function ReportCollectItem({
           {/* 标签 */}
           {report.tags && report.tags.length > 0 && (
             <XStack gap="$2" flexWrap="wrap">
-              {report.tags.slice(0, 4).map((tag, index) => {
+              {report.tags.slice(0, 4).map((tag: string, index: number) => {
                 const tagColor = getTagColor(tag);
                 return (
                   <YStack

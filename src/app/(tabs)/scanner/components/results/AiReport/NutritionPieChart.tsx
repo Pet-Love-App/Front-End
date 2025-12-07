@@ -1,11 +1,11 @@
 /**
  * 营养成分饼状图组件
  */
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import type { GenerateReportResponse } from '@/src/services/api';
 import { Dimensions } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { Card, Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import type { GenerateReportResponse } from '@/src/services/api';
 
 interface NutritionPieChartProps {
   report: GenerateReportResponse;
@@ -50,26 +50,40 @@ export function NutritionPieChart({ report }: NutritionPieChartProps) {
   );
 }
 
-function buildChartData(report: GenerateReportResponse) {
-  if (!report.percentage) return [];
+/** 营养字段到中文名称的映射 */
+const NUTRIENT_LABELS: Record<string, string> = {
+  protein: '粗蛋白',
+  crude_protein: '粗蛋白',
+  fat: '粗脂肪',
+  crude_fat: '粗脂肪',
+  carbohydrates: '碳水化合物',
+  fiber: '粗纤维',
+  crude_fiber: '粗纤维',
+  ash: '粗灰分',
+  crude_ash: '粗灰分',
+  moisture: '水分',
+  others: '其他',
+};
 
-  const data = [];
+function buildChartData(report: GenerateReportResponse) {
+  if (!report.percentage || !report.percent_data) return [];
+
+  const data: {
+    name: string;
+    value: number;
+    color: string;
+    legendFontColor: string;
+    legendFontSize: number;
+  }[] = [];
   let colorIndex = 0;
 
-  const nutrients = [
-    { name: '粗蛋白', value: report.crude_protein },
-    { name: '粗脂肪', value: report.crude_fat },
-    { name: '碳水化合物', value: report.carbohydrates },
-    { name: '粗纤维', value: report.crude_fiber },
-    { name: '粗灰分', value: report.crude_ash },
-    { name: '其他', value: report.others },
-  ];
-
-  for (const nutrient of nutrients) {
-    if (nutrient.value !== null && nutrient.value > 0) {
+  // 从 percent_data 动态获取营养数据
+  for (const [key, value] of Object.entries(report.percent_data)) {
+    if (value !== null && value > 0) {
+      const label = NUTRIENT_LABELS[key] || key;
       data.push({
-        name: nutrient.name,
-        value: nutrient.value,
+        name: label,
+        value,
         color: COLORS[colorIndex++ % COLORS.length],
         legendFontColor: '#7F7F7F',
         legendFontSize: 12,

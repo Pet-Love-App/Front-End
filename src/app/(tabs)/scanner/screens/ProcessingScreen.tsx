@@ -1,16 +1,11 @@
 /**
  * ProcessingScreen - OCR 处理中状态页面
- *
- * 企业最佳实践：
- * - 单一职责：仅负责展示处理中状态
- * - Props类型化：清晰的接口定义
- * - 用户反馈：提供清晰的加载提示
  */
 
-import { LottieAnimation } from '@/src/components/LottieAnimation';
 import React from 'react';
 import type { EdgeInsets } from 'react-native-safe-area-context';
 import { Text, XStack, YStack } from 'tamagui';
+import { LottieAnimation } from '@/src/components/LottieAnimation';
 
 /**
  * 组件 Props 接口

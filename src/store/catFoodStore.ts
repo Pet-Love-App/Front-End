@@ -13,12 +13,14 @@
  * @module catFoodStore
  */
 
-import { catFoodService } from '@/src/services/api/catfood';
-import type { CatFood } from '@/src/types/catFood';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMemo } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+
+import { supabaseCatfoodService } from '@/src/lib/supabase';
+import type { CatFood } from '@/src/types/catFood';
+import { logger } from '@/src/utils/logger';
 
 // ==================== 类型定义 ====================
 
@@ -261,7 +263,7 @@ export const useCatFoodStore = create<CatFoodState>()(
 
         // 防止重复请求
         if (state.isLoading && !refresh) {
-          console.log('⏸️ 正在加载中，跳过重复请求');
+          logger.debug('正在加载中，跳过重复请求');
           return;
         }
 
@@ -273,16 +275,25 @@ export const useCatFoodStore = create<CatFoodState>()(
             set({ isLoading: true, error: null });
           }
 
-          console.log(`📡 获取猫粮列表 - 第${page}页`);
+          logger.info('获取猫粮列表', { page });
 
-          // 调用API
-          const response = await catFoodService.getCatFoods(page, DEFAULT_PAGE_SIZE);
+          // 调用 Supabase API
+          const { data, error } = await supabaseCatfoodService.listCatfoods({
+            page,
+            pageSize: DEFAULT_PAGE_SIZE,
+          });
 
-          if (!response || !Array.isArray(response.results)) {
+          if (error) {
+            throw new Error(error.message);
+          }
+
+          if (!data || !Array.isArray(data)) {
             throw new Error('响应数据格式异常');
           }
 
-          const { results, count, next } = response;
+          const results = data;
+          const count = data.length;
+          const next = data.length === DEFAULT_PAGE_SIZE ? 'has_more' : null;
 
           // 更新entities（规范化存储）
           const newEntities = { ...state.entities };
@@ -324,10 +335,10 @@ export const useCatFoodStore = create<CatFoodState>()(
             cacheMetadata: { ...state.cacheMetadata },
           });
 
-          console.log(`✅ 成功加载 ${results.length} 条猫粮数据`);
+          logger.info('成功加载猫粮数据', { count: results.length });
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : '获取猫粮列表失败';
-          console.error('❌ 获取猫粮列表失败:', error);
+          logger.error('获取猫粮列表失败', error as Error);
           set({ error: errorMsg });
           throw error;
         } finally {
@@ -343,15 +354,21 @@ export const useCatFoodStore = create<CatFoodState>()(
 
         // 检查缓存
         if (!forceRefresh && state.entities[id] && state.isCacheValid(id)) {
-          console.log(`💾 使用缓存数据 - ID: ${id}`);
+          logger.debug('使用缓存数据', { id });
           return state.entities[id];
         }
 
         try {
           set({ isLoading: true, error: null });
-          console.log(`📡 获取猫粮详情 - ID: ${id}`);
+          logger.info('获取猫粮详情', { id });
 
-          const catfood = await catFoodService.getCatFood(id);
+          const { data: catfood, error } = await supabaseCatfoodService.getCatfoodDetail(
+            String(id)
+          );
+
+          if (error || !catfood) {
+            throw new Error(error?.message || '获取猫粮详情失败');
+          }
 
           // 更新entity
           const newEntities = { ...state.entities, [id]: catfood };
@@ -370,11 +387,11 @@ export const useCatFoodStore = create<CatFoodState>()(
             cacheMetadata: newMetadata,
           });
 
-          console.log(`✅ 成功获取猫粮详情 - ${catfood.name}`);
+          logger.info('成功获取猫粮详情', { name: catfood.name });
           return catfood;
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : '获取猫粮详情失败';
-          console.error('❌ 获取猫粮详情失败:', error);
+          logger.error('获取猫粮详情失败', error as Error);
           set({ error: errorMsg });
           throw error;
         } finally {
@@ -389,7 +406,7 @@ export const useCatFoodStore = create<CatFoodState>()(
         const state = get();
 
         if (!query.trim()) {
-          console.warn('⚠️ 搜索关键词为空');
+          logger.warn('搜索关键词为空');
           set({
             lists: { ...state.lists, search: [] },
             pagination: {
@@ -402,19 +419,25 @@ export const useCatFoodStore = create<CatFoodState>()(
 
         try {
           set({ isLoading: true, error: null });
-          console.log(`🔍 搜索猫粮 - 关键词: "${query}", 第${page}页`);
+          logger.info('搜索猫粮', { query, page });
 
-          const response = await catFoodService.searchCatFood({
-            name: query,
+          const { data, error } = await supabaseCatfoodService.listCatfoods({
+            search: query,
             page,
-            page_size: DEFAULT_PAGE_SIZE,
+            pageSize: DEFAULT_PAGE_SIZE,
           });
 
-          if (!response || !Array.isArray(response.results)) {
+          if (error) {
+            throw new Error(error.message);
+          }
+
+          if (!data || !Array.isArray(data)) {
             throw new Error('搜索响应数据格式异常');
           }
 
-          const { results, count, next } = response;
+          const results = data;
+          const count = data.length;
+          const next = data.length === DEFAULT_PAGE_SIZE ? 'has_more' : null;
 
           // 更新entities
           const newEntities = { ...state.entities };
@@ -452,10 +475,10 @@ export const useCatFoodStore = create<CatFoodState>()(
             cacheMetadata: { ...state.cacheMetadata },
           });
 
-          console.log(`✅ 搜索成功，找到 ${results.length} 条结果`);
+          logger.info('搜索成功', { resultCount: results.length });
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : '搜索猫粮失败';
-          console.error('❌ 搜索猫粮失败:', error);
+          logger.error('搜索猫粮失败', error as Error);
           set({ error: errorMsg });
           throw error;
         } finally {
@@ -471,7 +494,7 @@ export const useCatFoodStore = create<CatFoodState>()(
         const pagination = state.pagination[listType];
 
         if (!pagination.hasMore || state.isLoadingMore) {
-          console.log('⏸️ 没有更多数据或正在加载中');
+          logger.debug('没有更多数据或正在加载中');
           return;
         }
 
@@ -479,18 +502,18 @@ export const useCatFoodStore = create<CatFoodState>()(
           set({ isLoadingMore: true, error: null });
           const nextPage = pagination.page + 1;
 
-          console.log(`📄 加载更多 - ${listType} 列表，第${nextPage}页`);
+          logger.info('加载更多', { listType, page: nextPage });
 
           if (listType === 'all') {
             await get().fetchCatFoods(nextPage, false);
           } else if (listType === 'search') {
             // 需要保存搜索关键词以支持加载更多
-            console.warn('⚠️ 搜索列表的加载更多需要提供搜索关键词');
+            logger.warn('搜索列表的加载更多需要提供搜索关键词');
           }
 
-          console.log('✅ 加载更多成功');
+          logger.info('加载更多成功');
         } catch (error) {
-          console.error('❌ 加载更多失败:', error);
+          logger.error('加载更多失败', error as Error);
         } finally {
           set({ isLoadingMore: false });
         }
@@ -504,7 +527,7 @@ export const useCatFoodStore = create<CatFoodState>()(
         const existingCatFood = state.entities[id];
 
         if (!existingCatFood) {
-          console.warn(`⚠️ 猫粮不存在 - ID: ${id}`);
+          logger.warn('猫粮不存在', { id });
           return;
         }
 
@@ -517,7 +540,7 @@ export const useCatFoodStore = create<CatFoodState>()(
           },
         });
 
-        console.log(`✅ 乐观更新猫粮 - ID: ${id}`);
+        logger.debug('乐观更新猫粮', { id });
       },
 
       /**
@@ -550,7 +573,7 @@ export const useCatFoodStore = create<CatFoodState>()(
           cacheMetadata: { ...state.cacheMetadata },
         });
 
-        console.log(`✅ 批量添加 ${catfoods.length} 条猫粮到 ${listType} 列表`);
+        logger.debug('批量添加猫粮', { count: catfoods.length, listType });
       },
 
       // ==================== 缓存管理 ====================
@@ -606,7 +629,7 @@ export const useCatFoodStore = create<CatFoodState>()(
         });
 
         const removedCount = Object.keys(state.entities).length - validIds.length;
-        console.log(`🧹 清除了 ${removedCount} 条过期缓存`);
+        logger.info('清除过期缓存', { removedCount });
       },
 
       /**
@@ -629,7 +652,7 @@ export const useCatFoodStore = create<CatFoodState>()(
           error: null,
         });
 
-        console.log('🧹 清除所有缓存');
+        logger.info('清除所有缓存');
       },
 
       // ==================== 工具方法 ====================
@@ -694,7 +717,7 @@ export const useCatFoodStore = create<CatFoodState>()(
           error: null,
         });
 
-        console.log('🔄 重置猫粮Store');
+        logger.info('重置猫粮Store');
       },
     }),
     {
@@ -709,7 +732,7 @@ export const useCatFoodStore = create<CatFoodState>()(
       // 水化完成后的回调
       onRehydrateStorage: () => (state) => {
         if (state) {
-          console.log('💧 猫粮状态恢复完成:', {
+          logger.info('猫粮状态恢复完成', {
             entityCount: Object.keys(state.entities).length,
             allListCount: state.lists.all.length,
           });

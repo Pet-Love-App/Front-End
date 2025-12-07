@@ -1,16 +1,12 @@
 /**
  * CameraBottomBar - 相机底部操作栏
- *
- * 企业最佳实践：
- * - 单一职责：底部操作按钮
- * - Props类型化：清晰的接口定义
  */
 
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { ScanType } from '@/src/types/camera';
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { ScanType } from '@/src/types/camera';
 
 interface CameraBottomBarProps {
   scanType: ScanType;

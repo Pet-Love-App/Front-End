@@ -1,5 +1,6 @@
-import SearchBox from '@/src/components/searchBox';
 import { YStack } from 'tamagui';
+import SearchBox from '@/src/components/searchBox';
+
 import { BrandFilterMenu } from './BrandFilterMenu';
 import { FilterChips } from './FilterChips';
 import { StatisticsBar } from './StatisticsBar';

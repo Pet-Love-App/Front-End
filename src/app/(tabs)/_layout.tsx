@@ -1,11 +1,12 @@
+import React from 'react';
+import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Tabs } from 'expo-router';
+
 import { HapticTab } from '@/src/components/HapticTab';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
   const colorScheme = useThemeAwareColorScheme();
@@ -49,7 +50,7 @@ export default function TabLayout() {
         name="scanner"
         options={{
           title: '',
-          tabBarIcon: ({ color, focused }) => (
+          tabBarIcon: ({ color: _color, focused: _focused }) => (
             <View
               style={{
                 width: 60,

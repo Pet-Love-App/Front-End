@@ -1,8 +1,9 @@
+import { Card, Spinner, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Pet } from '@/src/schemas/pet.schema';
-import { Card, Spinner, Text, XStack, YStack } from 'tamagui';
+
 import { PetCard } from './PetCard';
 
 interface PetListProps {
@@ -12,7 +13,7 @@ interface PetListProps {
   onPetPress: (pet: Pet) => void;
 }
 
-export function PetList({ pets = [], isLoading, onAddPet, onPetPress }: PetListProps) {
+export function PetList({ pets = [], isLoading, onAddPet: _onAddPet, onPetPress }: PetListProps) {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
 

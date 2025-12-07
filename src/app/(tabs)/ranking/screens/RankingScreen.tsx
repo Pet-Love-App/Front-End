@@ -3,21 +3,24 @@
  *
  * 企业级最佳实践：
  * - 组件化：拆分成多个小组件，职责单一
- * - 性能优化：useMemo、useCallback、React.memo
+ * - 性能优化：useMemo、useCallback、React.memo、懒加载
  * - 状态管理：Zustand store + 选择器模式
  * - 用户体验：下拉刷新、无限滚动、空状态
  * - 代码质量：TypeScript、清晰的注释
  * - 可维护性：小文件、易于理解和修改
  */
 
-import { CatFoodCard } from '@/src/components/CatFoodCard';
-import { PageHeader } from '@/src/components/PageHeader';
-import type { CatFood } from '@/src/types/catFood';
-import { useRouter } from 'expo-router';
 import React from 'react';
 import { FlatList, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { YStack } from 'tamagui';
+import { CatFoodCard } from '@/src/components/CatFoodCard';
+import { Skeleton } from '@/src/components/lazy';
+import { PageHeader } from '@/src/components/PageHeader';
+import type { CatFood } from '@/src/types/catFood';
+import { useLazyLoad } from '@/src/hooks';
+
 import {
   EmptyState,
   ImagePreviewModal,
@@ -30,6 +33,9 @@ import { useImagePreview, useRankingData, useRankingFilter } from '../hooks';
 export function RankingScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+
+  // 懒加载控制
+  const { isReady: isSwiperReady } = useLazyLoad({ delay: 150, waitForInteraction: true });
 
   // 使用自定义 hooks
   const { catfoods, isLoading, isRefreshing, isLoadingMore, handleRefresh, handleLoadMore } =
@@ -82,10 +88,15 @@ export function RankingScreen() {
   const renderHeader = () => {
     return (
       <>
-        {/* 热门推荐轮播图 */}
-        {topCatFoods.length > 0 && (
-          <TopRankingSwiper data={topCatFoods} topCount={5} onPress={handleCatFoodPress} />
-        )}
+        {/* 热门推荐轮播图 - 懒加载 */}
+        {topCatFoods.length > 0 &&
+          (isSwiperReady ? (
+            <TopRankingSwiper data={topCatFoods} topCount={5} onPress={handleCatFoodPress} />
+          ) : (
+            <YStack height={200} margin="$3" borderRadius="$4" overflow="hidden">
+              <Skeleton width="100%" height={200} borderRadius={12} />
+            </YStack>
+          ))}
 
         {/* 搜索框和筛选区域 */}
         <SearchFilterSection

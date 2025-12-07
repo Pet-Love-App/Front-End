@@ -1,7 +1,7 @@
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Image, Modal, Pressable } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface ImagePreviewModalProps {
   visible: boolean;

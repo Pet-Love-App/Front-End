@@ -1,8 +1,8 @@
+import { Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Card, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useResponsiveLayout } from '@/src/hooks/useResponsiveLayout';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Image } from 'react-native';
-import { Card, Text, XStack, YStack } from 'tamagui';
 
 interface ReportHeaderProps {
   name: string;

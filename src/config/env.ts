@@ -4,8 +4,7 @@
  */
 
 // 使用环境变量优先，其次默认服务器地址（如需本地调试请显式设置 EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:8000）
-export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL || 'http://82.157.255.92:8000';
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://82.157.255.92';
 
 export const ENV = {
   // API 配置

@@ -6,6 +6,7 @@
  */
 
 import { Platform } from 'react-native';
+
 import { Colors as UnifiedColors } from './colors';
 
 // 导出统一的颜色系统

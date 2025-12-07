@@ -7,8 +7,9 @@
  * - 'system': 跟随系统主题
  */
 
-import { useThemeStore } from '@/src/store/themeStore';
 import { useColorScheme as useRNColorScheme } from 'react-native';
+
+import { useThemeStore } from '@/src/store/themeStore';
 
 export function useThemeAwareColorScheme() {
   const { themeMode } = useThemeStore();

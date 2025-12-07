@@ -1,12 +1,13 @@
+import { useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { Card, ScrollView, Separator, Text, XStack, YStack } from 'tamagui';
 import { PageHeader } from '@/src/components/PageHeader';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { useThemeStore } from '@/src/store/themeStore';
 import { useUserStore } from '@/src/store/userStore';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Card, ScrollView, Separator, Text, XStack, YStack } from 'tamagui';
+
 import { EditProfileModal } from '../components/EditProfileModal';
 import { LogoutButton } from '../components/LogoutButton';
 import { SettingItem } from '../components/SettingItem';
@@ -16,7 +17,7 @@ export default function SettingsPage() {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
-  const router = useRouter();
+  const _router = useRouter();
   const { themeMode, setThemeMode } = useThemeStore();
   const { user } = useUserStore();
 

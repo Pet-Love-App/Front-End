@@ -1,8 +1,9 @@
+import { Dimensions, Image } from 'react-native';
+import { Button, Dialog, Text, XStack, YStack } from 'tamagui';
+
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Pet } from '@/src/schemas/pet.schema';
-import { Dimensions, Image } from 'react-native';
-import { Button, Dialog, Text, XStack, YStack } from 'tamagui';
 
 interface PetDetailModalProps {
   pet: Pet | null;
@@ -54,9 +55,9 @@ export function PetDetailModal({ pet, open, onOpenChange }: PetDetailModalProps)
           </Dialog.Title>
 
           <YStack gap="$3" alignItems="center">
-            {pet.photo ? (
+            {pet.photo_url ? (
               <Image
-                source={{ uri: pet.photo }}
+                source={{ uri: pet.photo_url }}
                 style={{
                   width: 200,
                   height: 200,

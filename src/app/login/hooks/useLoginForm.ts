@@ -1,9 +1,10 @@
-import { loginSchema } from '@/src/schemas/auth.schema';
-import { useUserStore } from '@/src/store/userStore';
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert } from 'react-native';
+import { useRouter } from 'expo-router';
 import { ZodError } from 'zod';
+
+import { useUserStore } from '@/src/store/userStore';
+import { loginSchema } from '@/src/schemas/auth.schema';
 
 /**
  * 登录表单 Hook
@@ -11,9 +12,9 @@ import { ZodError } from 'zod';
  */
 export function useLoginForm() {
   const router = useRouter();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
   const { login, isLoading } = useUserStore();
 
@@ -23,17 +24,17 @@ export function useLoginForm() {
 
     try {
       // 使用 Zod 验证表单数据
-      loginSchema.parse({ username, password });
+      loginSchema.parse({ email, password });
 
       // 验证通过，执行登录
-      await login(username, password);
+      await login(email, password);
       router.replace('/(tabs)/collect');
     } catch (error) {
       if (error instanceof ZodError) {
         // 处理验证错误
-        const fieldErrors: { username?: string; password?: string } = {};
+        const fieldErrors: { email?: string; password?: string } = {};
         error.errors.forEach((err) => {
-          const field = err.path[0] as 'username' | 'password';
+          const field = err.path[0] as 'email' | 'password';
           fieldErrors[field] = err.message;
         });
         setErrors(fieldErrors);
@@ -49,9 +50,9 @@ export function useLoginForm() {
     }
   };
 
-  const handleUsernameChange = (text: string) => {
-    setUsername(text);
-    if (errors.username) setErrors({ ...errors, username: undefined });
+  const handleEmailChange = (text: string) => {
+    setEmail(text);
+    if (errors.email) setErrors({ ...errors, email: undefined });
   };
 
   const handlePasswordChange = (text: string) => {
@@ -64,11 +65,11 @@ export function useLoginForm() {
   };
 
   return {
-    username,
+    email,
     password,
     errors,
     isLoading,
-    handleUsernameChange,
+    handleEmailChange,
     handlePasswordChange,
     handleLogin,
     navigateToRegister,

@@ -1,8 +1,8 @@
+import { Button, Card, Dialog, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { ThemeMode } from '@/src/store/themeStore';
-import { Button, Card, Dialog, Text, XStack, YStack } from 'tamagui';
 
 interface ThemeSelectorModalProps {
   open: boolean;
@@ -11,12 +11,12 @@ interface ThemeSelectorModalProps {
   onThemeChange: (theme: ThemeMode) => void;
 }
 
-const THEME_OPTIONS: Array<{
+const THEME_OPTIONS: {
   mode: ThemeMode;
   label: string;
   icon: string;
   description: string;
-}> = [
+}[] = [
   { mode: 'light', label: '浅色', icon: 'sun.max.fill', description: '明亮清晰的界面' },
   { mode: 'dark', label: '深色', icon: 'moon.fill', description: '护眼深色主题' },
   {

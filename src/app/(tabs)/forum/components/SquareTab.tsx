@@ -1,29 +1,19 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, FlatList, Image, RefreshControl } from 'react-native';
+import LottieView from 'lottie-react-native';
+import { Button, Card, Spinner, Text, XStack, YStack } from 'tamagui';
 import Tag from '@/src/components/ui/Tag';
 import { Colors } from '@/src/constants/colors';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import { forumService, type Post } from '@/src/services/api/forum';
-import LottieView from 'lottie-react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, FlatList, Image, RefreshControl } from 'react-native';
-import { Button, Card, Spinner, Text, XStack, YStack } from 'tamagui';
-import { ForumColors, MORANDI_COLORS } from '../constants';
+import { supabaseForumService, type Post } from '@/src/lib/supabase';
 
 interface SquareTabProps {
   onOpenPost?: (post: Post) => void;
   externalReloadRef?: React.MutableRefObject<(() => void) | null>;
-  order?: 'latest' | 'most_replied' | 'featured' | 'random';
+  order?: 'latest' | 'most_replied' | 'featured';
   filterTag?: string;
   filterTags?: string[];
 }
-
-const getBadgeColor = (key: string, isDark: boolean) => {
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  }
-  const bg = MORANDI_COLORS[hash % MORANDI_COLORS.length];
-  return { bg, fg: isDark ? '#ECEDEE' : ForumColors.text };
-};
 
 export function SquareTab({
   onOpenPost,
@@ -44,12 +34,17 @@ export function SquareTab({
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const params: any = { order };
+      const params: {
+        order: 'latest' | 'most_replied' | 'featured';
+        tag?: string;
+        tags?: string[];
+      } = { order };
       if (filterTag) params.tag = filterTag;
       if (filterTags && filterTags.length) params.tags = filterTags;
-      const res = await forumService.getSquareList(params);
-      setList(res);
-    } catch (e) {
+      const { data, error } = await supabaseForumService.getPosts(params);
+      if (error) throw error;
+      setList(data || []);
+    } catch (_e) {
       Alert.alert('错误', '加载失败');
     } finally {
       setLoading(false);
@@ -74,14 +69,18 @@ export function SquareTab({
 
   const toggleFavorite = async (postId: number, wasFavorited: boolean) => {
     try {
-      const res = await forumService.toggleFavorite(postId);
+      const { data: res, error } = await supabaseForumService.toggleFavorite(postId);
+      if (error || !res) {
+        Alert.alert('错误', '操作失败');
+        return;
+      }
       setList((prev) =>
         prev.map((p) =>
           p.id === postId
             ? {
                 ...p,
-                is_favorited: res.action === 'favorited',
-                favorites_count: res.favorites_count ?? p.favorites_count,
+                isFavorited: res.action === 'favorited',
+                favoritesCount: res.favoritesCount ?? p.favoritesCount,
               }
             : p
         )
@@ -89,7 +88,7 @@ export function SquareTab({
       if (!wasFavorited && res.action === 'favorited') {
         setTimeout(() => animationRefs.current[postId]?.play(), 0);
       }
-    } catch (e) {
+    } catch (_e) {
       Alert.alert('错误', '操作失败');
     }
   };
@@ -114,10 +113,10 @@ export function SquareTab({
     return (
       <XStack gap="$2" flexWrap="wrap">
         {thumbs.map((m, idx) =>
-          m.media_type === 'image' ? (
+          m.mediaType === 'image' ? (
             <Card key={m.id} width={110} height={110} overflow="hidden">
               <Image
-                source={{ uri: m.file }}
+                source={{ uri: m.fileUrl }}
                 style={{ width: '100%', height: '100%' }}
                 resizeMode="cover"
               />
@@ -165,7 +164,7 @@ export function SquareTab({
       <YStack gap="$2">
         <XStack alignItems="center" justifyContent="space-between">
           <Text fontWeight="700">{item.author.username}</Text>
-          <Text color="$gray10">{new Date(item.created_at).toLocaleString()}</Text>
+          <Text color="$gray10">{new Date(item.createdAt).toLocaleString()}</Text>
         </XStack>
         <Text>{item.content}</Text>
 
@@ -174,21 +173,21 @@ export function SquareTab({
 
         <XStack gap="$3" alignItems="center" justifyContent="space-between">
           <XStack gap="$3" alignItems="center">
-            <Text color="$gray10">{item.comments_count ?? 0} 回复</Text>
-            <Text color="$gray10">{item.favorites_count} 收藏</Text>
+            <Text color="$gray10">{item.commentsCount ?? 0} 回复</Text>
+            <Text color="$gray10">{item.favoritesCount} 收藏</Text>
           </XStack>
           <XStack gap="$3" alignItems="center">
             <Button
               size="$2"
-              onPress={() => toggleFavorite(item.id, item.is_favorited)}
-              backgroundColor={item.is_favorited ? '$yellow4' : '$background'}
+              onPress={() => toggleFavorite(item.id, item.isFavorited)}
+              backgroundColor={item.isFavorited ? '$yellow4' : '$background'}
             >
               <XStack alignItems="center" gap="$1">
-                <Text fontSize="$5" color={item.is_favorited ? '$yellow10' : '$gray10'}>
-                  {item.is_favorited ? '★' : '☆'}
+                <Text fontSize="$5" color={item.isFavorited ? '$yellow10' : '$gray10'}>
+                  {item.isFavorited ? '★' : '☆'}
                 </Text>
                 <Text fontSize="$3" color="$gray11">
-                  {item.favorites_count}
+                  {item.favoritesCount}
                 </Text>
               </XStack>
               <YStack

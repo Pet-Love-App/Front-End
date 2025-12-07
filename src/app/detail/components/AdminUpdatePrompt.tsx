@@ -2,15 +2,11 @@
  * AdminUpdatePrompt Component
  *
  * 管理员专用：允许重新扫描并更新已有营养成分信息
- * 企业最佳实践：
- * - 权限控制：仅管理员可见
- * - 明确的操作提示：说明管理员权限
- * - 视觉区分：使用特殊颜色标识管理员功能
  */
 
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { router } from 'expo-router';
 import { Card, Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface AdminUpdatePromptProps {
   /** 猫粮ID */

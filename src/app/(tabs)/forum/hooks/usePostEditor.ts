@@ -3,10 +3,11 @@
  * 管理帖子创建/编辑的所有状态和逻辑
  */
 
-import { forumService } from '@/src/services/api/forum';
-import type { Post, PostCategory } from '@/src/services/api/forum/types';
-import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
+
+import { supabaseForumService, type Post, type PostCategory } from '@/src/lib/supabase';
+
 import { MEDIA_LIMITS } from '../constants';
 
 export interface MediaFile {
@@ -223,10 +224,13 @@ export function usePostEditor(options: UsePostEditorOptions = {}) {
         // 3. 调用 API
         if (editingPost) {
           // 更新现有帖子
-          await forumService.updatePost(editingPost.id, postData);
+          const { error } = await supabaseForumService.updatePost(editingPost.id, postData);
+          if (error) throw error;
         } else {
           // 创建新帖子
-          await forumService.createPost(postData, state.pickedFiles);
+          // TODO: 需要实现媒体上传功能，暂时不支持 pickedFiles
+          const { error } = await supabaseForumService.createPost(postData);
+          if (error) throw error;
         }
 
         // 4. 成功后清理

@@ -1,20 +1,15 @@
 /**
  * ExpoCameraView - 相机视图主组件
- *
- * 企业最佳实践：
- * - 组件化拆分：将UI和逻辑拆分到子组件和Hook
- * - 单一职责：主组件仅负责组织布局和状态协调
- * - 可维护性：清晰的组件层次结构
- * - 类型安全：完整的 TypeScript 类型定义
  */
 
-import type { ExpoBarcodeResult } from '@/src/types/camera';
-import { ScanType } from '@/src/types/camera';
-import { CameraType, CameraView } from 'expo-camera';
-import * as Haptics from 'expo-haptics';
 import React, { useCallback, useRef, useState } from 'react';
 import { Animated, LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { CameraType, CameraView } from 'expo-camera';
+import * as Haptics from 'expo-haptics';
 import { YStack } from 'tamagui';
+
+import { ScanType } from '@/src/types/camera';
+import type { ExpoBarcodeResult } from '@/src/types/camera';
 
 import { CameraBottomBar } from './components/CameraBottomBar';
 import { CameraControls } from './components/CameraControls';

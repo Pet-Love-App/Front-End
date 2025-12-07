@@ -4,12 +4,14 @@
  * 重构后：UI 层只负责渲染，业务逻辑在 Hook 中
  */
 
-import { Colors } from '@/src/constants/colors';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import type { Post } from '@/src/services/api/forum/types';
 import React, { useEffect } from 'react';
 import { Alert, Image } from 'react-native';
 import { Button, Card, Text, TextArea, XStack, YStack } from 'tamagui';
+
+import { Colors } from '@/src/constants/colors';
+import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
+import type { Post } from '@/src/services/api/forum/types';
+
 import { ForumColors, MESSAGES, POST_CATEGORIES, UI_CONFIG } from '../constants';
 import { usePostEditor } from '../hooks/usePostEditor';
 import { createErrorHandler } from '../utils';
@@ -68,7 +70,7 @@ export function PostEditor({
         return;
       }
       editor.addFiles(files);
-    } catch (error) {
+    } catch (_error) {
       errorHandler.handle(error, { title: '选择媒体失败' });
     }
   };
@@ -77,7 +79,7 @@ export function PostEditor({
   const handleSubmit = async () => {
     try {
       await editor.submit(editingPost);
-    } catch (error) {
+    } catch (_error) {
       // 错误已在 Hook 中处理，这里不需要额外处理
     }
   };

@@ -1,11 +1,13 @@
+import { memo, useEffect, useState } from 'react';
+import { Alert, Image, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Card, Spinner, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-import { likeApi, type Like } from '@/src/services/api/like';
-import { useRouter } from 'expo-router';
-import { memo, useEffect, useState } from 'react';
-import { Alert, Image, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
-import { Card, Spinner, Text, XStack, YStack } from 'tamagui';
+import { supabaseCatfoodService } from '@/src/lib/supabase';
+import { useUserStore } from '@/src/store/userStore';
+import type { CatFood } from '@/src/types/catFood';
 
 /**
  * 点赞 Tab 组件
@@ -21,7 +23,8 @@ export const LikesTab = memo(function LikesTab() {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
   const router = useRouter();
-  const [likes, setLikes] = useState<Like[]>([]);
+  const { _hasHydrated, isAuthenticated } = useUserStore();
+  const [likes, setLikes] = useState<CatFood[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -36,8 +39,14 @@ export const LikesTab = memo(function LikesTab() {
         setIsLoading(true);
       }
 
-      const data = await likeApi.getLikes();
-      setLikes(data);
+      // 获取用户点赞的猫粮列表
+      const { data, error } = await supabaseCatfoodService.getUserLikes({ page: 1, pageSize: 100 });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      setLikes(data || []);
     } catch (error: any) {
       console.error('加载点赞列表失败:', error);
       Alert.alert('错误', '加载点赞列表失败，请稍后重试');
@@ -48,8 +57,14 @@ export const LikesTab = memo(function LikesTab() {
   };
 
   useEffect(() => {
-    loadLikes();
-  }, []);
+    // 等待 Zustand 状态恢复完成后再加载点赞列表
+    if (_hasHydrated && isAuthenticated) {
+      loadLikes();
+    } else if (_hasHydrated && !isAuthenticated) {
+      // 如果已经恢复但未认证，停止加载
+      setIsLoading(false);
+    }
+  }, [_hasHydrated, isAuthenticated]);
 
   /**
    * 跳转到猫粮详情
@@ -112,10 +127,10 @@ export const LikesTab = memo(function LikesTab() {
       }
     >
       <YStack width="100%" alignItems="center" paddingVertical="$4" gap="$3">
-        {likes.map((like) => (
+        {likes.map((catfood) => (
           <TouchableOpacity
-            key={like.id}
-            onPress={() => handleNavigateToDetail(like.catfood.id)}
+            key={catfood.id}
+            onPress={() => handleNavigateToDetail(catfood.id)}
             activeOpacity={0.8}
             style={{ width: '90%' }}
           >
@@ -129,7 +144,7 @@ export const LikesTab = memo(function LikesTab() {
             >
               <XStack gap="$3" alignItems="center">
                 {/* 猫粮图片 */}
-                {like.catfood.imageUrl ? (
+                {catfood.imageUrl ? (
                   <YStack
                     width={80}
                     height={80}
@@ -138,7 +153,7 @@ export const LikesTab = memo(function LikesTab() {
                     backgroundColor="$gray2"
                   >
                     <Image
-                      source={{ uri: like.catfood.imageUrl }}
+                      source={{ uri: catfood.imageUrl }}
                       style={{ width: '100%', height: '100%' }}
                       resizeMode="cover"
                     />
@@ -159,13 +174,13 @@ export const LikesTab = memo(function LikesTab() {
                 {/* 猫粮信息 */}
                 <YStack flex={1} gap="$2">
                   <Text fontSize={16} fontWeight="600" color={colors.text} numberOfLines={2}>
-                    {like.catfood.name}
+                    {catfood.name}
                   </Text>
-                  {like.catfood.brand && (
+                  {catfood.brand && (
                     <XStack gap="$1.5" alignItems="center">
                       <IconSymbol name="building.2.fill" size={14} color={colors.icon} />
                       <Text fontSize={13} color={colors.icon}>
-                        {like.catfood.brand}
+                        {catfood.brand}
                       </Text>
                     </XStack>
                   )}
@@ -173,7 +188,7 @@ export const LikesTab = memo(function LikesTab() {
                     <XStack gap="$1" alignItems="center">
                       <IconSymbol name="star.fill" size={14} color="#FDB97A" />
                       <Text fontSize={13} fontWeight="600" color={colors.text}>
-                        {like.catfood.score ? like.catfood.score.toFixed(1) : '暂无评分'}
+                        {catfood.score ? catfood.score.toFixed(1) : '暂无评分'}
                       </Text>
                     </XStack>
                   </XStack>

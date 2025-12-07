@@ -3,10 +3,11 @@
  * 使用统一的颜色系统
  */
 
-import { getContrastTextColor, getTagColor } from '@/src/constants/colors';
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Text, View } from 'tamagui';
+
+import { getContrastTextColor, getTagColor } from '@/src/constants/colors';
 
 interface TagProps {
   name: string;

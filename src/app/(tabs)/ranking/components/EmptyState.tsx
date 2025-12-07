@@ -1,6 +1,6 @@
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Pressable } from 'react-native';
 import { Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface EmptyStateProps {
   type: 'search' | 'complete' | 'default';
@@ -13,7 +13,12 @@ interface EmptyStateProps {
  * 空状态组件
  * 根据不同情况显示不同的空状态
  */
-export function EmptyState({ type, searchQuery, onReset, onRefresh }: EmptyStateProps) {
+export function EmptyState({
+  type,
+  searchQuery: _searchQuery,
+  onReset,
+  onRefresh,
+}: EmptyStateProps) {
   // 搜索结果为空
   if (type === 'search') {
     return (

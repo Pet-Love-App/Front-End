@@ -1,5 +1,5 @@
-import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Card, Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface SafetyAnalysisSectionProps {
   safety: string;

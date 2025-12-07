@@ -1,12 +1,12 @@
+import { useState } from 'react';
+import { Alert, TouchableOpacity } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Avatar, Spinner, Text, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { useUserStore } from '@/src/store/userStore';
-import * as ImagePicker from 'expo-image-picker';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useState } from 'react';
-import { Alert, TouchableOpacity } from 'react-native';
-import { Avatar, Spinner, Text, YStack } from 'tamagui';
 
 interface ProfileHeaderProps {
   /** 用户名 */

@@ -16,20 +16,27 @@ export interface GenerateReportRequest {
  * 后端返回的原始数据结构
  */
 interface BackendReportResponse {
-  /** 识别到的添加剂列表 */
-  additive: string[];
-  /** 识别到的营养成分名称列表 */
-  ingredient: string[];
-  /** 安全性分析（约50字） */
-  safety: string;
-  /** 营养分析（约300字） */
-  nutrient: string;
-  /** 是否包含百分比数据 */
-  percentage: boolean;
-  /** 百分比数据（动态字段，如 protein, fat, fiber, ash, moisture, carbohydrates, others 等） */
-  percent_data: Record<string, number | null>;
-  /** 标签 */
-  tags?: string[];
+  /** 是否成功 */
+  ok: boolean;
+  /** 提示消息 */
+  message: string;
+  /** 报告数据 */
+  data: {
+    /** 识别到的添加剂列表 */
+    additive: string[];
+    /** 识别到的营养成分名称列表 */
+    ingredient: string[];
+    /** 安全性分析（约50字） */
+    safety: string;
+    /** 营养分析（约300字） */
+    nutrient: string;
+    /** 是否包含百分比数据 */
+    percentage: boolean;
+    /** 百分比数据（动态字段，如 protein, fat, fiber, ash, moisture, carbohydrates, others 等） */
+    percent_data: Record<string, number | null>;
+    /** 标签 */
+    tags?: string[];
+  };
 }
 
 /**
@@ -71,14 +78,19 @@ export interface IngredientInfoRequest {
 export interface IngredientInfoResponse {
   /** 是否成功 */
   ok: boolean;
-  /** 标题 */
-  title?: string;
-  /** 摘要 */
-  extract?: string;
-  /** Wikipedia URL */
-  url?: string;
-  /** 语言 */
-  lang?: string;
+  /** 提示消息 */
+  message?: string;
+  /** 百科数据 */
+  data?: {
+    /** 标题 */
+    title?: string;
+    /** 摘要 */
+    extract?: string;
+    /** Wikipedia URL */
+    url?: string;
+    /** 语言 */
+    lang?: string;
+  };
   /** 错误信息（当ok为false时） */
   error?: {
     code: string;
@@ -115,10 +127,12 @@ export interface SaveReportRequest {
  * 保存 AI 分析报告的响应
  */
 export interface SaveReportResponse {
+  /** 是否成功 */
+  ok: boolean;
   /** 提示消息 */
   message: string;
   /** 保存的报告数据 */
-  report: AIReportData;
+  data: AIReportData;
 }
 
 /**
@@ -129,8 +143,6 @@ export interface AIReportData {
   id: number;
   /** 猫粮 ID */
   catfood_id: number;
-  /** 猫粮名称 */
-  catfood_name: string;
   /** 原始配料表文本 */
   ingredients_text: string;
   /** 产品标签列表 */
@@ -169,4 +181,55 @@ export interface CheckReportExistsResponse {
   updated_at?: string;
   /** 错误信息（如果猫粮不存在） */
   error?: string;
+}
+
+/**
+ * 收藏的猫粮数据（简化版）
+ */
+export interface Favorite {
+  id: number;
+  catfoodId: string;
+  catfood: {
+    id: string;
+    name: string;
+    brand: string;
+    imageUrl?: string;
+    score?: number;
+    barcode?: string;
+    crudeProtein?: number;
+    crudeFat?: number;
+    carbohydrates?: number;
+    crudeFiber?: number;
+    crudeAsh?: number;
+    others?: number;
+    percentData?: {
+      protein?: number;
+      fat?: number;
+      carbohydrates?: number;
+      fiber?: number;
+      ash?: number;
+      others?: number;
+    };
+  };
+  createdAt: string;
+  favoriteId?: number;
+  favoritedAt?: string;
+}
+
+/**
+ * 收藏的 AI 报告数据
+ */
+export interface FavoriteReport {
+  id: number;
+  reportId: number;
+  catfoodId?: number;
+  report: Partial<AIReportData> & {
+    id: number;
+    catfood_id?: number;
+    catfood_name?: string;
+    catfoodName?: string;
+    createdAt?: string;
+    [key: string]: any;
+  };
+  createdAt: string;
 }

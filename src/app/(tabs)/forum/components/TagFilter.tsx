@@ -4,11 +4,13 @@
  * 性能优化：使用 React.memo 避免不必要的重新渲染
  */
 
-import { Colors } from '@/src/constants/colors';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import React from 'react';
 import { ScrollView } from 'react-native';
 import { Button, Spinner, Text, XStack, YStack } from 'tamagui';
+
+import { Colors } from '@/src/constants/colors';
+import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
+
 import { ForumColors } from '../constants';
 import { useForumTags } from '../hooks/useForumTags';
 

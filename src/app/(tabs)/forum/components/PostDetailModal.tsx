@@ -1,11 +1,12 @@
+/**
+ * 帖子详情弹窗 - 查看帖子内容和评论
+ */
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, Dimensions, FlatList, ScrollView } from 'react-native';
 import { Button, Card, Separator, Text, TextArea, XStack, YStack } from 'tamagui';
 import { ForumColors } from '@/src/app/(tabs)/forum/constants';
 import { OptimizedImage } from '@/src/components/ui/OptimizedImage';
 import Tag from '@/src/components/ui/Tag';
-import { Colors } from '@/src/constants/colors';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import {
   supabaseCommentService,
   supabaseForumService,
@@ -14,6 +15,7 @@ import {
   type PostMedia,
 } from '@/src/lib/supabase';
 import { useUserStore } from '@/src/store/userStore';
+import { neutralScale } from '@/src/design-system/tokens';
 
 interface PostDetailModalProps {
   visible: boolean;
@@ -32,9 +34,6 @@ export function PostDetailModal({
   onEditPost,
   onPostDeleted,
 }: PostDetailModalProps) {
-  const colorScheme = useThemeAwareColorScheme();
-  const colors = Colors[colorScheme];
-
   const [comments, setComments] = useState<Comment[]>([]);
   const [content, setContent] = useState('');
   const [replyTarget, setReplyTarget] = useState<Comment | null>(null);
@@ -44,6 +43,7 @@ export function PostDetailModal({
   const windowHeight = Dimensions.get('window').height;
   const contentMaxHeight = Math.max(200, Math.floor(windowHeight * 0.3));
 
+  // 加载评论
   const load = useCallback(async () => {
     if (!post) return;
     try {
@@ -70,6 +70,7 @@ export function PostDetailModal({
     }
   }, [visible, load]);
 
+  // 提交评论
   const submit = async () => {
     if (!post || !content.trim()) return;
     try {
@@ -83,11 +84,12 @@ export function PostDetailModal({
       setContent('');
       setReplyTarget(null);
       await load();
-    } catch (_e) {
+    } catch {
       Alert.alert('错误', '发送失败');
     }
   };
 
+  // 切换点赞
   const toggleLike = async (commentId: number) => {
     try {
       const { data: res, error } = await supabaseCommentService.toggleCommentLike(commentId);
@@ -98,13 +100,14 @@ export function PostDetailModal({
           c.id === commentId ? { ...c, likes: res.likes || 0, isLiked: res.liked } : c
         )
       );
-    } catch (_e) {
+    } catch {
       Alert.alert('错误', '操作失败');
     }
   };
 
   const canEditPost = currentUser && post && currentUser.id === post.author.id;
 
+  // 删除帖子
   const deletePost = async () => {
     if (!post) return;
     Alert.alert('确认删除', '确定删除该帖子吗？', [
@@ -117,7 +120,7 @@ export function PostDetailModal({
             const { error } = await supabaseForumService.deletePost(post.id);
             if (error) throw error;
             onPostDeleted?.();
-          } catch (_e) {
+          } catch {
             Alert.alert('错误', '删除失败');
           }
         },
@@ -127,6 +130,7 @@ export function PostDetailModal({
 
   const isMyComment = (c: Comment) => !!currentUser && c.author?.id === currentUser.id;
 
+  // 编辑评论
   const startEditComment = (c: Comment) => {
     setEditingCommentId(c.id);
     setEditingContent(c.content);
@@ -144,11 +148,12 @@ export function PostDetailModal({
       );
       setEditingCommentId(null);
       setEditingContent('');
-    } catch (_e) {
+    } catch {
       Alert.alert('错误', '更新失败');
     }
   };
 
+  // 删除评论
   const deleteComment = async (commentId: number) => {
     Alert.alert('确认删除', '确定删除该评论吗？', [
       { text: '取消', style: 'cancel' },
@@ -160,7 +165,7 @@ export function PostDetailModal({
             const { error } = await supabaseCommentService.deleteComment(commentId);
             if (error) throw error;
             setComments((prev) => prev.filter((c) => c.id !== commentId));
-          } catch (_e) {
+          } catch {
             Alert.alert('错误', '删除失败');
           }
         },
@@ -190,7 +195,7 @@ export function PostDetailModal({
           帖子详情
         </Text>
         <XStack gap="$2" alignItems="center">
-          {canEditPost ? (
+          {canEditPost && (
             <>
               <Button
                 size="$3"
@@ -209,15 +214,15 @@ export function PostDetailModal({
                 删除
               </Button>
             </>
-          ) : null}
+          )}
           <Button size="$3" chromeless onPress={onClose} color={ForumColors.clay}>
             关闭
           </Button>
         </XStack>
       </XStack>
 
-      {/* 详情内容滚动区域（限制最大高度） */}
-      {post ? (
+      {/* 详情内容滚动区域 */}
+      {post && (
         <ScrollView
           style={{ maxHeight: contentMaxHeight }}
           contentContainerStyle={{ paddingBottom: 8 }}
@@ -225,14 +230,9 @@ export function PostDetailModal({
           <Card
             padding="$3"
             backgroundColor="#FFF5ED"
-            borderColor="#E5E7EB"
+            borderColor={neutralScale.neutral3}
             borderWidth={1}
             borderRadius="$4"
-            shadowColor="#000"
-            shadowOffset={{ width: 0, height: 1 }}
-            shadowOpacity={0.05}
-            shadowRadius={2}
-            elevation={1}
           >
             <YStack gap="$2">
               <Text fontWeight="700" color={ForumColors.clay}>
@@ -281,13 +281,13 @@ export function PostDetailModal({
             </YStack>
           </Card>
         </ScrollView>
-      ) : null}
+      )}
 
       <Text fontSize="$6" fontWeight="700" color={ForumColors.clay}>
         评论（按赞）
       </Text>
 
-      {/* 评论列表占据剩余空间 */}
+      {/* 评论列表 */}
       <YStack flex={1}>
         <FlatList
           data={comments}
@@ -298,9 +298,9 @@ export function PostDetailModal({
               paddingHorizontal="$3"
               marginVertical="$2"
               gap="$2"
-              backgroundColor={colors.cardBackground}
+              backgroundColor="white"
               borderWidth={1}
-              borderColor="#E5E7EB"
+              borderColor={neutralScale.neutral3}
               borderRadius="$3"
             >
               <XStack alignItems="center" justifyContent="space-between">
@@ -316,17 +316,17 @@ export function PostDetailModal({
                   <TextArea
                     value={editingContent}
                     onChangeText={setEditingContent}
-                    backgroundColor={colors.inputBackground}
+                    backgroundColor={neutralScale.neutral1}
                     borderColor={ForumColors.clay + '55'}
                     borderWidth={1}
-                    color={colors.text}
+                    color="$foreground"
                   />
                   <XStack gap="$2">
                     <Button
                       size="$2"
                       onPress={saveEditComment}
                       backgroundColor={ForumColors.clay}
-                      color={colors.buttonPrimaryText}
+                      color="white"
                     >
                       保存
                     </Button>
@@ -350,7 +350,7 @@ export function PostDetailModal({
                   size="$2"
                   onPress={() => toggleLike(item.id)}
                   backgroundColor={item.isLiked ? ForumColors.clay : ForumColors.peach}
-                  color={item.isLiked ? colors.buttonPrimaryText : ForumColors.text}
+                  color={item.isLiked ? 'white' : ForumColors.text}
                 >
                   {item.isLiked ? `已赞 ${item.likes || 0}` : `点赞 ${item.likes || 0}`}
                 </Button>
@@ -362,7 +362,7 @@ export function PostDetailModal({
                 >
                   回复
                 </Button>
-                {isMyComment(item) ? (
+                {isMyComment(item) && (
                   <>
                     <Button
                       size="$2"
@@ -381,7 +381,7 @@ export function PostDetailModal({
                       删除
                     </Button>
                   </>
-                ) : null}
+                )}
               </XStack>
               <Separator backgroundColor={ForumColors.clay + '33'} />
             </YStack>
@@ -392,7 +392,7 @@ export function PostDetailModal({
 
       <Separator backgroundColor={ForumColors.clay + '55'} />
 
-      {replyTarget ? (
+      {replyTarget && (
         <XStack
           alignItems="center"
           justifyContent="space-between"
@@ -410,7 +410,7 @@ export function PostDetailModal({
             取消
           </Button>
         </XStack>
-      ) : null}
+      )}
 
       <XStack gap="$2">
         <TextArea
@@ -418,16 +418,16 @@ export function PostDetailModal({
           value={content}
           onChangeText={setContent}
           placeholder="写下你的评论..."
-          backgroundColor={colors.inputBackground}
+          backgroundColor={neutralScale.neutral1}
           borderColor={ForumColors.clay + '55'}
           borderWidth={1}
-          color={colors.text}
+          color="$foreground"
         />
         <Button
           size="$3"
           onPress={submit}
           backgroundColor={ForumColors.clay}
-          color={colors.buttonPrimaryText}
+          color="white"
           pressStyle={{ opacity: 0.85 }}
         >
           发送

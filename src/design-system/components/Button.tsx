@@ -1,9 +1,8 @@
 import { forwardRef } from 'react';
-import { Button as TamaguiButton, Spinner, styled, GetProps } from 'tamagui';
+import { Button as TamaguiButton, Spinner, Text, XStack, styled, GetProps } from 'tamagui';
 
 const StyledButton = styled(TamaguiButton, {
   name: 'Button',
-  fontWeight: '600',
   borderRadius: '$4',
   pressStyle: { scale: 0.97, opacity: 0.9 },
   animation: 'quick',
@@ -12,48 +11,43 @@ const StyledButton = styled(TamaguiButton, {
     variant: {
       primary: {
         backgroundColor: '$primary',
-        color: 'white',
         hoverStyle: { backgroundColor: '$primaryDark' },
       },
       secondary: {
         backgroundColor: '$color3',
-        color: '$color11',
         hoverStyle: { backgroundColor: '$color4' },
       },
       outline: {
         backgroundColor: 'transparent',
         borderWidth: 1,
         borderColor: '$borderColor',
-        color: '$color11',
         hoverStyle: { backgroundColor: '$color2' },
       },
       ghost: {
         backgroundColor: 'transparent',
-        color: '$color11',
         hoverStyle: { backgroundColor: '$color2' },
       },
       danger: {
         backgroundColor: '$red',
-        color: 'white',
         hoverStyle: { backgroundColor: '$error8' },
       },
     },
     size: {
-      sm: { height: 32, paddingHorizontal: '$2', fontSize: '$3' },
-      md: { height: 40, paddingHorizontal: '$3', fontSize: '$4' },
-      lg: { height: 48, paddingHorizontal: '$4', fontSize: '$5' },
+      sm: { height: 42, paddingHorizontal: '$3' },
+      md: { height: 52, paddingHorizontal: '$4' },
+      lg: { height: 60, paddingHorizontal: '$5' },
     },
     fullWidth: {
       true: { width: '100%' },
     },
     rounded: {
-      true: { borderRadius: '$full' },
+      true: { borderRadius: 9999 },
     },
   } as const,
 
   defaultVariants: {
-    variant: 'primary',
-    size: 'md',
+    variant: 'primary' as const,
+    size: 'md' as const,
   },
 });
 
@@ -65,23 +59,51 @@ interface ButtonProps extends StyledButtonProps {
   rightIcon?: React.ReactNode;
 }
 
+const getTextColor = (variant?: string) => {
+  switch (variant) {
+    case 'primary':
+    case 'danger':
+      return 'white';
+    default:
+      return '$color11';
+  }
+};
+
+// 映射 size 到 Tamagui 字体大小 token
+const FONT_SIZE_MAP: Record<string, number> = {
+  sm: 14,
+  md: 16,
+  lg: 18,
+};
+
 export const Button = forwardRef<React.ElementRef<typeof StyledButton>, ButtonProps>(
-  ({ children, loading, disabled, leftIcon, rightIcon, ...props }, ref) => {
+  ({ children, loading, disabled, leftIcon, rightIcon, variant, size, ...props }, ref) => {
+    const textColor = getTextColor(variant as string);
+    const fontSize = FONT_SIZE_MAP[size as string] || 16;
+
     return (
       <StyledButton
         ref={ref}
         disabled={disabled || loading}
         opacity={disabled ? 0.5 : 1}
+        variant={variant}
+        size={size}
         {...props}
       >
         {loading ? (
-          <Spinner size="small" color="$color" />
+          <Spinner size="small" color={textColor} />
         ) : (
-          <>
+          <XStack alignItems="center" justifyContent="center" gap="$2">
             {leftIcon}
-            {children}
+            {typeof children === 'string' ? (
+              <Text color={textColor} fontSize={fontSize} fontWeight="600">
+                {children}
+              </Text>
+            ) : (
+              children
+            )}
             {rightIcon}
-          </>
+          </XStack>
         )}
       </StyledButton>
     );

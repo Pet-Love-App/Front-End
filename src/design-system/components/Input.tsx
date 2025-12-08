@@ -23,9 +23,9 @@ const StyledInput = styled(TamaguiInput, {
 
   variants: {
     size: {
-      sm: { height: 36, fontSize: '$4' },
-      md: { height: 44, fontSize: '$5' },
-      lg: { height: 52, fontSize: '$6' },
+      sm: { height: 46, fontSize: '$4' },
+      md: { height: 54, fontSize: '$5' },
+      lg: { height: 62, fontSize: '$6' },
     },
     error: {
       true: {

@@ -1,26 +1,19 @@
 /**
- * ProcessingScreen - OCR 处理中状态页面
+ * OCR 处理中状态页面
  */
-
 import React from 'react';
 import type { EdgeInsets } from 'react-native-safe-area-context';
 import { Text, XStack, YStack } from 'tamagui';
 import { LottieAnimation } from '@/src/components/LottieAnimation';
+import { primaryScale, neutralScale } from '@/src/design-system/tokens';
 
-/**
- * 组件 Props 接口
- */
 interface ProcessingScreenProps {
-  /** 安全区域边距 */
   insets: EdgeInsets;
 }
 
-/**
- * OCR 处理中状态页面组件
- */
 export function ProcessingScreen({ insets }: ProcessingScreenProps) {
   return (
-    <YStack flex={1} backgroundColor="#FAFAFA">
+    <YStack flex={1} backgroundColor={neutralScale.neutral1}>
       <YStack
         flex={1}
         justifyContent="center"
@@ -30,14 +23,14 @@ export function ProcessingScreen({ insets }: ProcessingScreenProps) {
         paddingTop={insets.top + 60}
         paddingBottom={insets.bottom + 20}
       >
-        {/* ==================== 加载动画容器 ==================== */}
+        {/* 加载动画 */}
         <YStack
           backgroundColor="white"
           borderRadius="$12"
           padding="$6"
           alignItems="center"
           borderWidth={2}
-          borderColor="#F3F4F6"
+          borderColor={neutralScale.neutral2}
         >
           <LottieAnimation
             source={require('@/assets/animations/cat_loader.json')}
@@ -46,17 +39,23 @@ export function ProcessingScreen({ insets }: ProcessingScreenProps) {
           />
         </YStack>
 
-        {/* ==================== 加载文本 ==================== */}
+        {/* 加载文本 */}
         <YStack alignItems="center" gap="$2.5" maxWidth={320}>
-          <Text fontSize={24} fontWeight="900" color="#111827" letterSpacing={0.5}>
+          <Text fontSize={24} fontWeight="900" color="$foreground" letterSpacing={0.5}>
             正在识别文字...
           </Text>
-          <Text fontSize={15} color="#6B7280" fontWeight="600" textAlign="center" lineHeight={22}>
+          <Text
+            fontSize={15}
+            color={neutralScale.neutral8}
+            fontWeight="600"
+            textAlign="center"
+            lineHeight={22}
+          >
             AI 正在分析图片中的成分信息
           </Text>
         </YStack>
 
-        {/* ==================== 进度提示 ==================== */}
+        {/* 进度提示 */}
         <YStack
           marginTop="$4"
           paddingHorizontal="$5"
@@ -64,11 +63,16 @@ export function ProcessingScreen({ insets }: ProcessingScreenProps) {
           backgroundColor="white"
           borderRadius="$10"
           borderWidth={1.5}
-          borderColor="#E5E7EB"
+          borderColor={neutralScale.neutral3}
         >
           <XStack alignItems="center" gap="$2.5">
-            <YStack width={8} height={8} borderRadius="$10" backgroundColor="#FEBE98" />
-            <Text fontSize={14} color="#6B7280" fontWeight="600">
+            <YStack
+              width={8}
+              height={8}
+              borderRadius="$10"
+              backgroundColor={primaryScale.primary7}
+            />
+            <Text fontSize={14} color={neutralScale.neutral8} fontWeight="600">
               这可能需要几秒钟
             </Text>
           </XStack>

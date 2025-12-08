@@ -1,6 +1,10 @@
+/**
+ * 营养成分列表 - 显示各营养成分详情
+ */
 import { Card, Separator, Text, XStack, YStack } from 'tamagui';
 
-import type { Ingredient } from '@/src/services/api';
+import type { Ingredient } from '@/src/lib/supabase/services/additive';
+import { primaryScale, neutralScale } from '@/src/design-system/tokens';
 
 interface NutritionListSectionProps {
   ingredients: Ingredient[];
@@ -16,11 +20,11 @@ function NutritionItem({ name, label, isLast = false }: NutritionItemProps) {
   return (
     <>
       <XStack paddingVertical="$2" justifyContent="space-between" alignItems="center">
-        <Text fontSize="$3" color="$color">
+        <Text fontSize="$3" color="$foreground">
           {name}
         </Text>
         {label && (
-          <Text fontSize="$3" fontWeight="600" color="$orange10">
+          <Text fontSize="$3" fontWeight="600" color={primaryScale.primary9}>
             {label}
           </Text>
         )}
@@ -41,10 +45,10 @@ export function NutritionListSection({ ingredients }: NutritionListSectionProps)
       backgroundColor="white"
       borderRadius="$5"
       bordered
-      borderColor="$gray4"
+      borderColor={neutralScale.neutral3}
     >
       <YStack gap="$3">
-        <Text fontSize="$6" fontWeight="600" marginBottom="$2" color="$color">
+        <Text fontSize="$6" fontWeight="600" marginBottom="$2" color="$foreground">
           营养成分详情
         </Text>
         <YStack marginTop="$2">
@@ -52,7 +56,7 @@ export function NutritionListSection({ ingredients }: NutritionListSectionProps)
             <NutritionItem
               key={item.id || index}
               name={item.name}
-              label={item.label}
+              label={item.label ?? undefined}
               isLast={index === ingredients.length - 1}
             />
           ))}

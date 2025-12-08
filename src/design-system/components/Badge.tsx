@@ -4,7 +4,7 @@ const BadgeContainer = styled(XStack, {
   name: 'Badge',
   alignItems: 'center',
   justifyContent: 'center',
-  borderRadius: '$full',
+  borderRadius: 9999,
   paddingHorizontal: '$2',
   paddingVertical: '$1',
 

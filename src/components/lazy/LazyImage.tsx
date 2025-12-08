@@ -1,34 +1,21 @@
-/**
- * 懒加载图片组件
- * 支持占位图、加载动画、错误处理
- */
-
 import { useCallback, useState } from 'react';
 import { Image, ImageSourcePropType, ImageStyle, StyleProp } from 'react-native';
 import { YStack } from 'tamagui';
 
+import { neutralScale } from '@/src/design-system/tokens';
+
 import { Skeleton } from './Skeleton';
 
 interface LazyImageProps {
-  /** 图片源 */
   source: ImageSourcePropType;
-  /** 宽度 */
   width: number | string;
-  /** 高度 */
   height: number | string;
-  /** 圆角 */
   borderRadius?: number;
-  /** 填充模式 */
   resizeMode?: 'cover' | 'contain' | 'stretch' | 'center';
-  /** 占位图 */
   placeholder?: ImageSourcePropType;
-  /** 自定义样式 */
   style?: StyleProp<ImageStyle>;
-  /** 是否显示加载骨架 */
   showSkeleton?: boolean;
-  /** 加载完成回调 */
   onLoad?: () => void;
-  /** 加载失败回调 */
   onError?: () => void;
 }
 
@@ -58,7 +45,6 @@ export function LazyImage({
     onError?.();
   }, [onError]);
 
-  // 错误状态显示占位图或默认占位
   if (hasError) {
     if (placeholder) {
       return (
@@ -75,7 +61,7 @@ export function LazyImage({
         width={width}
         height={height}
         borderRadius={borderRadius}
-        backgroundColor="$gray4"
+        backgroundColor={neutralScale.neutral3}
         alignItems="center"
         justifyContent="center"
       />
@@ -84,14 +70,12 @@ export function LazyImage({
 
   return (
     <YStack width={width} height={height} borderRadius={borderRadius} overflow="hidden">
-      {/* 加载骨架 */}
       {isLoading && showSkeleton && (
         <YStack position="absolute" top={0} left={0} right={0} bottom={0} zIndex={1}>
           <Skeleton width="100%" height="100%" borderRadius={borderRadius} />
         </YStack>
       )}
 
-      {/* 实际图片 */}
       <Image
         source={source}
         style={[
@@ -111,11 +95,6 @@ export function LazyImage({
   );
 }
 
-// ==================== 预加载工具 ====================
-
-/**
- * 预加载图片
- */
 export async function preloadImage(uri: string): Promise<boolean> {
   return new Promise((resolve) => {
     Image.prefetch(uri)
@@ -124,9 +103,6 @@ export async function preloadImage(uri: string): Promise<boolean> {
   });
 }
 
-/**
- * 批量预加载图片
- */
 export async function preloadImages(uris: string[]): Promise<boolean[]> {
   return Promise.all(uris.map(preloadImage));
 }

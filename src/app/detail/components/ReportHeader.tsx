@@ -1,8 +1,12 @@
+/**
+ * 详情页头部组件 - 显示猫粮图片、名称和标签
+ */
 import { Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Card, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useResponsiveLayout } from '@/src/hooks/useResponsiveLayout';
+import { primaryScale, neutralScale } from '@/src/design-system/tokens';
 
 interface ReportHeaderProps {
   name: string;
@@ -12,8 +16,6 @@ interface ReportHeaderProps {
 
 export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
   const { isExtraSmallScreen, isSmallScreen } = useResponsiveLayout();
-
-  // 响应式图片尺寸 - 纵向布局使用更大的尺寸
   const imageSize = isExtraSmallScreen ? 180 : isSmallScreen ? 200 : 220;
 
   return (
@@ -29,14 +31,13 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
       {/* 渐变背景 */}
       <YStack position="absolute" width="100%" height="100%">
         <LinearGradient
-          colors={['rgba(255, 140, 50, 0.08)', 'rgba(255, 180, 100, 0.03)', 'transparent']}
+          colors={[primaryScale.primary2 + '20', primaryScale.primary3 + '10', 'transparent']}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
           style={{ width: '100%', height: '100%' }}
         />
       </YStack>
 
-      {/* 纵向布局：图片在上，名称在下 */}
       <YStack padding="$5" gap="$4" alignItems="center">
         {/* 猫粮图片 */}
         {imageUrl ? (
@@ -44,7 +45,7 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
             borderRadius="$6"
             overflow="hidden"
             borderWidth={3}
-            borderColor="$orange6"
+            borderColor={primaryScale.primary5}
             alignSelf="center"
           >
             <Image
@@ -52,7 +53,7 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
               style={{
                 width: imageSize,
                 height: imageSize,
-                backgroundColor: '#f5f5f5',
+                backgroundColor: neutralScale.neutral2,
               }}
               resizeMode="cover"
             />
@@ -62,27 +63,26 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
             width={imageSize}
             height={imageSize}
             borderRadius="$6"
-            backgroundColor="$orange2"
+            backgroundColor={primaryScale.primary2}
             alignItems="center"
             justifyContent="center"
             borderWidth={3}
-            borderColor="$orange5"
+            borderColor={primaryScale.primary4}
             alignSelf="center"
           >
-            <IconSymbol name="photo" size={imageSize * 0.35} color="$orange9" />
-            <Text fontSize="$3" color="$orange9" marginTop="$2" fontWeight="500">
+            <IconSymbol name="photo" size={imageSize * 0.35} color={primaryScale.primary8} />
+            <Text fontSize="$3" color={primaryScale.primary8} marginTop="$2" fontWeight="500">
               暂无图片
             </Text>
           </YStack>
         )}
 
-        {/* 文字信息 */}
+        {/* 猫粮名称和标签 */}
         <YStack width="100%" gap="$3" alignItems="center">
-          {/* 猫粮名称 */}
           <Text
             fontSize="$8"
             fontWeight="800"
-            color="$orange11"
+            color={primaryScale.primary10}
             textAlign="center"
             lineHeight="$9"
             letterSpacing={-0.5}
@@ -90,34 +90,33 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
             {name}
           </Text>
 
-          {/* 标签 */}
           {tags && tags.length > 0 && (
             <XStack gap="$2" flexWrap="wrap" justifyContent="center">
               {tags.slice(0, 5).map((tag, index) => (
                 <YStack
                   key={index}
-                  backgroundColor="$orange4"
+                  backgroundColor={primaryScale.primary3}
                   paddingHorizontal="$3"
                   paddingVertical="$2"
                   borderRadius="$10"
                   borderWidth={1.5}
-                  borderColor="$orange7"
+                  borderColor={primaryScale.primary6}
                 >
-                  <Text color="$orange11" fontSize="$2" fontWeight="700">
+                  <Text color={primaryScale.primary10} fontSize="$2" fontWeight="700">
                     # {tag}
                   </Text>
                 </YStack>
               ))}
               {tags.length > 5 && (
                 <YStack
-                  backgroundColor="$gray4"
+                  backgroundColor={neutralScale.neutral3}
                   paddingHorizontal="$3"
                   paddingVertical="$2"
                   borderRadius="$10"
                   borderWidth={1.5}
-                  borderColor="$gray6"
+                  borderColor={neutralScale.neutral5}
                 >
-                  <Text color="$gray11" fontSize="$2" fontWeight="700">
+                  <Text color={neutralScale.neutral10} fontSize="$2" fontWeight="700">
                     +{tags.length - 5}
                   </Text>
                 </YStack>

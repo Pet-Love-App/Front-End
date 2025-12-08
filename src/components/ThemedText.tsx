@@ -1,60 +1,32 @@
-import { StyleSheet, Text, type TextProps } from 'react-native';
+import { Text, styled, GetProps } from 'tamagui';
 
-import { useThemeColor } from '@/src/hooks/useThemeColor';
+const StyledText = styled(Text, {
+  color: '$foreground',
 
-export type ThemedTextProps = TextProps & {
-  lightColor?: string;
-  darkColor?: string;
-  type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
-};
+  variants: {
+    type: {
+      default: { fontSize: '$6', lineHeight: 24 },
+      title: { fontSize: '$12', fontWeight: 'bold', lineHeight: 32 },
+      subtitle: { fontSize: '$9', fontWeight: 'bold' },
+      semibold: { fontSize: '$6', fontWeight: '600', lineHeight: 24 },
+      caption: { fontSize: '$4', color: '$foregroundMuted' },
+      link: { fontSize: '$6', lineHeight: 30, color: '$info7' },
+    },
+    muted: {
+      true: { color: '$foregroundMuted' },
+    },
+    subtle: {
+      true: { color: '$foregroundSubtle' },
+    },
+  } as const,
 
-export function ThemedText({
-  style,
-  lightColor,
-  darkColor,
-  type = 'default',
-  ...rest
-}: ThemedTextProps) {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
-
-  return (
-    <Text
-      style={[
-        { color },
-        type === 'default' ? styles.default : undefined,
-        type === 'title' ? styles.title : undefined,
-        type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
-        type === 'subtitle' ? styles.subtitle : undefined,
-        type === 'link' ? styles.link : undefined,
-        style,
-      ]}
-      {...rest}
-    />
-  );
-}
-
-const styles = StyleSheet.create({
-  default: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  defaultSemiBold: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '600',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    lineHeight: 32,
-  },
-  subtitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  link: {
-    lineHeight: 30,
-    fontSize: 16,
-    color: '#0a7ea4',
+  defaultVariants: {
+    type: 'default',
   },
 });
+
+export type ThemedTextProps = GetProps<typeof StyledText>;
+
+export function ThemedText(props: ThemedTextProps) {
+  return <StyledText {...props} />;
+}

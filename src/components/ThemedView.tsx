@@ -1,14 +1,32 @@
-import { View, type ViewProps } from 'react-native';
+import { YStack, styled, GetProps } from 'tamagui';
 
-import { useThemeColor } from '@/src/hooks/useThemeColor';
+const StyledView = styled(YStack, {
+  backgroundColor: '$background',
 
-export type ThemedViewProps = ViewProps & {
-  lightColor?: string;
-  darkColor?: string;
-};
+  variants: {
+    variant: {
+      default: { backgroundColor: '$background' },
+      subtle: { backgroundColor: '$backgroundSubtle' },
+      muted: { backgroundColor: '$backgroundMuted' },
+      elevated: { backgroundColor: '$backgroundElevated' },
+    },
+    padded: {
+      true: { padding: '$4' },
+      sm: { padding: '$2' },
+      lg: { padding: '$6' },
+    },
+    centered: {
+      true: { alignItems: 'center', justifyContent: 'center' },
+    },
+  } as const,
 
-export function ThemedView({ style, lightColor, darkColor, ...otherProps }: ThemedViewProps) {
-  const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'background');
+  defaultVariants: {
+    variant: 'default',
+  },
+});
 
-  return <View style={[{ backgroundColor }, style]} {...otherProps} />;
+export type ThemedViewProps = GetProps<typeof StyledView>;
+
+export function ThemedView(props: ThemedViewProps) {
+  return <StyledView {...props} />;
 }

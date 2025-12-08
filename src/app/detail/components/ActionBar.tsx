@@ -1,109 +1,74 @@
 /**
- * ActionBar - 详情页底部操作栏
- * 包含收藏和点赞功能
+ * 底部操作栏 - 包含收藏和点赞功能
  */
-
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Alert, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Separator, Text, XStack, YStack } from 'tamagui';
 import { useActionStatus } from '@/src/app/(tabs)/collect/hooks/useActionStatus';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { warningScale, errorScale, neutralScale } from '@/src/design-system/tokens';
 
 interface ActionBarProps {
-  /** 猫粮 ID */
   catfoodId: number;
 }
 
-/** ActionBar - 详情页操作栏 */
 export function ActionBar({ catfoodId }: ActionBarProps) {
   const insets = useSafeAreaInsets();
-
-  // 使用统一的状态管理 Hook
   const { liked, likeCount, favorited, toggleLike, toggleFavorite } = useActionStatus(
     catfoodId.toString()
   );
 
-  // 加载状态
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
 
-  // 动画值 - 使用 useMemo 避免重复创建
   const favoriteScale = useMemo(() => new Animated.Value(1), []);
   const likeScale = useMemo(() => new Animated.Value(1), []);
 
-  // 收藏动画
-  const animateFavorite = useCallback(() => {
+  // 按钮动画
+  const animateButton = useCallback((scale: Animated.Value) => {
     Animated.sequence([
-      Animated.timing(favoriteScale, {
-        toValue: 1.2,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-      Animated.timing(favoriteScale, {
-        toValue: 1,
-        duration: 150,
-        useNativeDriver: true,
-      }),
+      Animated.timing(scale, { toValue: 1.2, duration: 150, useNativeDriver: true }),
+      Animated.timing(scale, { toValue: 1, duration: 150, useNativeDriver: true }),
     ]).start();
-  }, [favoriteScale]);
-
-  // 点赞动画
-  const animateLike = useCallback(() => {
-    Animated.sequence([
-      Animated.timing(likeScale, {
-        toValue: 1.2,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-      Animated.timing(likeScale, {
-        toValue: 1,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [likeScale]);
+  }, []);
 
   // 处理收藏
   const handleFavorite = useCallback(async () => {
     if (favoriteLoading) return;
-
     try {
       setFavoriteLoading(true);
-      animateFavorite();
+      animateButton(favoriteScale);
       await toggleFavorite();
-      // 静默更新，不弹窗提示
     } catch (error) {
       console.error('收藏操作失败:', error);
       Alert.alert('操作失败', '收藏操作失败，请稍后重试');
     } finally {
       setFavoriteLoading(false);
     }
-  }, [favoriteLoading, toggleFavorite, animateFavorite]);
+  }, [favoriteLoading, toggleFavorite, animateButton, favoriteScale]);
 
   // 处理点赞
   const handleLike = useCallback(async () => {
     if (likeLoading) return;
-
     try {
       setLikeLoading(true);
-      animateLike();
+      animateButton(likeScale);
       await toggleLike();
-      // 静默更新，不弹窗提示
     } catch (error) {
       console.error('点赞操作失败:', error);
       Alert.alert('操作失败', '点赞操作失败，请稍后重试');
     } finally {
       setLikeLoading(false);
     }
-  }, [likeLoading, toggleLike, animateLike]);
+  }, [likeLoading, toggleLike, animateButton, likeScale]);
 
   return (
     <>
-      {/* 占位符，防止内容被遮挡 */}
+      {/* 占位防止内容被遮挡 */}
       <YStack height={80 + Math.max(insets.bottom, 16)} />
 
-      {/* 固定在底部的操作栏 */}
+      {/* 固定底部操作栏 */}
       <YStack
         position="absolute"
         bottom={0}
@@ -126,27 +91,32 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
           {/* 收藏按钮 */}
           <YStack flex={1}>
             <Button
-              size="$5"
-              backgroundColor={favorited ? '$yellow9' : 'transparent'}
+              height={52}
+              backgroundColor={favorited ? warningScale.warning8 : 'transparent'}
               borderWidth={2}
-              borderColor={favorited ? '$yellow9' : '$gray7'}
+              borderColor={favorited ? warningScale.warning8 : neutralScale.neutral6}
+              borderRadius="$4"
               onPress={handleFavorite}
               disabled={favoriteLoading}
               pressStyle={{
                 scale: 0.97,
-                backgroundColor: favorited ? '$yellow10' : '$gray3',
+                backgroundColor: favorited ? warningScale.warning9 : neutralScale.neutral2,
               }}
               icon={
                 <Animated.View style={{ transform: [{ scale: favoriteScale }] }}>
                   <IconSymbol
                     name={favorited ? 'star.fill' : 'star'}
-                    size={22}
-                    color={favorited ? 'white' : '$gray11'}
+                    size={24}
+                    color={favorited ? 'white' : neutralScale.neutral10}
                   />
                 </Animated.View>
               }
             >
-              <Text color={favorited ? 'white' : '$gray11'} fontSize="$4" fontWeight="700">
+              <Text
+                color={favorited ? 'white' : neutralScale.neutral10}
+                fontSize="$5"
+                fontWeight="700"
+              >
                 {favoriteLoading ? '处理中...' : favorited ? '已收藏' : '收藏'}
               </Text>
             </Button>
@@ -155,38 +125,47 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
           {/* 点赞按钮 */}
           <YStack flex={1}>
             <Button
-              size="$5"
-              backgroundColor={liked ? '$red9' : 'transparent'}
+              height={52}
+              backgroundColor={liked ? errorScale.error8 : 'transparent'}
               borderWidth={2}
-              borderColor={liked ? '$red9' : '$gray7'}
+              borderColor={liked ? errorScale.error8 : neutralScale.neutral6}
+              borderRadius="$4"
               onPress={handleLike}
               disabled={likeLoading}
               pressStyle={{
                 scale: 0.97,
-                backgroundColor: liked ? '$red10' : '$gray3',
+                backgroundColor: liked ? errorScale.error9 : neutralScale.neutral2,
               }}
               icon={
                 <Animated.View style={{ transform: [{ scale: likeScale }] }}>
                   <IconSymbol
                     name={liked ? 'heart.fill' : 'heart'}
-                    size={22}
-                    color={liked ? 'white' : '$gray11'}
+                    size={24}
+                    color={liked ? 'white' : neutralScale.neutral10}
                   />
                 </Animated.View>
               }
             >
               <XStack alignItems="center" gap="$2">
-                <Text color={liked ? 'white' : '$gray11'} fontSize="$4" fontWeight="700">
+                <Text
+                  color={liked ? 'white' : neutralScale.neutral10}
+                  fontSize="$5"
+                  fontWeight="700"
+                >
                   {likeLoading ? '处理中...' : liked ? '已点赞' : '点赞'}
                 </Text>
                 {likeCount > 0 && (
                   <YStack
                     paddingHorizontal="$2"
                     paddingVertical="$1"
-                    backgroundColor={liked ? 'rgba(255,255,255,0.2)' : '$gray4'}
+                    backgroundColor={liked ? 'rgba(255,255,255,0.2)' : neutralScale.neutral3}
                     borderRadius="$10"
                   >
-                    <Text color={liked ? 'white' : '$gray11'} fontSize="$2" fontWeight="bold">
+                    <Text
+                      color={liked ? 'white' : neutralScale.neutral10}
+                      fontSize="$3"
+                      fontWeight="bold"
+                    >
                       {likeCount}
                     </Text>
                   </YStack>

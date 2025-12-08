@@ -12,6 +12,15 @@ module.exports = [
     ignores: ['dist/*', 'node_modules/*', 'coverage/*', '.expo/*', '*.config.js'],
   },
   {
+    settings: {
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+        },
+      },
+    },
+  },
+  {
     rules: {
       // ==================== React/React Native ====================
       'react/react-in-jsx-scope': 'off', // React 19 不需要导入 React

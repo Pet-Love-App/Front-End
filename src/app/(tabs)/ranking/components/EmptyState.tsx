@@ -1,6 +1,10 @@
+/**
+ * 空状态组件 - 根据情况显示不同空状态
+ */
 import { Pressable } from 'react-native';
 import { Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { primaryScale, successScale, neutralScale } from '@/src/design-system/tokens';
 
 interface EmptyStateProps {
   type: 'search' | 'complete' | 'default';
@@ -9,16 +13,7 @@ interface EmptyStateProps {
   onRefresh?: () => void;
 }
 
-/**
- * 空状态组件
- * 根据不同情况显示不同的空状态
- */
-export function EmptyState({
-  type,
-  searchQuery: _searchQuery,
-  onReset,
-  onRefresh,
-}: EmptyStateProps) {
+export function EmptyState({ type, onReset, onRefresh }: EmptyStateProps) {
   // 搜索结果为空
   if (type === 'search') {
     return (
@@ -34,19 +29,19 @@ export function EmptyState({
           width={140}
           height={140}
           borderRadius="$12"
-          backgroundColor="#FFF5ED"
+          backgroundColor={primaryScale.primary2}
           alignItems="center"
           justifyContent="center"
           marginBottom="$5"
           borderWidth={3}
-          borderColor="#FFE4D1"
+          borderColor={primaryScale.primary3}
         >
-          <IconSymbol name="magnifyingglass" size={64} color="#FEBE98" />
+          <IconSymbol name="magnifyingglass" size={64} color={primaryScale.primary7} />
         </YStack>
         <Text
           fontSize={24}
           fontWeight="900"
-          color="#111827"
+          color="$foreground"
           marginBottom="$2.5"
           letterSpacing={0.5}
         >
@@ -54,7 +49,7 @@ export function EmptyState({
         </Text>
         <Text
           fontSize={15}
-          color="#6B7280"
+          color={neutralScale.neutral8}
           textAlign="center"
           lineHeight={24}
           marginBottom="$5"
@@ -67,11 +62,11 @@ export function EmptyState({
             paddingHorizontal="$5"
             paddingVertical="$3.5"
             borderRadius="$12"
-            backgroundColor="#FEBE98"
+            backgroundColor={primaryScale.primary7}
             gap="$2.5"
             alignItems="center"
             borderWidth={2}
-            borderColor="#FCA574"
+            borderColor={primaryScale.primary6}
           >
             <IconSymbol name="arrow.counterclockwise" size={18} color="white" />
             <Text fontSize={16} color="white" fontWeight="800" letterSpacing={0.3}>
@@ -98,25 +93,31 @@ export function EmptyState({
           width={120}
           height={120}
           borderRadius="$12"
-          backgroundColor="#D1FAE5"
+          backgroundColor={successScale.success2}
           alignItems="center"
           justifyContent="center"
           marginBottom="$4"
           borderWidth={3}
-          borderColor="#A7F3D0"
+          borderColor={successScale.success3}
         >
-          <IconSymbol name="checkmark.circle.fill" size={64} color="#10B981" />
+          <IconSymbol name="checkmark.circle.fill" size={64} color={successScale.success8} />
         </YStack>
         <Text
           fontSize={22}
           fontWeight="900"
-          color="#111827"
+          color="$foreground"
           marginBottom="$2.5"
           letterSpacing={0.5}
         >
           已显示全部猫粮
         </Text>
-        <Text fontSize={15} color="#6B7280" textAlign="center" lineHeight={24} fontWeight="500">
+        <Text
+          fontSize={15}
+          color={neutralScale.neutral8}
+          textAlign="center"
+          lineHeight={24}
+          fontWeight="500"
+        >
           以上是为您精选的热门推荐
         </Text>
       </YStack>
@@ -137,21 +138,27 @@ export function EmptyState({
         width={140}
         height={140}
         borderRadius="$12"
-        backgroundColor="#F3F4F6"
+        backgroundColor={neutralScale.neutral2}
         alignItems="center"
         justifyContent="center"
         marginBottom="$5"
         borderWidth={3}
-        borderColor="#E5E7EB"
+        borderColor={neutralScale.neutral3}
       >
-        <IconSymbol name="tray.fill" size={64} color="#9CA3AF" />
+        <IconSymbol name="tray.fill" size={64} color={neutralScale.neutral7} />
       </YStack>
-      <Text fontSize={24} fontWeight="900" color="#111827" marginBottom="$2.5" letterSpacing={0.5}>
+      <Text
+        fontSize={24}
+        fontWeight="900"
+        color="$foreground"
+        marginBottom="$2.5"
+        letterSpacing={0.5}
+      >
         暂无猫粮数据
       </Text>
       <Text
         fontSize={15}
-        color="#6B7280"
+        color={neutralScale.neutral8}
         textAlign="center"
         lineHeight={24}
         marginBottom="$5"
@@ -164,11 +171,11 @@ export function EmptyState({
           paddingHorizontal="$5"
           paddingVertical="$3.5"
           borderRadius="$12"
-          backgroundColor="#FEBE98"
+          backgroundColor={primaryScale.primary7}
           gap="$2.5"
           alignItems="center"
           borderWidth={2}
-          borderColor="#FCA574"
+          borderColor={primaryScale.primary6}
         >
           <IconSymbol name="arrow.clockwise" size={18} color="white" />
           <Text fontSize={16} color="white" fontWeight="800" letterSpacing={0.3}>

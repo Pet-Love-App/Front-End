@@ -13,20 +13,18 @@
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/appIcon.png",
         "backgroundColor": "#E6F4FE"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.yuanqh23.pet_love"
     },
     "web": {
       "output": "static",
       "bundler": "metro"
     },
-    "assetBundlePatterns": [
-      "assets/images/**/*",
-      "assets/animations/**/*",
-      "assets/fonts/**/*"
-    ],
+    "assetBundlePatterns": ["assets/**/*"],
     "packagerOpts": {
       "sourceExts": ["js", "json", "ts", "tsx"],
       "assetExts": ["png", "jpg", "jpeg", "ttf", "woff", "woff2", "json"]
@@ -36,13 +34,8 @@
       [
         "expo-splash-screen",
         {
-          // 合并所有配置到同一个对象中
-          "exclude": [
-            "**/_components/**/*",
-            "**/*.ts",
-            "**/*.d.ts"
-          ],
-          "image": "./assets/images/splash-icon.png",
+          "exclude": ["**/_components/**/*", "**/*.ts", "**/*.d.ts"],
+          "image": "./assets/appIcon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -66,11 +59,11 @@
     },
     "extra": {
       "eas": {
-        "projectId": "your-project-id"
+        "projectId": "43384d9b-4264-479c-943c-1b866fe50fa8"
       }
     },
     "updates": {
-      "url": "https://u.expo.dev/your-project-id"
+      "url": "https://u.expo.dev/43384d9b-4264-479c-943c-1b866fe50fa8"
     },
     "runtimeVersion": {
       "policy": "sdkVersion"

@@ -4,7 +4,9 @@ import { SymbolViewProps, SymbolWeight } from 'expo-symbols';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof Ionicons>['name']>;
-type IconSymbolName = keyof typeof MAPPING;
+
+/** 可用的图标名称类型 */
+export type SymbolName = keyof typeof MAPPING;
 
 /**
  * Add your SF Symbols to Material Icons mappings here.
@@ -116,7 +118,7 @@ export function IconSymbol({
   color,
   style,
 }: {
-  name: IconSymbolName;
+  name: SymbolName;
   size?: number;
   color: string | OpaqueColorValue;
   style?: StyleProp<TextStyle>;

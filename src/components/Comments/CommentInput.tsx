@@ -1,13 +1,14 @@
-/**
- * 评论输入组件
- * 职责：处理评论输入和提交
- */
 import { memo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, TextInput } from 'react-native';
-import { Button, Text as TamaguiText, XStack, YStack } from 'tamagui';
+import { Button, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { Colors } from '@/src/constants/theme';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
+import {
+  primaryScale,
+  neutralScale,
+  errorScale,
+  spacing,
+  radius,
+} from '@/src/design-system/tokens';
 
 interface CommentInputProps {
   isAuthenticated: boolean;
@@ -20,9 +21,6 @@ export const CommentInput = memo(function CommentInput({
   onSubmit,
   placeholder = '说点什么...',
 }: CommentInputProps) {
-  const colorScheme = useThemeAwareColorScheme();
-  const colors = Colors[colorScheme];
-
   const [text, setText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -32,7 +30,7 @@ export const CommentInput = memo(function CommentInput({
     try {
       setIsSubmitting(true);
       await onSubmit(text.trim());
-      setText(''); // 清空输入框
+      setText('');
     } finally {
       setIsSubmitting(false);
     }
@@ -44,7 +42,7 @@ export const CommentInput = memo(function CommentInput({
     <YStack gap="$2">
       <TextInput
         placeholder={isAuthenticated ? placeholder : '登录后可以发表评论'}
-        placeholderTextColor={colors.icon}
+        placeholderTextColor={neutralScale.neutral6}
         value={text}
         onChangeText={setText}
         multiline
@@ -52,36 +50,30 @@ export const CommentInput = memo(function CommentInput({
         textAlignVertical="top"
         editable={isAuthenticated}
         maxLength={500}
-        style={[
-          styles.textInput,
-          {
-            color: colors.text,
-            borderColor: colors.icon + '30',
-            backgroundColor: colors.icon + '05',
-          },
-        ]}
+        style={styles.textInput}
       />
 
       <XStack justifyContent="space-between" alignItems="center">
         <YStack opacity={text.length > 0 ? 1 : 0}>
           {text.length > 0 && (
-            <TamaguiText
+            <Text
               fontSize="$2"
-              color={text.length > 500 ? '$red10' : colors.icon}
+              color={text.length > 500 ? errorScale.error7 : neutralScale.neutral7}
               opacity={text.length > 450 ? 1 : 0.5}
             >
               {text.length}/500
-            </TamaguiText>
+            </Text>
           )}
         </YStack>
 
         <Button
           size="$3"
-          backgroundColor={colors.tint}
+          backgroundColor={primaryScale.primary7}
           color="white"
           onPress={handleSubmit}
           disabled={!canSubmit}
           opacity={canSubmit ? 1 : 0.5}
+          pressStyle={{ backgroundColor: primaryScale.primary9 }}
           icon={
             isSubmitting ? (
               <ActivityIndicator size="small" color="white" />
@@ -101,9 +93,12 @@ const styles = StyleSheet.create({
   textInput: {
     minHeight: 80,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderColor: neutralScale.neutral4,
+    borderRadius: radius[6],
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[3],
     fontSize: 15,
+    color: neutralScale.neutral12,
+    backgroundColor: neutralScale.neutral1,
   },
 });

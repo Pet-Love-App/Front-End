@@ -1,15 +1,10 @@
-/**
- * 单条评论组件
- * 职责：展示单条评论的UI和交互
- */
 import { memo } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { Separator, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { AvatarImage } from '@/src/components/ui/OptimizedImage';
-import { Colors } from '@/src/constants/theme';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Comment } from '@/src/lib/supabase';
+import { primaryScale, errorScale } from '@/src/design-system/tokens';
 
 interface CommentItemProps {
   comment: Comment;
@@ -24,56 +19,50 @@ export const CommentItem = memo(function CommentItem({
   onLike,
   onDelete,
 }: CommentItemProps) {
-  const colorScheme = useThemeAwareColorScheme();
-  const colors = Colors[colorScheme];
-
   const isOwner = comment.author.id === currentUserId;
   const likeCount = comment.likes || 0;
 
   return (
     <YStack paddingVertical="$3" gap="$2">
       <XStack gap="$3">
-        {/* 头像 */}
         <CommentAvatar avatar={comment.author.avatar} authorName={comment.author.username} />
 
-        {/* 内容区 */}
         <YStack flex={1} gap="$2">
           {/* 作者信息 */}
           <XStack alignItems="center" justifyContent="space-between">
             <XStack gap="$2" alignItems="center">
-              <Text fontSize="$4" fontWeight="600" color={colors.text}>
+              <Text fontSize="$4" fontWeight="600" color="$foreground">
                 {comment.author.username}
               </Text>
               {isOwner && (
                 <YStack
-                  backgroundColor={colors.tint + '20'}
+                  backgroundColor={primaryScale.primary2}
                   paddingHorizontal="$2"
                   paddingVertical="$0.5"
                   borderRadius="$2"
                 >
-                  <Text fontSize="$1" color={colors.tint}>
+                  <Text fontSize="$1" color={primaryScale.primary9}>
                     我
                   </Text>
                 </YStack>
               )}
             </XStack>
 
-            {/* 删除按钮 */}
             {isOwner && (
               <TouchableOpacity onPress={() => onDelete(comment.id)}>
-                <IconSymbol name="trash" size={16} color={colors.icon} />
+                <IconSymbol name="trash" size={16} color="$foregroundSubtle" />
               </TouchableOpacity>
             )}
           </XStack>
 
-          {/* 评论内容 */}
-          <Text fontSize="$3" color={colors.text} lineHeight={20}>
+          {/* 内容 */}
+          <Text fontSize="$3" color="$foreground" lineHeight={20}>
             {comment.content}
           </Text>
 
-          {/* 底部信息（时间、点赞） */}
+          {/* 时间和点赞 */}
           <XStack gap="$4" alignItems="center">
-            <Text fontSize="$2" color={colors.icon}>
+            <Text fontSize="$2" color="$foregroundSubtle">
               {formatTime(comment.createdAt)}
             </Text>
 
@@ -82,10 +71,13 @@ export const CommentItem = memo(function CommentItem({
                 <IconSymbol
                   name={comment.isLiked ? 'heart.fill' : 'heart'}
                   size={14}
-                  color={comment.isLiked ? '#E74C3C' : colors.icon}
+                  color={comment.isLiked ? errorScale.error6 : '$foregroundSubtle'}
                 />
                 {likeCount > 0 && (
-                  <Text fontSize="$2" color={comment.isLiked ? '#E74C3C' : colors.icon}>
+                  <Text
+                    fontSize="$2"
+                    color={comment.isLiked ? errorScale.error6 : '$foregroundSubtle'}
+                  >
                     {likeCount}
                   </Text>
                 )}
@@ -95,23 +87,17 @@ export const CommentItem = memo(function CommentItem({
         </YStack>
       </XStack>
 
-      <Separator marginTop="$2" borderColor={colors.icon + '15'} />
+      <Separator marginTop="$2" borderColor="$borderMuted" />
     </YStack>
   );
 });
 
-/**
- * 评论头像组件
- */
 interface CommentAvatarProps {
   avatar?: string | null;
   authorName: string;
 }
 
-const CommentAvatar = memo(function CommentAvatar({ avatar, authorName }: CommentAvatarProps) {
-  const colorScheme = useThemeAwareColorScheme();
-  const colors = Colors[colorScheme];
-
+const CommentAvatar = memo(function CommentAvatar({ avatar }: CommentAvatarProps) {
   if (avatar) {
     return <AvatarImage source={avatar} size={40} cachePolicy="memory-disk" />;
   }
@@ -120,19 +106,16 @@ const CommentAvatar = memo(function CommentAvatar({ avatar, authorName }: Commen
     <YStack
       width={40}
       height={40}
-      borderRadius="$10"
-      backgroundColor={colors.tint + '30'}
+      borderRadius="$full"
+      backgroundColor={primaryScale.primary2}
       alignItems="center"
       justifyContent="center"
     >
-      <IconSymbol name="person.fill" size={20} color={colors.tint} />
+      <IconSymbol name="person.fill" size={20} color={primaryScale.primary7} />
     </YStack>
   );
 });
 
-/**
- * 格式化时间工具函数
- */
 function formatTime(dateString: string): string {
   const now = new Date();
   const date = new Date(dateString);
@@ -153,12 +136,3 @@ function formatTime(dateString: string): string {
     day: '2-digit',
   });
 }
-
-const styles = StyleSheet.create({
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f5f5f5',
-  },
-});

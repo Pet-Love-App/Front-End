@@ -2,9 +2,10 @@ import { StyleSheet, View, ViewStyle } from 'react-native';
 import LottieView from 'lottie-react-native';
 
 import { ThemedText } from '@/src/components/ThemedText';
+import { spacing } from '@/src/design-system/tokens';
 
 interface LottieAnimationProps {
-  source: any;
+  source: NodeRequire;
   width?: number;
   height?: number;
   autoPlay?: boolean;
@@ -15,17 +16,6 @@ interface LottieAnimationProps {
   animationStyle?: ViewStyle;
 }
 
-/**
- * Lottie 动画组件
- *
- * 可重用的动画组件，支持自定义大小、速度、文字等
- * <LottieAnimation
- *   source={require('@/assets/animations/cat_loader.json')}
- *   width={150}
- *   height={150}
- *   message="加载中..."
- * />
- */
 export function LottieAnimation({
   source,
   width = 200,
@@ -44,15 +34,8 @@ export function LottieAnimation({
         autoPlay={autoPlay}
         loop={loop}
         speed={speed}
-        style={[
-          {
-            width,
-            height,
-          },
-          animationStyle,
-        ]}
+        style={[{ width, height }, animationStyle]}
       />
-
       {message && <ThemedText style={styles.message}>{message}</ThemedText>}
     </View>
   );
@@ -64,7 +47,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   message: {
-    marginTop: 16,
+    marginTop: spacing[4],
     fontSize: 16,
     textAlign: 'center',
     opacity: 0.7,

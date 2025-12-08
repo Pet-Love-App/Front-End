@@ -1,26 +1,31 @@
+/**
+ * 营养成分饼图 - 可视化展示各营养成分占比
+ */
 import { Dimensions } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { Card, Text, YStack } from 'tamagui';
+
+import { neutralScale } from '@/src/design-system/tokens';
 
 interface NutritionChartSectionProps {
   percentData: Record<string, number | null>;
 }
 
-// 柔和的高对比度配色
+// 饼图配色方案
 const CHART_COLORS = [
-  '#E74C3C', // 红色
-  '#2ECC71', // 绿色
-  '#3498DB', // 蓝色
-  '#F1C40F', // 黄色
-  '#9B59B6', // 紫色
-  '#1ABC9C', // 青绿色
-  '#E67E22', // 橙色
-  '#34495E', // 深蓝色
-  '#95A5A6', // 灰色
-  '#2C3E50', // 深灰色
+  '#E74C3C',
+  '#2ECC71',
+  '#3498DB',
+  '#F1C40F',
+  '#9B59B6',
+  '#1ABC9C',
+  '#E67E22',
+  '#34495E',
+  '#95A5A6',
+  '#2C3E50',
 ];
 
-// 营养成分中文名称映射
+// 营养成分名称映射
 const NUTRITION_NAME_MAP: Record<string, string> = {
   protein: '粗蛋白',
   crude_protein: '粗蛋白',
@@ -35,48 +40,36 @@ const NUTRITION_NAME_MAP: Record<string, string> = {
   others: '其它',
 };
 
+// 准备饼图数据
 function preparePieChartData(percentData: Record<string, number | null>) {
-  // 数据验证
-  if (!percentData || typeof percentData !== 'object') {
-    return [];
-  }
+  if (!percentData || typeof percentData !== 'object') return [];
 
   const data: { name: string; value: number }[] = [];
 
-  // 动态处理所有字段，严格验证
   Object.entries(percentData).forEach(([key, value]) => {
-    // 严格验证：必须是数字且大于0
     if (value !== null && value !== undefined && typeof value === 'number' && value > 0) {
-      const name = NUTRITION_NAME_MAP[key] || key;
-      data.push({ name, value });
+      data.push({ name: NUTRITION_NAME_MAP[key] || key, value });
     }
   });
 
-  if (data.length === 0) {
-    return [];
-  }
+  if (data.length === 0) return [];
 
-  const chartData = data.map((item, index) => ({
+  return data.map((item, index) => ({
     name: item.name,
     population: parseFloat(item.value.toFixed(1)),
     color: CHART_COLORS[index % CHART_COLORS.length],
-    legendFontColor: '#666',
+    legendFontColor: neutralScale.neutral9,
     legendFontSize: 12,
   }));
-
-  return chartData;
 }
 
 export function NutritionChartSection({ percentData }: NutritionChartSectionProps) {
-  // 数据验证
   if (!percentData || typeof percentData !== 'object' || Object.keys(percentData).length === 0) {
     return null;
   }
 
   const chartData = preparePieChartData(percentData);
-  if (chartData.length === 0) {
-    return null;
-  }
+  if (chartData.length === 0) return null;
 
   const screenWidth = Dimensions.get('window').width;
 
@@ -88,10 +81,10 @@ export function NutritionChartSection({ percentData }: NutritionChartSectionProp
       backgroundColor="white"
       borderRadius="$5"
       bordered
-      borderColor="$gray4"
+      borderColor={neutralScale.neutral3}
     >
       <YStack gap="$3">
-        <Text fontSize="$6" fontWeight="600" color="$color">
+        <Text fontSize="$6" fontWeight="600" color="$foreground">
           营养成分分析
         </Text>
         <YStack alignItems="center" marginVertical="$4">
@@ -113,7 +106,7 @@ export function NutritionChartSection({ percentData }: NutritionChartSectionProp
             backgroundColor="transparent"
             paddingLeft="15"
             absolute
-            hasLegend={true}
+            hasLegend
             avoidFalseZero
           />
         </YStack>

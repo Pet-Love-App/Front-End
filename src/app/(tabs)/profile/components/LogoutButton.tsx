@@ -1,8 +1,12 @@
+/**
+ * 登出按钮 - 退出当前账户
+ */
 import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Button } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useUserStore } from '@/src/store/userStore';
+import { errorScale } from '@/src/design-system/tokens';
 
 export function LogoutButton() {
   const router = useRouter();
@@ -10,10 +14,7 @@ export function LogoutButton() {
 
   const handleLogout = () => {
     Alert.alert('确认登出', '确定要退出登录吗？', [
-      {
-        text: '取消',
-        style: 'cancel',
-      },
+      { text: '取消', style: 'cancel' },
       {
         text: '确定',
         style: 'destructive',
@@ -33,7 +34,7 @@ export function LogoutButton() {
   return (
     <Button
       size="$5"
-      backgroundColor="$red10"
+      backgroundColor={errorScale.error9}
       color="white"
       icon={<IconSymbol name="rectangle.portrait.and.arrow.right" size={20} color="white" />}
       onPress={handleLogout}

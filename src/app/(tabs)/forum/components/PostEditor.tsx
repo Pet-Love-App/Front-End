@@ -1,16 +1,12 @@
 /**
- * 帖子编辑器组件
- * 用于创建或编辑帖子
- * 重构后：UI 层只负责渲染，业务逻辑在 Hook 中
+ * 帖子编辑器 - 创建或编辑帖子
  */
-
 import React, { useEffect } from 'react';
 import { Alert, Image } from 'react-native';
 import { Button, Card, Text, TextArea, XStack, YStack } from 'tamagui';
 
-import { Colors } from '@/src/constants/colors';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Post } from '@/src/services/api/forum/types';
+import { neutralScale } from '@/src/design-system/tokens';
 
 import { ForumColors, MESSAGES, POST_CATEGORIES, UI_CONFIG } from '../constants';
 import { usePostEditor } from '../hooks/usePostEditor';
@@ -31,13 +27,8 @@ export function PostEditor({
   onSuccess,
   headerOffset = 0,
 }: PostEditorProps) {
-  const colorScheme = useThemeAwareColorScheme();
-  const colors = Colors[colorScheme];
-
-  // ✅ 创建错误处理器
   const errorHandler = createErrorHandler('PostEditor');
 
-  // ✅ 使用重构后的 Hook，传入回调
   const editor = usePostEditor({
     onSuccess: () => {
       Alert.alert(
@@ -59,9 +50,9 @@ export function PostEditor({
     } else if (visible && !editingPost) {
       editor.reset();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, editingPost]);
 
-  // ✅ 简化：直接调用 Hook 的 pickMedia 方法
   const handlePickImages = async () => {
     try {
       const files = await editor.pickMedia();
@@ -70,17 +61,16 @@ export function PostEditor({
         return;
       }
       editor.addFiles(files);
-    } catch (_error) {
-      errorHandler.handle(error, { title: '选择媒体失败' });
+    } catch (err) {
+      errorHandler.handle(err, { title: '选择媒体失败' });
     }
   };
 
-  // ✅ 简化：直接调用 Hook 的 submit 方法
   const handleSubmit = async () => {
     try {
       await editor.submit(editingPost);
-    } catch (_error) {
-      // 错误已在 Hook 中处理，这里不需要额外处理
+    } catch {
+      // 错误已在 Hook 中处理
     }
   };
 
@@ -100,12 +90,12 @@ export function PostEditor({
       left={0}
       right={0}
       bottom={0}
-      backgroundColor="#fff"
+      backgroundColor="white"
       padding="$4"
       gap="$3"
       zIndex={200}
       borderTopWidth={1}
-      borderColor="#E5E7EB"
+      borderColor={neutralScale.neutral3}
     >
       {/* 头部 */}
       <XStack justifyContent="space-between" alignItems="center" marginBottom="$2">
@@ -118,7 +108,7 @@ export function PostEditor({
             onPress={handleSubmit}
             disabled={editor.submitting}
             backgroundColor={ForumColors.clay}
-            color={colors.buttonPrimaryText}
+            color="white"
             pressStyle={{ opacity: 0.85 }}
           >
             {editor.submitting
@@ -148,8 +138,8 @@ export function PostEditor({
             key={cat.key}
             size="$2"
             onPress={() => editor.setCategory(cat.key)}
-            backgroundColor={editor.category === cat.key ? ForumColors.clay : '#F5F5F5'}
-            color={editor.category === cat.key ? colors.buttonPrimaryText : ForumColors.darkText}
+            backgroundColor={editor.category === cat.key ? ForumColors.clay : neutralScale.neutral2}
+            color={editor.category === cat.key ? 'white' : ForumColors.darkText}
           >
             {cat.label}
           </Button>
@@ -172,10 +162,10 @@ export function PostEditor({
         onChangeText={editor.setTagsText}
         placeholder="输入标签，以空格或逗号分隔"
         height={50}
-        backgroundColor={colors.inputBackground}
-        borderColor={`${ForumColors.clay}55`}
+        backgroundColor={neutralScale.neutral1}
+        borderColor={ForumColors.clay + '55'}
         borderWidth={1}
-        color={colors.text}
+        color="$foreground"
       />
 
       {/* 正文 */}
@@ -184,10 +174,10 @@ export function PostEditor({
         onChangeText={editor.setContent}
         placeholder="说点什么..."
         height={160}
-        backgroundColor={colors.inputBackground}
-        borderColor={`${ForumColors.clay}55`}
+        backgroundColor={neutralScale.neutral1}
+        borderColor={ForumColors.clay + '55'}
         borderWidth={1}
-        color={colors.text}
+        color="$foreground"
       />
 
       {/* 媒体预览 */}
@@ -198,8 +188,8 @@ export function PostEditor({
               key={idx}
               width={UI_CONFIG.THUMBNAIL_SIZE}
               height={UI_CONFIG.THUMBNAIL_SIZE}
-              backgroundColor="#F5F5F5"
-              borderColor="#E5E7EB"
+              backgroundColor={neutralScale.neutral2}
+              borderColor={neutralScale.neutral3}
               borderWidth={1}
               overflow="hidden"
               position="relative"
@@ -216,7 +206,7 @@ export function PostEditor({
                 top={2}
                 right={2}
                 backgroundColor="rgba(0,0,0,0.6)"
-                color={colors.buttonPrimaryText}
+                color="white"
                 paddingHorizontal="$2"
                 paddingVertical="$1"
                 onPress={() => editor.removeFile(idx)}
@@ -242,9 +232,9 @@ export function PostEditor({
         <Button
           size="$3"
           onPress={handleReset}
-          backgroundColor="#F5F5F5"
+          backgroundColor={neutralScale.neutral2}
           borderWidth={1}
-          borderColor="#E5E7EB"
+          borderColor={neutralScale.neutral3}
           color={ForumColors.darkText}
           pressStyle={{ opacity: 0.85 }}
         >

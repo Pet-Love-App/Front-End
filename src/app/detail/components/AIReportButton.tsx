@@ -1,37 +1,28 @@
-/**
- * AIReportButton Component
- */
-
-import React from 'react';
 import { Feather } from '@expo/vector-icons';
 import { Button, Spinner, Text, XStack, YStack } from 'tamagui';
 
+import { infoScale } from '@/src/design-system/tokens';
+
 interface AIReportButtonProps {
-  /** 是否存在报告 */
   hasReport: boolean;
-  /** 是否正在加载 */
   isLoading: boolean;
-  /** 点击事件 */
   onPress: () => void;
 }
 
-/**
- * AI 报告按钮组件
- */
 export function AIReportButton({ hasReport, isLoading, onPress }: AIReportButtonProps) {
   if (isLoading) {
     return (
       <YStack
         paddingHorizontal="$4"
         paddingVertical="$3"
-        backgroundColor="$blue2"
+        backgroundColor={infoScale.info2}
         borderRadius="$4"
         borderWidth={1}
-        borderColor="$blue5"
+        borderColor={infoScale.info4}
       >
         <XStack gap="$2" alignItems="center" justifyContent="center">
-          <Spinner size="small" color="$blue10" />
-          <Text fontSize="$4" color="$blue10">
+          <Spinner size="small" color={infoScale.info9} />
+          <Text fontSize="$4" color={infoScale.info9}>
             加载中...
           </Text>
         </XStack>
@@ -40,7 +31,7 @@ export function AIReportButton({ hasReport, isLoading, onPress }: AIReportButton
   }
 
   if (!hasReport) {
-    return null; // 没有报告时不显示按钮
+    return null;
   }
 
   return (
@@ -49,18 +40,18 @@ export function AIReportButton({ hasReport, isLoading, onPress }: AIReportButton
       theme="blue"
       icon={<Feather name="file-text" size={18} />}
       onPress={onPress}
-      backgroundColor="$blue5"
-      borderColor="$blue7"
+      backgroundColor={infoScale.info4}
+      borderColor={infoScale.info6}
       borderWidth={1}
       pressStyle={{
-        backgroundColor: '$blue6',
+        backgroundColor: infoScale.info5,
         scale: 0.98,
       }}
       hoverStyle={{
-        backgroundColor: '$blue6',
+        backgroundColor: infoScale.info5,
       }}
     >
-      <Text fontSize="$4" fontWeight="600" color="$blue11">
+      <Text fontSize="$4" fontWeight="600" color={infoScale.info10}>
         查看 AI 分析报告
       </Text>
     </Button>

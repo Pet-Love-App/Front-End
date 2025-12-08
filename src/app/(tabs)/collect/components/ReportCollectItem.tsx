@@ -1,8 +1,16 @@
+/**
+ * AI 报告收藏列表项 - 展示收藏的分析报告
+ */
 import { Button, Card, Separator, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { Colors, SEMANTIC_COLORS } from '@/src/constants/colors';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { FavoriteReport } from '@/src/services/api';
+import {
+  primaryScale,
+  successScale,
+  infoScale,
+  warningScale,
+  neutralScale,
+} from '@/src/design-system/tokens';
 
 interface ReportCollectItemProps {
   favoriteReport: FavoriteReport;
@@ -10,60 +18,46 @@ interface ReportCollectItemProps {
   onPress?: () => void;
 }
 
+// 格式化日期为相对时间
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - date.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return '今天';
+  if (diffDays === 1) return '昨天';
+  if (diffDays < 7) return `${diffDays} 天前`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} 周前`;
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} 月前`;
+  return date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+}
+
+// 根据标签内容返回对应颜色
+function getTagColor(tag: string): string {
+  if (tag.includes('高蛋白') || tag.includes('优质')) return successScale.success9;
+  if (tag.includes('低碳水') || tag.includes('健康')) return infoScale.info9;
+  if (tag.includes('天然') || tag.includes('无添加')) return '#8b5cf6';
+  return warningScale.warning9;
+}
+
 export default function ReportCollectItem({
   favoriteReport,
   onDelete,
   onPress,
 }: ReportCollectItemProps) {
-  const colorScheme = useThemeAwareColorScheme();
-  const colors = Colors[colorScheme];
   const { report } = favoriteReport;
-
-  // 防御性检查：如果没有 report 数据，不渲染
   if (!report) return null;
 
-  // 格式化日期
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return '今天';
-    if (diffDays === 1) return '昨天';
-    if (diffDays < 7) return `${diffDays} 天前`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} 周前`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)} 月前`;
-    return date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
-  };
-
-  // 获取标签颜色（使用统一颜色系统）
-  const getTagColor = (tag: string): string => {
-    if (tag.includes('高蛋白') || tag.includes('优质')) return SEMANTIC_COLORS.successDark;
-    if (tag.includes('低碳水') || tag.includes('健康')) return SEMANTIC_COLORS.infoDark;
-    if (tag.includes('天然') || tag.includes('无添加')) return '#8b5cf6'; // purple
-    return SEMANTIC_COLORS.warningDark;
-  };
-
-  // 提取主要营养信息
+  // 提取营养摘要
   const getNutrientSummary = () => {
     const { percent_data } = report;
+    if (!percent_data) return '暂无营养数据';
+
     const summary = [];
-
-    // 防御性编程：检查 percent_data 是否存在
-    if (!percent_data) {
-      return '暂无营养数据';
-    }
-
-    if (percent_data.crude_protein !== null && percent_data.crude_protein !== undefined) {
-      summary.push(`蛋白质 ${percent_data.crude_protein}%`);
-    }
-    if (percent_data.crude_fat !== null && percent_data.crude_fat !== undefined) {
-      summary.push(`脂肪 ${percent_data.crude_fat}%`);
-    }
-    if (percent_data.carbohydrates !== null && percent_data.carbohydrates !== undefined) {
-      summary.push(`碳水 ${percent_data.carbohydrates}%`);
-    }
+    if (percent_data.crude_protein != null) summary.push(`蛋白质 ${percent_data.crude_protein}%`);
+    if (percent_data.crude_fat != null) summary.push(`脂肪 ${percent_data.crude_fat}%`);
+    if (percent_data.carbohydrates != null) summary.push(`碳水 ${percent_data.carbohydrates}%`);
 
     return summary.length > 0 ? summary.slice(0, 3).join(' · ') : '暂无营养数据';
   };
@@ -72,7 +66,7 @@ export default function ReportCollectItem({
     <Card
       size="$4"
       bordered
-      borderColor="$gray4"
+      borderColor={neutralScale.neutral3}
       backgroundColor="white"
       pressStyle={{ scale: 0.98, opacity: 0.95 }}
       animation="quick"
@@ -80,15 +74,15 @@ export default function ReportCollectItem({
     >
       <Card.Header padding="$4">
         <YStack gap="$3">
-          {/* 头部：猫粮名称和时间 */}
+          {/* 头部：名称和时间 */}
           <XStack justifyContent="space-between" alignItems="flex-start">
             <YStack flex={1} gap="$1.5">
-              <Text fontSize={18} fontWeight="700" color={colors.text} numberOfLines={2}>
+              <Text fontSize={18} fontWeight="700" color="$foreground" numberOfLines={2}>
                 {report.catfood_name}
               </Text>
               <XStack alignItems="center" gap="$1">
-                <IconSymbol name="clock" size={14} color={colors.icon + '80'} />
-                <Text fontSize={12} color={colors.icon + '80'}>
+                <IconSymbol name="clock" size={14} color={neutralScale.neutral7} />
+                <Text fontSize={12} color={neutralScale.neutral7}>
                   收藏于 {formatDate(favoriteReport.createdAt)}
                 </Text>
               </XStack>
@@ -96,13 +90,13 @@ export default function ReportCollectItem({
 
             {/* 报告图标 */}
             <YStack
-              backgroundColor={colors.tint + '15'}
+              backgroundColor={primaryScale.primary2}
               padding="$2.5"
               borderRadius="$4"
               borderWidth={2}
-              borderColor={colors.tint + '30'}
+              borderColor={primaryScale.primary4}
             >
-              <IconSymbol name="doc.text.fill" size={24} color={colors.tint} />
+              <IconSymbol name="doc.text.fill" size={24} color={primaryScale.primary7} />
             </YStack>
           </XStack>
 
@@ -130,29 +124,29 @@ export default function ReportCollectItem({
             </XStack>
           )}
 
-          {/* 营养成分摘要 */}
+          {/* 营养摘要 */}
           {report.percentage && (
             <XStack
-              backgroundColor={colors.icon + '08'}
+              backgroundColor={neutralScale.neutral1}
               padding="$2.5"
               borderRadius="$3"
               alignItems="center"
               gap="$2"
             >
-              <IconSymbol name="chart.bar.fill" size={16} color={colors.icon} />
-              <Text fontSize={13} color={colors.icon} flex={1}>
+              <IconSymbol name="chart.bar.fill" size={16} color={neutralScale.neutral9} />
+              <Text fontSize={13} color={neutralScale.neutral9} flex={1}>
                 {getNutrientSummary()}
               </Text>
             </XStack>
           )}
 
-          {/* 安全性分析摘要 */}
+          {/* 安全性摘要 */}
           {report.safety && (
             <YStack gap="$1">
-              <Text fontSize={13} fontWeight="600" color={colors.text}>
+              <Text fontSize={13} fontWeight="600" color="$foreground">
                 安全性分析
               </Text>
-              <Text fontSize={13} color={colors.icon} numberOfLines={2}>
+              <Text fontSize={13} color={neutralScale.neutral9} numberOfLines={2}>
                 {report.safety}
               </Text>
             </YStack>
@@ -162,20 +156,20 @@ export default function ReportCollectItem({
 
       {onDelete && (
         <>
-          <Separator borderColor={colors.icon + '15'} />
+          <Separator borderColor={neutralScale.neutral2} />
           <Card.Footer padding="$3" paddingTop="$2">
             <XStack justifyContent="space-between" width="100%" alignItems="center">
               <XStack alignItems="center" gap="$1.5">
-                <IconSymbol name="doc.text" size={14} color={colors.icon + '80'} />
-                <Text fontSize={12} color={colors.icon + '80'}>
+                <IconSymbol name="doc.text.viewfinder" size={14} color={neutralScale.neutral7} />
+                <Text fontSize={12} color={neutralScale.neutral7}>
                   ID: {report.id}
                 </Text>
               </XStack>
               <Button
                 size="$3"
                 chromeless
-                color={colors.icon}
-                icon={<IconSymbol name="heart.slash" size={16} color={colors.icon} />}
+                color={neutralScale.neutral8}
+                icon={<IconSymbol name="heart.slash" size={16} color={neutralScale.neutral8} />}
                 onPress={(e) => {
                   e.stopPropagation();
                   onDelete(favoriteReport.id);

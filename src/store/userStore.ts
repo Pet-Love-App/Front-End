@@ -79,9 +79,10 @@ export const useUserStore = create<UserState>()(
             throw new Error(error?.message || '登录失败');
           }
 
-          // 保存 session
+          // 保存 session 和 accessToken
           set({
             session: data.session,
+            accessToken: data.session?.access_token || null,
             isAuthenticated: true,
           });
 
@@ -121,9 +122,10 @@ export const useUserStore = create<UserState>()(
             throw new Error('注册成功！请查收验证邮件并完成邮箱验证。');
           }
 
-          // 保存 session 并自动登录
+          // 保存 session 和 accessToken 并自动登录
           set({
             session: data.session,
+            accessToken: data.session?.access_token || null,
             isAuthenticated: true,
           });
 

@@ -43,6 +43,7 @@ export function useScannerActions({
   const [aiReport, setAiReport] = useState<GenerateReportResponse | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [showLoadingGame, setShowLoadingGame] = useState(false);
 
   // ==================== 拍照操作 ====================
 
@@ -137,12 +138,19 @@ export function useScannerActions({
       if (!ocrResult) return;
 
       try {
+        setShowLoadingGame(true);
         setIsGeneratingReport(true);
 
-        const report = await aiReportService.generateReport({
+        // 模拟延迟，确保游戏至少展示几秒钟，提升体验
+        const minGameTime = new Promise((resolve) => setTimeout(resolve, 3000));
+
+        const reportPromise = aiReportService.generateReport({
           ingredients: ocrResult.text,
           max_tokens: 2048,
         });
+
+        // 等待报告生成和最小游戏时间
+        const [report] = await Promise.all([reportPromise, minGameTime]);
 
         setAiReport(report);
 
@@ -178,15 +186,26 @@ export function useScannerActions({
           }
         }
 
-        transitionTo('ai-report-detail');
+        // transitionTo('ai-report-detail'); // 移除自动跳转，等待用户关闭游戏弹窗
       } catch (error) {
         Alert.alert('错误', '生成报告失败');
+        setShowLoadingGame(false); // 失败时关闭弹窗
       } finally {
         setIsGeneratingReport(false);
       }
     },
     [ocrResult, transitionTo]
   );
+
+  /**
+   * 关闭加载游戏并显示报告
+   */
+  const handleCloseLoadingGame = useCallback(() => {
+    setShowLoadingGame(false);
+    if (aiReport) {
+      transitionTo('ai-report-detail');
+    }
+  }, [aiReport, transitionTo]);
 
   /**
    * 保存报告到猫粮（更新成分和添加剂关联）
@@ -300,6 +319,7 @@ export function useScannerActions({
     aiReport,
     isProcessing,
     isGeneratingReport,
+    showLoadingGame,
 
     // 方法
     handleTakePhoto,
@@ -308,5 +328,7 @@ export function useScannerActions({
     handleConfirmPhoto,
     handleGenerateReport,
     handleSaveReport,
+    setIsGeneratingReport,
+    handleCloseLoadingGame,
   };
 }

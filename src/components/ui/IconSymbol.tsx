@@ -62,6 +62,7 @@ const MAPPING = {
   'info.circle.fill': 'information-circle',
   'lightbulb.fill': 'bulb',
   sparkles: 'sparkles-outline',
+  'crown.fill': 'ribbon', // 添加 crown.fill 映射
 
   // ==================== 导航和箭头 ====================
   'chevron.right': 'chevron-forward',

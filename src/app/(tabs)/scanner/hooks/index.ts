@@ -4,3 +4,4 @@
 
 export { useScannerActions } from './useScannerActions';
 export { useScannerFlow } from './useScannerFlow';
+export { useLoadingGame } from './useLoadingGame';

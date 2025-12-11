@@ -6,14 +6,14 @@
  */
 
 import React, { memo, useMemo } from 'react';
-import { MessageCircle } from '@tamagui/lucide-icons';
+import { MessageCircle, MessageSquare } from '@tamagui/lucide-icons';
 import { styled, YStack, XStack, Text, Spinner } from 'tamagui';
+import { primaryScale, neutralScale } from '@/src/design-system/tokens';
 
 import type { Comment } from '@/src/lib/supabase';
 
 import { CommentInput } from './CommentInput';
 import { CommentItem } from './CommentItem';
-import { ForumColors } from '../../constants';
 
 export interface CommentSectionProps {
   /** 评论列表 */
@@ -34,6 +34,8 @@ export interface CommentSectionProps {
   onSubmitComment: () => void;
   onToggleLike: (commentId: number) => void;
   onSetReplyTarget: (comment: Comment | null) => void;
+  /** 点击作者头像 */
+  onAuthorPress?: (author: { id: string; username: string; avatar?: string }) => void;
 
   // 编辑操作
   onStartEdit: (comment: Comment) => void;
@@ -46,63 +48,88 @@ export interface CommentSectionProps {
 // 样式组件
 const Container = styled(YStack, {
   name: 'CommentSection',
-  backgroundColor: '$backgroundSubtle',
+  backgroundColor: 'white',
 });
 
 const HeaderContainer = styled(XStack, {
   name: 'CommentHeader',
   alignItems: 'center',
-  gap: '$2',
-  paddingHorizontal: '$4',
-  paddingVertical: '$3',
-  backgroundColor: '$background',
+  gap: 10,
+  paddingHorizontal: 16,
+  paddingVertical: 16,
+  backgroundColor: 'white',
   borderBottomWidth: 1,
-  borderBottomColor: '$borderColor',
+  borderBottomColor: neutralScale.neutral3,
+});
+
+const HeaderIcon = styled(YStack, {
+  name: 'HeaderIcon',
+  width: 32,
+  height: 32,
+  borderRadius: 16,
+  backgroundColor: primaryScale.primary2,
+  alignItems: 'center',
+  justifyContent: 'center',
 });
 
 const HeaderTitle = styled(Text, {
   name: 'CommentHeaderTitle',
-  fontSize: 16,
-  fontWeight: '600',
-  color: ForumColors.clay,
+  fontSize: 17,
+  fontWeight: '700',
+  color: neutralScale.neutral12,
 });
 
 const CommentCount = styled(Text, {
   name: 'CommentCount',
-  fontSize: 14,
-  color: '$colorMuted',
+  fontSize: 15,
+  color: neutralScale.neutral7,
+  marginLeft: 4,
 });
 
 const ListContainer = styled(YStack, {
   name: 'CommentList',
-  paddingHorizontal: '$3',
-  paddingTop: '$2',
-  paddingBottom: '$2',
-  gap: '$2',
+  backgroundColor: 'white',
 });
 
 const EmptyContainer = styled(YStack, {
   name: 'EmptyComments',
-  flex: 1,
   alignItems: 'center',
   justifyContent: 'center',
-  paddingVertical: '$8',
-  gap: '$3',
+  paddingVertical: 48,
+  gap: 16,
+  backgroundColor: 'white',
+});
+
+const EmptyIconContainer = styled(YStack, {
+  name: 'EmptyIcon',
+  width: 72,
+  height: 72,
+  borderRadius: 36,
+  backgroundColor: neutralScale.neutral2,
+  alignItems: 'center',
+  justifyContent: 'center',
+});
+
+const EmptyTitle = styled(Text, {
+  name: 'EmptyTitle',
+  fontSize: 16,
+  fontWeight: '600',
+  color: neutralScale.neutral10,
 });
 
 const EmptyText = styled(Text, {
   name: 'EmptyText',
   fontSize: 14,
-  color: '$colorMuted',
+  color: neutralScale.neutral7,
   textAlign: 'center',
 });
 
 const LoadingContainer = styled(YStack, {
   name: 'LoadingContainer',
-  flex: 1,
   alignItems: 'center',
   justifyContent: 'center',
-  paddingVertical: '$8',
+  paddingVertical: 48,
+  backgroundColor: 'white',
 });
 
 /**
@@ -119,6 +146,7 @@ function CommentSectionComponent({
   onSubmitComment,
   onToggleLike,
   onSetReplyTarget,
+  onAuthorPress,
   onStartEdit,
   onSaveEdit,
   onCancelEdit,
@@ -131,8 +159,11 @@ function CommentSectionComponent({
   const EmptyComponent = useMemo(
     () => (
       <EmptyContainer>
-        <MessageCircle size={48} color={ForumColors.clay + '40'} />
-        <EmptyText>暂无评论{'\n'}快来发表第一条评论吧~</EmptyText>
+        <EmptyIconContainer>
+          <MessageSquare size={32} color={neutralScale.neutral5} />
+        </EmptyIconContainer>
+        <EmptyTitle>还没有评论</EmptyTitle>
+        <EmptyText>快来发表第一条评论吧~</EmptyText>
       </EmptyContainer>
     ),
     []
@@ -145,11 +176,13 @@ function CommentSectionComponent({
     return (
       <Container>
         <HeaderContainer>
-          <MessageCircle size={20} color={ForumColors.clay} />
+          <HeaderIcon>
+            <MessageCircle size={18} color={primaryScale.primary8} />
+          </HeaderIcon>
           <HeaderTitle>评论</HeaderTitle>
         </HeaderContainer>
         <LoadingContainer>
-          <Spinner size="large" color={ForumColors.clay} />
+          <Spinner size="large" color={primaryScale.primary7} />
         </LoadingContainer>
         <CommentInput
           value={newComment}
@@ -167,9 +200,11 @@ function CommentSectionComponent({
     <Container>
       {/* 评论区标题 */}
       <HeaderContainer>
-        <MessageCircle size={20} color={ForumColors.clay} />
+        <HeaderIcon>
+          <MessageCircle size={18} color={primaryScale.primary8} />
+        </HeaderIcon>
         <HeaderTitle>评论</HeaderTitle>
-        <CommentCount>({comments.length})</CommentCount>
+        <CommentCount>{comments.length}</CommentCount>
       </HeaderContainer>
 
       {/* 评论列表 - 使用 map 渲染避免嵌套 VirtualizedList */}

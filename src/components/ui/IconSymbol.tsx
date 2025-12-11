@@ -101,6 +101,9 @@ const MAPPING = {
   // ==================== 通讯相关 ====================
   'bubble.left': 'chatbubble',
   'paperplane.fill': 'send',
+  'bell.fill': 'notifications',
+  'bell.badge.fill': 'notifications',
+  bell: 'notifications-outline',
 
   // ==================== 系统操作 ====================
   'rectangle.portrait.and.arrow.right': 'exit',

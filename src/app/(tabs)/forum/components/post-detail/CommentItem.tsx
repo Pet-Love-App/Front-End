@@ -6,18 +6,18 @@
  */
 
 import React, { memo, useCallback } from 'react';
+import { Pressable } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
   withSequence,
 } from 'react-native-reanimated';
-import { Heart, Reply, Edit3, Trash2 } from '@tamagui/lucide-icons';
+import { Heart, Reply, Edit3, Trash2, MoreHorizontal, User } from '@tamagui/lucide-icons';
 import { styled, YStack, XStack, Text, Avatar, Button, TextArea } from 'tamagui';
+import { primaryScale, neutralScale, errorScale } from '@/src/design-system/tokens';
 
 import type { Comment } from '@/src/lib/supabase';
-
-import { ForumColors } from '../../constants';
 
 export interface CommentItemProps {
   /** 评论数据 */
@@ -32,6 +32,8 @@ export interface CommentItemProps {
   onLike: (commentId: number) => void;
   /** 回复 */
   onReply: (comment: Comment) => void;
+  /** 点击作者头像 */
+  onAuthorPress?: (author: { id: string; username: string; avatar?: string }) => void;
   /** 开始编辑 */
   onStartEdit: (comment: Comment) => void;
   /** 保存编辑 */
@@ -47,83 +49,112 @@ export interface CommentItemProps {
 // 样式组件
 const Container = styled(YStack, {
   name: 'CommentItem',
-  padding: '$3',
-  backgroundColor: '$background',
-  borderRadius: 12,
-  gap: '$2',
-  borderWidth: 1,
-  borderColor: '$borderColor',
+  paddingVertical: 16,
+  paddingHorizontal: 16,
+  backgroundColor: 'white',
+  gap: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: neutralScale.neutral3,
 });
 
 const HeaderRow = styled(XStack, {
   name: 'CommentHeader',
-  alignItems: 'center',
+  alignItems: 'flex-start',
   justifyContent: 'space-between',
+  gap: 12,
 });
 
 const AuthorSection = styled(XStack, {
   name: 'AuthorSection',
   alignItems: 'center',
-  gap: '$2',
+  gap: 10,
   flex: 1,
+});
+
+const AvatarContainer = styled(YStack, {
+  name: 'AvatarContainer',
+  width: 40,
+  height: 40,
+  borderRadius: 20,
+  backgroundColor: primaryScale.primary2,
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflow: 'hidden',
+});
+
+const AuthorInfo = styled(YStack, {
+  name: 'AuthorInfo',
+  flex: 1,
+  gap: 2,
 });
 
 const AuthorName = styled(Text, {
   name: 'CommentAuthorName',
   fontSize: 14,
   fontWeight: '600',
-  color: ForumColors.clay,
+  color: neutralScale.neutral12,
 });
 
 const CommentTime = styled(Text, {
   name: 'CommentTime',
-  fontSize: 11,
-  color: '$colorSubtle',
+  fontSize: 12,
+  color: neutralScale.neutral7,
 });
 
 const ContentText = styled(Text, {
   name: 'CommentContent',
-  fontSize: 14,
-  lineHeight: 22,
-  color: ForumColors.text,
+  fontSize: 15,
+  lineHeight: 24,
+  color: neutralScale.neutral11,
 });
 
 const ActionsRow = styled(XStack, {
   name: 'CommentActions',
   alignItems: 'center',
-  gap: '$3',
-  marginTop: '$1',
+  gap: 16,
+  marginTop: 4,
+  flexWrap: 'wrap',
 });
 
-const ActionButton = styled(Button, {
+const ActionButton = styled(XStack, {
   name: 'CommentActionBtn',
-  size: '$2',
-  backgroundColor: 'transparent',
-  paddingHorizontal: '$2',
-  paddingVertical: '$1',
-  flexDirection: 'row',
   alignItems: 'center',
-  gap: '$1',
-  pressStyle: {
-    opacity: 0.7,
-  },
+  gap: 4,
+  paddingVertical: 4,
+  paddingHorizontal: 6,
+  borderRadius: 16,
 });
 
 const ActionText = styled(Text, {
   name: 'ActionText',
   fontSize: 12,
-  color: '$colorMuted',
+  color: neutralScale.neutral7,
 });
 
 const EditContainer = styled(YStack, {
   name: 'EditContainer',
-  gap: '$2',
+  gap: 12,
 });
 
 const EditActionsRow = styled(XStack, {
   name: 'EditActions',
   justifyContent: 'flex-end',
-  gap: '$2',
+  gap: 8,
+});
+
+const OwnerBadge = styled(XStack, {
+  name: 'OwnerBadge',
+  paddingHorizontal: 8,
+  paddingVertical: 2,
+  borderRadius: 10,
+  backgroundColor: primaryScale.primary2,
+});
+
+const OwnerBadgeText = styled(Text, {
+  name: 'OwnerBadgeText',
+  fontSize: 10,
+  fontWeight: '600',
+  color: primaryScale.primary8,
 });
 
 const AnimatedActionButton = Animated.createAnimatedComponent(ActionButton);
@@ -164,6 +195,7 @@ function CommentItemComponent({
   editingContent = '',
   onLike,
   onReply,
+  onAuthorPress,
   onStartEdit,
   onSaveEdit,
   onCancelEdit,
@@ -181,26 +213,53 @@ function CommentItemComponent({
     onLike(comment.id);
   }, [comment.id, onLike, likeScale]);
 
+  const handleAuthorPress = useCallback(() => {
+    if (comment.author && onAuthorPress) {
+      onAuthorPress({
+        id: comment.author.id,
+        username: comment.author.username || '匿名用户',
+        avatar: comment.author.avatarUrl,
+      });
+    }
+  }, [comment.author, onAuthorPress]);
+
+  const authorInitial = comment.author?.username?.charAt(0)?.toUpperCase() || '?';
+
   return (
     <Container>
       {/* 头部：头像、用户名、时间 */}
       <HeaderRow>
         <AuthorSection>
-          <Avatar circular size="$3">
-            <Avatar.Image
-              source={{ uri: comment.author?.avatarUrl || undefined }}
-              accessibilityLabel={comment.author?.username || '用户'}
-            />
-            <Avatar.Fallback backgroundColor="$backgroundSubtle">
-              <Text fontSize={10} color="$colorMuted">
-                {comment.author?.username?.charAt(0)?.toUpperCase() || '?'}
+          <AvatarContainer>
+            {comment.author?.avatarUrl ? (
+              <Avatar circular size={40}>
+                <Avatar.Image
+                  source={{ uri: comment.author.avatarUrl }}
+                  accessibilityLabel={comment.author?.username || '用户'}
+                />
+                <Avatar.Fallback backgroundColor={primaryScale.primary3} delayMs={0}>
+                  <Text fontSize={16} fontWeight="600" color={primaryScale.primary8}>
+                    {authorInitial}
+                  </Text>
+                </Avatar.Fallback>
+              </Avatar>
+            ) : (
+              <Text fontSize={16} fontWeight="600" color={primaryScale.primary8}>
+                {authorInitial}
               </Text>
-            </Avatar.Fallback>
-          </Avatar>
-          <YStack>
-            <AuthorName>{comment.author?.username || '匿名用户'}</AuthorName>
+            )}
+          </AvatarContainer>
+          <AuthorInfo>
+            <XStack alignItems="center" gap={8}>
+              <AuthorName>{comment.author?.username || '匿名用户'}</AuthorName>
+              {isOwner && (
+                <OwnerBadge>
+                  <OwnerBadgeText>作者</OwnerBadgeText>
+                </OwnerBadge>
+              )}
+            </XStack>
             <CommentTime>{formatCommentTime(comment.createdAt)}</CommentTime>
-          </YStack>
+          </AuthorInfo>
         </AuthorSection>
       </HeaderRow>
 
@@ -210,30 +269,40 @@ function CommentItemComponent({
           <TextArea
             value={editingContent}
             onChangeText={onEditChange}
-            backgroundColor="$backgroundSubtle"
-            borderColor="$borderColor"
+            backgroundColor={neutralScale.neutral2}
+            borderColor={neutralScale.neutral4}
             borderWidth={1}
-            borderRadius={8}
-            minHeight={80}
-            color="$color"
-            padding="$2"
+            borderRadius={12}
+            minHeight={100}
+            color={neutralScale.neutral12}
+            padding={12}
+            fontSize={15}
           />
           <EditActionsRow>
-            <Button size="$2" chromeless onPress={onCancelEdit}>
-              <Text fontSize={12} color="$colorMuted">
-                取消
-              </Text>
-            </Button>
-            <Button
-              size="$2"
-              backgroundColor={ForumColors.clay}
-              borderRadius={8}
-              onPress={onSaveEdit}
-            >
-              <Text fontSize={12} color="white">
-                保存
-              </Text>
-            </Button>
+            <Pressable onPress={onCancelEdit}>
+              <XStack
+                paddingHorizontal={16}
+                paddingVertical={8}
+                borderRadius={20}
+                backgroundColor={neutralScale.neutral2}
+              >
+                <Text fontSize={14} color={neutralScale.neutral8}>
+                  取消
+                </Text>
+              </XStack>
+            </Pressable>
+            <Pressable onPress={onSaveEdit}>
+              <XStack
+                paddingHorizontal={16}
+                paddingVertical={8}
+                borderRadius={20}
+                backgroundColor={primaryScale.primary7}
+              >
+                <Text fontSize={14} fontWeight="600" color="white">
+                  保存
+                </Text>
+              </XStack>
+            </Pressable>
           </EditActionsRow>
         </EditContainer>
       ) : (
@@ -244,34 +313,44 @@ function CommentItemComponent({
       {!isEditing && (
         <ActionsRow>
           {/* 点赞 */}
-          <AnimatedActionButton onPress={handleLike} style={likeAnimatedStyle}>
-            <Heart
-              size={14}
-              color={comment.isLiked ? '#ef4444' : ForumColors.text}
-              fill={comment.isLiked ? '#ef4444' : 'transparent'}
-            />
-            <ActionText style={{ color: comment.isLiked ? '#ef4444' : ForumColors.text }}>
-              {comment.likes || 0}
-            </ActionText>
-          </AnimatedActionButton>
+          <Pressable onPress={handleLike}>
+            <Animated.View style={likeAnimatedStyle}>
+              <ActionButton backgroundColor={comment.isLiked ? errorScale.error2 : 'transparent'}>
+                <Heart
+                  size={16}
+                  color={comment.isLiked ? errorScale.error9 : neutralScale.neutral7}
+                  fill={comment.isLiked ? errorScale.error9 : 'transparent'}
+                />
+                <ActionText color={comment.isLiked ? errorScale.error9 : neutralScale.neutral7}>
+                  {comment.likes || 0}
+                </ActionText>
+              </ActionButton>
+            </Animated.View>
+          </Pressable>
 
           {/* 回复 */}
-          <ActionButton onPress={() => onReply(comment)}>
-            <Reply size={14} color={ForumColors.text} />
-            <ActionText>回复</ActionText>
-          </ActionButton>
+          <Pressable onPress={() => onReply(comment)}>
+            <ActionButton>
+              <Reply size={16} color={neutralScale.neutral7} />
+              <ActionText>回复</ActionText>
+            </ActionButton>
+          </Pressable>
 
           {/* 作者专属操作 */}
           {isOwner && (
             <>
-              <ActionButton onPress={() => onStartEdit(comment)}>
-                <Edit3 size={14} color={ForumColors.text} />
-                <ActionText>编辑</ActionText>
-              </ActionButton>
-              <ActionButton onPress={() => onDelete(comment.id)}>
-                <Trash2 size={14} color={ForumColors.red} />
-                <ActionText style={{ color: ForumColors.red }}>删除</ActionText>
-              </ActionButton>
+              <Pressable onPress={() => onStartEdit(comment)}>
+                <ActionButton>
+                  <Edit3 size={16} color={neutralScale.neutral7} />
+                  <ActionText>编辑</ActionText>
+                </ActionButton>
+              </Pressable>
+              <Pressable onPress={() => onDelete(comment.id)}>
+                <ActionButton>
+                  <Trash2 size={16} color={errorScale.error9} />
+                  <ActionText color={errorScale.error9}>删除</ActionText>
+                </ActionButton>
+              </Pressable>
             </>
           )}
         </ActionsRow>

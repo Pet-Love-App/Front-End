@@ -67,7 +67,7 @@ export function DetailScreen() {
           paddingTop: 8,
           paddingLeft: Math.max(8, insets.left),
           paddingRight: Math.max(8, insets.right),
-          paddingBottom: 16,
+          paddingBottom: 100 + insets.bottom, // 为底部 ActionBar 留出空间
         }}
       >
         {/* 头部信息 - 优先渲染 */}
@@ -138,9 +138,6 @@ export function DetailScreen() {
         {catFood && isCommentsReady && (
           <CommentSection targetType="catfood" targetId={catFood.id} />
         )}
-
-        {/* 底部安全区间距 */}
-        <YStack height={Math.max(24, insets.bottom + 16)} />
       </ScrollView>
     );
   };
@@ -155,11 +152,11 @@ export function DetailScreen() {
           headerStyle: {
             backgroundColor: '#fff',
           },
-          headerShadowVisible: true,
+          headerShadowVisible: false,
         }}
       />
 
-      <YStack flex={1} position="relative">
+      <YStack flex={1} position="relative" backgroundColor="white">
         {/* 背景渐变 */}
         <YStack position="absolute" width="100%" height="100%">
           <LinearGradient

@@ -1,7 +1,6 @@
-import { Button, Card, Dialog, Text, XStack, YStack } from 'tamagui';
+import { Button, Dialog, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { Colors } from '@/src/constants/theme';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
+import { primaryScale, neutralScale, warningScale, infoScale } from '@/src/design-system/tokens';
 import type { ThemeMode } from '@/src/store/themeStore';
 
 interface ThemeSelectorModalProps {
@@ -16,14 +15,32 @@ const THEME_OPTIONS: {
   label: string;
   icon: string;
   description: string;
+  bgColor: string;
+  iconColor: string;
 }[] = [
-  { mode: 'light', label: '浅色', icon: 'sun.max.fill', description: '明亮清晰的界面' },
-  { mode: 'dark', label: '深色', icon: 'moon.fill', description: '护眼深色主题' },
+  {
+    mode: 'light',
+    label: '浅色',
+    icon: 'sun.max.fill',
+    description: '明亮清晰',
+    bgColor: warningScale.warning2,
+    iconColor: warningScale.warning8,
+  },
+  {
+    mode: 'dark',
+    label: '深色',
+    icon: 'moon.fill',
+    description: '护眼模式',
+    bgColor: infoScale.info2,
+    iconColor: infoScale.info8,
+  },
   {
     mode: 'system',
     label: '跟随系统',
     icon: 'circle.lefthalf.filled',
-    description: '自动切换主题',
+    description: '自动切换',
+    bgColor: primaryScale.primary2,
+    iconColor: primaryScale.primary8,
   },
 ];
 
@@ -33,9 +50,6 @@ export function ThemeSelectorModal({
   currentTheme,
   onThemeChange,
 }: ThemeSelectorModalProps) {
-  const colorScheme = useThemeAwareColorScheme();
-  const colors = Colors[colorScheme];
-
   const handleThemeSelect = (mode: ThemeMode) => {
     onThemeChange(mode);
     onOpenChange(false);
@@ -50,10 +64,10 @@ export function ThemeSelectorModal({
           opacity={0.5}
           enterStyle={{ opacity: 0 }}
           exitStyle={{ opacity: 0 }}
+          backgroundColor="black"
         />
 
         <Dialog.Content
-          bordered
           key="content"
           animateOnly={['transform', 'opacity']}
           animation={[
@@ -64,66 +78,99 @@ export function ThemeSelectorModal({
               },
             },
           ]}
-          enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-          exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-          gap="$4"
-          backgroundColor={colors.background}
+          enterStyle={{ y: -20, opacity: 0, scale: 0.95 }}
+          exitStyle={{ y: 10, opacity: 0, scale: 0.95 }}
+          backgroundColor="white"
+          borderRadius={24}
+          padding="$5"
           width="90%"
-          maxWidth={600}
+          maxWidth={400}
         >
-          <Dialog.Title fontSize={20} fontWeight="600" color={colors.text} textAlign="center">
-            选择主题
-          </Dialog.Title>
+          <YStack gap="$4">
+            {/* 标题 */}
+            <YStack alignItems="center" gap="$2">
+              <Text fontSize={20} fontWeight="700" color={neutralScale.neutral12}>
+                选择主题
+              </Text>
+              <Text fontSize={13} color={neutralScale.neutral8}>
+                选择您喜欢的显示模式
+              </Text>
+            </YStack>
 
-          {/* 横向排列的主题选项 */}
-          <XStack gap="$3" justifyContent="center" flexWrap="wrap">
-            {THEME_OPTIONS.map((option) => (
-              <Card
-                key={option.mode}
-                padding="$4"
-                borderWidth={2}
-                borderColor={currentTheme === option.mode ? colors.tint : colors.icon + '40'}
-                backgroundColor={colors.background}
-                pressStyle={{ scale: 0.95, opacity: 0.9 }}
-                onPress={() => handleThemeSelect(option.mode)}
-                animation="quick"
-                flex={1}
-                minWidth={150}
-                maxWidth={180}
-              >
-                <YStack alignItems="center" gap="$2">
-                  <IconSymbol
-                    name={option.icon as any}
-                    size={40}
-                    color={currentTheme === option.mode ? colors.tint : colors.icon}
-                  />
-                  <Text
-                    fontSize={16}
-                    fontWeight="600"
-                    color={currentTheme === option.mode ? colors.tint : colors.text}
-                    textAlign="center"
+            {/* 主题选项 */}
+            <YStack gap="$3" marginTop="$2">
+              {THEME_OPTIONS.map((option) => {
+                const isSelected = currentTheme === option.mode;
+                return (
+                  <XStack
+                    key={option.mode}
+                    padding="$4"
+                    borderRadius={16}
+                    borderWidth={2}
+                    borderColor={isSelected ? primaryScale.primary7 : neutralScale.neutral3}
+                    backgroundColor={isSelected ? primaryScale.primary1 : 'white'}
+                    pressStyle={{ scale: 0.98, backgroundColor: neutralScale.neutral2 }}
+                    onPress={() => handleThemeSelect(option.mode)}
+                    alignItems="center"
+                    gap="$3"
                   >
-                    {option.label}
-                  </Text>
-                  <Text fontSize={12} color={colors.icon} textAlign="center" numberOfLines={1}>
-                    {option.description}
-                  </Text>
+                    <YStack
+                      width={48}
+                      height={48}
+                      borderRadius={14}
+                      backgroundColor={option.bgColor}
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <IconSymbol name={option.icon as any} size={24} color={option.iconColor} />
+                    </YStack>
 
-                  {currentTheme === option.mode && (
-                    <IconSymbol name="checkmark.circle.fill" size={20} color={colors.tint} />
-                  )}
-                </YStack>
-              </Card>
-            ))}
-          </XStack>
+                    <YStack flex={1}>
+                      <Text
+                        fontSize={16}
+                        fontWeight="600"
+                        color={isSelected ? primaryScale.primary9 : neutralScale.neutral12}
+                      >
+                        {option.label}
+                      </Text>
+                      <Text fontSize={13} color={neutralScale.neutral8} marginTop={2}>
+                        {option.description}
+                      </Text>
+                    </YStack>
 
-          <XStack justifyContent="center" marginTop="$2">
+                    {isSelected && (
+                      <YStack
+                        width={24}
+                        height={24}
+                        borderRadius={12}
+                        backgroundColor={primaryScale.primary7}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <IconSymbol name="checkmark" size={14} color="white" />
+                      </YStack>
+                    )}
+                  </XStack>
+                );
+              })}
+            </YStack>
+
+            {/* 关闭按钮 */}
             <Dialog.Close displayWhenAdapted asChild>
-              <Button onPress={() => onOpenChange(false)} size="$4" minWidth={120}>
-                完成
+              <Button
+                marginTop="$2"
+                height={48}
+                backgroundColor={neutralScale.neutral2}
+                borderRadius={12}
+                pressStyle={{ backgroundColor: neutralScale.neutral3 }}
+                onPress={() => onOpenChange(false)}
+              >
+                <Text fontSize={15} fontWeight="600" color={neutralScale.neutral11}>
+                  完成
+                </Text>
               </Button>
             </Dialog.Close>
-          </XStack>
+          </YStack>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog>

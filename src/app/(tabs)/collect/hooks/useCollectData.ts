@@ -1,10 +1,11 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { supabaseCatfoodService } from '@/src/lib/supabase';
 import type { CatfoodFavorite } from '@/src/types/collect';
+import { appEvents, APP_EVENTS } from '@/src/utils';
 
 /**
  * 收藏数据管理 Hook
@@ -37,6 +38,16 @@ export function useCollectData() {
       setIsLoading(false);
     }
   }, []);
+
+  // 监听收藏变更事件
+  useEffect(() => {
+    const unsubscribe = appEvents.on(APP_EVENTS.FAVORITE_CHANGED, () => {
+      // 收藏变更时静默刷新列表
+      fetchFavorites(false);
+    });
+
+    return unsubscribe;
+  }, [fetchFavorites]);
 
   // 页面获得焦点时刷新数据（从详情页返回时自动更新）
   useFocusEffect(

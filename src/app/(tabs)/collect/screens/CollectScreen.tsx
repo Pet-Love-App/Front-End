@@ -5,10 +5,9 @@ import { Input, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 import CollectListItem from '@/src/app/(tabs)/collect/components/collectItem';
 import PostCollectItem from '@/src/app/(tabs)/collect/components/PostCollectItem';
 import { PostDetailScreen } from '@/src/app/(tabs)/forum/components/post-detail';
-import { PageHeader } from '@/src/components/PageHeader';
+import { AppHeader } from '@/src/components/AppHeader';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { Colors } from '@/src/constants/theme';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
+import { primaryScale, neutralScale } from '@/src/design-system/tokens';
 
 import { useCollectData, useCollectFilter, usePostCollectData } from '../hooks';
 
@@ -18,8 +17,6 @@ import { useCollectData, useCollectFilter, usePostCollectData } from '../hooks';
  */
 export function CollectScreen() {
   const insets = useSafeAreaInsets();
-  const colorScheme = useThemeAwareColorScheme();
-  const colors = Colors[colorScheme];
 
   // 使用自定义 hooks
   const { favorites, isLoading, error, refreshing, handleRefresh, handleDelete, handlePress } =
@@ -51,8 +48,19 @@ export function CollectScreen() {
   // 渲染空状态
   const renderEmptyState = (message: string, icon: string) => (
     <YStack flex={1} alignItems="center" justifyContent="center" paddingVertical="$10" gap="$4">
-      <IconSymbol name={icon as any} size={80} color={colors.icon + '40'} />
-      <Text fontSize={16} color={colors.icon} textAlign="center">
+      <YStack
+        width={100}
+        height={100}
+        borderRadius={50}
+        backgroundColor={neutralScale.neutral2}
+        alignItems="center"
+        justifyContent="center"
+        borderWidth={2}
+        borderColor={neutralScale.neutral3}
+      >
+        <IconSymbol name={icon as any} size={48} color={neutralScale.neutral6} />
+      </YStack>
+      <Text fontSize={15} color={neutralScale.neutral7} textAlign="center" lineHeight={24}>
         {message}
       </Text>
     </YStack>
@@ -63,8 +71,8 @@ export function CollectScreen() {
     if (isLoading && !refreshing) {
       return (
         <YStack flex={1} alignItems="center" justifyContent="center" paddingVertical="$10">
-          <Spinner size="large" color={colors.tint} />
-          <Text fontSize={16} color={colors.icon} marginTop="$4">
+          <Spinner size="large" color={primaryScale.primary7} />
+          <Text fontSize={15} color={neutralScale.neutral7} marginTop="$4">
             加载中...
           </Text>
         </YStack>
@@ -72,7 +80,7 @@ export function CollectScreen() {
     }
 
     if (error && !isLoading) {
-      return renderEmptyState(`❌ ${error}\n下拉刷新重试`, 'exclamationmark.triangle');
+      return renderEmptyState(`${error}\n下拉刷新重试`, 'exclamationmark.triangle');
     }
 
     if (filteredFavorites.length === 0) {
@@ -106,8 +114,8 @@ export function CollectScreen() {
     if (isLoadingPosts && !refreshingPosts) {
       return (
         <YStack flex={1} alignItems="center" justifyContent="center" paddingVertical="$10">
-          <Spinner size="large" color={colors.tint} />
-          <Text fontSize={16} color={colors.icon} marginTop="$4">
+          <Spinner size="large" color={primaryScale.primary7} />
+          <Text fontSize={15} color={neutralScale.neutral7} marginTop="$4">
             加载中...
           </Text>
         </YStack>
@@ -115,7 +123,7 @@ export function CollectScreen() {
     }
 
     if (postError && !isLoadingPosts) {
-      return renderEmptyState(`❌ ${postError}\n下拉刷新重试`, 'exclamationmark.triangle');
+      return renderEmptyState(`${postError}\n下拉刷新重试`, 'exclamationmark.triangle');
     }
 
     // 过滤帖子收藏
@@ -153,104 +161,115 @@ export function CollectScreen() {
   };
 
   return (
-    <YStack flex={1} backgroundColor="$gray1">
+    <YStack flex={1} backgroundColor={neutralScale.neutral1}>
       {/* 整合的顶部区域 */}
-      <YStack backgroundColor="white" borderBottomWidth={1} borderBottomColor="$gray3">
+      <YStack backgroundColor="white">
         {/* 标题栏 */}
-        <PageHeader
+        <AppHeader
           title="我的收藏"
-          icon={{
-            name: 'heart.fill',
-            size: 24,
-            color: colors.tint,
-            backgroundColor: colors.tint + '15',
-            borderColor: colors.tint + '30',
-          }}
           insets={insets}
-          showBorder={false}
           rightElement={
-            <XStack
-              backgroundColor={colors.tint + '15'}
-              paddingHorizontal="$2.5"
-              paddingVertical="$1.5"
-              borderRadius="$10"
+            <YStack
+              backgroundColor={primaryScale.primary2}
+              paddingHorizontal={12}
+              paddingVertical={6}
+              borderRadius={16}
+              borderWidth={1.5}
+              borderColor={primaryScale.primary3}
             >
-              <Text fontSize={13} fontWeight="600" color={colors.tint}>
+              <Text fontSize={13} fontWeight="700" color={primaryScale.primary8}>
                 {currentTab === 'catfood' ? favoritesCount : favoritePosts.length}
               </Text>
-            </XStack>
+            </YStack>
           }
         />
 
         {/* 搜索框 */}
-        <YStack paddingHorizontal="$4" paddingBottom="$3">
-          <Input
-            placeholder="搜索收藏的内容..."
-            placeholderTextColor={colors.icon}
-            value={searchText}
-            onChangeText={setSearchText}
-            size="$3"
-            backgroundColor={colors.icon + '10'}
-            borderColor="transparent"
-            color={colors.text}
-            focusStyle={{
-              borderColor: colors.tint,
-              backgroundColor: colors.background,
-            }}
-          />
+        <YStack paddingHorizontal={16} paddingBottom={12}>
+          <XStack
+            backgroundColor={neutralScale.neutral2}
+            borderRadius={12}
+            paddingHorizontal={14}
+            paddingVertical={10}
+            alignItems="center"
+            gap={10}
+            borderWidth={1.5}
+            borderColor={neutralScale.neutral3}
+          >
+            <IconSymbol name="magnifyingglass" size={18} color={neutralScale.neutral6} />
+            <Input
+              flex={1}
+              placeholder="搜索收藏的内容..."
+              placeholderTextColor={neutralScale.neutral6}
+              value={searchText}
+              onChangeText={setSearchText}
+              backgroundColor="transparent"
+              borderWidth={0}
+              padding={0}
+              height={24}
+              fontSize={15}
+              color="$foreground"
+              focusStyle={{ borderWidth: 0 }}
+            />
+          </XStack>
         </YStack>
 
-        {/* Tab 按钮 */}
-        <XStack
-          paddingHorizontal="$4"
-          gap="$2"
-          borderBottomWidth={1}
-          borderBottomColor={colors.icon + '15'}
-        >
+        {/* Tab 按钮 - 美化版本 */}
+        <XStack paddingHorizontal={16} gap={8} paddingBottom={12}>
+          {/* 猫粮收藏 Tab */}
           <YStack
             flex={1}
-            paddingVertical="$2.5"
+            paddingVertical={12}
             alignItems="center"
-            borderBottomWidth={2}
-            borderBottomColor={currentTab === 'catfood' ? colors.tint : 'transparent'}
-            pressStyle={{ opacity: 0.7 }}
+            backgroundColor={
+              currentTab === 'catfood' ? primaryScale.primary7 : neutralScale.neutral2
+            }
+            borderRadius={12}
+            borderWidth={1.5}
+            borderColor={currentTab === 'catfood' ? primaryScale.primary6 : neutralScale.neutral3}
+            pressStyle={{ scale: 0.97, opacity: 0.9 }}
+            animation="quick"
             onPress={() => setCurrentTab('catfood')}
           >
-            <XStack gap="$2" alignItems="center">
+            <XStack gap={8} alignItems="center">
               <IconSymbol
                 name="pawprint.fill"
                 size={18}
-                color={currentTab === 'catfood' ? colors.tint : colors.icon}
+                color={currentTab === 'catfood' ? 'white' : neutralScale.neutral7}
               />
               <Text
-                fontSize={15}
-                fontWeight={currentTab === 'catfood' ? '600' : '400'}
-                color={currentTab === 'catfood' ? colors.tint : colors.icon}
+                fontSize={14}
+                fontWeight="600"
+                color={currentTab === 'catfood' ? 'white' : neutralScale.neutral7}
               >
                 猫粮收藏
               </Text>
             </XStack>
           </YStack>
 
+          {/* 帖子收藏 Tab */}
           <YStack
             flex={1}
-            paddingVertical="$2.5"
+            paddingVertical={12}
             alignItems="center"
-            borderBottomWidth={2}
-            borderBottomColor={currentTab === 'post' ? colors.tint : 'transparent'}
-            pressStyle={{ opacity: 0.7 }}
+            backgroundColor={currentTab === 'post' ? primaryScale.primary7 : neutralScale.neutral2}
+            borderRadius={12}
+            borderWidth={1.5}
+            borderColor={currentTab === 'post' ? primaryScale.primary6 : neutralScale.neutral3}
+            pressStyle={{ scale: 0.97, opacity: 0.9 }}
+            animation="quick"
             onPress={() => setCurrentTab('post')}
           >
-            <XStack gap="$2" alignItems="center">
+            <XStack gap={8} alignItems="center">
               <IconSymbol
                 name="doc.text.fill"
                 size={18}
-                color={currentTab === 'post' ? colors.tint : colors.icon}
+                color={currentTab === 'post' ? 'white' : neutralScale.neutral7}
               />
               <Text
-                fontSize={15}
-                fontWeight={currentTab === 'post' ? '600' : '400'}
-                color={currentTab === 'post' ? colors.tint : colors.icon}
+                fontSize={14}
+                fontWeight="600"
+                color={currentTab === 'post' ? 'white' : neutralScale.neutral7}
               >
                 帖子收藏
               </Text>
@@ -260,7 +279,7 @@ export function CollectScreen() {
       </YStack>
 
       {/* Tab 内容区域 */}
-      <YStack flex={1} backgroundColor="$gray1">
+      <YStack flex={1} backgroundColor={neutralScale.neutral1}>
         {currentTab === 'catfood' ? (
           <ScrollView
             flex={1}
@@ -269,7 +288,7 @@ export function CollectScreen() {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={handleRefresh}
-                tintColor={colors.tint}
+                tintColor={primaryScale.primary7}
               />
             }
           >
@@ -283,7 +302,7 @@ export function CollectScreen() {
               <RefreshControl
                 refreshing={refreshingPosts}
                 onRefresh={handleRefreshPosts}
-                tintColor={colors.tint}
+                tintColor={primaryScale.primary7}
               />
             }
           >

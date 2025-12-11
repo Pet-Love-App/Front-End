@@ -18,7 +18,21 @@ import type {
   DbCatfoodIngredientRelation,
   DbCatfoodLike,
   DbCatfoodTagRelation,
+  DbCatfoodRating,
 } from '../types/database';
+
+/**
+ * 猫粮评分类型（camelCase）
+ */
+export interface CatfoodRating {
+  id: number;
+  catfoodId: number;
+  userId: string;
+  score: number;
+  comment?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
 /**
  * 猫粮数据类型（数据库schema）
@@ -565,7 +579,9 @@ export const createRating = async (catfoodId: string, score: number, review?: st
 /**
  * 获取用户对某个猫粮的评分
  */
-export const getUserRating = async (catfoodId: string) => {
+export const getUserRating = async (
+  catfoodId: string
+): Promise<{ data: CatfoodRating | null; error: { message: string } | null }> => {
   logger.query('ratings', 'getUserRating', { catfoodId });
 
   try {
@@ -590,7 +606,7 @@ export const getUserRating = async (catfoodId: string) => {
     }
 
     logger.success('ratings', 'getUserRating');
-    return { data: data ? convertKeysToCamel(data) : null, error: null };
+    return { data: data ? (convertKeysToCamel(data) as CatfoodRating) : null, error: null };
   } catch (err) {
     logger.error('ratings', 'getUserRating', err);
     return { data: null, error: { message: String(err) } };

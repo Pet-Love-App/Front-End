@@ -5,14 +5,13 @@
  */
 
 import React, { memo, useCallback, useRef } from 'react';
-import { TextInput as RNTextInput } from 'react-native';
+import { TextInput as RNTextInput, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Send, X } from '@tamagui/lucide-icons';
-import { styled, XStack, YStack, Text, Button, Input } from 'tamagui';
+import { Send, X, AtSign } from '@tamagui/lucide-icons';
+import { styled, XStack, YStack, Text, Input } from 'tamagui';
+import { primaryScale, neutralScale } from '@/src/design-system/tokens';
 
 import type { Comment } from '@/src/lib/supabase';
-
-import { ForumColors } from '../../constants';
 
 export interface CommentInputProps {
   /** 输入内容 */
@@ -32,79 +31,88 @@ export interface CommentInputProps {
 // 样式组件
 const Container = styled(YStack, {
   name: 'CommentInput',
-  padding: '$3',
-  paddingBottom: '$4',
-  backgroundColor: '$background',
+  paddingHorizontal: 16,
+  paddingTop: 12,
+  paddingBottom: 16,
+  backgroundColor: 'white',
   borderTopWidth: 1,
-  borderTopColor: '$borderColor',
-  gap: '$2',
+  borderTopColor: neutralScale.neutral3,
+  gap: 10,
 });
 
 const ReplyBanner = styled(XStack, {
   name: 'ReplyBanner',
   alignItems: 'center',
   justifyContent: 'space-between',
-  backgroundColor: ForumColors.sand,
-  paddingHorizontal: '$3',
-  paddingVertical: '$2',
-  borderRadius: 8,
+  backgroundColor: primaryScale.primary2,
+  paddingHorizontal: 14,
+  paddingVertical: 10,
+  borderRadius: 12,
+  gap: 8,
+});
+
+const ReplyInfo = styled(XStack, {
+  name: 'ReplyInfo',
+  alignItems: 'center',
+  gap: 6,
+  flex: 1,
 });
 
 const ReplyText = styled(Text, {
   name: 'ReplyText',
   fontSize: 13,
-  color: ForumColors.clay,
+  color: primaryScale.primary9,
   flex: 1,
 });
 
 const InputRow = styled(XStack, {
   name: 'InputRow',
   alignItems: 'center',
-  gap: '$2',
+  gap: 10,
 });
 
 const StyledInput = styled(Input, {
   name: 'CommentTextInput',
   flex: 1,
-  backgroundColor: '$backgroundSubtle',
-  borderRadius: 20,
-  paddingHorizontal: '$4',
-  paddingVertical: '$2',
-  fontSize: 14,
-  borderWidth: 1,
-  borderColor: '$borderColor',
-  color: '$color',
+  backgroundColor: neutralScale.neutral2,
+  borderRadius: 24,
+  paddingHorizontal: 18,
+  paddingVertical: 12,
+  fontSize: 15,
+  borderWidth: 1.5,
+  borderColor: neutralScale.neutral3,
+  color: neutralScale.neutral12,
+  focusStyle: {
+    borderColor: primaryScale.primary6,
+    backgroundColor: 'white',
+  },
 });
 
-const SendButton = styled(Button, {
+const SendButtonContainer = styled(YStack, {
   name: 'SendButton',
-  width: 40,
-  height: 40,
-  borderRadius: 20,
-  backgroundColor: ForumColors.clay,
+  width: 44,
+  height: 44,
+  borderRadius: 22,
+  backgroundColor: primaryScale.primary7,
   alignItems: 'center',
   justifyContent: 'center',
-  pressStyle: {
-    opacity: 0.8,
-  },
   variants: {
     disabled: {
       true: {
-        backgroundColor: '$backgroundSubtle',
-        opacity: 0.5,
+        backgroundColor: neutralScale.neutral3,
       },
     },
   } as const,
 });
 
-const CancelButton = styled(Button, {
+const CancelButtonContainer = styled(YStack, {
   name: 'CancelReplyBtn',
-  size: '$2',
-  circular: true,
-  backgroundColor: 'transparent',
-  pressStyle: {
-    opacity: 0.7,
-  },
+  width: 28,
+  height: 28,
+  borderRadius: 14,
+  backgroundColor: primaryScale.primary3,
+  alignItems: 'center',
+  justifyContent: 'center',
 });
 
 /**
@@ -134,10 +142,15 @@ function CommentInputComponent({
       {/* 回复提示条 */}
       {replyTarget && (
         <ReplyBanner>
-          <ReplyText numberOfLines={1}>回复 @{replyTarget.author?.username || '用户'}</ReplyText>
-          <CancelButton onPress={onCancelReply}>
-            <X size={16} color={ForumColors.clay} />
-          </CancelButton>
+          <ReplyInfo>
+            <AtSign size={14} color={primaryScale.primary8} />
+            <ReplyText numberOfLines={1}>回复 {replyTarget.author?.username || '用户'}</ReplyText>
+          </ReplyInfo>
+          <Pressable onPress={onCancelReply}>
+            <CancelButtonContainer>
+              <X size={14} color={primaryScale.primary8} />
+            </CancelButtonContainer>
+          </Pressable>
         </ReplyBanner>
       )}
 
@@ -148,14 +161,16 @@ function CommentInputComponent({
           value={value}
           onChangeText={onChangeText}
           placeholder={replyTarget ? '写下你的回复...' : '写下你的评论...'}
-          placeholderTextColor="$colorSubtle"
+          placeholderTextColor={neutralScale.neutral6}
           editable={!disabled}
           onSubmitEditing={handleSubmit}
           returnKeyType="send"
         />
-        <SendButton onPress={handleSubmit} disabled={!canSubmit}>
-          <Send size={18} color={canSubmit ? 'white' : '$colorMuted'} />
-        </SendButton>
+        <Pressable onPress={handleSubmit} disabled={!canSubmit}>
+          <SendButtonContainer disabled={!canSubmit}>
+            <Send size={20} color={canSubmit ? 'white' : neutralScale.neutral5} />
+          </SendButtonContainer>
+        </Pressable>
       </InputRow>
     </Container>
   );

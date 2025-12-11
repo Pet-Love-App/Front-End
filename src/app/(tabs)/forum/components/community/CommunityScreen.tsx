@@ -163,27 +163,61 @@ export function CommunityScreen() {
     }, [loadPosts])
   );
 
-  // 处理点赞
-  const handleLikePress = useCallback(async (post: PostCardData) => {
-    try {
-      const { data, error } = await supabaseForumService.toggleFavorite(post.id);
-      if (error) throw error;
+  // 处理点赞（实际为收藏）
+  const handleLikePress = useCallback(
+    async (post: PostCardData) => {
+      // 先乐观更新UI
+      const wasLiked = posts.find((p) => p.id === post.id)?.isFavorited ?? false;
+      const prevCount = posts.find((p) => p.id === post.id)?.favoritesCount ?? 0;
 
       setPosts((prev) =>
         prev.map((p) =>
           p.id === post.id
             ? {
                 ...p,
-                isFavorited: data?.action === 'favorited',
-                favoritesCount: data?.favoritesCount ?? p.favoritesCount,
+                isFavorited: !wasLiked,
+                favoritesCount: wasLiked ? Math.max(0, prevCount - 1) : prevCount + 1,
               }
             : p
         )
       );
-    } catch (error) {
-      logger.error('点赞失败', error as Error);
-    }
-  }, []);
+
+      try {
+        const { data, error } = await supabaseForumService.toggleFavorite(post.id);
+        if (error) throw error;
+
+        // 用服务器返回的真实数据更新
+        if (data) {
+          setPosts((prev) =>
+            prev.map((p) =>
+              p.id === post.id
+                ? {
+                    ...p,
+                    isFavorited: data.action === 'favorited',
+                    favoritesCount: data.favoritesCount ?? p.favoritesCount,
+                  }
+                : p
+            )
+          );
+        }
+      } catch (error) {
+        // 出错时回滚
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === post.id
+              ? {
+                  ...p,
+                  isFavorited: wasLiked,
+                  favoritesCount: prevCount,
+                }
+              : p
+          )
+        );
+        logger.error('点赞失败', error as Error);
+      }
+    },
+    [posts]
+  );
 
   // 处理帖子点击
   const handlePostPress = useCallback(

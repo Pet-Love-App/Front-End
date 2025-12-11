@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable } from 'react-native';
-import { Button, Card, Separator, Text, TextArea, XStack, YStack } from 'tamagui';
+import { Button, Text, TextArea, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useResponsiveLayout } from '@/src/hooks/useResponsiveLayout';
 import { supabaseCatfoodService, supabaseCommentService } from '@/src/lib/supabase';
 import { useCatFoodStore } from '@/src/store/catFoodStore';
+import { warningScale, neutralScale, successScale, errorScale } from '@/src/design-system/tokens';
 
 interface RatingSectionProps {
   catfoodId: number;
@@ -19,7 +20,7 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
   const [hasRated, setHasRated] = useState(false);
 
   const fetchCatFoodById = useCatFoodStore((state) => state.fetchCatFoodById);
-  const { width, getResponsiveSize, isExtraSmallScreen } = useResponsiveLayout();
+  const { width, isExtraSmallScreen } = useResponsiveLayout();
 
   // 响应式计算星星尺寸和间距
   const starConfig = useMemo(() => {
@@ -251,39 +252,47 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
   }, [myRatingId, catfoodId, fetchCatFoodById]);
 
   return (
-    <Card
-      padding="$4"
+    <YStack
       marginHorizontal="$3"
       marginBottom="$3"
+      borderRadius={20}
       backgroundColor="white"
-      borderRadius="$5"
+      overflow="hidden"
       borderWidth={1}
-      borderColor="$orange5"
-      bordered
+      borderColor={neutralScale.neutral3}
     >
-      <YStack gap="$3">
-        {/* 标题 */}
-        <XStack alignItems="center" gap="$2">
-          <YStack
-            width={36}
-            height={36}
-            borderRadius="$10"
-            backgroundColor="$orange3"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <IconSymbol name="star.fill" size={20} color="$orange10" />
-          </YStack>
-          <Text fontSize="$6" fontWeight="bold" color="$orange11">
+      {/* 标题栏 */}
+      <XStack
+        padding="$4"
+        alignItems="center"
+        gap="$3"
+        borderBottomWidth={1}
+        borderBottomColor={neutralScale.neutral2}
+      >
+        <YStack
+          width={44}
+          height={44}
+          borderRadius={22}
+          backgroundColor={warningScale.warning2}
+          alignItems="center"
+          justifyContent="center"
+        >
+          <IconSymbol name="star.fill" size={22} color={warningScale.warning6} />
+        </YStack>
+        <YStack flex={1}>
+          <Text fontSize="$5" fontWeight="700" color={neutralScale.neutral12}>
             {hasRated ? '我的评分' : '给这款猫粮打分'}
           </Text>
-        </XStack>
+          <Text fontSize={11} color={neutralScale.neutral8} marginTop={2}>
+            {hasRated ? 'My Rating' : 'Rate This Product'}
+          </Text>
+        </YStack>
+      </XStack>
 
-        <Separator />
-
+      <YStack padding="$4" gap="$4">
         {/* 星星评分 */}
-        <YStack gap="$2">
-          <Text fontSize="$3" color="$gray11" fontWeight="600">
+        <YStack gap="$3">
+          <Text fontSize="$3" color={neutralScale.neutral10} fontWeight="600">
             选择评分
           </Text>
           <XStack
@@ -292,62 +301,63 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
             flexWrap="nowrap"
             justifyContent="flex-start"
           >
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Pressable
-                key={star}
-                onPress={() => {
-                  console.log('🎯 Pressable onPress 触发，星级:', star);
-                  handleRate(star);
-                }}
-                onPressIn={() => {
-                  console.log('👆 onPressIn:', star);
-                  setHoverRating(star);
-                }}
-                onPressOut={() => {
-                  console.log('👇 onPressOut');
-                  setHoverRating(0);
-                }}
-                disabled={loading}
-                style={{ zIndex: 10 }}
-              >
-                <YStack
-                  width={starConfig.size}
-                  height={starConfig.size}
-                  alignItems="center"
-                  justifyContent="center"
-                  backgroundColor={star <= (hoverRating || myRating) ? '$orange3' : '$gray2'}
-                  borderRadius="$10"
-                  borderWidth={2}
-                  borderColor={star <= (hoverRating || myRating) ? '$orange9' : '$gray5'}
-                  pressStyle={{
-                    scale: 0.9,
+            {[1, 2, 3, 4, 5].map((star) => {
+              const isActive = star <= (hoverRating || myRating);
+              return (
+                <Pressable
+                  key={star}
+                  onPress={() => {
+                    console.log('🎯 Pressable onPress 触发，星级:', star);
+                    handleRate(star);
                   }}
-                  pointerEvents="none"
+                  onPressIn={() => {
+                    console.log('👆 onPressIn:', star);
+                    setHoverRating(star);
+                  }}
+                  onPressOut={() => {
+                    console.log('👇 onPressOut');
+                    setHoverRating(0);
+                  }}
+                  disabled={loading}
+                  style={{ zIndex: 10 }}
                 >
-                  <IconSymbol
-                    name={star <= (hoverRating || myRating) ? 'star.fill' : 'star'}
-                    size={starConfig.iconSize}
-                    color={star <= (hoverRating || myRating) ? '$orange10' : '$gray9'}
-                  />
-                </YStack>
-              </Pressable>
-            ))}
+                  <YStack
+                    width={starConfig.size}
+                    height={starConfig.size}
+                    alignItems="center"
+                    justifyContent="center"
+                    backgroundColor={isActive ? warningScale.warning2 : neutralScale.neutral2}
+                    borderRadius={starConfig.size / 2}
+                    borderWidth={2}
+                    borderColor={isActive ? warningScale.warning5 : neutralScale.neutral4}
+                    pressStyle={{ scale: 0.9 }}
+                    pointerEvents="none"
+                  >
+                    <IconSymbol
+                      name={isActive ? 'star.fill' : 'star'}
+                      size={starConfig.iconSize}
+                      color={isActive ? warningScale.warning6 : neutralScale.neutral6}
+                    />
+                  </YStack>
+                </Pressable>
+              );
+            })}
             {myRating > 0 && (
               <YStack
-                paddingHorizontal={isExtraSmallScreen ? '$2' : '$3'}
+                paddingHorizontal={isExtraSmallScreen ? '$2.5' : '$3'}
                 paddingVertical="$2"
-                backgroundColor="$orange9"
-                borderRadius="$10"
-                marginLeft="$1"
+                backgroundColor={warningScale.warning6}
+                borderRadius={16}
+                marginLeft="$2"
               >
-                <Text color="white" fontSize={isExtraSmallScreen ? '$3' : '$4'} fontWeight="bold">
+                <Text color="white" fontSize={isExtraSmallScreen ? '$3' : '$4'} fontWeight="800">
                   {myRating}.0
                 </Text>
               </YStack>
             )}
           </XStack>
           {myRating === 0 && (
-            <Text fontSize="$2" color="$gray9">
+            <Text fontSize="$2" color={neutralScale.neutral7}>
               点击星星进行评分
             </Text>
           )}
@@ -357,7 +367,7 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
         {myRating > 0 && (
           <>
             <YStack gap="$2">
-              <Text fontSize="$3" color="$gray11" fontWeight="600">
+              <Text fontSize="$3" color={neutralScale.neutral10} fontWeight="600">
                 评价内容（选填）
               </Text>
               <TextArea
@@ -365,14 +375,14 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
                 value={myComment}
                 onChangeText={setMyComment}
                 numberOfLines={4}
-                backgroundColor="$gray2"
-                borderColor="$gray5"
-                borderRadius="$3"
+                backgroundColor={neutralScale.neutral1}
+                borderColor={neutralScale.neutral4}
+                borderRadius={12}
                 padding="$3"
                 fontSize="$3"
                 maxLength={500}
               />
-              <Text fontSize="$1" color="$gray9" textAlign="right">
+              <Text fontSize="$1" color={neutralScale.neutral7} textAlign="right">
                 {myComment.length}/500
               </Text>
             </YStack>
@@ -380,13 +390,14 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
             {/* 提交按钮 */}
             <Button
               size="$4"
-              backgroundColor="$orange9"
+              backgroundColor={warningScale.warning6}
               borderWidth={0}
+              borderRadius={12}
               onPress={handleSubmit}
               disabled={loading}
               pressStyle={{
                 scale: 0.98,
-                backgroundColor: '$orange10',
+                backgroundColor: warningScale.warning7,
               }}
               icon={
                 <IconSymbol
@@ -405,17 +416,17 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
 
         {/* 提示信息 */}
         {hasRated && (
-          <YStack gap="$2">
+          <YStack gap="$3">
             <YStack
-              padding="$2"
-              backgroundColor="$green2"
-              borderRadius="$3"
+              padding="$3"
+              backgroundColor={successScale.success1}
+              borderRadius={12}
               borderWidth={1}
-              borderColor="$green5"
+              borderColor={successScale.success4}
             >
               <XStack alignItems="center" gap="$2">
-                <IconSymbol name="checkmark.circle.fill" size={16} color="$green10" />
-                <Text fontSize="$2" color="$green11">
+                <IconSymbol name="checkmark.circle.fill" size={18} color={successScale.success7} />
+                <Text fontSize="$2" color={successScale.success9} fontWeight="500">
                   您已评分，可以随时修改或删除
                 </Text>
               </XStack>
@@ -425,23 +436,24 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
             <Button
               size="$3"
               backgroundColor="transparent"
-              borderWidth={1}
-              borderColor="$red7"
+              borderWidth={1.5}
+              borderColor={errorScale.error5}
+              borderRadius={10}
               onPress={handleDelete}
               disabled={loading}
               pressStyle={{
                 scale: 0.98,
-                backgroundColor: '$red2',
+                backgroundColor: errorScale.error1,
               }}
-              icon={<IconSymbol name="trash" size={16} color="$red10" />}
+              icon={<IconSymbol name="trash" size={16} color={errorScale.error7} />}
             >
-              <Text color="$red10" fontSize="$3" fontWeight="600">
+              <Text color={errorScale.error7} fontSize="$3" fontWeight="600">
                 删除我的评分
               </Text>
             </Button>
           </YStack>
         )}
       </YStack>
-    </Card>
+    </YStack>
   );
 }

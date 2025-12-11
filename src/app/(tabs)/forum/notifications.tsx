@@ -328,10 +328,15 @@ export default function NotificationsScreen() {
       }
     }
 
-    // 跳转到相关帖子（如果有）
+    // 跳转到相关帖子详情
     if (item.post?.id) {
-      // TODO: 跳转到帖子详情
-      // router.push(`/(tabs)/forum/post/${item.post.id}`);
+      router.push({
+        pathname: '/forum/post-detail',
+        params: {
+          postId: item.post.id.toString(),
+          commentId: item.comment?.id?.toString() || '',
+        },
+      });
     }
   }, []);
 

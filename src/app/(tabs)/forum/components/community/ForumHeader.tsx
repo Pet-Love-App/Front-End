@@ -1,12 +1,12 @@
 /**
  * ForumHeader - 论坛页面头部组件
  *
- * 包含标题、搜索框、消息通知入口
- * 设计风格：简洁现代，毛玻璃效果
+ * 统一风格：左侧头像，中间标题，右侧通知图标
+ * 包含搜索框
  */
 
-import React, { memo, useCallback, useState } from 'react';
-import { Pressable } from 'react-native';
+import React, { memo, useCallback, useState, useEffect } from 'react';
+import { Pressable, Image as RNImage } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -15,8 +15,11 @@ import Animated, {
   useDerivedValue,
 } from 'react-native-reanimated';
 import { router } from 'expo-router';
-import { Bell, Search, X } from '@tamagui/lucide-icons';
+import { Bell, Search, X, User } from '@tamagui/lucide-icons';
 import { styled, XStack, YStack, Text, Input, Stack, useTheme } from 'tamagui';
+
+import { useUserStore } from '@/src/store/userStore';
+import { primaryScale, neutralScale, errorScale } from '@/src/design-system/tokens';
 
 export interface ForumHeaderProps {
   title?: string;
@@ -26,73 +29,41 @@ export interface ForumHeaderProps {
   paddingTop?: number;
 }
 
+// 统一头部高度常量
+const HEADER_HEIGHT = 56;
+
 const HeaderContainer = styled(YStack, {
   name: 'ForumHeader',
   backgroundColor: '$background',
-  paddingHorizontal: '$4',
-  gap: '$3',
-  paddingBottom: '$4',
+  paddingHorizontal: 16,
+  gap: 12,
 });
 
 const TopRow = styled(XStack, {
   name: 'ForumHeaderTop',
   alignItems: 'center',
   justifyContent: 'space-between',
-  paddingTop: '$2',
+  height: HEADER_HEIGHT,
 });
 
 const TitleText = styled(Text, {
   name: 'ForumTitle',
-  fontSize: 28,
-  fontWeight: '800',
-  color: '$color',
-  letterSpacing: -0.5,
-});
-
-const IconButton = styled(Stack, {
-  name: 'IconButton',
-  width: 44,
-  height: 44,
-  borderRadius: 22,
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: '$backgroundSubtle',
-  position: 'relative',
-});
-
-const NotificationBadge = styled(Stack, {
-  name: 'NotificationBadge',
-  position: 'absolute',
-  top: -4,
-  right: -4,
-  minWidth: 20,
-  height: 20,
-  borderRadius: 10,
-  backgroundColor: '$secondary',
-  alignItems: 'center',
-  justifyContent: 'center',
-  paddingHorizontal: '$1.5',
-  borderWidth: 2,
-  borderColor: '$background',
-});
-
-const BadgeText = styled(Text, {
-  name: 'BadgeText',
-  fontSize: 11,
+  fontSize: 20,
   fontWeight: '700',
-  color: 'white',
+  color: '$color',
+  letterSpacing: 0,
 });
 
 const SearchContainer = styled(XStack, {
   name: 'SearchContainer',
-  backgroundColor: '$backgroundSubtle',
-  borderRadius: 16,
-  paddingHorizontal: '$4',
-  paddingVertical: '$3',
+  backgroundColor: neutralScale.neutral2,
+  borderRadius: 12,
+  paddingHorizontal: 14,
+  paddingVertical: 10,
   alignItems: 'center',
-  gap: '$3',
-  borderWidth: 1,
-  borderColor: 'transparent',
+  gap: 10,
+  borderWidth: 1.5,
+  borderColor: neutralScale.neutral3,
 });
 
 const SearchInput = styled(Input, {
@@ -115,12 +86,11 @@ const ClearButton = styled(Stack, {
   width: 24,
   height: 24,
   borderRadius: 12,
-  backgroundColor: '$backgroundHover',
+  backgroundColor: neutralScale.neutral4,
   alignItems: 'center',
   justifyContent: 'center',
 });
 
-const AnimatedIconButton = Animated.createAnimatedComponent(IconButton);
 const AnimatedSearchContainer = Animated.createAnimatedComponent(SearchContainer);
 
 function ForumHeaderComponent({
@@ -134,7 +104,10 @@ function ForumHeaderComponent({
   const [searchText, setSearchText] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
+  const avatarUrl = useUserStore((state) => state.user?.avatarUrl);
+
   const bellScale = useSharedValue(1);
+  const avatarScale = useSharedValue(1);
 
   // 搜索框聚焦动画
   const derivedFocus = useDerivedValue(() => {
@@ -146,7 +119,7 @@ function ForumHeaderComponent({
       borderColor: interpolateColor(
         derivedFocus.value,
         [0, 1],
-        ['transparent', theme.primary?.val || '#7FB093']
+        [neutralScale.neutral3, primaryScale.primary5]
       ),
       transform: [{ scale: 1 + derivedFocus.value * 0.01 }],
     };
@@ -154,6 +127,10 @@ function ForumHeaderComponent({
 
   const bellAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: bellScale.value }],
+  }));
+
+  const avatarAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: avatarScale.value }],
   }));
 
   const handleSearchSubmit = useCallback(() => {
@@ -173,6 +150,10 @@ function ForumHeaderComponent({
     }
   }, [onNotificationPress]);
 
+  const handleAvatarPress = useCallback(() => {
+    router.push('/(tabs)/profile' as any);
+  }, []);
+
   const handleBellPressIn = () => {
     bellScale.value = withSpring(0.9, { damping: 15, stiffness: 400 });
   };
@@ -181,49 +162,116 @@ function ForumHeaderComponent({
     bellScale.value = withSpring(1, { damping: 10, stiffness: 300 });
   };
 
+  const handleAvatarPressIn = () => {
+    avatarScale.value = withSpring(0.9, { damping: 15, stiffness: 400 });
+  };
+
+  const handleAvatarPressOut = () => {
+    avatarScale.value = withSpring(1, { damping: 10, stiffness: 300 });
+  };
+
+  const AnimatedStack = Animated.createAnimatedComponent(Stack);
+
   return (
     <HeaderContainer paddingTop={paddingTop}>
       <TopRow>
+        {/* 左侧：头像 */}
+        <Pressable
+          onPress={handleAvatarPress}
+          onPressIn={handleAvatarPressIn}
+          onPressOut={handleAvatarPressOut}
+        >
+          <AnimatedStack
+            style={avatarAnimatedStyle}
+            width={40}
+            height={40}
+            borderRadius={20}
+            backgroundColor={primaryScale.primary2}
+            alignItems="center"
+            justifyContent="center"
+            borderWidth={2}
+            borderColor={primaryScale.primary3}
+            overflow="hidden"
+          >
+            {avatarUrl ? (
+              <RNImage
+                source={{ uri: avatarUrl }}
+                style={{ width: 40, height: 40, borderRadius: 20 }}
+              />
+            ) : (
+              <User size={20} color={primaryScale.primary7} />
+            )}
+          </AnimatedStack>
+        </Pressable>
+
+        {/* 中间：标题 */}
         <TitleText>{title}</TitleText>
 
-        <XStack gap="$3" alignItems="center">
-          <Pressable
-            onPress={handleNotificationPress}
-            onPressIn={handleBellPressIn}
-            onPressOut={handleBellPressOut}
+        {/* 右侧：通知图标 */}
+        <Pressable
+          onPress={handleNotificationPress}
+          onPressIn={handleBellPressIn}
+          onPressOut={handleBellPressOut}
+        >
+          <AnimatedStack
+            style={bellAnimatedStyle}
+            width={40}
+            height={40}
+            borderRadius={20}
+            backgroundColor={neutralScale.neutral2}
+            alignItems="center"
+            justifyContent="center"
+            borderWidth={1.5}
+            borderColor={neutralScale.neutral3}
           >
-            <AnimatedIconButton style={bellAnimatedStyle}>
-              <Bell size={22} color={theme.color?.val} />
-              {unreadCount > 0 && (
-                <NotificationBadge>
-                  <BadgeText>{unreadCount > 99 ? '99+' : unreadCount}</BadgeText>
-                </NotificationBadge>
-              )}
-            </AnimatedIconButton>
-          </Pressable>
-        </XStack>
+            <Bell size={20} color={neutralScale.neutral10} />
+            {unreadCount > 0 && (
+              <Stack
+                position="absolute"
+                top={-4}
+                right={-4}
+                minWidth={18}
+                height={18}
+                borderRadius={9}
+                backgroundColor={errorScale.error6}
+                alignItems="center"
+                justifyContent="center"
+                paddingHorizontal={4}
+                borderWidth={2}
+                borderColor="white"
+              >
+                <Text fontSize={10} fontWeight="700" color="white">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </Stack>
+            )}
+          </AnimatedStack>
+        </Pressable>
       </TopRow>
 
-      <AnimatedSearchContainer style={searchAnimatedStyle}>
-        <Search size={20} color={theme.colorMuted?.val} />
-        <SearchInput
-          value={searchText}
-          onChangeText={setSearchText}
-          placeholder="搜索帖子、标签、用户..."
-          placeholderTextColor={theme.colorSubtle?.val}
-          returnKeyType="search"
-          onSubmitEditing={handleSearchSubmit}
-          onFocus={() => setIsSearchFocused(true)}
-          onBlur={() => setIsSearchFocused(false)}
-        />
-        {searchText.length > 0 && (
-          <Pressable onPress={handleClear}>
-            <ClearButton>
-              <X size={14} color={theme.colorMuted?.val} />
-            </ClearButton>
-          </Pressable>
-        )}
-      </AnimatedSearchContainer>
+      {/* 搜索框 */}
+      <YStack paddingBottom={12}>
+        <AnimatedSearchContainer style={searchAnimatedStyle}>
+          <Search size={18} color={neutralScale.neutral7} />
+          <SearchInput
+            value={searchText}
+            onChangeText={setSearchText}
+            placeholder="搜索帖子、标签、用户..."
+            placeholderTextColor={neutralScale.neutral6}
+            returnKeyType="search"
+            onSubmitEditing={handleSearchSubmit}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
+          />
+          {searchText.length > 0 && (
+            <Pressable onPress={handleClear}>
+              <ClearButton>
+                <X size={14} color={neutralScale.neutral7} />
+              </ClearButton>
+            </Pressable>
+          )}
+        </AnimatedSearchContainer>
+      </YStack>
     </HeaderContainer>
   );
 }

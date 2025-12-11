@@ -1,15 +1,18 @@
 /**
  * UserProfileModal - 用户资料弹窗组件
  *
- * 显示用户的基本信息、帖子数量等
+ * 居中弹窗显示用户的基本信息、帖子数量等
  */
 
 import React, { memo, useCallback, useEffect, useState } from 'react';
-import { Modal, Pressable, ScrollView } from 'react-native';
-import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { X, MessageCircle, UserPlus, Flag } from '@tamagui/lucide-icons';
-import { styled, XStack, YStack, Text, Avatar, Stack } from 'tamagui';
+import { Modal, Pressable, Dimensions, StyleSheet } from 'react-native';
+import Animated, { ZoomIn, ZoomOut } from 'react-native-reanimated';
+import { X, MessageCircle, UserPlus, Flag, User } from '@tamagui/lucide-icons';
+import { XStack, YStack, Text, Image } from 'tamagui';
+import { primaryScale, neutralScale } from '@/src/design-system/tokens';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const MODAL_WIDTH = Math.min(SCREEN_WIDTH - 48, 340);
 
 export interface UserProfile {
   id: string;
@@ -34,179 +37,6 @@ export interface UserProfileModalProps {
 
 const AnimatedYStack = Animated.createAnimatedComponent(YStack);
 
-const Overlay = styled(YStack, {
-  name: 'Overlay',
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-});
-
-const ModalContainer = styled(YStack, {
-  name: 'UserProfileModal',
-  backgroundColor: '$background',
-  borderTopLeftRadius: 24,
-  borderTopRightRadius: 24,
-  maxHeight: '80%',
-  overflow: 'hidden',
-});
-
-const ModalHeader = styled(XStack, {
-  name: 'ModalHeader',
-  paddingHorizontal: '$4',
-  paddingVertical: '$3',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  borderBottomWidth: 1,
-  borderBottomColor: '$borderColorMuted',
-});
-
-const CloseButton = styled(XStack, {
-  name: 'CloseButton',
-  width: 32,
-  height: 32,
-  borderRadius: 16,
-  backgroundColor: '$backgroundSubtle',
-  alignItems: 'center',
-  justifyContent: 'center',
-});
-
-const ProfileSection = styled(YStack, {
-  name: 'ProfileSection',
-  padding: '$4',
-  alignItems: 'center',
-  gap: '$3',
-});
-
-const UserAvatar = styled(Avatar, {
-  name: 'UserAvatar',
-});
-
-const Username = styled(Text, {
-  name: 'Username',
-  fontSize: '$6',
-  fontWeight: '700',
-  color: '$color',
-});
-
-const Bio = styled(Text, {
-  name: 'Bio',
-  fontSize: '$3',
-  color: '$colorMuted',
-  textAlign: 'center',
-  paddingHorizontal: '$4',
-});
-
-const StatsRow = styled(XStack, {
-  name: 'StatsRow',
-  gap: '$6',
-  paddingVertical: '$3',
-});
-
-const StatItem = styled(YStack, {
-  name: 'StatItem',
-  alignItems: 'center',
-  gap: '$1',
-});
-
-const StatValue = styled(Text, {
-  name: 'StatValue',
-  fontSize: '$5',
-  fontWeight: '700',
-  color: '$color',
-});
-
-const StatLabel = styled(Text, {
-  name: 'StatLabel',
-  fontSize: '$2',
-  color: '$colorMuted',
-});
-
-const ActionsRow = styled(XStack, {
-  name: 'ActionsRow',
-  paddingHorizontal: '$4',
-  paddingVertical: '$3',
-  gap: '$3',
-  justifyContent: 'center',
-});
-
-const ActionButton = styled(XStack, {
-  name: 'ActionButton',
-  flex: 1,
-  maxWidth: 150,
-  paddingVertical: '$3',
-  borderRadius: '$4',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '$2',
-
-  variants: {
-    variant: {
-      primary: {
-        backgroundColor: '$primary',
-      },
-      secondary: {
-        backgroundColor: '$backgroundSubtle',
-        borderWidth: 1,
-        borderColor: '$borderColor',
-      },
-    },
-  } as const,
-});
-
-const ActionText = styled(Text, {
-  name: 'ActionText',
-  fontSize: '$3',
-  fontWeight: '600',
-
-  variants: {
-    variant: {
-      primary: {
-        color: '$primaryContrast',
-      },
-      secondary: {
-        color: '$color',
-      },
-    },
-  } as const,
-});
-
-const InfoSection = styled(YStack, {
-  name: 'InfoSection',
-  padding: '$4',
-  gap: '$3',
-  borderTopWidth: 1,
-  borderTopColor: '$borderColorMuted',
-});
-
-const InfoRow = styled(XStack, {
-  name: 'InfoRow',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-});
-
-const InfoLabel = styled(Text, {
-  name: 'InfoLabel',
-  fontSize: '$3',
-  color: '$colorMuted',
-});
-
-const InfoValue = styled(Text, {
-  name: 'InfoValue',
-  fontSize: '$3',
-  color: '$color',
-});
-
-const ReportButton = styled(XStack, {
-  name: 'ReportButton',
-  paddingVertical: '$3',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '$2',
-});
-
 function UserProfileModalComponent({
   visible,
   user,
@@ -215,7 +45,6 @@ function UserProfileModalComponent({
   onMessage,
   onReport,
 }: UserProfileModalProps) {
-  const insets = useSafeAreaInsets();
   const [isFollowing, setIsFollowing] = useState(user?.isFollowing ?? false);
 
   useEffect(() => {
@@ -233,12 +62,14 @@ function UserProfileModalComponent({
   const handleMessage = useCallback(() => {
     if (!user) return;
     onMessage?.(user.id);
-  }, [user, onMessage]);
+    onClose();
+  }, [user, onMessage, onClose]);
 
   const handleReport = useCallback(() => {
     if (!user) return;
     onReport?.(user.id);
-  }, [user, onReport]);
+    onClose();
+  }, [user, onReport, onClose]);
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '未知';
@@ -250,104 +81,201 @@ function UserProfileModalComponent({
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <YStack flex={1}>
-        <AnimatedYStack entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)} flex={1}>
-          <Overlay>
-            <Pressable style={{ flex: 1 }} onPress={onClose} />
-          </Overlay>
-        </AnimatedYStack>
+      {/* 背景遮罩 */}
+      <Pressable style={styles.overlay} onPress={onClose}>
+        {/* 弹窗内容 */}
+        <Pressable onPress={(e) => e.stopPropagation()}>
+          <AnimatedYStack
+            entering={ZoomIn.springify().damping(18)}
+            exiting={ZoomOut.duration(200)}
+            width={MODAL_WIDTH}
+            backgroundColor="white"
+            borderRadius={20}
+            overflow="hidden"
+          >
+            {/* 关闭按钮 */}
+            <Pressable onPress={onClose} style={styles.closeButton}>
+              <YStack
+                width={32}
+                height={32}
+                borderRadius={16}
+                backgroundColor={neutralScale.neutral2}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <X size={18} color={neutralScale.neutral7} />
+              </YStack>
+            </Pressable>
 
-        <AnimatedYStack
-          entering={SlideInDown.springify().damping(20)}
-          exiting={SlideOutDown.springify().damping(20)}
-          position="absolute"
-          bottom={0}
-          left={0}
-          right={0}
-        >
-          <ModalContainer>
-            <ModalHeader>
-              <Stack width={32} />
-              <Text fontSize="$4" fontWeight="600" color="$color">
-                用户资料
+            {/* 头像区域 */}
+            <YStack alignItems="center" paddingTop={28} paddingBottom={16}>
+              <YStack
+                width={80}
+                height={80}
+                borderRadius={40}
+                backgroundColor={primaryScale.primary2}
+                alignItems="center"
+                justifyContent="center"
+                borderWidth={3}
+                borderColor={primaryScale.primary3}
+                overflow="hidden"
+              >
+                {user.avatar ? (
+                  <Image source={{ uri: user.avatar }} width={80} height={80} borderRadius={40} />
+                ) : (
+                  <User size={36} color={primaryScale.primary7} />
+                )}
+              </YStack>
+
+              {/* 用户名 */}
+              <Text fontSize={20} fontWeight="700" color={neutralScale.neutral12} marginTop={12}>
+                {user.username}
               </Text>
-              <Pressable onPress={onClose}>
-                <CloseButton>
-                  <X size={18} color="$colorMuted" />
-                </CloseButton>
-              </Pressable>
-            </ModalHeader>
 
-            <ScrollView>
-              <ProfileSection>
-                <UserAvatar circular size="$8">
-                  <Avatar.Image
-                    source={{ uri: user.avatar || 'https://placekitten.com/200/200' }}
-                  />
-                  <Avatar.Fallback backgroundColor="$color5" />
-                </UserAvatar>
+              {/* 个人简介 */}
+              {user.bio && (
+                <Text
+                  fontSize={14}
+                  color={neutralScale.neutral8}
+                  textAlign="center"
+                  marginTop={6}
+                  paddingHorizontal={24}
+                  numberOfLines={2}
+                >
+                  {user.bio}
+                </Text>
+              )}
+            </YStack>
 
-                <Username>{user.username}</Username>
+            {/* 统计数据 */}
+            <XStack
+              justifyContent="space-around"
+              paddingVertical={16}
+              borderTopWidth={1}
+              borderBottomWidth={1}
+              borderColor={neutralScale.neutral3}
+              marginHorizontal={16}
+            >
+              <YStack alignItems="center" gap={4}>
+                <Text fontSize={20} fontWeight="700" color={neutralScale.neutral12}>
+                  {user.postsCount ?? 0}
+                </Text>
+                <Text fontSize={12} color={neutralScale.neutral7}>
+                  帖子
+                </Text>
+              </YStack>
+              <YStack alignItems="center" gap={4}>
+                <Text fontSize={20} fontWeight="700" color={neutralScale.neutral12}>
+                  {user.followersCount ?? 0}
+                </Text>
+                <Text fontSize={12} color={neutralScale.neutral7}>
+                  粉丝
+                </Text>
+              </YStack>
+              <YStack alignItems="center" gap={4}>
+                <Text fontSize={20} fontWeight="700" color={neutralScale.neutral12}>
+                  {user.followingCount ?? 0}
+                </Text>
+                <Text fontSize={12} color={neutralScale.neutral7}>
+                  关注
+                </Text>
+              </YStack>
+            </XStack>
 
-                {user.bio && <Bio numberOfLines={3}>{user.bio}</Bio>}
-
-                <StatsRow>
-                  <StatItem>
-                    <StatValue>{user.postsCount ?? 0}</StatValue>
-                    <StatLabel>帖子</StatLabel>
-                  </StatItem>
-                  <StatItem>
-                    <StatValue>{user.followersCount ?? 0}</StatValue>
-                    <StatLabel>粉丝</StatLabel>
-                  </StatItem>
-                  <StatItem>
-                    <StatValue>{user.followingCount ?? 0}</StatValue>
-                    <StatLabel>关注</StatLabel>
-                  </StatItem>
-                </StatsRow>
-              </ProfileSection>
-
-              <ActionsRow>
-                <Pressable style={{ flex: 1, maxWidth: 150 }} onPress={handleFollow}>
-                  <ActionButton variant={isFollowing ? 'secondary' : 'primary'}>
-                    <UserPlus size={18} color={isFollowing ? '$color' : '$primaryContrast'} />
-                    <ActionText variant={isFollowing ? 'secondary' : 'primary'}>
+            {/* 操作按钮 */}
+            <XStack paddingHorizontal={16} paddingVertical={16} gap={12}>
+              <Pressable style={styles.actionButton} onPress={handleFollow}>
+                <YStack
+                  paddingVertical={12}
+                  borderRadius={12}
+                  backgroundColor={isFollowing ? neutralScale.neutral2 : primaryScale.primary7}
+                  borderWidth={1.5}
+                  borderColor={isFollowing ? neutralScale.neutral4 : primaryScale.primary6}
+                  alignItems="center"
+                >
+                  <XStack alignItems="center" gap={6}>
+                    <UserPlus size={18} color={isFollowing ? neutralScale.neutral8 : 'white'} />
+                    <Text
+                      fontSize={14}
+                      fontWeight="600"
+                      color={isFollowing ? neutralScale.neutral8 : 'white'}
+                    >
                       {isFollowing ? '已关注' : '关注'}
-                    </ActionText>
-                  </ActionButton>
-                </Pressable>
-
-                <Pressable style={{ flex: 1, maxWidth: 150 }} onPress={handleMessage}>
-                  <ActionButton variant="secondary">
-                    <MessageCircle size={18} color="$color" />
-                    <ActionText variant="secondary">私信</ActionText>
-                  </ActionButton>
-                </Pressable>
-              </ActionsRow>
-
-              <InfoSection>
-                <InfoRow>
-                  <InfoLabel>加入时间</InfoLabel>
-                  <InfoValue>{formatDate(user.createdAt)}</InfoValue>
-                </InfoRow>
-              </InfoSection>
-
-              <Pressable onPress={handleReport}>
-                <ReportButton>
-                  <Flag size={16} color="$colorMuted" />
-                  <Text fontSize="$2" color="$colorMuted">
-                    举报用户
-                  </Text>
-                </ReportButton>
+                    </Text>
+                  </XStack>
+                </YStack>
               </Pressable>
 
-              <Stack height={insets.bottom + 16} />
-            </ScrollView>
-          </ModalContainer>
-        </AnimatedYStack>
-      </YStack>
+              <Pressable style={styles.actionButton} onPress={handleMessage}>
+                <YStack
+                  paddingVertical={12}
+                  borderRadius={12}
+                  backgroundColor={neutralScale.neutral2}
+                  borderWidth={1.5}
+                  borderColor={neutralScale.neutral4}
+                  alignItems="center"
+                >
+                  <XStack alignItems="center" gap={6}>
+                    <MessageCircle size={18} color={neutralScale.neutral8} />
+                    <Text fontSize={14} fontWeight="600" color={neutralScale.neutral8}>
+                      私信
+                    </Text>
+                  </XStack>
+                </YStack>
+              </Pressable>
+            </XStack>
+
+            {/* 加入时间 */}
+            <YStack paddingHorizontal={16} paddingBottom={8}>
+              <XStack justifyContent="space-between" alignItems="center">
+                <Text fontSize={13} color={neutralScale.neutral6}>
+                  加入时间
+                </Text>
+                <Text fontSize={13} color={neutralScale.neutral8}>
+                  {formatDate(user.createdAt)}
+                </Text>
+              </XStack>
+            </YStack>
+
+            {/* 举报按钮 */}
+            <Pressable onPress={handleReport}>
+              <XStack
+                justifyContent="center"
+                alignItems="center"
+                gap={6}
+                paddingVertical={14}
+                borderTopWidth={1}
+                borderColor={neutralScale.neutral3}
+              >
+                <Flag size={14} color={neutralScale.neutral6} />
+                <Text fontSize={13} color={neutralScale.neutral6}>
+                  举报用户
+                </Text>
+              </XStack>
+            </Pressable>
+          </AnimatedYStack>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    zIndex: 10,
+  },
+  actionButton: {
+    flex: 1,
+  },
+});
 
 export const UserProfileModal = memo(UserProfileModalComponent);

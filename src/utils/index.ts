@@ -3,4 +3,5 @@
  */
 
 export * from './errorHandler';
+export * from './eventEmitter';
 export * from './logger';

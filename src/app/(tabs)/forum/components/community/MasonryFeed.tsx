@@ -19,6 +19,7 @@ export interface MasonryFeedProps {
   data: PostCardData[];
   onPostPress?: (post: PostCardData) => void;
   onLikePress?: (post: PostCardData) => void;
+  onAuthorPress?: (author: PostCardData['author']) => void;
   onRefresh?: () => Promise<void>;
   onEndReached?: () => void;
   isLoading?: boolean;
@@ -87,6 +88,7 @@ function MasonryFeedComponent({
   data,
   onPostPress,
   onLikePress,
+  onAuthorPress,
   onRefresh,
   onEndReached,
   isLoading = false,
@@ -176,6 +178,7 @@ function MasonryFeedComponent({
                   columnWidth={COLUMN_WIDTH}
                   onPress={onPostPress}
                   onLikePress={onLikePress}
+                  onAuthorPress={onAuthorPress}
                 />
               ))}
             </Column>

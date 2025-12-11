@@ -1,19 +1,40 @@
 /**
  * 论坛标签管理Hook
  * 负责加载和管理论坛标签的状态
+ * 从 Supabase posts 表动态获取所有唯一标签
  */
 
-// 注意：标签功能暂未迁移到 Supabase，使用模拟数据
-// import { supabaseForumService } from '@/src/lib/supabase';
 import { useCallback, useEffect, useState } from 'react';
+
+import { supabaseForumService } from '@/src/lib/supabase';
 
 export interface ForumTag {
   id: number;
   name: string;
+  count?: number; // 使用次数（热门标签时返回）
 }
 
-export function useForumTags() {
-  const [tags, setTags] = useState<ForumTag[]>([]);
+// 预定义的分类标签（作为默认/备用）
+const DEFAULT_TAGS: ForumTag[] = [
+  { id: 1, name: '求助' },
+  { id: 2, name: '分享' },
+  { id: 3, name: '科普' },
+  { id: 4, name: '避雷' },
+  { id: 5, name: '日常' },
+  { id: 6, name: '健康' },
+];
+
+export interface UseForumTagsOptions {
+  /** 是否按热门排序（按使用次数） */
+  popular?: boolean;
+  /** 最大返回数量 */
+  limit?: number;
+}
+
+export function useForumTags(options: UseForumTagsOptions = {}) {
+  const { popular = false, limit = 20 } = options;
+
+  const [tags, setTags] = useState<ForumTag[]>(DEFAULT_TAGS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -22,29 +43,53 @@ export function useForumTags() {
       setLoading(true);
       setError(null);
 
-      // 从 Supabase 的 posts 表中提取所有唯一标签
-      // 注意：这是基于 posts.tags 数组字段的实现
-      // 如果未来需要更复杂的标签管理，可以创建独立的 tags 表
+      if (popular) {
+        // 获取热门标签（按使用频率排序）
+        const { data, error: fetchError } = await supabaseForumService.getPopularTags(limit);
 
-      // 暂时使用预定义的分类标签（基于 PostCategory）
-      const mockTags: ForumTag[] = [
-        { id: 1, name: '求助' },
-        { id: 2, name: '分享' },
-        { id: 3, name: '科普' },
-        { id: 4, name: '警示' },
-      ];
-      setTags(mockTags);
+        if (fetchError) {
+          throw new Error(fetchError.message);
+        }
 
-      // TODO: 如果需要从数据库动态加载标签，可以使用以下查询：
-      // const { data } = await supabase.rpc('get_all_post_tags');
-      // 需要先在 Supabase 中创建对应的 RPC 函数
+        if (data && data.length > 0) {
+          const formattedTags: ForumTag[] = data.map((item, index) => ({
+            id: index + 1,
+            name: item.tag,
+            count: item.count,
+          }));
+          setTags(formattedTags);
+        } else {
+          // 如果没有数据，使用默认标签
+          setTags(DEFAULT_TAGS);
+        }
+      } else {
+        // 获取所有唯一标签
+        const { data, error: fetchError } = await supabaseForumService.getAllTags();
+
+        if (fetchError) {
+          throw new Error(fetchError.message);
+        }
+
+        if (data && data.length > 0) {
+          const formattedTags: ForumTag[] = data.slice(0, limit).map((name, index) => ({
+            id: index + 1,
+            name,
+          }));
+          setTags(formattedTags);
+        } else {
+          // 如果没有数据，使用默认标签
+          setTags(DEFAULT_TAGS);
+        }
+      }
     } catch (err) {
+      console.error('[useForumTags] 加载标签失败:', err);
       setError(err instanceof Error ? err : new Error('加载标签失败'));
-      setTags([]);
+      // 出错时使用默认标签
+      setTags(DEFAULT_TAGS);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [popular, limit]);
 
   useEffect(() => {
     loadTags();
@@ -55,5 +100,7 @@ export function useForumTags() {
     loading,
     error,
     reload: loadTags,
+    /** 默认标签列表 */
+    defaultTags: DEFAULT_TAGS,
   };
 }

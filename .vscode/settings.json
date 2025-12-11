@@ -30,5 +30,10 @@
 
   // ==================== TypeScript ====================
   "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  // 忽略 node_modules 中的 TypeScript 错误
+  "typescript.tsserver.watchOptions": {
+    "excludeDirectories": ["**/node_modules"]
+  }
 }

@@ -250,12 +250,15 @@ export const toggleLike = async (catfoodId: string) => {
 /**
  * 收藏/取消收藏
  */
-export const toggleFavorite = async (catfoodId: string) => {
+export const toggleFavorite = async (catfoodId: string | number) => {
   logger.query('catfoods', 'toggleFavorite', { catfoodId });
 
   try {
+    // 确保 catfoodId 是数字类型（匹配数据库 BIGINT 类型）
+    const numericId = typeof catfoodId === 'string' ? parseInt(catfoodId, 10) : catfoodId;
+
     const { data, error } = await supabase.rpc('toggle_favorite', {
-      p_catfood_id: catfoodId,
+      p_catfood_id: numericId,
     });
 
     if (error) {

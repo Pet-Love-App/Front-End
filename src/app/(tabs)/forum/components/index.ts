@@ -2,8 +2,19 @@
  * 论坛组件统一导出
  */
 
-// ========== Modal Components ==========
-export { PostDetailModal } from './PostDetailModal';
+// ========== Post Detail Components ==========
+export {
+  PostDetailScreen,
+  PostDetailHeader,
+  PostContent,
+  PostMediaGallery,
+  PostActions,
+  CommentSection,
+  CommentItem,
+  CommentInput,
+  usePostDetail,
+  type PostDetailScreenProps,
+} from './post-detail';
 
 // ========== Community Components ==========
 export {

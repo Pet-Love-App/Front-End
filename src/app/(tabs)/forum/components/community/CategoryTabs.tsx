@@ -2,12 +2,19 @@
  * CategoryTabs - 分类标签组件
  *
  * 水平滚动的分类选择器
+ * 设计风格：胶囊形状，带有平滑动画和微交互
  */
 
 import React, { memo, useCallback, useRef } from 'react';
 import { ScrollView, Pressable } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import { styled, XStack, Text } from 'tamagui';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  interpolateColor,
+  useDerivedValue,
+} from 'react-native-reanimated';
+import { styled, XStack, Text, Stack, useTheme } from 'tamagui';
 
 export interface CategoryItem {
   id: string;
@@ -21,51 +28,35 @@ export interface CategoryTabsProps {
   onSelect: (id: string) => void;
 }
 
-const TabButton = styled(XStack, {
+const TabButton = styled(Stack, {
   name: 'CategoryTab',
-  paddingHorizontal: '$4',
-  paddingVertical: '$2',
-  borderRadius: 9999,
+  paddingHorizontal: 16,
+  paddingVertical: 10,
+  borderRadius: 20,
   alignItems: 'center',
   justifyContent: 'center',
-  borderWidth: 1,
+});
 
-  variants: {
-    active: {
-      true: {
-        backgroundColor: '$primary',
-        borderColor: '$primary',
-      },
-      false: {
-        backgroundColor: 'transparent',
-        borderColor: '$borderColor',
-      },
-    },
-  } as const,
-
-  defaultVariants: {
-    active: false,
-  },
+const TabContent = styled(XStack, {
+  name: 'TabContent',
+  alignItems: 'center',
+  gap: 6,
 });
 
 const TabText = styled(Text, {
   name: 'CategoryTabText',
-  fontSize: '$2',
-  fontWeight: '500',
-
-  variants: {
-    active: {
-      true: {
-        color: '$primaryContrast',
-      },
-      false: {
-        color: '$colorMuted',
-      },
-    },
-  } as const,
+  fontSize: 14,
+  fontWeight: '600',
+  letterSpacing: -0.2,
 });
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const TabIcon = styled(Text, {
+  name: 'TabIcon',
+  fontSize: 14,
+});
+
+const AnimatedTabButton = Animated.createAnimatedComponent(TabButton);
+const AnimatedTabText = Animated.createAnimatedComponent(TabText);
 
 interface TabItemProps {
   item: CategoryItem;
@@ -74,32 +65,47 @@ interface TabItemProps {
 }
 
 function TabItem({ item, isActive, onPress }: TabItemProps) {
+  const theme = useTheme();
   const scale = useSharedValue(1);
 
-  const animatedStyle = useAnimatedStyle(() => ({
+  const activeProgress = useDerivedValue(() => {
+    return withSpring(isActive ? 1 : 0, { damping: 20, stiffness: 300 });
+  }, [isActive]);
+
+  const containerStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
+    backgroundColor: interpolateColor(
+      activeProgress.value,
+      [0, 1],
+      ['transparent', theme.primary?.val || '#7FB093']
+    ),
+  }));
+
+  const textStyle = useAnimatedStyle(() => ({
+    color: interpolateColor(
+      activeProgress.value,
+      [0, 1],
+      [theme.colorMuted?.val || '#6C6A66', '#FFFFFF']
+    ),
   }));
 
   const handlePressIn = () => {
-    scale.value = withSpring(0.95, { damping: 15, stiffness: 400 });
+    scale.value = withSpring(0.92, { damping: 15, stiffness: 400 });
   };
 
   const handlePressOut = () => {
-    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+    scale.value = withSpring(1, { damping: 12, stiffness: 300 });
   };
 
   return (
-    <AnimatedPressable
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      onPress={onPress}
-      style={animatedStyle}
-    >
-      <TabButton active={isActive}>
-        {item.icon && <Text marginRight="$1">{item.icon}</Text>}
-        <TabText active={isActive}>{item.label}</TabText>
-      </TabButton>
-    </AnimatedPressable>
+    <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut} onPress={onPress}>
+      <AnimatedTabButton style={containerStyle}>
+        <TabContent>
+          {item.icon && <TabIcon>{item.icon}</TabIcon>}
+          <AnimatedTabText style={textStyle}>{item.label}</AnimatedTabText>
+        </TabContent>
+      </AnimatedTabButton>
+    </Pressable>
   );
 }
 
@@ -120,6 +126,7 @@ function CategoryTabsComponent({ categories, activeId, onSelect }: CategoryTabsP
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={{
         paddingHorizontal: 16,
+        paddingVertical: 8,
         gap: 8,
       }}
     >

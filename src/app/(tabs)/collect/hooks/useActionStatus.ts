@@ -120,10 +120,10 @@ export function useActionStatus(catfoodId: string): UseActionStatusReturn {
       const result = await supabaseCatfoodService.toggleFavorite(catfoodId);
 
       if (result.data) {
-        // 同步真实状态
+        // 同步真实状态 - SQL 函数返回 is_favorited 字段
         setStatus((prev) => ({
           ...prev,
-          favorited: result.data!.favorited,
+          favorited: result.data!.is_favorited ?? newFavorited,
         }));
       }
     } catch (error) {

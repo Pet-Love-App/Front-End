@@ -37,27 +37,33 @@ const getRankStyle = (index: number) => {
   switch (index) {
     case 0:
       return {
-        gradient: RANK_COLORS.gold,
+        gradient: ['#FFD700', '#FFA500'] as const, // 金色渐变
         textColor: 'white' as const,
         icon: 'crown.fill' as const,
         iconColor: 'white' as const,
-        shadowColor: RANK_COLORS.gold[0],
+        shadowColor: '#FFD700',
+        cardGradient: ['#FFF9E6', '#FFF3CC'] as const,
+        borderColor: '#FFD700',
       };
     case 1:
       return {
-        gradient: RANK_COLORS.silver,
+        gradient: ['#C0C0C0', '#A8A8A8'] as const, // 银色渐变
         textColor: 'white' as const,
         icon: 'medal.fill' as const,
         iconColor: 'white' as const,
-        shadowColor: RANK_COLORS.silver[0],
+        shadowColor: '#C0C0C0',
+        cardGradient: ['#F8F8F8', '#F0F0F0'] as const,
+        borderColor: '#C0C0C0',
       };
     case 2:
       return {
-        gradient: RANK_COLORS.bronze,
+        gradient: ['#CD7F32', '#B8692D'] as const, // 铜色渐变
         textColor: 'white' as const,
         icon: 'medal.fill' as const,
         iconColor: 'white' as const,
-        shadowColor: RANK_COLORS.bronze[0],
+        shadowColor: '#CD7F32',
+        cardGradient: ['#FDF5EE', '#FAE8D8'] as const,
+        borderColor: '#CD7F32',
       };
     default:
       return {
@@ -66,6 +72,8 @@ const getRankStyle = (index: number) => {
         icon: 'star.fill' as const,
         iconColor: 'white' as const,
         shadowColor: RANK_COLORS.normal[0],
+        cardGradient: ['#FFFFFF', '#F9FAFB'] as const,
+        borderColor: '#E5E7EB',
       };
   }
 };
@@ -201,6 +209,7 @@ export function TopRankingSwiper({
     ({ item, index }) => {
       const rankStyle = getRankStyle(index);
       const animatedStyle = getAnimatedStyle(index);
+      const isTopThree = index < 3;
 
       return (
         <Animated.View
@@ -220,145 +229,162 @@ export function TopRankingSwiper({
             style={{ width: '100%', height: '100%' }}
             accessibilityLabel={`第${index + 1}名：${item.name}`}
           >
-            <Card
-              backgroundColor="white"
-              borderRadius="$7"
-              overflow="hidden"
-              bordered
-              borderColor={index < 3 ? rankStyle.gradient[0] : '$gray5'}
-              borderWidth={index < 3 ? 3 : 1.5}
-              height={cardHeight}
+            {/* 卡片背景渐变 */}
+            <LinearGradient
+              colors={rankStyle.cardGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={{
+                flex: 1,
+                borderRadius: 20,
+                overflow: 'hidden',
+                borderWidth: isTopThree ? 2.5 : 1,
+                borderColor: rankStyle.borderColor,
+                // 添加柔和阴影
+                shadowColor: rankStyle.shadowColor,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: isTopThree ? 0.3 : 0.1,
+                shadowRadius: 12,
+                elevation: isTopThree ? 8 : 3,
+              }}
             >
-              {/* 排名徽章 - 使用渐变 */}
+              {/* 排名徽章 - 浮动在顶部 */}
               <YStack
                 position="absolute"
-                top={10}
-                left={10}
+                top={-2}
+                left={12}
                 zIndex={10}
-                borderRadius="$10"
+                borderRadius={12}
                 overflow="hidden"
-                borderWidth={2}
-                borderColor="rgba(255, 255, 255, 0.4)"
+                // 添加微妙的阴影效果
+                shadowColor={rankStyle.shadowColor}
+                shadowOffset={{ width: 0, height: 2 }}
+                shadowOpacity={0.4}
+                shadowRadius={4}
+                elevation={4}
               >
                 <LinearGradient
                   colors={rankStyle.gradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={{
-                    paddingHorizontal: 10,
-                    paddingVertical: 6,
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
                     flexDirection: 'row',
                     alignItems: 'center',
                     gap: 4,
                   }}
                 >
-                  <IconSymbol name={rankStyle.icon} size={16} color={rankStyle.iconColor} />
-                  <Text fontSize="$5" fontWeight="900" color={rankStyle.textColor}>
+                  <IconSymbol name={rankStyle.icon} size={14} color={rankStyle.iconColor} />
+                  <Text fontSize="$4" fontWeight="900" color={rankStyle.textColor}>
                     {index + 1}
                   </Text>
                 </LinearGradient>
               </YStack>
 
               {/* 图片区域 */}
-              <YStack height="55%" backgroundColor="$gray2" position="relative">
+              <YStack height="52%" backgroundColor="$gray1" position="relative" marginTop={12}>
                 {item.imageUrl ? (
                   <>
                     <Image
                       source={{ uri: item.imageUrl }}
                       style={{ width: '100%', height: '100%' }}
-                      resizeMode="cover"
+                      resizeMode="contain"
                     />
-                    {/* 底部渐变遮罩 - 增强层次感 */}
+                    {/* 底部渐变遮罩 */}
                     <LinearGradient
-                      colors={['transparent', 'rgba(0,0,0,0.15)']}
+                      colors={['transparent', 'rgba(255,255,255,0.8)']}
                       style={{
                         position: 'absolute',
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        height: '30%',
+                        height: '25%',
                       }}
                     />
                   </>
                 ) : (
                   <YStack flex={1} alignItems="center" justifyContent="center">
-                    <IconSymbol name="photo" size={40} color="$gray8" />
+                    <IconSymbol name="photo" size={36} color="$gray6" />
                   </YStack>
-                )}
-
-                {/* 前三名顶部闪光效果 */}
-                {index < 3 && (
-                  <LinearGradient
-                    colors={['rgba(255,255,255,0.3)', 'transparent']}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: '40%',
-                    }}
-                  />
                 )}
               </YStack>
 
               {/* 信息区域 */}
-              <YStack padding="$3" gap="$2" flex={1} justifyContent="space-between">
+              <YStack
+                padding="$3"
+                paddingTop="$2"
+                gap="$1.5"
+                flex={1}
+                justifyContent="space-between"
+              >
                 {/* 名称 */}
                 <Text
                   fontSize="$3"
-                  fontWeight="800"
+                  fontWeight="700"
                   numberOfLines={2}
-                  lineHeight={17}
+                  lineHeight={18}
                   color="$gray12"
                 >
                   {item.name}
                 </Text>
 
-                {/* 品牌 */}
-                <XStack alignItems="center" gap="$1.5" paddingVertical="$1">
-                  <YStack backgroundColor="$gray3" borderRadius="$6" padding="$1">
-                    <IconSymbol name="building.2.fill" size={11} color="$gray10" />
+                {/* 品牌标签 */}
+                <XStack alignItems="center" gap="$1.5">
+                  <YStack
+                    backgroundColor={isTopThree ? `${rankStyle.borderColor}20` : '$gray2'}
+                    borderRadius={6}
+                    paddingHorizontal="$1.5"
+                    paddingVertical="$0.5"
+                  >
+                    <Text
+                      fontSize={11}
+                      color={isTopThree ? rankStyle.borderColor : '$gray10'}
+                      numberOfLines={1}
+                      fontWeight="600"
+                    >
+                      {item.brand || '未知品牌'}
+                    </Text>
                   </YStack>
-                  <Text fontSize="$2" color="$gray11" numberOfLines={1} fontWeight="500">
-                    {item.brand || '未知品牌'}
-                  </Text>
                 </XStack>
 
-                {/* 评分和点赞 */}
+                {/* 评分和点赞 - 更紧凑的布局 */}
                 {showStats && (
-                  <XStack gap="$2" marginTop="auto">
+                  <XStack gap="$2" marginTop="$1">
                     <XStack
                       alignItems="center"
-                      gap="$1.5"
-                      flex={1}
-                      backgroundColor="$yellow2"
+                      gap="$1"
+                      backgroundColor="$orange1"
                       paddingHorizontal="$2"
-                      paddingVertical="$1.5"
-                      borderRadius="$6"
+                      paddingVertical="$1"
+                      borderRadius={8}
+                      borderWidth={1}
+                      borderColor="$orange4"
                     >
-                      <IconSymbol name="star.fill" size={13} color="$yellow10" />
-                      <Text fontSize="$3" fontWeight="700" color="$yellow11">
+                      <IconSymbol name="star.fill" size={12} color="$orange9" />
+                      <Text fontSize={13} fontWeight="800" color="$orange10">
                         {item.score.toFixed(1)}
                       </Text>
                     </XStack>
                     <XStack
                       alignItems="center"
-                      gap="$1.5"
-                      flex={1}
-                      backgroundColor="$red2"
+                      gap="$1"
+                      backgroundColor="$pink1"
                       paddingHorizontal="$2"
-                      paddingVertical="$1.5"
-                      borderRadius="$6"
+                      paddingVertical="$1"
+                      borderRadius={8}
+                      borderWidth={1}
+                      borderColor="$pink4"
                     >
-                      <IconSymbol name="heart.fill" size={13} color="$red10" />
-                      <Text fontSize="$3" fontWeight="700" color="$red11">
+                      <IconSymbol name="heart.fill" size={12} color="$pink9" />
+                      <Text fontSize={13} fontWeight="800" color="$pink10">
                         {item.like_count || 0}
                       </Text>
                     </XStack>
                   </XStack>
                 )}
               </YStack>
-            </Card>
+            </LinearGradient>
           </Pressable>
         </Animated.View>
       );
@@ -447,52 +473,35 @@ export function TopRankingSwiper({
         />
       </YStack>
 
-      {/* 指示器 - 现代化设计 */}
+      {/* 指示器 - 现代化简洁设计 */}
       {topData.length > 1 && (
-        <XStack justifyContent="center" gap="$2" paddingTop="$3" paddingBottom="$2" zIndex={2}>
-          {topData.map((_, index) => (
-            <Pressable
-              key={`indicator-${index}`}
-              onPress={() => {
-                const offset = ITEM_WIDTH * index;
-                flatListRef.current?.scrollToOffset({
-                  offset,
-                  animated: true,
-                });
-                setCurrentIndex(index);
-              }}
-            >
-              {currentIndex === index ? (
+        <XStack justifyContent="center" gap="$1.5" paddingTop="$2" paddingBottom="$1" zIndex={2}>
+          {topData.map((_, index) => {
+            const isActive = currentIndex === index;
+            return (
+              <Pressable
+                key={`indicator-${index}`}
+                onPress={() => {
+                  const offset = ITEM_WIDTH * index;
+                  flatListRef.current?.scrollToOffset({
+                    offset,
+                    animated: true,
+                  });
+                  setCurrentIndex(index);
+                }}
+                hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
+              >
                 <YStack
-                  width={32}
-                  height={9}
-                  borderRadius="$10"
-                  overflow="hidden"
-                  animation="quick"
-                  borderWidth={1}
-                  borderColor="$yellow7"
-                >
-                  <LinearGradient
-                    colors={['#FBBF24', '#F59E0B']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={{
-                      flex: 1,
-                    }}
-                  />
-                </YStack>
-              ) : (
-                <YStack
-                  width={9}
-                  height={9}
-                  borderRadius="$10"
-                  backgroundColor="$gray6"
-                  opacity={0.6}
+                  width={isActive ? 24 : 8}
+                  height={8}
+                  borderRadius={4}
+                  backgroundColor={isActive ? '$orange9' : '$gray5'}
+                  opacity={isActive ? 1 : 0.5}
                   animation="quick"
                 />
-              )}
-            </Pressable>
-          ))}
+              </Pressable>
+            );
+          })}
         </XStack>
       )}
     </YStack>

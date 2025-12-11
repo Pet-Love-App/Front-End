@@ -75,6 +75,7 @@ export { supabaseForumService } from './services/forum';
 export type {
   CreatePostParams,
   GetPostsParams,
+  MediaFileInput,
   NotificationItem,
   Post,
   PostAuthor,

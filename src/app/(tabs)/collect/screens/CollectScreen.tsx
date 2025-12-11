@@ -1,19 +1,20 @@
 import { RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Input, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
+
 import CollectListItem from '@/src/app/(tabs)/collect/components/collectItem';
-import ReportCollectItem from '@/src/app/(tabs)/collect/components/ReportCollectItem';
-import { AIReportModal } from '@/src/app/detail/components/AIReportModal';
+import PostCollectItem from '@/src/app/(tabs)/collect/components/PostCollectItem';
+import { PostDetailScreen } from '@/src/app/(tabs)/forum/components/post-detail';
 import { PageHeader } from '@/src/components/PageHeader';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 
-import { useCollectData, useCollectFilter, useReportCollectData } from '../hooks';
+import { useCollectData, useCollectFilter, usePostCollectData } from '../hooks';
 
 /**
  * Collect 主屏幕组件
- * 显示用户收藏的猫粮和报告
+ * 显示用户收藏的猫粮和帖子
  */
 export function CollectScreen() {
   const insets = useSafeAreaInsets();
@@ -24,19 +25,19 @@ export function CollectScreen() {
   const { favorites, isLoading, error, refreshing, handleRefresh, handleDelete, handlePress } =
     useCollectData();
 
-  // 报告收藏数据
+  // 帖子收藏数据
   const {
-    favoriteReports,
-    isLoadingReports,
-    reportError,
-    refreshing: refreshingReports,
-    handleRefresh: handleRefreshReports,
-    handleDelete: handleDeleteReport,
-    handlePress: handlePressReport,
-    selectedReport,
-    isReportModalVisible,
-    closeReportModal,
-  } = useReportCollectData();
+    favoritePosts,
+    isLoadingPosts,
+    postError,
+    refreshing: refreshingPosts,
+    handleRefresh: handleRefreshPosts,
+    handleDelete: handleDeletePost,
+    handlePress: handlePressPost,
+    selectedPost,
+    closePostDetail,
+    handlePostDeleted,
+  } = usePostCollectData();
 
   const {
     currentTab,
@@ -100,9 +101,9 @@ export function CollectScreen() {
     );
   };
 
-  // 渲染报告收藏列表
-  const renderReportList = () => {
-    if (isLoadingReports && !refreshingReports) {
+  // 渲染帖子收藏列表
+  const renderPostList = () => {
+    if (isLoadingPosts && !refreshingPosts) {
       return (
         <YStack flex={1} alignItems="center" justifyContent="center" paddingVertical="$10">
           <Spinner size="large" color={colors.tint} />
@@ -113,51 +114,39 @@ export function CollectScreen() {
       );
     }
 
-    if (reportError && !isLoadingReports) {
-      return renderEmptyState(`❌ ${reportError}\n下拉刷新重试`, 'exclamationmark.triangle');
+    if (postError && !isLoadingPosts) {
+      return renderEmptyState(`❌ ${postError}\n下拉刷新重试`, 'exclamationmark.triangle');
     }
 
-    // 过滤报告收藏
-    const filteredReports = favoriteReports.filter((fav) => {
+    // 过滤帖子收藏
+    const filteredPosts = favoritePosts.filter((post) => {
       if (!searchText.trim()) return true;
       const search = searchText.toLowerCase();
-      const catfoodName = fav.report.catfood_name || fav.report.catfoodName || '';
       return (
-        catfoodName.toLowerCase().includes(search) ||
-        fav.report.safety?.toLowerCase().includes(search) ||
-        fav.report.tags?.some((tag: string) => tag.toLowerCase().includes(search))
+        post.content?.toLowerCase().includes(search) ||
+        post.author?.username?.toLowerCase().includes(search) ||
+        post.tags?.some((tag: string) => tag.toLowerCase().includes(search))
       );
     });
 
-    if (filteredReports.length === 0) {
+    if (filteredPosts.length === 0) {
       return renderEmptyState(
         searchText.trim()
-          ? '未找到匹配的报告收藏'
-          : '还没有收藏任何报告哦~\n快去收藏感兴趣的AI报告吧！',
+          ? '未找到匹配的帖子收藏'
+          : '还没有收藏任何帖子哦~\n快去社区发现感兴趣的内容吧！',
         'doc.text.fill'
       );
     }
 
     return (
       <YStack gap="$3" paddingBottom="$4">
-        {filteredReports.map((favoriteReport) => (
-          <YStack
-            key={favoriteReport.id}
-            pressStyle={{ scale: 0.98, opacity: 0.9 }}
-            animation="quick"
-          >
-            <ReportCollectItem
-              favoriteReport={favoriteReport}
-              onDelete={() => handleDeleteReport(favoriteReport.id)}
-              onPress={() =>
-                handlePressReport(
-                  favoriteReport.catfoodId ||
-                    favoriteReport.report.catfood_id ||
-                    favoriteReport.reportId
-                )
-              }
-            />
-          </YStack>
+        {filteredPosts.map((post) => (
+          <PostCollectItem
+            key={post.id}
+            post={post}
+            onDelete={() => handleDeletePost(post.id)}
+            onPress={() => handlePressPost(post.id)}
+          />
         ))}
       </YStack>
     );
@@ -187,7 +176,7 @@ export function CollectScreen() {
               borderRadius="$10"
             >
               <Text fontSize={13} fontWeight="600" color={colors.tint}>
-                {currentTab === 'catfood' ? favoritesCount : favoriteReports.length}
+                {currentTab === 'catfood' ? favoritesCount : favoritePosts.length}
               </Text>
             </XStack>
           }
@@ -248,22 +237,22 @@ export function CollectScreen() {
             paddingVertical="$2.5"
             alignItems="center"
             borderBottomWidth={2}
-            borderBottomColor={currentTab === 'report' ? colors.tint : 'transparent'}
+            borderBottomColor={currentTab === 'post' ? colors.tint : 'transparent'}
             pressStyle={{ opacity: 0.7 }}
-            onPress={() => setCurrentTab('report')}
+            onPress={() => setCurrentTab('post')}
           >
             <XStack gap="$2" alignItems="center">
               <IconSymbol
                 name="doc.text.fill"
                 size={18}
-                color={currentTab === 'report' ? colors.tint : colors.icon}
+                color={currentTab === 'post' ? colors.tint : colors.icon}
               />
               <Text
                 fontSize={15}
-                fontWeight={currentTab === 'report' ? '600' : '400'}
-                color={currentTab === 'report' ? colors.tint : colors.icon}
+                fontWeight={currentTab === 'post' ? '600' : '400'}
+                color={currentTab === 'post' ? colors.tint : colors.icon}
               >
-                报告收藏
+                帖子收藏
               </Text>
             </XStack>
           </YStack>
@@ -292,22 +281,23 @@ export function CollectScreen() {
             padding="$4"
             refreshControl={
               <RefreshControl
-                refreshing={refreshingReports}
-                onRefresh={handleRefreshReports}
+                refreshing={refreshingPosts}
+                onRefresh={handleRefreshPosts}
                 tintColor={colors.tint}
               />
             }
           >
-            {renderReportList()}
+            {renderPostList()}
           </ScrollView>
         )}
       </YStack>
 
-      {/* AI 报告详情模态框 */}
-      <AIReportModal
-        visible={isReportModalVisible}
-        report={selectedReport}
-        onClose={closeReportModal}
+      {/* 帖子详情模态框 */}
+      <PostDetailScreen
+        visible={!!selectedPost}
+        post={selectedPost}
+        onClose={closePostDetail}
+        onPostDeleted={handlePostDeleted}
       />
     </YStack>
   );

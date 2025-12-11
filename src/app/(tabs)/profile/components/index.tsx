@@ -1,4 +1,6 @@
 export { AddPetModal } from './AddPetModal';
+export { BadgeDetailModal } from './BadgeDetailModal';
+export { BadgeGrid } from './BadgeGrid';
 export { EditDetailsModal } from './EditDetailsModal';
 export { EditProfileModal } from './EditProfileModal';
 export { LogoutButton } from './LogoutButton';
@@ -8,4 +10,5 @@ export { PetInfoPanel } from './PetInfoPanel';
 export { PetList } from './PetList';
 export { ProfileHeader } from './ProfileHeader';
 export { ProfileTabs } from './ProfileTabs';
+export { ReputationCard } from './ReputationCard';
 export { ThemeSelectorModal } from './ThemeSelectorModal';

@@ -1,13 +1,15 @@
 /**
- * 用户资料编辑模态框
- * 支持修改用户名和密码
+ * EditProfileModal - �༭�������ϵ���
+ *
+ * ���е�����ʽ���ο� ThemeSelectorModal ʵ��
+ * ֧���޸��û��������빦��
  */
-import { useState } from 'react';
-import { Alert, Dimensions, ScrollView, StyleSheet, TextInput } from 'react-native';
-import { Button, Dialog, Separator, Text, XStack, YStack } from 'tamagui';
+import React, { useState, useEffect } from 'react';
+import { Alert, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { Dialog, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { Colors } from '@/src/constants/theme';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
+import { errorScale, neutralScale, primaryScale } from '@/src/design-system/tokens/colors';
 import { supabaseAuthService, supabaseProfileService } from '@/src/lib/supabase';
 import { useUserStore } from '@/src/store/userStore';
 import {
@@ -22,128 +24,86 @@ interface EditProfileModalProps {
 }
 
 export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) {
-  const colorScheme = useThemeAwareColorScheme();
-  const colors = Colors[colorScheme];
   const { user, fetchCurrentUser } = useUserStore();
 
-  // 用户名编辑
-  const [username, setUsername] = useState(user?.username || '');
+  const [username, setUsername] = useState('');
   const [isUpdatingUsername, setIsUpdatingUsername] = useState(false);
 
-  // 密码修改
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showPasswords, setShowPasswords] = useState(false);
 
-  const screenWidth = Dimensions.get('window').width;
-  const dialogWidth = Math.min(screenWidth - 48, 500);
+  useEffect(() => {
+    if (open) {
+      setUsername(user?.username || '');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setShowPasswords(false);
+    }
+  }, [open, user?.username]);
 
-  // 重置表单
-  const resetForm = () => {
-    setUsername(user?.username || '');
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setShowPasswords(false);
-  };
+  const handleClose = () => onOpenChange(false);
 
-  // 处理关闭
-  const handleClose = () => {
-    resetForm();
-    onOpenChange(false);
-  };
-
-  // 更新用户名
   const handleUpdateUsername = async () => {
     try {
-      // 验证用户名
-      updateUsernameSchema.parse({ username: username.trim() });
-
-      if (username.trim() === user?.username) {
-        Alert.alert('提示', '用户名没有变化');
+      const trimmedUsername = username.trim();
+      updateUsernameSchema.parse({ username: trimmedUsername });
+      if (trimmedUsername === user?.username) {
+        Alert.alert('��ʾ', '�û���û�б仯');
         return;
       }
-
       setIsUpdatingUsername(true);
-      const { error } = await supabaseProfileService.updateProfile({
-        username: username.trim(),
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
+      const { error } = await supabaseProfileService.updateProfile({ username: trimmedUsername });
+      if (error) throw new Error(error.message);
       await fetchCurrentUser();
-      Alert.alert('✅ 成功', '用户名已更新');
+      Alert.alert('�ɹ�', '�û����Ѹ���');
       handleClose();
     } catch (error: any) {
-      console.error('更新用户名失败:', error);
-      if (error.errors) {
-        Alert.alert('❌ 验证失败', error.errors[0]?.message || '用户名格式不正确');
-      } else {
-        Alert.alert('❌ 更新失败', error.message || '无法更新用户名，用户名可能已被占用');
-      }
+      Alert.alert('����ʧ��', error.errors?.[0]?.message || error.message || '�û��������ѱ�ռ��');
     } finally {
       setIsUpdatingUsername(false);
     }
   };
 
-  // 修改密码
   const handleChangePassword = async () => {
     try {
-      // 验证两次输入的密码是否一致
       if (newPassword !== confirmPassword) {
-        Alert.alert('❌ 验证失败', '两次输入的新密码不一致');
+        Alert.alert('��֤ʧ��', '��������������벻һ��');
         return;
       }
-
-      // 构建请求数据
       const passwordData: ChangePasswordInput = {
         current_password: currentPassword,
         new_password: newPassword,
         re_new_password: confirmPassword,
       };
-
-      // 验证数据格式
       changePasswordSchema.parse(passwordData);
-
       setIsChangingPassword(true);
-
-      // 注意：Supabase 修改密码不需要验证当前密码（用户已登录）
-      const { error } = await supabaseAuthService.updatePassword({
-        newPassword: newPassword,
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      Alert.alert('✅ 成功', '密码已修改，请使用新密码重新登录', [
+      const { error } = await supabaseAuthService.updatePassword({ newPassword });
+      if (error) throw new Error(error.message);
+      Alert.alert('�ɹ�', '�������޸ģ���ʹ�����������µ�¼', [
         {
-          text: '确定',
+          text: 'ȷ��',
           onPress: () => {
             handleClose();
-            // 可以选择退出登录
             useUserStore.getState().logout();
           },
         },
       ]);
     } catch (error: any) {
-      console.error('修改密码失败:', error);
-      if (error.errors) {
-        Alert.alert('❌ 验证失败', error.errors[0]?.message || '密码格式不正确');
-      } else {
-        Alert.alert('❌ 修改失败', error.message || '无法修改密码');
-      }
+      Alert.alert('�޸�ʧ��', error.errors?.[0]?.message || error.message || '�޷��޸�����');
     } finally {
       setIsChangingPassword(false);
     }
   };
 
+  const canUpdateUsername = username.trim() && username.trim() !== user?.username;
+  const canChangePassword = currentPassword && newPassword && confirmPassword;
+
   return (
-    <Dialog modal={false} open={open} onOpenChange={onOpenChange}>
+    <Dialog modal open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay
           key="overlay"
@@ -151,229 +111,226 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
           opacity={0.5}
           enterStyle={{ opacity: 0 }}
           exitStyle={{ opacity: 0 }}
-          style={{ pointerEvents: 'auto' }}
+          backgroundColor="black"
         />
-
         <Dialog.Content
-          bordered
           key="content"
           animateOnly={['transform', 'opacity']}
-          animation="quick"
-          enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-          exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-          padding="$0"
-          backgroundColor={colors.background}
-          width={dialogWidth}
+          animation={['quick', { opacity: { overshootClamping: true } }]}
+          enterStyle={{ y: -20, opacity: 0, scale: 0.95 }}
+          exitStyle={{ y: 10, opacity: 0, scale: 0.95 }}
+          backgroundColor="white"
+          borderRadius={24}
+          padding="$5"
+          width="90%"
+          maxWidth={420}
           maxHeight="85%"
         >
-          {/* Header */}
-          <YStack
-            paddingHorizontal="$4"
-            paddingTop="$4"
-            paddingBottom="$3"
-            borderBottomWidth={1}
-            borderBottomColor="$borderColor"
-          >
-            <Dialog.Title fontSize={20} fontWeight="700" color={colors.text}>
-              编辑个人资料
-            </Dialog.Title>
-            <Text fontSize="$3" color="$gray10" marginTop="$1">
-              修改用户名或密码
+          <YStack alignItems="center" gap="$2" marginBottom="$4">
+            <YStack
+              width={56}
+              height={56}
+              borderRadius={28}
+              backgroundColor={primaryScale.primary2}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <IconSymbol name="person.fill" size={28} color={primaryScale.primary7} />
+            </YStack>
+            <Text fontSize={20} fontWeight="700" color={neutralScale.neutral12}>
+              �༭��������
+            </Text>
+            <Text fontSize={13} color={neutralScale.neutral8}>
+              �޸��û���������
             </Text>
           </YStack>
 
-          {/* Content */}
           <ScrollView
-            style={{ maxHeight: 500 }}
+            style={styles.scrollView}
             showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="always"
-            nestedScrollEnabled={true}
-            scrollEnabled={true}
+            keyboardShouldPersistTaps="handled"
           >
-            <YStack padding="$4" gap="$5">
-              {/* 用户名部分 */}
-              <YStack gap="$3">
-                <XStack alignItems="center" gap="$2">
-                  <IconSymbol name="person.fill" size={18} color={colors.tint} />
-                  <Text fontSize="$5" fontWeight="600" color={colors.text}>
-                    修改用户名
-                  </Text>
-                </XStack>
+            <YStack gap="$3" marginBottom="$5">
+              <XStack alignItems="center" gap="$2">
+                <YStack
+                  width={28}
+                  height={28}
+                  borderRadius={14}
+                  backgroundColor={primaryScale.primary2}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <IconSymbol name="at" size={14} color={primaryScale.primary7} />
+                </YStack>
+                <Text fontSize={15} fontWeight="600" color={neutralScale.neutral11}>
+                  �޸��û���
+                </Text>
+              </XStack>
 
-                <YStack gap="$2">
-                  <Text fontSize="$3" color={colors.icon}>
-                    当前用户名：{user?.username}
+              <YStack gap="$1.5">
+                <Text fontSize={12} color={neutralScale.neutral7} fontWeight="500">
+                  ��ǰ�û���
+                </Text>
+                <YStack
+                  backgroundColor={neutralScale.neutral2}
+                  paddingHorizontal="$3"
+                  paddingVertical="$2.5"
+                  borderRadius={10}
+                  borderWidth={1}
+                  borderColor={neutralScale.neutral4}
+                >
+                  <Text fontSize={14} color={neutralScale.neutral10} fontWeight="500">
+                    {user?.username || 'δ����'}
                   </Text>
-                  <TextInput
-                    placeholder="输入新用户名"
-                    placeholderTextColor={colors.icon}
-                    value={username}
-                    onChangeText={setUsername}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    style={[
-                      styles.input,
-                      {
-                        color: colors.text,
-                        borderColor: colors.icon,
-                        backgroundColor: colors.background,
-                      },
-                    ]}
-                  />
-                  <Button
-                    size="$3"
-                    backgroundColor="$blue9"
-                    color="white"
-                    onPress={handleUpdateUsername}
-                    disabled={isUpdatingUsername || !username.trim()}
-                    opacity={isUpdatingUsername || !username.trim() ? 0.5 : 1}
-                    icon={<IconSymbol name="checkmark.circle.fill" size={18} color="white" />}
-                  >
-                    {isUpdatingUsername ? '更新中...' : '更新用户名'}
-                  </Button>
                 </YStack>
               </YStack>
 
-              <Separator borderColor={colors.icon + '20'} />
-
-              {/* 密码修改部分 */}
-              <YStack gap="$3">
-                <XStack alignItems="center" gap="$2">
-                  <IconSymbol name="lock.fill" size={18} color={colors.tint} />
-                  <Text fontSize="$5" fontWeight="600" color={colors.text}>
-                    修改密码
-                  </Text>
-                </XStack>
-
-                <YStack gap="$2">
-                  <Text fontSize="$4" fontWeight="500" color={colors.text}>
-                    当前密码 <Text color="$red10">*</Text>
-                  </Text>
-                  <TextInput
-                    placeholder="输入当前密码"
-                    placeholderTextColor={colors.icon}
-                    value={currentPassword}
-                    onChangeText={setCurrentPassword}
-                    secureTextEntry={!showPasswords}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    style={[
-                      styles.input,
-                      {
-                        color: colors.text,
-                        borderColor: colors.icon,
-                        backgroundColor: colors.background,
-                      },
-                    ]}
-                  />
-                </YStack>
-
-                <YStack gap="$2">
-                  <Text fontSize="$4" fontWeight="500" color={colors.text}>
-                    新密码 <Text color="$red10">*</Text>
-                  </Text>
-                  <TextInput
-                    placeholder="输入新密码（至少6位）"
-                    placeholderTextColor={colors.icon}
-                    value={newPassword}
-                    onChangeText={setNewPassword}
-                    secureTextEntry={!showPasswords}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    style={[
-                      styles.input,
-                      {
-                        color: colors.text,
-                        borderColor: colors.icon,
-                        backgroundColor: colors.background,
-                      },
-                    ]}
-                  />
-                </YStack>
-
-                <YStack gap="$2">
-                  <Text fontSize="$4" fontWeight="500" color={colors.text}>
-                    确认新密码 <Text color="$red10">*</Text>
-                  </Text>
-                  <TextInput
-                    placeholder="再次输入新密码"
-                    placeholderTextColor={colors.icon}
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    secureTextEntry={!showPasswords}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    style={[
-                      styles.input,
-                      {
-                        color: colors.text,
-                        borderColor: colors.icon,
-                        backgroundColor: colors.background,
-                      },
-                    ]}
-                  />
-                </YStack>
-
-                <Button
-                  size="$3"
-                  variant="outlined"
-                  onPress={() => setShowPasswords(!showPasswords)}
-                  borderColor={colors.icon}
-                  color={colors.text}
-                  icon={
-                    <IconSymbol
-                      name={showPasswords ? 'eye.slash.fill' : 'eye.fill'}
-                      size={18}
-                      color={colors.icon}
-                    />
-                  }
-                >
-                  {showPasswords ? '隐藏密码' : '显示密码'}
-                </Button>
-
-                <Button
-                  size="$3"
-                  backgroundColor="$red9"
-                  color="white"
-                  onPress={handleChangePassword}
-                  disabled={
-                    isChangingPassword || !currentPassword || !newPassword || !confirmPassword
-                  }
-                  opacity={
-                    isChangingPassword || !currentPassword || !newPassword || !confirmPassword
-                      ? 0.5
-                      : 1
-                  }
-                  icon={<IconSymbol name="key.fill" size={18} color="white" />}
-                  marginTop="$2"
-                >
-                  {isChangingPassword ? '修改中...' : '修改密码'}
-                </Button>
+              <YStack gap="$1.5">
+                <Text fontSize={12} color={neutralScale.neutral7} fontWeight="500">
+                  ���û���
+                </Text>
+                <TextInput
+                  placeholder="�������û���"
+                  placeholderTextColor={neutralScale.neutral6}
+                  value={username}
+                  onChangeText={setUsername}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  style={styles.input}
+                />
               </YStack>
+
+              <Button
+                height={44}
+                backgroundColor={primaryScale.primary7}
+                borderRadius={12}
+                pressStyle={{ backgroundColor: primaryScale.primary8, scale: 0.98 }}
+                onPress={handleUpdateUsername}
+                disabled={!canUpdateUsername || isUpdatingUsername}
+                opacity={!canUpdateUsername || isUpdatingUsername ? 0.5 : 1}
+                icon={<IconSymbol name="checkmark.circle.fill" size={18} color="white" />}
+              >
+                <Text fontSize={14} fontWeight="600" color="white">
+                  {isUpdatingUsername ? '������...' : '�����û���'}
+                </Text>
+              </Button>
+            </YStack>
+
+            <YStack height={1} backgroundColor={neutralScale.neutral3} marginVertical="$3" />
+
+            <YStack gap="$3">
+              <XStack alignItems="center" gap="$2">
+                <YStack
+                  width={28}
+                  height={28}
+                  borderRadius={14}
+                  backgroundColor={errorScale.error2}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <IconSymbol name="lock.fill" size={14} color={errorScale.error9} />
+                </YStack>
+                <Text fontSize={15} fontWeight="600" color={neutralScale.neutral11}>
+                  �޸�����
+                </Text>
+              </XStack>
+
+              <YStack gap="$1.5">
+                <Text fontSize={12} color={neutralScale.neutral7} fontWeight="500">
+                  ��ǰ���� <Text color={errorScale.error9}>*</Text>
+                </Text>
+                <TextInput
+                  placeholder="���뵱ǰ����"
+                  placeholderTextColor={neutralScale.neutral6}
+                  value={currentPassword}
+                  onChangeText={setCurrentPassword}
+                  secureTextEntry={!showPasswords}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  style={styles.input}
+                />
+              </YStack>
+
+              <YStack gap="$1.5">
+                <Text fontSize={12} color={neutralScale.neutral7} fontWeight="500">
+                  ������ <Text color={errorScale.error9}>*</Text>
+                </Text>
+                <TextInput
+                  placeholder="���������루����6λ��"
+                  placeholderTextColor={neutralScale.neutral6}
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                  secureTextEntry={!showPasswords}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  style={styles.input}
+                />
+              </YStack>
+
+              <YStack gap="$1.5">
+                <Text fontSize={12} color={neutralScale.neutral7} fontWeight="500">
+                  ȷ�������� <Text color={errorScale.error9}>*</Text>
+                </Text>
+                <TextInput
+                  placeholder="�ٴ�����������"
+                  placeholderTextColor={neutralScale.neutral6}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  secureTextEntry={!showPasswords}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  style={styles.input}
+                />
+              </YStack>
+
+              <XStack
+                alignItems="center"
+                gap="$2"
+                paddingVertical="$1"
+                pressStyle={{ opacity: 0.7 }}
+                onPress={() => setShowPasswords(!showPasswords)}
+              >
+                <IconSymbol
+                  name={showPasswords ? 'eye.slash.fill' : 'eye.fill'}
+                  size={16}
+                  color={neutralScale.neutral7}
+                />
+                <Text fontSize={13} color={neutralScale.neutral8} fontWeight="500">
+                  {showPasswords ? '��������' : '��ʾ����'}
+                </Text>
+              </XStack>
+
+              <Button
+                height={44}
+                backgroundColor={errorScale.error9}
+                borderRadius={12}
+                pressStyle={{ backgroundColor: errorScale.error10, scale: 0.98 }}
+                onPress={handleChangePassword}
+                disabled={!canChangePassword || isChangingPassword}
+                opacity={!canChangePassword || isChangingPassword ? 0.5 : 1}
+                icon={<IconSymbol name="key.fill" size={18} color="white" />}
+              >
+                <Text fontSize={14} fontWeight="600" color="white">
+                  {isChangingPassword ? '�޸���...' : '�޸�����'}
+                </Text>
+              </Button>
             </YStack>
           </ScrollView>
 
-          {/* Footer */}
-          <XStack
-            gap="$3"
-            paddingHorizontal="$4"
-            paddingVertical="$3"
-            borderTopWidth={1}
-            borderTopColor="$borderColor"
-            backgroundColor={colors.background}
-          >
-            <Dialog.Close displayWhenAdapted asChild flex={1}>
-              <Button
-                size="$4"
-                variant="outlined"
-                onPress={handleClose}
-                borderColor={colors.icon}
-                color={colors.text}
-              >
-                关闭
-              </Button>
-            </Dialog.Close>
-          </XStack>
+          <Dialog.Close displayWhenAdapted asChild>
+            <Button
+              marginTop="$4"
+              height={48}
+              backgroundColor={neutralScale.neutral2}
+              borderRadius={12}
+              pressStyle={{ backgroundColor: neutralScale.neutral3 }}
+              onPress={handleClose}
+            >
+              <Text fontSize={15} fontWeight="600" color={neutralScale.neutral11}>
+                ���
+              </Text>
+            </Button>
+          </Dialog.Close>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog>
@@ -381,11 +338,16 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
 }
 
 const styles = StyleSheet.create({
+  scrollView: { maxHeight: 400 },
   input: {
-    height: 48,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 16,
+    height: 44,
+    borderWidth: 1.5,
+    borderRadius: 10,
+    borderColor: neutralScale.neutral4,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 14,
+    fontSize: 14,
+    fontWeight: '500',
+    color: neutralScale.neutral11,
   },
 });

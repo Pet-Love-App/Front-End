@@ -2,7 +2,8 @@
  * 猫粮收藏列表项 - 展示收藏的猫粮信息
  */
 import { Image } from 'react-native';
-import { Button, Card, Separator, Text, XStack, YStack } from 'tamagui';
+import { Card, Separator, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import type { CatfoodFavorite } from '@/src/types/collect';
 import {

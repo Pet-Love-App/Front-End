@@ -226,7 +226,7 @@ export default function SettingsPage() {
         </CardContainer>
 
         {/* 退出登录 */}
-        <YStack marginTop="$6" marginHorizontal="$4">
+        <YStack marginTop="$6" paddingHorizontal="$4">
           <LogoutButton />
         </YStack>
 

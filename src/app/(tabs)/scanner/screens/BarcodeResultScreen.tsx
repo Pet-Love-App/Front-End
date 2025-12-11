@@ -8,7 +8,8 @@ import { ActivityIndicator, Alert, ScrollView } from 'react-native';
 import type { EdgeInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
-import { Button, Card, Text, XStack, YStack } from 'tamagui';
+import { Card, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { supabase } from '@/src/lib/supabase';
 

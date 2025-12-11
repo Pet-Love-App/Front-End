@@ -4,7 +4,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Alert, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Separator, Text, XStack, YStack } from 'tamagui';
+import { Separator, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { useActionStatus } from '@/src/app/(tabs)/collect/hooks/useActionStatus';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { warningScale, errorScale, neutralScale } from '@/src/design-system/tokens';

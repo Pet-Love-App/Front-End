@@ -18,9 +18,8 @@ export function useCollectFilter(favorites: CatfoodFavorite[]) {
   // 过滤收藏列表（根据搜索文本）
   const filteredFavorites = useMemo(() => {
     const safeFavorites = Array.isArray(favorites) ? favorites : [];
-    console.log('[useCollectFilter] 原始收藏数据:', safeFavorites.length);
 
-    const filtered = safeFavorites.filter((favorite) => {
+    return safeFavorites.filter((favorite) => {
       if (!searchText.trim()) return true;
       const keyword = searchText.toLowerCase();
       return (
@@ -28,11 +27,6 @@ export function useCollectFilter(favorites: CatfoodFavorite[]) {
         favorite.catfood?.brand?.toLowerCase().includes(keyword)
       );
     });
-
-    console.log('[useCollectFilter] 搜索关键词:', searchText);
-    console.log('[useCollectFilter] 过滤后数据:', filtered.length);
-
-    return filtered;
   }, [favorites, searchText]);
 
   return {

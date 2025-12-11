@@ -5,7 +5,8 @@
 import { Modal, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { Button, H3, H5, Separator, Spinner, Text, XStack, YStack } from 'tamagui';
+import { H3, H5, Separator, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 
 import { getNutritionColor, getNutritionLabel } from '@/src/constants/nutrition';
 import type { AIReportData } from '@/src/services/api';

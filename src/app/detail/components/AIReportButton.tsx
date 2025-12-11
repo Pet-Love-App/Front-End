@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
-import { Button, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Spinner, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 
 import { infoScale } from '@/src/design-system/tokens';
 

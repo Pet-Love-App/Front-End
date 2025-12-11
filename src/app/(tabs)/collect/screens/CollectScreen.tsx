@@ -69,15 +69,7 @@ export function CollectScreen() {
 
   // 渲染猫粮收藏列表
   const renderCatFoodList = () => {
-    console.log('[CollectScreen] 渲染状态:', {
-      isLoading,
-      refreshing,
-      error,
-      filteredCount: filteredFavorites.length,
-    });
-
     if (isLoading && !refreshing) {
-      console.log('[CollectScreen] 显示加载中');
       return (
         <YStack flex={1} alignItems="center" justifyContent="center" paddingVertical="$10">
           <Spinner size="large" color={primaryScale.primary7} />
@@ -89,20 +81,15 @@ export function CollectScreen() {
     }
 
     if (error && !isLoading) {
-      console.log('[CollectScreen] 显示错误状态');
       return renderEmptyState(`${error}\n下拉刷新重试`, 'exclamationmark.triangle');
     }
 
     if (filteredFavorites.length === 0) {
-      console.log('[CollectScreen] 显示空状态');
       return renderEmptyState(
         searchText.trim() ? '未找到匹配的收藏' : '还没有收藏任何猫粮哦~\n快去发现喜欢的猫粮吧！',
         'heart.slash'
       );
     }
-
-    console.log('[CollectScreen] 渲染列表，项目数:', filteredFavorites.length);
-    console.log('[CollectScreen] 第一个收藏项:', filteredFavorites[0]);
 
     return (
       <YStack gap="$3" paddingBottom="$4">
@@ -111,12 +98,6 @@ export function CollectScreen() {
           const rawData = favorite as any;
           const catfoodId = rawData.id;
           const favoriteRecordId = rawData.favoriteId;
-
-          console.log(`[CollectScreen] 渲染第 ${index + 1} 项:`, {
-            favoriteRecordId,
-            catfoodId,
-            catfoodName: rawData.name,
-          });
 
           // 将扁平结构转换为嵌套结构
           const normalizedFavorite: CatfoodFavorite = {
@@ -332,14 +313,6 @@ export function CollectScreen() {
 
       {/* Tab 内容区域 */}
       <YStack flex={1} backgroundColor={neutralScale.neutral1}>
-        {(() => {
-          console.log('[CollectScreen] 当前Tab:', currentTab);
-          console.log('[CollectScreen] 收藏数据:', {
-            favoritesCount,
-            filteredCount: filteredFavorites.length,
-          });
-          return null;
-        })()}
         {currentTab === 'catfood' ? (
           <ScrollView
             flex={1}

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable } from 'react-native';
-import { Button, Text, TextArea, XStack, YStack } from 'tamagui';
+import { Text, TextArea, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useResponsiveLayout } from '@/src/hooks/useResponsiveLayout';
 import { supabaseCatfoodService, supabaseCommentService } from '@/src/lib/supabase';

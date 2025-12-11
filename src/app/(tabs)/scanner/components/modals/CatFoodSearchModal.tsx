@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, Image, Modal } from 'react-native';
-import { Button, Input, Separator, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Input, Separator, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useCatFoodStore, useSearchResults } from '@/src/store/catFoodStore';
 import type { CatFood } from '@/src/types/catFood';

@@ -3,9 +3,10 @@
  */
 
 import React from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
-import { Text, YStack } from 'tamagui';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { primaryScale } from '@/src/design-system/tokens/colors';
 import { ScanType } from '@/src/types/camera';
 
 interface CameraControlsProps {
@@ -35,76 +36,88 @@ export function CameraControls({
       right={0}
       paddingHorizontal={16}
       paddingTop={50}
-      paddingBottom={12}
-      flexDirection="row"
-      justifyContent="space-between"
-      alignItems="center"
+      paddingBottom={16}
       zIndex={10}
     >
-      {/* 关闭按钮 */}
-      <TouchableOpacity onPress={onClose} style={styles.iconButton}>
-        <IconSymbol name="xmark" size={24} color="white" />
-      </TouchableOpacity>
-
-      {/* 标题和缩放信息 */}
-      <YStack alignItems="center" gap={2}>
-        <Text
-          fontSize={16}
-          fontWeight="600"
-          color="white"
-          style={{ textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 4 }}
-        >
-          {scanType === ScanType.BARCODE ? '扫描条形码' : '拍照识别成分'}
-        </Text>
-        <Text
-          fontSize={11}
-          color="white"
-          style={{ textShadowColor: 'rgba(0,0,0,0.7)', textShadowRadius: 2 }}
-        >
-          缩放: {(zoom * 100).toFixed(0)}%
-        </Text>
-      </YStack>
-
-      {/* 右侧控制按钮组 */}
-      <YStack flexDirection="row" gap={8}>
-        {/* 缩小按钮 */}
-        <TouchableOpacity
-          onPress={onZoomOut}
-          style={[styles.iconButton, { opacity: zoom > 0 ? 1 : 0.5 }]}
-          disabled={zoom <= 0}
-        >
-          <Text fontSize={20} color="white" fontWeight="bold">
-            -
-          </Text>
+      {/* 顶部操作栏 */}
+      <XStack justifyContent="space-between" alignItems="center">
+        {/* 关闭按钮 */}
+        <TouchableOpacity onPress={onClose} style={styles.iconButton}>
+          <View style={styles.blurButton}>
+            <IconSymbol name="xmark" size={20} color="white" />
+          </View>
         </TouchableOpacity>
 
-        {/* 放大按钮 */}
-        <TouchableOpacity
-          onPress={onZoomIn}
-          style={[styles.iconButton, { opacity: zoom < 1 ? 1 : 0.5 }]}
-          disabled={zoom >= 1}
+        {/* 标题区域 */}
+        <YStack
+          backgroundColor="rgba(0,0,0,0.5)"
+          paddingHorizontal="$4"
+          paddingVertical="$2"
+          borderRadius="$6"
+          alignItems="center"
         >
-          <Text fontSize={20} color="white" fontWeight="bold">
-            +
+          <Text fontSize={15} fontWeight="700" color="white" letterSpacing={0.5}>
+            {scanType === ScanType.BARCODE ? '扫描条形码' : '拍照识别成分'}
           </Text>
-        </TouchableOpacity>
+        </YStack>
 
         {/* 翻转相机按钮 */}
         <TouchableOpacity onPress={onToggleCamera} style={styles.iconButton}>
-          <IconSymbol name="camera.rotate" size={24} color="white" />
+          <View style={styles.blurButton}>
+            <IconSymbol name="camera.rotate" size={20} color="white" />
+          </View>
         </TouchableOpacity>
-      </YStack>
+      </XStack>
+
+      {/* 缩放控制条 */}
+      <XStack
+        alignSelf="center"
+        marginTop="$3"
+        backgroundColor="rgba(0,0,0,0.5)"
+        borderRadius="$6"
+        paddingHorizontal="$3"
+        paddingVertical="$1.5"
+        alignItems="center"
+        gap="$3"
+      >
+        <TouchableOpacity
+          onPress={onZoomOut}
+          disabled={zoom <= 0}
+          style={{ opacity: zoom > 0 ? 1 : 0.4 }}
+        >
+          <IconSymbol name="minus" size={18} color="white" />
+        </TouchableOpacity>
+
+        <XStack alignItems="center" gap="$2" minWidth={80} justifyContent="center">
+          <IconSymbol name="magnifyingglass" size={14} color={primaryScale.primary6} />
+          <Text fontSize={13} color="white" fontWeight="600">
+            {((1 + zoom) * 1).toFixed(1)}x
+          </Text>
+        </XStack>
+
+        <TouchableOpacity
+          onPress={onZoomIn}
+          disabled={zoom >= 1}
+          style={{ opacity: zoom < 1 ? 1 : 0.4 }}
+        >
+          <IconSymbol name="plus" size={18} color="white" />
+        </TouchableOpacity>
+      </XStack>
     </YStack>
   );
 }
 
 const styles = StyleSheet.create({
   iconButton: {
-    padding: 8,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 20,
-    minWidth: 40,
+    borderRadius: 22,
+    overflow: 'hidden',
+  },
+  blurButton: {
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 22,
+    overflow: 'hidden',
   },
 });

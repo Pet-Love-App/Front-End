@@ -16,6 +16,7 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Plus } from '@tamagui/lucide-icons';
 import { styled, Stack } from 'tamagui';
+import { primaryScale } from '@/src/design-system/tokens/colors';
 
 export interface CreatePostFABProps {
   onPress: () => void;
@@ -27,7 +28,7 @@ const FABContainer = styled(Stack, {
   height: 60,
   borderRadius: 30,
   overflow: 'hidden',
-  shadowColor: 'rgba(127, 176, 147, 0.4)',
+  shadowColor: 'rgba(254, 190, 152, 0.4)',
   shadowOffset: { width: 0, height: 8 },
   shadowOpacity: 1,
   shadowRadius: 16,
@@ -75,7 +76,7 @@ function CreatePostFABComponent({ onPress }: CreatePostFABProps) {
     >
       <FABContainer>
         <LinearGradient
-          colors={['#9EC5AB', '#7FB093', '#6A9A7E']}
+          colors={[primaryScale.primary6, primaryScale.primary7, primaryScale.primary8]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.gradient}

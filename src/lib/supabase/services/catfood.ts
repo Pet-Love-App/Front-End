@@ -554,7 +554,7 @@ export const createRating = async (catfoodId: string, score: number, review?: st
           catfood_id: catfoodId,
           user_id: user.id,
           score,
-          review,
+          comment: review,
         },
         {
           onConflict: 'catfood_id,user_id',

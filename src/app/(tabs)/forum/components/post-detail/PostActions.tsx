@@ -12,7 +12,8 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated';
 import { Heart, MessageCircle, Share2, Bookmark } from '@tamagui/lucide-icons';
-import { styled, XStack, Text, Button } from 'tamagui';
+import { styled, XStack, Text } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 
 import { ForumColors } from '../../constants';
 

@@ -6,7 +6,8 @@
 
 import React, { memo } from 'react';
 import { ChevronLeft, Edit3, Trash2 } from '@tamagui/lucide-icons';
-import { styled, XStack, Text, Button } from 'tamagui';
+import { styled, XStack, Text } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 
 import { ForumColors } from '../../constants';
 

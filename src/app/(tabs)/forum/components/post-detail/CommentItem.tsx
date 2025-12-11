@@ -14,7 +14,8 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated';
 import { Heart, Reply, Edit3, Trash2, MoreHorizontal, User } from '@tamagui/lucide-icons';
-import { styled, YStack, XStack, Text, Avatar, Button, TextArea } from 'tamagui';
+import { styled, YStack, XStack, Text, Avatar, TextArea } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { primaryScale, neutralScale, errorScale } from '@/src/design-system/tokens';
 
 import type { Comment } from '@/src/lib/supabase';

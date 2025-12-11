@@ -1,7 +1,8 @@
 /**
  * AI 报告收藏列表项 - 展示收藏的分析报告
  */
-import { Button, Card, Separator, Text, XStack, YStack } from 'tamagui';
+import { Card, Separator, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import type { FavoriteReport } from '@/src/services/api';
 import {

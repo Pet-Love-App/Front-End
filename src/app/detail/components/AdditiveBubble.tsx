@@ -67,7 +67,6 @@ export function AdditiveBubble({ additive, index, total, onPress }: AdditiveBubb
       -1,
       true
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({

@@ -209,7 +209,6 @@ export function PostEditorModal({
     } else if (visible && !editingPost) {
       editor.reset();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, editingPost]);
 
   const handlePickImages = useCallback(async () => {

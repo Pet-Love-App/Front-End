@@ -51,7 +51,6 @@ class LowLevelApiClient {
    * 使用延迟导入避免循环依赖
    */
   private getToken(): string | null {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { useUserStore } = require('@/src/store/userStore');
     return useUserStore.getState().accessToken;
   }
@@ -175,7 +174,6 @@ class LowLevelApiClient {
       if (response.status === 401 && token) {
         logger.info('Token 过期，尝试刷新...');
         try {
-          // eslint-disable-next-line @typescript-eslint/no-require-imports
           const { useUserStore } = require('@/src/store/userStore');
           await useUserStore.getState().refreshAccessToken();
 
@@ -208,7 +206,7 @@ class LowLevelApiClient {
           }
         } catch (error) {
           logger.error('Token 刷新失败，需要重新登录', error as Error);
-          // eslint-disable-next-line @typescript-eslint/no-require-imports
+
           const { useUserStore } = require('@/src/store/userStore');
           await useUserStore.getState().logout();
           throw new AppError('认证失败，请重新登录', ErrorCodes.AUTH_EXPIRED, 401);
@@ -275,7 +273,7 @@ class LowLevelApiClient {
 
         if (isTokenInvalid && token) {
           logger.error('Token 无效，自动登出', new Error('Token invalid'));
-          // eslint-disable-next-line @typescript-eslint/no-require-imports
+
           const { useUserStore } = require('@/src/store/userStore');
           await useUserStore.getState().logout();
           throw new AppError('认证失败，请重新登录', ErrorCodes.AUTH_EXPIRED, 401);

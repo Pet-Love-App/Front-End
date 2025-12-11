@@ -23,7 +23,7 @@ export {
 } from './client';
 
 // ==================== 辅助函数 ====================
-export { convertKeysToCamel, convertKeysToSnake, logger, wrapResponse } from './helpers';
+export { convertKeysToCamel, logger, wrapResponse } from './helpers';
 
 // ==================== 认证服务 ====================
 export { supabaseAuthService } from './services/auth';

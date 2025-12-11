@@ -349,29 +349,30 @@ export const useCatFoodStore = create<CatFoodState>()(
       /**
        * 获取单个猫粮详情
        */
-      fetchCatFoodById: async (id: number, forceRefresh = false) => {
+      fetchCatFoodById: async (id: number, forceRefresh = false): Promise<CatFood> => {
         const state = get();
 
         // 检查缓存
-        if (!forceRefresh && state.entities[id] && state.isCacheValid(id)) {
+        const cachedItem = state.entities[id];
+        if (!forceRefresh && cachedItem && state.isCacheValid(id)) {
           logger.debug('使用缓存数据', { id });
-          return state.entities[id];
+          return cachedItem;
         }
 
         try {
           set({ isLoading: true, error: null });
           logger.info('获取猫粮详情', { id });
 
-          const { data: catfood, error } = await supabaseCatfoodService.getCatfoodDetail(
-            String(id)
-          );
+          const { data, error } = await supabaseCatfoodService.getCatfoodDetail(String(id));
 
-          if (error || !catfood) {
+          if (error || !data) {
             throw new Error(error?.message || '获取猫粮详情失败');
           }
 
+          const catfood = data as CatFood;
+
           // 更新entity
-          const newEntities = { ...state.entities, [id]: catfood };
+          const newEntities: Record<number, CatFood> = { ...state.entities, [id]: catfood };
 
           // 更新缓存元数据
           const newMetadata = {
@@ -764,7 +765,6 @@ export const useAllCatFoods = () => {
   const catfoods = useMemo(() => {
     const state = useCatFoodStore.getState();
     return allIds.map((id) => state.entities[id]).filter(Boolean);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idsKey]);
 
   return { catfoods, isLoading, hasMore };
@@ -793,7 +793,6 @@ export const useSearchResults = () => {
   const results = useMemo(() => {
     const state = useCatFoodStore.getState();
     return searchIds.map((id) => state.entities[id]).filter(Boolean);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idsKey]);
 
   return { results, isLoading, hasMore };

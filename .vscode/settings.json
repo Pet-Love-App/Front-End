@@ -35,5 +35,9 @@
   // 忽略 node_modules 中的 TypeScript 错误
   "typescript.tsserver.watchOptions": {
     "excludeDirectories": ["**/node_modules"]
-  }
+  },
+
+  // ==================== 拼写检查 ====================
+  // 禁用 cSpell 拼写检查（代码中有大量库名/API名会误报）
+  "cSpell.enabled": false
 }

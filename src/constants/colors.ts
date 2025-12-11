@@ -176,6 +176,16 @@ export const LIGHT_THEME = {
   scanButtonBackground: PRIMARY_PALETTE.main,
   scanButtonBorder: '#fff',
   scanButtonIcon: '#fff',
+
+  // 游戏相关
+  game: {
+    ground: '#9CA3AF',
+    obstacle: '#EF4444',
+    score: '#9CA3AF',
+    overlay: 'rgba(255,255,255,0.8)',
+    finishedOverlay: 'rgba(255,255,255,0.9)',
+    closeButton: '#3B82F6',
+  },
 } as const;
 
 /**
@@ -246,6 +256,16 @@ export const DARK_THEME = {
   scanButtonBackground: '#fff',
   scanButtonBorder: '#151718',
   scanButtonIcon: '#000',
+
+  // 游戏相关
+  game: {
+    ground: '#9CA3AF',
+    obstacle: '#EF4444',
+    score: '#9CA3AF',
+    overlay: 'rgba(255,255,255,0.8)',
+    finishedOverlay: 'rgba(255,255,255,0.9)',
+    closeButton: '#3B82F6',
+  },
 } as const;
 
 // ==================== 主题系统 ====================

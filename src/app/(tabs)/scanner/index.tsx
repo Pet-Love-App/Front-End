@@ -19,6 +19,7 @@ import {
   ExpoCameraView,
   OcrResultView,
   PhotoPreview,
+  LoadingGameModal, // 导入新组件
 } from './components';
 import { useScannerActions, useScannerFlow } from './hooks';
 import { BarcodeResultScreen, InitialScreen, ProcessingScreen } from './screens';
@@ -78,6 +79,9 @@ export default function ScannerScreen() {
     handleConfirmPhoto,
     handleGenerateReport,
     handleSaveReport,
+    setIsGeneratingReport, // 导出这个状态设置函数，或者在 useScannerActions 中处理关闭逻辑
+    showLoadingGame,
+    handleCloseLoadingGame,
   } = useScannerActions({ takePicture, transitionTo, resetFlow });
 
   // ==================== 用户信息 ====================
@@ -176,81 +180,85 @@ export default function ScannerScreen() {
 
   // ==================== 渲染逻辑 ====================
 
-  // 拍照页
-  if (flowState === 'taking-photo') {
-    return (
-      <ExpoCameraView
-        cameraRef={cameraRef}
-        facing={cameraState.facing}
-        scanType={cameraState.scanType || ScanType.BARCODE}
-        onBarCodeScanned={handleBarCodeScannedCallback}
-        onTakePhoto={handleTakePhoto}
-        onToggleCamera={toggleFacing}
-        onToggleScanType={toggleScanType}
-        onClose={goBack}
-        onCameraReady={onCameraReady}
-        takePicture={takePicture}
-      />
-    );
-  }
+  const renderContent = () => {
+    // 拍照页
+    if (flowState === 'taking-photo') {
+      return (
+        <ExpoCameraView
+          cameraRef={cameraRef}
+          facing={cameraState.facing}
+          scanType={cameraState.scanType || ScanType.BARCODE}
+          onBarCodeScanned={handleBarCodeScannedCallback}
+          onTakePhoto={handleTakePhoto}
+          onToggleCamera={toggleFacing}
+          onToggleScanType={toggleScanType}
+          onClose={goBack}
+          onCameraReady={onCameraReady}
+          takePicture={takePicture}
+        />
+      );
+    }
 
-  // 照片预览页
-  if (flowState === 'photo-preview' && photoUri) {
-    return (
-      <PhotoPreview
-        photoUri={photoUri}
-        visible={true}
-        onConfirm={handleConfirmPhoto}
-        onRetake={handleRetakePhoto}
-        onCancel={handleCancelPreview}
-      />
-    );
-  }
+    // 照片预览页
+    if (flowState === 'photo-preview' && photoUri) {
+      return (
+        <PhotoPreview
+          photoUri={photoUri}
+          visible={true}
+          onConfirm={handleConfirmPhoto}
+          onRetake={handleRetakePhoto}
+          onCancel={handleCancelPreview}
+        />
+      );
+    }
 
-  // OCR 处理中页
-  if (flowState === 'processing-ocr') {
-    return <ProcessingScreen insets={insets} />;
-  }
+    // OCR 处理中页
+    if (flowState === 'processing-ocr') {
+      return <ProcessingScreen insets={insets} />;
+    }
 
-  // OCR 结果页
-  if (flowState === 'ocr-result' && ocrResult) {
-    return (
-      <OcrResultView
-        ocrResult={ocrResult}
-        photoUri={photoUri}
-        isGeneratingReport={isGeneratingReport}
-        onGenerateReport={handleGenerateReportWrapper}
-        onRetake={handleRetakePhoto}
-        onClose={goBack}
-      />
-    );
-  }
+    // OCR 结果页
+    if (flowState === 'ocr-result' && ocrResult) {
+      return (
+        <OcrResultView
+          ocrResult={ocrResult}
+          photoUri={photoUri}
+          isGeneratingReport={isGeneratingReport}
+          onGenerateReport={handleGenerateReportWrapper}
+          onRetake={handleRetakePhoto}
+          onClose={goBack}
+        />
+      );
+    }
 
-  // 条形码结果页
-  if (flowState === 'barcode-result' && scannedCode) {
-    return <BarcodeResultScreen scannedCode={scannedCode} insets={insets} onGoBack={goBack} />;
-  }
+    // 条形码结果页
+    if (flowState === 'barcode-result' && scannedCode) {
+      return <BarcodeResultScreen scannedCode={scannedCode} insets={insets} onGoBack={goBack} />;
+    }
 
-  // AI 报告详情页
-  if (flowState === 'ai-report-detail' && aiReport) {
-    return (
-      <AiReportDetail
-        report={aiReport}
-        onSave={handleSaveReportWrapper}
-        onRetake={handleRetakePhoto}
-        isSaving={isProcessing}
-        isAdmin={user?.isAdmin || false}
-        hasExistingReport={!!selectedCatFood?.percentage}
-      />
-    );
-  }
+    // AI 报告详情页
+    if (flowState === 'ai-report-detail' && aiReport) {
+      return (
+        <AiReportDetail
+          report={aiReport}
+          onSave={handleSaveReportWrapper}
+          onRetake={handleRetakePhoto}
+          isSaving={isProcessing}
+          isAdmin={user?.isAdmin || false}
+          hasExistingReport={!!selectedCatFood?.percentage}
+        />
+      );
+    }
 
-  // 初始页（默认页）
+    // 初始页（默认页）
+    return <InitialScreen insets={insets} onStartScan={startScan} />;
+  };
+
   return (
     <>
-      <InitialScreen insets={insets} onStartScan={startScan} />
+      {renderContent()}
 
-      {/* 模态框组件 */}
+      {/* 模态框组件 - 始终渲染在最上层 */}
       {/* 相机权限请求模态框 */}
       <CameraPermissionModal
         visible={cameraState.hasPermission === false}
@@ -261,6 +269,13 @@ export default function ScannerScreen() {
         visible={flowState === 'searching-catfood'}
         onClose={goBack}
         onSelectCatFood={handleSelectCatFood}
+      />
+
+      {/* 加载游戏弹窗 */}
+      <LoadingGameModal
+        visible={showLoadingGame}
+        isFinished={!isGeneratingReport && !!aiReport}
+        onClose={handleCloseLoadingGame}
       />
     </>
   );

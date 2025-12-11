@@ -10,3 +10,5 @@ export * from './modals';
 
 // Results 相关组件
 export * from './results';
+
+export * from './LoadingGameModal';

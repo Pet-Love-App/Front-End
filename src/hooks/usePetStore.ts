@@ -5,14 +5,17 @@ interface PetState {
   currentFactIndex: number;
   currentFact: string;
   isTalking: boolean;
+  isVisible: boolean;
   nextFact: () => void;
   setTalking: (talking: boolean) => void;
+  setVisible: (visible: boolean) => void;
 }
 
 export const usePetStore = create<PetState>((set) => ({
   currentFactIndex: 0,
   currentFact: coldFactsData[0],
   isTalking: true,
+  isVisible: true,
   nextFact: () =>
     set((state) => {
       const nextIndex = (state.currentFactIndex + 1) % coldFactsData.length;
@@ -22,4 +25,5 @@ export const usePetStore = create<PetState>((set) => ({
       };
     }),
   setTalking: (talking: boolean) => set({ isTalking: talking }),
+  setVisible: (visible: boolean) => set({ isVisible: visible }),
 }));

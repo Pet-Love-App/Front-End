@@ -1,7 +1,8 @@
 import React from 'react';
 import { Image, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Text, XStack, YStack } from 'tamagui';
+import { Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface PhotoPreviewProps {
@@ -64,12 +65,9 @@ export function PhotoPreview({
           alignItems="center"
           backgroundColor="rgba(0, 0, 0, 0.7)"
         >
-          <Button
-            circular
-            icon={<IconSymbol name="xmark" size={24} color="white" />}
-            chromeless
-            onPress={onCancel}
-          />
+          <Button size="sm" variant="ghost" rounded onPress={onCancel}>
+            <IconSymbol name="xmark" size={24} color="white" />
+          </Button>
           <Text fontSize="$6" fontWeight="600" color="white">
             照片预览
           </Text>
@@ -78,7 +76,11 @@ export function PhotoPreview({
 
         {/* 照片预览区域 */}
         <YStack flex={1} justifyContent="center" alignItems="center" padding="$4">
-          <Image source={{ uri: photoUri }} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
+          <Image
+            source={{ uri: photoUri }}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="contain"
+          />
         </YStack>
 
         {/* 底部操作按钮 */}
@@ -99,12 +101,10 @@ export function PhotoPreview({
             {/* 重拍按钮 */}
             <Button
               flex={1}
-              size="$5"
-              backgroundColor="$gray8"
-              color="white"
+              size="lg"
+              variant="secondary"
               onPress={onRetake}
-              icon={<IconSymbol name="camera.rotate" size={20} color="white" />}
-              pressStyle={{ backgroundColor: '$gray9' }}
+              leftIcon={<IconSymbol name="camera.rotate" size={20} color="white" />}
             >
               重新拍照
             </Button>
@@ -112,10 +112,10 @@ export function PhotoPreview({
             {/* 确认按钮 */}
             <Button
               flex={1}
-              size="$5"
-              themeInverse
+              size="lg"
+              variant="primary"
               onPress={onConfirm}
-              icon={<IconSymbol name="checkmark.circle.fill" size={20} color="white" />}
+              leftIcon={<IconSymbol name="checkmark.circle.fill" size={20} color="white" />}
             >
               确认使用
             </Button>

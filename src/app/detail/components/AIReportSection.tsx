@@ -1,10 +1,15 @@
 /**
  * AI 报告嵌入式展示组件
+ *
+ * 支持两种模式：
+ * 1. 已有报告模式：显示保存的报告数据
+ * 2. 流式生成模式：实时显示 AI 流式输出
  */
 
 import { Alert, Dimensions } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { Card, H4, H5, Separator, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import {
   getNutritionColor,
@@ -18,10 +23,24 @@ import { useItemDetail, useThemeAwareColorScheme } from '@/src/hooks';
 
 import { AdditiveDetailModal } from './AdditiveDetailModal';
 import { NutrientBar } from './NutrientBar';
+import { StreamingText } from './StreamingText';
+import type { StreamingState } from '../hooks/useStreamingReport';
 
 interface AIReportSectionProps {
-  report: AIReportData;
+  /** 已有的报告数据 */
+  report?: AIReportData | null;
+  /** 是否正在加载已有报告 */
   isLoading?: boolean;
+  /** 流式状态（用于流式生成模式） */
+  streamingState?: StreamingState | null;
+  /** 是否显示生成按钮 */
+  showGenerateButton?: boolean;
+  /** 是否正在生成中（禁用按钮） */
+  isGenerating?: boolean;
+  /** 点击生成按钮的回调 */
+  onGeneratePress?: () => void;
+  /** 点击停止按钮的回调 */
+  onStopPress?: () => void;
 }
 
 /** 饼图配置 */
@@ -36,7 +55,15 @@ const CHART_CONFIG = {
   decimalPlaces: 1,
 };
 
-export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
+export function AIReportSection({
+  report,
+  isLoading,
+  streamingState,
+  showGenerateButton = false,
+  isGenerating = false,
+  onGeneratePress,
+  onStopPress,
+}: AIReportSectionProps) {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
 
@@ -48,8 +75,11 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
     closeModal,
   } = useItemDetail();
 
+  // 判断是否处于流式模式
+  const isStreamingMode = streamingState?.isStreaming || streamingState?.isComplete;
+
   // 加载状态
-  if (isLoading) {
+  if (isLoading && !isStreamingMode) {
     return (
       <Card
         size="$4"
@@ -64,6 +94,140 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
             <Text fontSize="$3" color="$gray10" marginTop="$2">
               正在加载 AI 分析报告...
             </Text>
+          </YStack>
+        </Card.Header>
+      </Card>
+    );
+  }
+
+  // 如果处于流式模式，显示流式内容
+  if (isStreamingMode && streamingState) {
+    return (
+      <Card
+        size="$4"
+        backgroundColor="white"
+        marginHorizontal="$3"
+        marginBottom="$3"
+        borderRadius="$6"
+        borderWidth={2}
+        borderColor={colors.tint + '40'}
+        overflow="hidden"
+      >
+        {/* 头部 */}
+        <Card.Header paddingBottom="$2" paddingHorizontal="$4" paddingTop="$4">
+          <XStack alignItems="center" gap="$3" marginBottom="$3">
+            <YStack
+              width={48}
+              height={48}
+              alignItems="center"
+              justifyContent="center"
+              backgroundColor={colors.tint + '20'}
+              borderRadius="$4"
+              borderWidth={2}
+              borderColor={colors.tint + '50'}
+            >
+              <IconSymbol name="doc.text.fill" size={24} color={colors.tint} />
+            </YStack>
+            <YStack flex={1} minWidth={0}>
+              <H4 color="$gray12" fontWeight="800" letterSpacing={-0.4} numberOfLines={1}>
+                AI 智能分析报告
+              </H4>
+              <Text fontSize="$2" color="$gray10" marginTop="$1" fontWeight="500" numberOfLines={1}>
+                {streamingState.isStreaming ? '正在生成中...' : '分析完成'}
+              </Text>
+            </YStack>
+            {/* 停止按钮 */}
+            {streamingState.isStreaming && onStopPress && (
+              <Button
+                size="sm"
+                height={36}
+                paddingHorizontal="$3"
+                backgroundColor="$red4"
+                borderColor="$red7"
+                borderWidth={1}
+                pressStyle={{ opacity: 0.8, scale: 0.98 }}
+                onPress={onStopPress}
+              >
+                <XStack alignItems="center" gap="$2">
+                  <IconSymbol name="stop.fill" size={14} color="$red10" />
+                  <Text fontSize="$3" color="$red10" fontWeight="600">
+                    停止
+                  </Text>
+                </XStack>
+              </Button>
+            )}
+          </XStack>
+          <Separator borderColor="$borderColor" />
+        </Card.Header>
+
+        {/* 流式内容 */}
+        <YStack minHeight={400} maxHeight={500}>
+          <StreamingText
+            content={streamingState.content}
+            isStreaming={streamingState.isStreaming}
+            isComplete={streamingState.isComplete}
+            progress={streamingState.progress}
+            error={streamingState.error}
+          />
+        </YStack>
+      </Card>
+    );
+  }
+
+  // 如果没有报告但显示生成按钮
+  if (!report && showGenerateButton) {
+    return (
+      <Card
+        size="$4"
+        backgroundColor="white"
+        marginHorizontal="$3"
+        marginBottom="$3"
+        borderRadius="$6"
+        borderWidth={2}
+        borderColor={colors.tint + '40'}
+        borderStyle="dashed"
+      >
+        <Card.Header paddingHorizontal="$4" paddingVertical="$5">
+          <YStack alignItems="center" gap="$4">
+            <YStack
+              width={64}
+              height={64}
+              alignItems="center"
+              justifyContent="center"
+              backgroundColor={colors.tint + '10'}
+              borderRadius="$6"
+            >
+              <IconSymbol name="sparkles" size={36} color={colors.tint} />
+            </YStack>
+            <YStack alignItems="center" gap="$2" maxWidth="85%">
+              <H4 color="$gray12" fontWeight="700" textAlign="center">
+                AI 智能分析
+              </H4>
+              <Text fontSize="$3" color="$gray10" textAlign="center" lineHeight={20}>
+                使用 AI 分析猫粮配料表，获取详细的安全性和营养分析报告
+              </Text>
+            </YStack>
+            <Button
+              size="lg"
+              height={48}
+              paddingHorizontal="$5"
+              backgroundColor={colors.tint}
+              borderRadius="$4"
+              pressStyle={{ opacity: 0.9, scale: 0.98 }}
+              disabled={isGenerating}
+              onPress={onGeneratePress}
+            >
+              <XStack alignItems="center" gap="$2">
+                {isGenerating ? (
+                  <Spinner size="small" color="white" />
+                ) : (
+                  <IconSymbol name="wand.and.stars" size={20} color="white" />
+                )}
+                <Text color="white" fontWeight="600" fontSize="$5">
+                  {isGenerating ? '生成中...' : '生成分析报告'}
+                </Text>
+              </XStack>
+            </Button>
           </YStack>
         </Card.Header>
       </Card>
@@ -93,22 +257,25 @@ export function AIReportSection({ report, isLoading }: AIReportSectionProps) {
       borderColor={colors.tint + '40'}
     >
       {/* 头部 */}
-      <Card.Header paddingBottom="$2">
+      <Card.Header paddingBottom="$2" paddingHorizontal="$4" paddingTop="$4">
         <XStack alignItems="center" gap="$3" marginBottom="$3">
           <YStack
+            width={48}
+            height={48}
+            alignItems="center"
+            justifyContent="center"
             backgroundColor={colors.tint + '20'}
-            padding="$2.5"
             borderRadius="$4"
             borderWidth={2}
             borderColor={colors.tint + '50'}
           >
-            <IconSymbol name="doc.text.fill" size={26} color={colors.tint} />
+            <IconSymbol name="doc.text.fill" size={24} color={colors.tint} />
           </YStack>
-          <YStack flex={1}>
-            <H4 color="$gray12" fontWeight="800" letterSpacing={-0.4}>
+          <YStack flex={1} minWidth={0}>
+            <H4 color="$gray12" fontWeight="800" letterSpacing={-0.4} numberOfLines={1}>
               AI 智能分析报告
             </H4>
-            <Text fontSize="$2" color="$gray10" marginTop="$1" fontWeight="500">
+            <Text fontSize="$2" color="$gray10" marginTop="$1" fontWeight="500" numberOfLines={1}>
               基于配料表的深度分析
             </Text>
           </YStack>
@@ -196,8 +363,8 @@ function TagsSection({ tags, tintColor }: { tags?: string[]; tintColor: string }
   return (
     <YStack gap="$2.5">
       <XStack alignItems="center" gap="$2">
-        <IconSymbol name="tag.fill" size={20} color={tintColor} />
-        <H5 color="$gray12" fontWeight="700" letterSpacing={-0.2}>
+        <IconSymbol name="tag.fill" size={18} color={tintColor} />
+        <H5 color="$gray12" fontWeight="700" letterSpacing={-0.2} fontSize="$4">
           产品特征
         </H5>
       </XStack>
@@ -207,12 +374,14 @@ function TagsSection({ tags, tintColor }: { tags?: string[]; tintColor: string }
             key={i}
             paddingHorizontal="$3"
             paddingVertical="$2"
+            minHeight={32}
+            justifyContent="center"
             backgroundColor="$blue3"
-            borderRadius="$4"
-            borderWidth={1.5}
+            borderRadius="$3"
+            borderWidth={1}
             borderColor="$blue7"
           >
-            <Text fontSize="$2" color="$blue11" fontWeight="600">
+            <Text fontSize="$3" color="$blue11" fontWeight="600" numberOfLines={1}>
               {tag}
             </Text>
           </YStack>
@@ -245,19 +414,19 @@ function AnalysisSection({
       <Separator borderColor="$borderColor" />
       <YStack gap="$2.5">
         <XStack alignItems="center" gap="$2">
-          <IconSymbol name={icon as any} size={20} color={iconColor} />
-          <H5 color="$gray12" fontWeight="700" letterSpacing={-0.2}>
+          <IconSymbol name={icon as any} size={18} color={iconColor} />
+          <H5 color="$gray12" fontWeight="700" letterSpacing={-0.2} fontSize="$4">
             {title}
           </H5>
         </XStack>
         <YStack
           backgroundColor={bgColor}
-          padding="$4"
+          padding="$3.5"
           borderRadius="$4"
-          borderWidth={1.5}
+          borderWidth={1}
           borderColor={borderColor}
         >
-          <Text fontSize="$3" color="$gray12" lineHeight={24} fontWeight="500">
+          <Text fontSize="$3" color="$gray12" lineHeight={22} fontWeight="500">
             {content}
           </Text>
         </YStack>
@@ -374,10 +543,10 @@ function ItemListSection({
   return (
     <>
       <Separator borderColor="$borderColor" />
-      <YStack gap="$2">
+      <YStack gap="$2.5">
         <XStack alignItems="center" gap="$2">
-          <IconSymbol name={icon as any} size={18} color={iconColor} />
-          <H5 color="$gray12" fontWeight="600">
+          <IconSymbol name={icon as any} size={16} color={iconColor} />
+          <H5 color="$gray12" fontWeight="600" fontSize="$3">
             {title}
           </H5>
         </XStack>
@@ -385,17 +554,19 @@ function ItemListSection({
           {items.map((item, i) => (
             <YStack
               key={i}
-              paddingHorizontal="$2.5"
-              paddingVertical="$1.5"
+              paddingHorizontal="$3"
+              paddingVertical="$2"
+              minHeight={36}
+              justifyContent="center"
               backgroundColor={bgColor}
-              borderRadius="$2"
+              borderRadius="$3"
               borderWidth={1}
               borderColor={borderColor}
               pressStyle={{ opacity: 0.7, scale: 0.98 }}
               cursor="pointer"
               onPress={() => onItemPress(item)}
             >
-              <Text fontSize="$2" color={textColor}>
+              <Text fontSize="$3" color={textColor} numberOfLines={1}>
                 {item}
               </Text>
             </YStack>

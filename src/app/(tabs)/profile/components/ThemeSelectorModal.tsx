@@ -1,4 +1,5 @@
-import { Button, Dialog, Text, XStack, YStack } from 'tamagui';
+import { Dialog, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { primaryScale, neutralScale, warningScale, infoScale } from '@/src/design-system/tokens';
 import type { ThemeMode } from '@/src/store/themeStore';

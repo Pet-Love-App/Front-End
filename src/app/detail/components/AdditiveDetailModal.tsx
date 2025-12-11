@@ -1,5 +1,6 @@
 import { Modal, ScrollView, TouchableOpacity } from 'react-native';
-import { Button, Card, Separator, Text, XStack, YStack } from 'tamagui';
+import { Card, Separator, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 
 import type { Additive } from '@/src/lib/supabase';
 
@@ -111,10 +112,9 @@ export function AdditiveDetailModal({
 
                 {/* 关闭按钮 */}
                 <Button
-                  size="$4"
+                  size="md"
+                  variant="primary"
                   backgroundColor="$orange10"
-                  color="white"
-                  fontWeight="600"
                   marginTop="$2"
                   onPress={onClose}
                   pressStyle={{

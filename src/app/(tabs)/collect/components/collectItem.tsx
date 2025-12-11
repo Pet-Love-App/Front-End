@@ -2,7 +2,8 @@
  * 猫粮收藏列表项 - 展示收藏的猫粮信息
  */
 import { Image } from 'react-native';
-import { Button, Card, Separator, Text, XStack, YStack } from 'tamagui';
+import { Card, Separator, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import type { CatfoodFavorite } from '@/src/types/collect';
 import {
@@ -133,16 +134,26 @@ export default function CollectListItem({ favorite, onDelete }: CollectListItemP
         <>
           <Separator borderColor={neutralScale.neutral2} />
           <Card.Footer padding="$3" paddingTop="$2">
-            <XStack justifyContent="flex-end" width="100%">
+            <XStack justifyContent="flex-end" width="100%" alignItems="center">
               <Button
                 size="$3"
-                chromeless
-                color={neutralScale.neutral8}
-                icon={<IconSymbol name="heart.slash" size={16} color={neutralScale.neutral8} />}
+                backgroundColor={neutralScale.neutral2}
+                borderWidth={1}
+                borderColor={neutralScale.neutral3}
+                color={neutralScale.neutral9}
+                paddingHorizontal="$4"
+                height={36}
+                icon={<IconSymbol name="heart.slash" size={18} color={errorScale.error9} />}
                 onPress={() => onDelete(favorite.id, catfood.id)}
-                pressStyle={{ scale: 0.95, opacity: 0.7 }}
+                pressStyle={{
+                  scale: 0.97,
+                  opacity: 0.8,
+                  backgroundColor: errorScale.error2,
+                }}
               >
-                取消收藏
+                <Text fontSize={14} fontWeight="600" color={errorScale.error9}>
+                  取消收藏
+                </Text>
               </Button>
             </XStack>
           </Card.Footer>

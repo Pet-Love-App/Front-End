@@ -1,7 +1,8 @@
 /**
  * 操作按钮组件
  */
-import { Button, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Spinner, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 interface ActionButtonsProps {
@@ -34,25 +35,28 @@ export function ActionButtons({
         <YStack gap="$2">
           <Button
             size="$5"
+            height={52}
             themeInverse
             onPress={onSave}
             disabled={isSaving}
-            icon={<IconSymbol name="checkmark.circle.fill" size={20} color="white" />}
+            icon={<IconSymbol name="checkmark.circle.fill" size={22} color="white" />}
           >
-            {isSaving ? <Spinner size="small" color="$color" /> : saveButtonText}
+            <Text fontSize="$5" fontWeight="600" color="white">
+              {isSaving ? '保存中...' : saveButtonText}
+            </Text>
           </Button>
 
           {/* 管理员标识提示 */}
           {isAdmin && hasExistingReport && (
             <XStack
               backgroundColor="$orange2"
-              padding="$2"
+              padding="$3"
               borderRadius="$3"
               gap="$2"
               alignItems="center"
             >
               <IconSymbol name="crown.fill" size={16} color="$orange10" />
-              <Text fontSize="$2" color="$orange11" flex={1}>
+              <Text fontSize="$3" color="$orange11" flex={1}>
                 管理员权限：可以覆盖已有的营养成分数据
               </Text>
             </XStack>
@@ -63,16 +67,21 @@ export function ActionButtons({
       {onRetake && (
         <Button
           size="$5"
+          height={48}
           onPress={onRetake}
           icon={<IconSymbol name="camera.fill" size={20} color="$color" />}
         >
-          重新拍照
+          <Text fontSize="$4" fontWeight="500">
+            重新拍照
+          </Text>
         </Button>
       )}
 
       {onClose && (
-        <Button size="$5" chromeless onPress={onClose}>
-          返回首页
+        <Button size="lg" variant="ghost" onPress={onClose}>
+          <Text fontSize="$4" color="$gray10">
+            返回首页
+          </Text>
         </Button>
       )}
     </YStack>

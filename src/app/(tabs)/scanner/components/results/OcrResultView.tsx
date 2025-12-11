@@ -6,7 +6,8 @@ import { memo, useState } from 'react';
 import { Alert, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
-import { Button, Card, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Card, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
@@ -70,7 +71,7 @@ export const OcrResultView = memo(function OcrResultView({
             识别结果
           </Text>
         </XStack>
-        <Button size="$3" circular chromeless onPress={onClose}>
+        <Button size="sm" variant="ghost" rounded onPress={onClose}>
           <IconSymbol name="xmark" size={20} color={colors.icon} />
         </Button>
       </XStack>
@@ -174,6 +175,7 @@ export const OcrResultView = memo(function OcrResultView({
           <YStack gap="$3" marginTop="$2" paddingBottom={insets.bottom || 24}>
             <Button
               size="$5"
+              height={52}
               backgroundColor={colors.tint}
               color="white"
               onPress={onGenerateReport}
@@ -182,35 +184,43 @@ export const OcrResultView = memo(function OcrResultView({
                 isGeneratingReport ? (
                   <Spinner size="small" color="white" />
                 ) : (
-                  <IconSymbol name="sparkles" size={20} color="white" />
+                  <IconSymbol name="sparkles" size={22} color="white" />
                 )
               }
             >
-              {isGeneratingReport ? '分析中...' : '生成 AI 报告'}
+              <Text fontSize="$5" fontWeight="600" color="white">
+                {isGeneratingReport ? '分析中...' : '生成 AI 报告'}
+              </Text>
             </Button>
 
             <XStack gap="$3">
               <Button
                 flex={1}
                 size="$4"
+                height={44}
                 variant="outlined"
                 onPress={onRetake}
                 borderColor={colors.icon + '30'}
                 color={colors.text}
                 icon={<IconSymbol name="camera.fill" size={18} color={colors.icon} />}
               >
-                重新拍照
+                <Text fontSize="$4" color={colors.text}>
+                  重新拍照
+                </Text>
               </Button>
 
               <Button
                 flex={1}
                 size="$4"
+                height={44}
                 chromeless
                 onPress={onClose}
                 color={colors.icon}
                 icon={<IconSymbol name="arrow.left" size={18} color={colors.icon} />}
               >
-                返回首页
+                <Text fontSize="$4" color={colors.icon}>
+                  返回首页
+                </Text>
               </Button>
             </XStack>
           </YStack>

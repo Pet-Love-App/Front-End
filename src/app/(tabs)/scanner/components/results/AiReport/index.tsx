@@ -3,7 +3,8 @@
  */
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
+import { ScrollView, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import {
   AdditiveDetailModal,
   NutrientAnalysisSection,
@@ -70,7 +71,7 @@ export function AiReportDetail({
             AI 分析报告
           </Text>
           {onClose && (
-            <Button size="$3" circular chromeless onPress={onClose}>
+            <Button size="sm" variant="ghost" rounded onPress={onClose}>
               ✕
             </Button>
           )}

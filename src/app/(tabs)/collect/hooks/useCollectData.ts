@@ -86,8 +86,13 @@ export function useCollectData() {
           try {
             const result = await supabaseCatfoodService.toggleFavorite(catfoodId);
             if (result.data) {
-              // 乐观更新：立即从列表中移除
-              setFavorites((prev) => prev.filter((fav) => fav.id !== favoriteId));
+              // 乐观更新：从列表中移除对应的项
+              setFavorites((prev) => {
+                return prev.filter((fav: any) => {
+                  const favId = fav.catfoodId || fav.id;
+                  return favId?.toString() !== catfoodId?.toString();
+                });
+              });
               Alert.alert('✅ 成功', '已取消收藏');
             } else {
               Alert.alert('❌ 失败', result.error?.message || '取消收藏失败，请重试');

@@ -1,5 +1,6 @@
 import { Dimensions, Image } from 'react-native';
-import { Button, Dialog, Text, XStack, YStack } from 'tamagui';
+import { Dialog, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';

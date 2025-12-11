@@ -2,7 +2,8 @@
  * 帖子收藏列表项 - 展示收藏的帖子信息
  */
 import { Image } from 'react-native';
-import { Button, Card, Text, XStack, YStack } from 'tamagui';
+import { Card, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import type { Post } from '@/src/lib/supabase';
 import { errorScale, neutralScale, primaryScale } from '@/src/design-system/tokens';

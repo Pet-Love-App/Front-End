@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import { Button, Text, YStack } from 'tamagui';
+import { Text, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 export default function NotFoundScreen() {
@@ -17,7 +18,7 @@ export default function NotFoundScreen() {
         找不到这个页面
       </Text>
 
-      <Button size="$5" theme="blue" onPress={() => router.push('/(tabs)/collect')}>
+      <Button size="lg" variant="primary" onPress={() => router.push('/(tabs)/collect')}>
         返回首页
       </Button>
     </YStack>

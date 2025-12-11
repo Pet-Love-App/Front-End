@@ -59,12 +59,13 @@ export interface Post {
   media?: PostMedia[];
   favoritesCount: number;
   isFavorited: boolean;
+  likesCount: number;
+  isLiked: boolean;
   createdAt: string;
   updatedAt: string;
   category?: PostCategory;
   tags?: string[];
   commentsCount?: number;
-  likesCount?: number;
 }
 
 /**
@@ -125,6 +126,14 @@ export interface GetPostsParams extends PaginationParams {
 export interface ToggleActionResponse {
   action: 'favorited' | 'unfavorited';
   favoritesCount?: number;
+}
+
+/**
+ * 切换点赞响应
+ */
+export interface ToggleLikeResponse {
+  action: 'liked' | 'unliked';
+  likesCount: number;
 }
 
 // ==================== Forum 服务 ====================
@@ -651,6 +660,73 @@ class SupabaseForumService {
       };
     } catch (err) {
       logger.error('posts', 'toggleFavorite', err);
+      return {
+        data: null,
+        error: { message: String(err), code: 'UNKNOWN', details: '', hint: '' } as any,
+        success: false,
+      };
+    }
+  }
+
+  /**
+   * 切换帖子点赞状态
+   */
+  async toggleLike(postId: number): Promise<SupabaseResponse<ToggleLikeResponse>> {
+    logger.query('posts', 'toggleLike', { postId });
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        return {
+          data: null,
+          error: { message: '未登录', code: 'NOT_AUTHENTICATED', details: '', hint: '' } as any,
+          success: false,
+        };
+      }
+
+      // 检查是否已点赞
+      const { data: existingLike } = await supabase
+        .from('post_likes')
+        .select('id')
+        .eq('post_id', postId)
+        .eq('user_id', user.id)
+        .single();
+
+      let action: 'liked' | 'unliked';
+
+      if (existingLike) {
+        // 取消点赞
+        await supabase.from('post_likes').delete().eq('post_id', postId).eq('user_id', user.id);
+        action = 'unliked';
+      } else {
+        // 添加点赞
+        await supabase.from('post_likes').insert({
+          post_id: postId,
+          user_id: user.id,
+        });
+        action = 'liked';
+      }
+
+      // 获取最新的点赞数
+      const { count } = await supabase
+        .from('post_likes')
+        .select('*', { count: 'exact', head: true })
+        .eq('post_id', postId);
+
+      logger.success('posts', 'toggleLike');
+      return {
+        data: {
+          action,
+          likesCount: count || 0,
+        },
+        error: null,
+        success: true,
+      };
+    } catch (err) {
+      logger.error('posts', 'toggleLike', err);
       return {
         data: null,
         error: { message: String(err), code: 'UNKNOWN', details: '', hint: '' } as any,

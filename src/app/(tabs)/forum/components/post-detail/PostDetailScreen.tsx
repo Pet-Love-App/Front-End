@@ -9,13 +9,14 @@
  * - CommentSection: 评论区
  */
 
-import React, { memo, useCallback, useEffect } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import { BackHandler, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styled, YStack } from 'tamagui';
 
-import type { Post } from '@/src/lib/supabase';
+import { supabaseForumService, type Post } from '@/src/lib/supabase';
 
+import { UserProfileModal, type UserProfile } from '../community/UserProfileModal';
 import { CommentSection } from './CommentSection';
 import { PostActions } from './PostActions';
 import { PostContent } from './PostContent';
@@ -79,6 +80,20 @@ function PostDetailScreenComponent({
 }: PostDetailScreenProps) {
   const insets = useSafeAreaInsets();
 
+  // 帖子状态（用于点赞/收藏）
+  const [localPost, setLocalPost] = React.useState<Post | null>(post);
+  // 用户信息模态框
+  const [selectedUser, setSelectedUser] = useState<{
+    id: string;
+    username: string;
+    avatar?: string;
+  } | null>(null);
+
+  // 当外部 post 变化时同步
+  React.useEffect(() => {
+    setLocalPost(post);
+  }, [post]);
+
   // 使用详情页 Hook 管理所有状态和逻辑
   const {
     comments,
@@ -121,6 +136,16 @@ function PostDetailScreenComponent({
   }, []);
 
   /**
+   * 处理点击评论作者
+   */
+  const handleAuthorPress = useCallback(
+    (author: { id: string; username: string; avatar?: string }) => {
+      setSelectedUser(author);
+    },
+    []
+  );
+
+  /**
    * 分享帖子
    */
   const handleShare = useCallback(() => {
@@ -128,18 +153,106 @@ function PostDetailScreenComponent({
   }, []);
 
   /**
-   * 收藏帖子
-   */
-  const handleBookmark = useCallback(() => {
-    // TODO: 实现收藏功能
-  }, []);
-
-  /**
    * 点赞帖子
    */
-  const handleLikePost = useCallback(() => {
-    // TODO: 实现帖子点赞功能
-  }, []);
+  const handleLikePost = useCallback(async () => {
+    if (!localPost) return;
+
+    // 乐观更新 UI
+    const wasLiked = localPost.isLiked ?? false;
+    const prevCount = localPost.likesCount ?? 0;
+
+    setLocalPost((prev) =>
+      prev
+        ? {
+            ...prev,
+            isLiked: !wasLiked,
+            likesCount: wasLiked ? Math.max(0, prevCount - 1) : prevCount + 1,
+          }
+        : null
+    );
+
+    try {
+      const { data, error } = await supabaseForumService.toggleLike(localPost.id);
+      if (error) throw error;
+
+      // 用服务器返回的真实数据更新
+      if (data) {
+        setLocalPost((prev) =>
+          prev
+            ? {
+                ...prev,
+                isLiked: data.action === 'liked',
+                likesCount: data.likesCount ?? prev.likesCount,
+              }
+            : null
+        );
+      }
+    } catch (error) {
+      // 出错时回滚
+      setLocalPost((prev) =>
+        prev
+          ? {
+              ...prev,
+              isLiked: wasLiked,
+              likesCount: prevCount,
+            }
+          : null
+      );
+      console.error('点赞失败:', error);
+    }
+  }, [localPost]);
+
+  /**
+   * 收藏帖子
+   */
+  const handleBookmark = useCallback(async () => {
+    if (!localPost) return;
+
+    // 乐观更新 UI
+    const wasBookmarked = localPost.isFavorited ?? false;
+    const prevCount = localPost.favoritesCount ?? 0;
+
+    setLocalPost((prev) =>
+      prev
+        ? {
+            ...prev,
+            isFavorited: !wasBookmarked,
+            favoritesCount: wasBookmarked ? Math.max(0, prevCount - 1) : prevCount + 1,
+          }
+        : null
+    );
+
+    try {
+      const { data, error } = await supabaseForumService.toggleFavorite(localPost.id);
+      if (error) throw error;
+
+      // 用服务器返回的真实数据更新
+      if (data) {
+        setLocalPost((prev) =>
+          prev
+            ? {
+                ...prev,
+                isFavorited: data.action === 'favorited',
+                favoritesCount: data.favoritesCount ?? prev.favoritesCount,
+              }
+            : null
+        );
+      }
+    } catch (error) {
+      // 出错时回滚
+      setLocalPost((prev) =>
+        prev
+          ? {
+              ...prev,
+              isFavorited: wasBookmarked,
+              favoritesCount: prevCount,
+            }
+          : null
+      );
+      console.error('收藏失败:', error);
+    }
+  }, [localPost]);
 
   // 处理 Android 系统返回键
   useEffect(() => {
@@ -154,7 +267,7 @@ function PostDetailScreenComponent({
   }, [visible, onClose]);
 
   // 不可见时不渲染
-  if (!visible || !post) {
+  if (!visible || !localPost) {
     return null;
   }
 
@@ -179,16 +292,19 @@ function PostDetailScreenComponent({
           contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom }}
         >
           {/* 帖子内容 */}
-          <PostContent post={post} />
+          <PostContent post={localPost} />
 
           {/* 媒体画廊 */}
-          {post.media && post.media.length > 0 && <PostMediaGallery media={post.media} />}
+          {localPost.media && localPost.media.length > 0 && (
+            <PostMediaGallery media={localPost.media} />
+          )}
 
           {/* 操作栏 */}
           <PostActions
-            likeCount={post.likesCount || 0}
+            likeCount={localPost.likesCount || 0}
             commentCount={comments.length}
-            isLiked={post.isFavorited}
+            isLiked={localPost.isLiked}
+            isBookmarked={localPost.isFavorited}
             onLike={handleLikePost}
             onComment={scrollToComments}
             onShare={handleShare}
@@ -215,9 +331,27 @@ function PostDetailScreenComponent({
             onCancelEdit={cancelEditComment}
             onEditChange={setEditingContent}
             onDeleteComment={deleteComment}
+            onAuthorPress={handleAuthorPress}
           />
         </ContentScrollView>
       </KeyboardAvoidingView>
+
+      {/* 用户信息模态框 */}
+      {selectedUser && (
+        <UserProfileModal
+          visible={!!selectedUser}
+          user={{
+            id: selectedUser.id,
+            username: selectedUser.username,
+            avatar: selectedUser.avatar || undefined,
+            postsCount: 0,
+            followersCount: 0,
+            followingCount: 0,
+            isFollowing: false,
+          }}
+          onClose={() => setSelectedUser(null)}
+        />
+      )}
     </Container>
   );
 }

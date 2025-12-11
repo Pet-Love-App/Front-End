@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Dimensions } from 'react-native';
-import { Button, Dialog, TextArea, XStack, YStack } from 'tamagui';
+import { Dialog, TextArea, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';

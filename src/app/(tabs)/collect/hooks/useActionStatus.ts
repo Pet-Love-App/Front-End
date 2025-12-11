@@ -78,6 +78,11 @@ export function useActionStatus(catfoodId: string): UseActionStatusReturn {
     const newLiked = !status.liked;
     const newCount = newLiked ? status.likeCount + 1 : status.likeCount - 1;
 
+    console.log('[toggleLike] 开始 - 当前状态:', {
+      liked: status.liked,
+      favorited: status.favorited,
+    });
+
     setStatus((prev) => ({
       ...prev,
       liked: newLiked,
@@ -86,6 +91,7 @@ export function useActionStatus(catfoodId: string): UseActionStatusReturn {
 
     try {
       const result = await supabaseCatfoodService.toggleLike(catfoodId);
+      console.log('[toggleLike] API 返回:', result.data);
 
       if (result.data) {
         // 同步真实状态

@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useRef } from 'react';
+import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
@@ -24,7 +26,7 @@ import {
   ReportHeader,
   SafetyAnalysisSection,
 } from '../components';
-import { useAdditiveModal, useAIReport, useCatFoodDetail } from '../hooks';
+import { useAdditiveModal, useAIReport, useCatFoodDetail, useStreamingReport } from '../hooks';
 
 /**
  * Detail 主屏幕组件
@@ -39,7 +41,20 @@ export function DetailScreen() {
     useAdditiveModal();
 
   // AI 报告相关
-  const { report, hasReport, isLoading: isLoadingReport } = useAIReport(catfoodId);
+  const {
+    report,
+    hasReport,
+    isLoading: isLoadingReport,
+    refetch: refetchReport,
+  } = useAIReport(catfoodId);
+
+  // 流式生成 hook
+  const {
+    state: streamingState,
+    startStreaming,
+    stopStreaming,
+    reset: resetStreaming,
+  } = useStreamingReport();
 
   // 用户信息（用于管理员权限检查）
   const user = useUserStore((state) => state.user);
@@ -49,6 +64,78 @@ export function DetailScreen() {
   const { isReady: isAIReportReady } = useLazyLoad({ delay: 100 });
   const { isReady: isChartReady } = useLazyLoad({ delay: 200 });
   const { isReady: isCommentsReady } = useLazyLoad({ delay: 300 });
+
+  /**
+   * 构建配料表文本
+   * 如果有已有报告，使用报告中的配料表文本
+   * 否则使用猫粮的 ingredient 和 additive 生成
+   */
+  const getIngredientsText = useCallback(() => {
+    // 优先使用已有报告的配料表文本
+    if (report?.ingredients_text) {
+      return report.ingredients_text;
+    }
+
+    // 从猫粮数据构建配料表文本
+    if (catFood) {
+      const ingredients = catFood.ingredient?.map((i) => i.name) || [];
+      const additives = catFood.additive?.map((a) => a.name) || [];
+      const combined = [...ingredients, ...additives];
+      if (combined.length > 0) {
+        return combined.join(', ');
+      }
+    }
+
+    return '';
+  }, [report, catFood]);
+
+  /**
+   * 开始生成 AI 报告
+   */
+  const handleGenerateReport = useCallback(async () => {
+    if (!catfoodId) {
+      Alert.alert('错误', '无法获取猫粮信息');
+      return;
+    }
+
+    const ingredientsText = getIngredientsText();
+    if (!ingredientsText) {
+      Alert.alert('提示', '没有可用的配料信息，无法生成报告');
+      return;
+    }
+
+    try {
+      await startStreaming(catfoodId, ingredientsText);
+    } catch (error) {
+      console.error('生成报告失败:', error);
+    }
+  }, [catfoodId, getIngredientsText, startStreaming]);
+
+  /**
+   * 停止生成
+   */
+  const handleStopGeneration = useCallback(() => {
+    stopStreaming();
+  }, [stopStreaming]);
+
+  // 用 ref 记录上一次的完成状态，避免重复刷新
+  const prevCompleteRef = useRef(false);
+
+  /**
+   * 监听流式完成状态，完成后刷新报告数据
+   */
+  useEffect(() => {
+    // 检测从未完成变为已完成的状态变化
+    if (streamingState.isComplete && !streamingState.error && !prevCompleteRef.current) {
+      // 延迟刷新，确保数据已保存到数据库
+      const timer = setTimeout(() => {
+        refetchReport();
+        resetStreaming();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+    prevCompleteRef.current = streamingState.isComplete;
+  }, [streamingState.isComplete, streamingState.error, refetchReport, resetStreaming]);
 
   // 渲染内容
   const renderContent = () => {
@@ -81,15 +168,34 @@ export function DetailScreen() {
           catfoodId={catFood.id}
         />
 
-        {/* AI 报告板块 - 懒加载 */}
-        {hasReport && report && (
+        {/* AI 报告板块 - 支持流式生成和已有报告显示 */}
+        {isAIReportReady ? (
           <>
-            {isAIReportReady ? (
-              <AIReportSection report={report} isLoading={isLoadingReport} />
-            ) : (
-              <SkeletonAIReport />
+            {/* 流式生成模式 */}
+            {(streamingState.isStreaming || streamingState.isComplete) && (
+              <AIReportSection streamingState={streamingState} onStopPress={handleStopGeneration} />
+            )}
+
+            {/* 已有报告模式 */}
+            {hasReport && report && !streamingState.isStreaming && !streamingState.isComplete && (
+              <AIReportSection
+                report={report}
+                isLoading={isLoadingReport}
+                showGenerateButton={false}
+              />
+            )}
+
+            {/* 无报告时显示生成按钮 */}
+            {!hasReport && !streamingState.isStreaming && !streamingState.isComplete && (
+              <AIReportSection
+                showGenerateButton={true}
+                isGenerating={false}
+                onGeneratePress={handleGenerateReport}
+              />
             )}
           </>
+        ) : (
+          <SkeletonAIReport />
         )}
 
         {/* 管理员更新提示 - 仅当有营养信息且用户是管理员时显示 */}

@@ -9,7 +9,8 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Button, Dialog, Text, XStack, YStack } from 'tamagui';
+import { Dialog, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { BreedSelector } from '@/src/components/BreedSelector';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';

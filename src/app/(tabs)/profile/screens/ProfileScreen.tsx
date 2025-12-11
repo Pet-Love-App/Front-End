@@ -2,7 +2,8 @@ import { TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Button, ScrollView, Text, YStack } from 'tamagui';
+import { ScrollView, Text, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';

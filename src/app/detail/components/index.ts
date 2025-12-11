@@ -16,6 +16,7 @@ export { AIReportButton } from './AIReportButton';
 export { AIReportModal } from './AIReportModal';
 export { AIReportSection } from './AIReportSection';
 export { ReportHeader } from './ReportHeader';
+export { StreamingText } from './StreamingText';
 
 // 营养分析相关
 export { NutrientAnalysisSection } from './NutrientAnalysisSection';

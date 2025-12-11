@@ -1,7 +1,8 @@
 /**
  * 识别的添加剂/成分列表组件
  */
-import { Button, Card, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Card, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 
 interface IdentifiedItemsSectionProps {
   title: string;
@@ -44,7 +45,9 @@ export function IdentifiedItemsSection({
           {items.map((item, index) => (
             <Button
               key={index}
-              size="$2"
+              size="$3"
+              height={36}
+              paddingHorizontal="$3"
               backgroundColor={buttonColor}
               color={textColor}
               borderRadius="$3"
@@ -52,7 +55,9 @@ export function IdentifiedItemsSection({
               disabled={loadingItem === item}
               icon={loadingItem === item ? <Spinner size="small" color={textColor} /> : undefined}
             >
-              {item}
+              <Text fontSize="$3" fontWeight="500" color={textColor}>
+                {item}
+              </Text>
             </Button>
           ))}
         </XStack>

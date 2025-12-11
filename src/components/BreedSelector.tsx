@@ -1,6 +1,7 @@
 import { memo, useCallback, useState } from 'react';
 import { Modal, ScrollView, TextInput, TouchableOpacity } from 'react-native';
-import { Button, Card, Text, XStack, YStack } from 'tamagui';
+import { Card, Text, XStack, YStack } from 'tamagui';
+import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { getBreedsBySpecies, type PetSpecies } from '@/src/constants/petBreeds';
 import { primaryScale, neutralScale } from '@/src/design-system/tokens';

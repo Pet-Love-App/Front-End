@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -8,8 +9,17 @@ import { Button } from '@/src/design-system/components';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 
-import { AddPetModal, PetDetailModal, ProfileHeader, ProfileTabs } from '../components';
-import { usePetManagement, useProfileData } from '../hooks';
+import {
+  AddPetModal,
+  PetDetailModal,
+  ProfileHeader,
+  ProfileTabs,
+  ReputationCard,
+  BadgeGrid,
+  BadgeDetailModal,
+} from '../components';
+import { usePetManagement, useProfileData, useReputation } from '../hooks';
+import { BADGE_CONFIGS } from '@/src/constants/badges';
 
 /**
  * Profile 主屏幕组件
@@ -38,6 +48,25 @@ export function ProfileScreen() {
     closeAddPetModal,
     selectPet,
   } = usePetManagement();
+
+  // 信誉分和勋章数据
+  const {
+    reputation,
+    badges,
+    loading: reputationLoading,
+    equipBadge,
+    unequipBadge,
+    refresh,
+  } = useReputation(user?.id);
+
+  // 勋章详情模态框
+  const [selectedBadge, setSelectedBadge] = useState<any>(null);
+
+  // 获取已装备的勋章配置
+  const equippedBadge = badges.find((b) => b.is_equipped);
+  const equippedBadgeConfig = equippedBadge?.badge?.code
+    ? BADGE_CONFIGS[equippedBadge.badge.code]
+    : null;
 
   // 未认证视图
   if (_hasHydrated && !isAuthenticated) {
@@ -109,7 +138,38 @@ export function ProfileScreen() {
           username={user?.username}
           bio="专业的宠物爱好者 🐱"
           onAvatarUpdate={fetchCurrentUser}
+          equippedBadge={
+            equippedBadgeConfig
+              ? {
+                  icon: equippedBadgeConfig.icon,
+                  color: equippedBadgeConfig.color,
+                  gradient: equippedBadgeConfig.gradient,
+                }
+              : null
+          }
         />
+
+        {/* 信誉分和勋章 */}
+        <YStack width="100%" paddingHorizontal="$4" gap="$3" marginTop="$4" marginBottom="$2">
+          {/* 信誉分卡片 */}
+          {reputation && <ReputationCard reputation={reputation} onPress={refresh} />}
+
+          {/* 调试按钮 - 刷新信誉分 */}
+          {__DEV__ && (
+            <Button size="sm" variant="outline" onPress={refresh}>
+              🔄 刷新信誉分数据
+            </Button>
+          )}
+
+          {/* 勋章展示 */}
+          {badges.length > 0 && (
+            <BadgeGrid
+              badges={badges}
+              onBadgePress={(badge) => setSelectedBadge(badge)}
+              maxDisplay={8}
+            />
+          )}
+        </YStack>
 
         {/* 个人资料标签页 - 宠物、评论、点赞 */}
         <ProfileTabs pets={user?.pets} isLoading={isLoading && !user} onAddPet={openAddPetModal} />
@@ -122,6 +182,14 @@ export function ProfileScreen() {
         pet={selectedPet}
         open={!!selectedPet}
         onOpenChange={(open) => !open && selectPet(null)}
+      />
+
+      <BadgeDetailModal
+        visible={!!selectedBadge}
+        badge={selectedBadge}
+        onClose={() => setSelectedBadge(null)}
+        onEquip={equipBadge}
+        onUnequip={unequipBadge}
       />
     </ScrollView>
   );

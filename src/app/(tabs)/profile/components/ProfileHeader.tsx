@@ -14,12 +14,14 @@ interface ProfileHeaderProps {
   username?: string;
   bio?: string;
   onAvatarUpdate?: () => void;
+  equippedBadge?: { icon: string; color: string; gradient?: string[] } | null;
 }
 
 export function ProfileHeader({
   username = '未登录',
-  bio = '这个人很懒，什么都没留下~',
+  bio = '这个人很懒,什么都没留下~',
   onAvatarUpdate,
+  equippedBadge,
 }: ProfileHeaderProps) {
   const { user, uploadAvatar, deleteAvatar } = useUserStore();
   const [uploading, setUploading] = useState(false);
@@ -209,15 +211,51 @@ export function ProfileHeader({
 
       {/* 用户信息 */}
       <YStack width="100%" alignItems="center" gap="$2.5" paddingTop={40} paddingBottom="$1">
-        <Text
-          fontSize={24}
-          fontWeight="700"
-          color="$foreground"
-          textAlign="center"
-          numberOfLines={1}
-        >
-          {username}
-        </Text>
+        {/* 用户名和勋章 */}
+        <YStack alignItems="center" gap="$1.5">
+          <Text
+            fontSize={24}
+            fontWeight="700"
+            color="$foreground"
+            textAlign="center"
+            numberOfLines={1}
+          >
+            {username}
+          </Text>
+
+          {/* 已装备的勋章 */}
+          {equippedBadge && (
+            <YStack
+              flexDirection="row"
+              alignItems="center"
+              gap="$1.5"
+              paddingHorizontal="$2.5"
+              paddingVertical="$1"
+              backgroundColor={equippedBadge.color + '15'}
+              borderRadius={12}
+              borderWidth={1}
+              borderColor={equippedBadge.color + '30'}
+            >
+              {equippedBadge.gradient ? (
+                <LinearGradient
+                  colors={equippedBadge.gradient}
+                  style={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: 9,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <IconSymbol name={equippedBadge.icon} size={12} color="white" />
+                </LinearGradient>
+              ) : (
+                <IconSymbol name={equippedBadge.icon} size={16} color={equippedBadge.color} />
+              )}
+            </YStack>
+          )}
+        </YStack>
+
         <Text
           fontSize={12}
           color={neutralScale.neutral8}

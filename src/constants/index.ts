@@ -2,6 +2,9 @@
  * 常量统一导出
  */
 
+// 勋章系统
+export * from './badges';
+
 // 颜色系统（包含 Colors, PRIMARY_PALETTE 等）
 export * from './colors';
 

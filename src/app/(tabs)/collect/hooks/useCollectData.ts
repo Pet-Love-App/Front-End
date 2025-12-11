@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { supabaseCatfoodService } from '@/src/lib/supabase';
 import type { CatfoodFavorite } from '@/src/types/collect';
@@ -14,11 +15,14 @@ export function useCollectData() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const isFirstLoad = useRef(true);
 
   // 获取收藏列表
-  const fetchFavorites = useCallback(async () => {
+  const fetchFavorites = useCallback(async (showLoading = true) => {
     try {
-      setIsLoading(true);
+      if (showLoading) {
+        setIsLoading(true);
+      }
       setError(null);
       const result = await supabaseCatfoodService.getUserFavorites();
       if (result.data) {
@@ -34,16 +38,25 @@ export function useCollectData() {
     }
   }, []);
 
-  // 初始加载数据
-  useEffect(() => {
-    fetchFavorites();
-  }, [fetchFavorites]);
+  // 页面获得焦点时刷新数据（从详情页返回时自动更新）
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstLoad.current) {
+        // 首次加载显示 loading
+        fetchFavorites(true);
+        isFirstLoad.current = false;
+      } else {
+        // 后续获得焦点时静默刷新
+        fetchFavorites(false);
+      }
+    }, [fetchFavorites])
+  );
 
   // 下拉刷新
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await fetchFavorites();
+      await fetchFavorites(false);
     } catch (_err) {
       Alert.alert('刷新失败', '请检查网络连接后重试');
     } finally {

@@ -6,6 +6,10 @@
  * - 与 Auth 用户关联
  */
 
+import { decode } from 'base64-arraybuffer';
+// 使用 legacy API，因为新 API (File/Directory) 在 SDK 54 中仍需迁移
+import * as FileSystem from 'expo-file-system/legacy';
+
 import { supabase } from '../client';
 import { convertKeysToCamel, logger, wrapResponse, type SupabaseResponse } from '../helpers';
 
@@ -249,16 +253,30 @@ class SupabaseProfileService {
         };
       }
 
-      // 准备文件
+      // 准备文件路径
       const fileName = `${user.id}/avatar_${Date.now()}.jpg`;
-      const response = await fetch(imageUri);
-      const blob = await response.blob();
+
+      // 处理 file:// URI
+      let fileUri = imageUri;
+      if (!fileUri.startsWith('file://') && !fileUri.startsWith('content://')) {
+        fileUri = `file://${fileUri}`;
+      }
+
+      // 使用 FileSystem 读取文件为 base64
+      const base64Data = await FileSystem.readAsStringAsync(fileUri, {
+        encoding: 'base64',
+      });
+
+      // 将 base64 转换为 ArrayBuffer
+      const arrayBuffer = decode(base64Data);
 
       // 上传到 Storage
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, blob, {
-        contentType: 'image/jpeg',
-        upsert: true,
-      });
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, arrayBuffer, {
+          contentType: 'image/jpeg',
+          upsert: true,
+        });
 
       if (uploadError) {
         logger.error('profiles', 'uploadAvatar', uploadError);

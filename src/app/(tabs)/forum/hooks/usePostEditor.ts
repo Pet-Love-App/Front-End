@@ -15,6 +15,8 @@ export interface MediaFile {
   name: string;
   type: string;
   size?: number;
+  /** 标记为已存在的媒体（来自服务器的 URL） */
+  isExisting?: boolean;
 }
 
 export interface PostEditorState {
@@ -133,11 +135,20 @@ export function usePostEditor(options: UsePostEditorOptions = {}) {
    * 从帖子加载数据（用于编辑）
    */
   const loadFromPost = useCallback((post: Post) => {
+    // 将现有媒体转换为 MediaFile 格式
+    const existingMedia: MediaFile[] = (post.media || []).map((m) => ({
+      uri: m.fileUrl,
+      name: m.fileUrl.split('/').pop() || `media_${m.id}`,
+      type: m.mediaType === 'video' ? 'video/mp4' : 'image/jpeg',
+      // 标记为已存在的媒体（URL 而非本地文件）
+      isExisting: true,
+    })) as MediaFile[];
+
     setState({
       content: post.content || '',
       category: post.category,
       tagsText: (post.tags || []).join(' '),
-      pickedFiles: [],
+      pickedFiles: existingMedia,
       submitting: false,
     });
   }, []);
@@ -148,12 +159,27 @@ export function usePostEditor(options: UsePostEditorOptions = {}) {
    * 选择图片/视频
    */
   const pickMedia = useCallback(async (): Promise<MediaFile[]> => {
+    console.log('[usePostEditor] pickMedia called');
     try {
+      // 1. 请求媒体库权限
+      console.log('[usePostEditor] Requesting media library permissions...');
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      console.log('[usePostEditor] Permission status:', status);
+      if (status !== 'granted') {
+        throw new Error('需要媒体库访问权限才能选择图片');
+      }
+
+      // 2. 打开图片选择器
+      console.log('[usePostEditor] Launching image library...');
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsMultipleSelection: true,
         quality: 0.8,
       });
+      console.log(
+        '[usePostEditor] Image picker result:',
+        result.canceled ? 'canceled' : 'selected'
+      );
 
       if (result.canceled) {
         return [];
@@ -194,6 +220,61 @@ export function usePostEditor(options: UsePostEditorOptions = {}) {
     }
   }, [state.pickedFiles.length]);
 
+  /**
+   * 拍照
+   */
+  const takePhoto = useCallback(async (): Promise<MediaFile[]> => {
+    console.log('[usePostEditor] takePhoto called');
+    try {
+      // 1. 请求相机权限
+      console.log('[usePostEditor] Requesting camera permissions...');
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      console.log('[usePostEditor] Camera permission status:', status);
+      if (status !== 'granted') {
+        throw new Error('需要相机访问权限才能拍照');
+      }
+
+      // 2. 打开相机
+      console.log('[usePostEditor] Launching camera...');
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        quality: 0.8,
+        allowsEditing: true,
+      });
+      console.log('[usePostEditor] Camera result:', result.canceled ? 'canceled' : 'captured');
+
+      if (result.canceled) {
+        return [];
+      }
+
+      const accepted: MediaFile[] = [];
+      const currentCount = state.pickedFiles.length;
+
+      for (let idx = 0; idx < result.assets.length; idx++) {
+        const asset = result.assets[idx];
+        const mime = asset.mimeType || (asset.type === 'video' ? 'video/mp4' : 'image/jpeg');
+        const size = (asset as any).fileSize || (asset as any).size || 0;
+
+        // 验证文件数量
+        if (currentCount + accepted.length >= MEDIA_LIMITS.MAX_FILES_COUNT) break;
+
+        accepted.push({
+          uri: asset.uri,
+          name:
+            (asset.fileName || `photo_${Date.now()}_${idx}`) +
+            (asset.type === 'video' ? '.mp4' : '.jpg'),
+          type: mime,
+          size,
+        });
+      }
+
+      return accepted;
+    } catch (error) {
+      console.error('拍照失败:', error);
+      throw new Error('拍照失败，请重试');
+    }
+  }, [state.pickedFiles.length]);
+
   // ========== Submit Logic ==========
 
   /**
@@ -202,8 +283,11 @@ export function usePostEditor(options: UsePostEditorOptions = {}) {
    */
   const submit = useCallback(
     async (editingPost?: Post | null) => {
+      console.log('[usePostEditor] submit called');
+
       // 1. 验证
       const validation = validate();
+      console.log('[usePostEditor] validation result:', validation);
       if (!validation.valid) {
         const error = new Error(validation.error);
         options.onError?.(error);
@@ -212,11 +296,26 @@ export function usePostEditor(options: UsePostEditorOptions = {}) {
 
       // 2. 准备数据
       const tags = getParsedTags();
+      // 只上传新添加的媒体文件（排除已存在的）
+      const newMediaFiles = state.pickedFiles
+        .filter((file) => !file.isExisting)
+        .map((file) => ({
+          uri: file.uri,
+          name: file.name,
+          type: file.type,
+        }));
+
       const postData = {
         content: state.content.trim(),
         tags,
         category: state.category,
+        // 传递媒体文件用于上传（只包含新文件）
+        mediaFiles: newMediaFiles,
       };
+      console.log('[usePostEditor] postData:', {
+        ...postData,
+        mediaFiles: postData.mediaFiles.length,
+      });
 
       try {
         setSubmitting(true);
@@ -224,20 +323,33 @@ export function usePostEditor(options: UsePostEditorOptions = {}) {
         // 3. 调用 API
         if (editingPost) {
           // 更新现有帖子
+          console.log('[usePostEditor] updating post:', editingPost.id);
           const { error } = await supabaseForumService.updatePost(editingPost.id, postData);
-          if (error) throw error;
+          if (error) {
+            console.error('[usePostEditor] update error:', error);
+            throw error;
+          }
         } else {
           // 创建新帖子
-          // TODO: 需要实现媒体上传功能，暂时不支持 pickedFiles
-          const { error } = await supabaseForumService.createPost(postData);
-          if (error) throw error;
+          console.log(
+            '[usePostEditor] creating new post with',
+            postData.mediaFiles.length,
+            'media files'
+          );
+          const { data, error } = await supabaseForumService.createPost(postData);
+          console.log('[usePostEditor] createPost result:', { data, error });
+          if (error) {
+            console.error('[usePostEditor] create error:', error);
+            throw error;
+          }
         }
 
         // 4. 成功后清理
+        console.log('[usePostEditor] submit successful');
         reset();
         options.onSuccess?.();
       } catch (error) {
-        console.error('提交帖子失败:', error);
+        console.error('[usePostEditor] 提交帖子失败:', error);
         const err = error instanceof Error ? error : new Error('提交失败，请重试');
         options.onError?.(err);
         throw err;
@@ -245,7 +357,7 @@ export function usePostEditor(options: UsePostEditorOptions = {}) {
         setSubmitting(false);
       }
     },
-    [state, validate, getParsedTags, reset, options]
+    [state, validate, getParsedTags, reset, options, setSubmitting]
   );
 
   // ========== Return API ==========
@@ -274,6 +386,7 @@ export function usePostEditor(options: UsePostEditorOptions = {}) {
     loadFromPost,
     validate,
     pickMedia,
+    takePhoto,
     submit, // ✅ 新增：完整的提交方法
   };
 }

@@ -3,14 +3,23 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  Alert,
+  Image,
+  Pressable,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
 import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Camera, ImagePlus, X, ChevronLeft, Send } from '@tamagui/lucide-icons';
 import { styled, YStack, XStack, Text, TextArea, Stack } from 'tamagui';
 
-import type { Post, PostCategory } from '@/src/lib/supabase';
+import { supabaseForumService, type Post, type PostCategory } from '@/src/lib/supabase';
 
 import { POST_CATEGORIES, MESSAGES, UI_CONFIG } from './constants';
 import { usePostEditor } from './hooks/usePostEditor';
@@ -180,7 +189,7 @@ const RemoveMediaButton = styled(XStack, {
   justifyContent: 'center',
 });
 
-const AddMediaButton = styled(XStack, {
+const _AddMediaButton = styled(XStack, {
   name: 'AddMediaButton',
   width: UI_CONFIG.THUMBNAIL_SIZE,
   height: UI_CONFIG.THUMBNAIL_SIZE,
@@ -207,7 +216,7 @@ const BottomBar = styled(XStack, {
   gap: '$3',
 });
 
-const ToolButton = styled(XStack, {
+const _ToolButton = styled(Stack, {
   name: 'ToolButton',
   width: 44,
   height: 44,
@@ -215,9 +224,28 @@ const ToolButton = styled(XStack, {
   backgroundColor: '$backgroundSubtle',
   alignItems: 'center',
   justifyContent: 'center',
+});
 
-  pressStyle: {
-    backgroundColor: '$backgroundHover',
+// 原生样式 - 用于底部工具按钮，确保点击事件正常
+const nativeStyles = StyleSheet.create({
+  toolButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#F6F5F4',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addMediaButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    backgroundColor: '#F6F5F4',
+    borderWidth: 2,
+    borderColor: '#E6E5E3',
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
@@ -226,9 +254,11 @@ const AnimatedStack = Animated.createAnimatedComponent(Stack);
 export default function CreatePostScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ editPostId?: string }>();
-  const errorHandler = createErrorHandler('CreatePost');
+  // 使用 useMemo 缓存 errorHandler，避免每次渲染创建新对象
+  const errorHandler = useMemo(() => createErrorHandler('CreatePost'), []);
 
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [isLoadingPost, setIsLoadingPost] = useState(false);
 
   const editor = usePostEditor({
     onSuccess: () => {
@@ -243,19 +273,56 @@ export default function CreatePostScreen() {
     },
   });
 
+  // 加载要编辑的帖子
   useEffect(() => {
     if (params.editPostId) {
-      // TODO: 加载要编辑的帖子
+      const loadPost = async () => {
+        try {
+          setIsLoadingPost(true);
+          const postId = parseInt(params.editPostId!, 10);
+          const { data, error } = await supabaseForumService.getPostDetail(postId);
+          if (error) {
+            throw error;
+          }
+          if (data) {
+            setEditingPost(data);
+            // 加载帖子数据到编辑器
+            editor.loadFromPost(data);
+          }
+        } catch (err) {
+          console.error('[CreatePost] 加载帖子失败:', err);
+          errorHandler.handle(err, { title: '加载帖子失败' });
+        } finally {
+          setIsLoadingPost(false);
+        }
+      };
+      loadPost();
     }
   }, [params.editPostId]);
 
   const handlePickImages = useCallback(async () => {
+    console.log('[CreatePost] handlePickImages triggered');
     try {
       const files = await editor.pickMedia();
+      console.log('[CreatePost] pickMedia returned:', files.length, 'files');
       if (files.length === 0) return;
       editor.addFiles(files);
     } catch (err) {
+      console.error('[CreatePost] pickMedia error:', err);
       errorHandler.handle(err, { title: '选择媒体失败' });
+    }
+  }, [editor, errorHandler]);
+
+  const handleTakePhoto = useCallback(async () => {
+    console.log('[CreatePost] handleTakePhoto triggered');
+    try {
+      const files = await editor.takePhoto();
+      console.log('[CreatePost] takePhoto returned:', files.length, 'files');
+      if (files.length === 0) return;
+      editor.addFiles(files);
+    } catch (err) {
+      console.error('[CreatePost] takePhoto error:', err);
+      errorHandler.handle(err, { title: '拍照失败' });
     }
   }, [editor, errorHandler]);
 
@@ -276,9 +343,11 @@ export default function CreatePostScreen() {
 
   const canSubmit = useMemo(() => {
     return (
-      !editor.submitting && (editor.content.trim().length > 0 || editor.pickedFiles.length > 0)
+      !editor.submitting &&
+      !isLoadingPost &&
+      (editor.content.trim().length > 0 || editor.pickedFiles.length > 0)
     );
-  }, [editor.submitting, editor.content, editor.pickedFiles]);
+  }, [editor.submitting, editor.content, editor.pickedFiles, isLoadingPost]);
 
   return (
     <Container>
@@ -379,11 +448,13 @@ export default function CreatePostScreen() {
                 ))}
 
                 {editor.pickedFiles.length < 9 && (
-                  <Pressable onPress={handlePickImages}>
-                    <AddMediaButton>
-                      <ImagePlus size={28} color="$colorMuted" />
-                    </AddMediaButton>
-                  </Pressable>
+                  <TouchableOpacity
+                    onPress={handlePickImages}
+                    activeOpacity={0.7}
+                    style={nativeStyles.addMediaButton}
+                  >
+                    <ImagePlus size={28} color="#ADABA6" />
+                  </TouchableOpacity>
                 )}
               </MediaGrid>
             </YStack>
@@ -391,16 +462,20 @@ export default function CreatePostScreen() {
         </ScrollView>
 
         <BottomBar paddingBottom={insets.bottom + 8}>
-          <Pressable onPress={handlePickImages}>
-            <ToolButton>
-              <ImagePlus size={22} color="$colorMuted" />
-            </ToolButton>
-          </Pressable>
-          <Pressable onPress={handlePickImages}>
-            <ToolButton>
-              <Camera size={22} color="$colorMuted" />
-            </ToolButton>
-          </Pressable>
+          <TouchableOpacity
+            onPress={handlePickImages}
+            activeOpacity={0.7}
+            style={nativeStyles.toolButton}
+          >
+            <ImagePlus size={22} color="#ADABA6" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleTakePhoto}
+            activeOpacity={0.7}
+            style={nativeStyles.toolButton}
+          >
+            <Camera size={22} color="#ADABA6" />
+          </TouchableOpacity>
           <XStack flex={1} />
           <Text fontSize="$2" color="$colorMuted" alignSelf="center">
             {editor.content.length} 字

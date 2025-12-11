@@ -7,6 +7,10 @@
  * - 使用 RLS (Row Level Security) 保护数据
  */
 
+import { decode } from 'base64-arraybuffer';
+// 使用 legacy API，因为新 API (File/Directory) 在 SDK 54 中仍需迁移
+import * as FileSystem from 'expo-file-system/legacy';
+
 import { supabase } from '../client';
 import {
   calculatePagination,
@@ -77,12 +81,23 @@ export interface NotificationItem {
 }
 
 /**
+ * 媒体文件（用于上传）
+ */
+export interface MediaFileInput {
+  uri: string;
+  name: string;
+  type: string;
+}
+
+/**
  * 创建帖子参数
  */
 export interface CreatePostParams {
   content: string;
   category?: PostCategory;
   tags?: string[];
+  /** 媒体文件列表（图片/视频） */
+  mediaFiles?: MediaFileInput[];
 }
 
 /**
@@ -253,17 +268,23 @@ class SupabaseForumService {
   }
 
   /**
-   * 创建帖子
+   * 创建帖子（支持媒体上传）
    */
   async createPost(params: CreatePostParams): Promise<SupabaseResponse<Post>> {
     logger.query('posts', 'create', params);
+    console.log('[ForumService] createPost called with:', {
+      ...params,
+      mediaFiles: params.mediaFiles?.length || 0,
+    });
 
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+      console.log('[ForumService] current user:', user?.id);
 
       if (!user) {
+        console.error('[ForumService] No authenticated user');
         return {
           data: null,
           error: { message: '未登录', code: 'NOT_AUTHENTICATED', details: '', hint: '' } as any,
@@ -271,6 +292,8 @@ class SupabaseForumService {
         };
       }
 
+      // 1. 创建帖子记录
+      console.log('[ForumService] Inserting post with author_id:', user.id);
       const { data, error } = await supabase
         .from('posts')
         .insert({
@@ -291,9 +314,35 @@ class SupabaseForumService {
         )
         .single();
 
+      console.log('[ForumService] Insert result:', { data, error });
+
       if (error) {
         logger.error('posts', 'create', error);
+        console.error('[ForumService] Insert error:', error);
         return wrapResponse(null, error) as unknown as SupabaseResponse<Post>;
+      }
+
+      const postId = data.id;
+
+      // 2. 上传媒体文件（如果有）
+      const uploadedMedia: PostMedia[] = [];
+      if (params.mediaFiles && params.mediaFiles.length > 0) {
+        console.log('[ForumService] Uploading', params.mediaFiles.length, 'media files...');
+
+        for (let i = 0; i < params.mediaFiles.length; i++) {
+          const file = params.mediaFiles[i];
+          try {
+            const mediaResult = await this.uploadPostMedia(postId, file, user.id);
+            if (mediaResult.data) {
+              uploadedMedia.push(mediaResult.data);
+              console.log('[ForumService] Uploaded media', i + 1, ':', mediaResult.data.fileUrl);
+            } else {
+              console.error('[ForumService] Failed to upload media', i + 1, ':', mediaResult.error);
+            }
+          } catch (uploadErr) {
+            console.error('[ForumService] Media upload error:', uploadErr);
+          }
+        }
       }
 
       const post = convertKeysToCamel({
@@ -305,12 +354,120 @@ class SupabaseForumService {
               avatar: data.author.avatar_url,
             }
           : null,
+        media: uploadedMedia,
       }) as Post;
 
       logger.success('posts', 'create');
       return { data: post, error: null, success: true };
     } catch (err) {
       logger.error('posts', 'create', err);
+      return {
+        data: null,
+        error: { message: String(err), code: 'UNKNOWN', details: '', hint: '' } as any,
+        success: false,
+      };
+    }
+  }
+
+  /**
+   * 上传帖子媒体文件
+   * 使用 base64 解码方式上传，解决 React Native blob 兼容性问题
+   */
+  private async uploadPostMedia(
+    postId: number,
+    file: MediaFileInput,
+    userId: string
+  ): Promise<SupabaseResponse<PostMedia>> {
+    try {
+      // 生成文件名
+      const ext = file.name.split('.').pop() || (file.type.includes('video') ? 'mp4' : 'jpg');
+      const fileName = `${userId}/${postId}/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+      const mediaType: 'image' | 'video' = file.type.startsWith('video/') ? 'video' : 'image';
+
+      console.log('[ForumService] Uploading file:', {
+        fileName,
+        mediaType,
+        fileUri: file.uri.substring(0, 100),
+        contentType: file.type,
+      });
+
+      // 使用 expo-file-system 读取文件为 base64
+      console.log('[ForumService] Reading file as base64 using FileSystem...');
+
+      // 处理 file:// URI
+      let fileUri = file.uri;
+      if (!fileUri.startsWith('file://') && !fileUri.startsWith('content://')) {
+        fileUri = `file://${fileUri}`;
+      }
+
+      const base64Data = await FileSystem.readAsStringAsync(fileUri, {
+        encoding: 'base64', // 直接使用字符串值
+      });
+
+      console.log('[ForumService] Base64 data length:', base64Data.length); // 检查文件大小（base64 大约是原始大小的 1.37 倍，所以 50MB 原始 ≈ 68MB base64）
+      if (base64Data.length > 68 * 1024 * 1024) {
+        throw new Error('文件大小超过 50MB 限制');
+      }
+
+      // 将 base64 转换为 ArrayBuffer
+      const arrayBuffer = decode(base64Data);
+      console.log('[ForumService] ArrayBuffer created, size:', arrayBuffer.byteLength, 'bytes');
+
+      // 上传到 Storage
+      console.log('[ForumService] Uploading to Supabase Storage...');
+      const { error: uploadError } = await supabase.storage
+        .from('post-media')
+        .upload(fileName, arrayBuffer, {
+          contentType: file.type,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error('[ForumService] Storage upload error:', uploadError);
+        console.error('[ForumService] Error details:', JSON.stringify(uploadError, null, 2));
+        return {
+          data: null,
+          error: uploadError as any,
+          success: false,
+        };
+      }
+
+      console.log('[ForumService] Upload successful!');
+
+      // 获取公开 URL
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('post-media').getPublicUrl(fileName);
+
+      console.log('[ForumService] Public URL:', publicUrl);
+
+      // 插入 post_media 记录
+      const { data: mediaData, error: mediaError } = await supabase
+        .from('post_media')
+        .insert({
+          post_id: postId,
+          media_type: mediaType,
+          file_url: publicUrl,
+        })
+        .select()
+        .single();
+
+      if (mediaError) {
+        console.error('[ForumService] Insert post_media error:', mediaError);
+        return {
+          data: null,
+          error: mediaError as any,
+          success: false,
+        };
+      }
+
+      return {
+        data: convertKeysToCamel(mediaData) as PostMedia,
+        error: null,
+        success: true,
+      };
+    } catch (err) {
+      console.error('[ForumService] uploadPostMedia error:', err);
       return {
         data: null,
         error: { message: String(err), code: 'UNKNOWN', details: '', hint: '' } as any,
@@ -693,6 +850,98 @@ class SupabaseForumService {
       return { data: undefined, error: null, success: true };
     } catch (err) {
       logger.error('notifications', 'markAllRead', err);
+      return {
+        data: null,
+        error: { message: String(err), code: 'UNKNOWN', details: '', hint: '' } as any,
+        success: false,
+      };
+    }
+  }
+
+  /**
+   * 获取所有唯一标签
+   * 从 posts 表的 tags 字段中提取所有唯一值
+   */
+  async getAllTags(): Promise<SupabaseResponse<string[]>> {
+    logger.query('posts', 'getAllTags');
+
+    try {
+      // 查询所有帖子的 tags 字段
+      const { data, error } = await supabase.from('posts').select('tags').not('tags', 'is', null);
+
+      if (error) {
+        logger.error('posts', 'getAllTags', error);
+        return wrapResponse(null, error) as unknown as SupabaseResponse<string[]>;
+      }
+
+      // 提取所有唯一标签
+      const allTags = new Set<string>();
+      if (data) {
+        for (const post of data) {
+          if (Array.isArray(post.tags)) {
+            for (const tag of post.tags) {
+              if (tag && typeof tag === 'string') {
+                allTags.add(tag.trim());
+              }
+            }
+          }
+        }
+      }
+
+      const uniqueTags = Array.from(allTags).sort();
+      logger.success('posts', 'getAllTags', uniqueTags.length);
+      return { data: uniqueTags, error: null, success: true };
+    } catch (err) {
+      logger.error('posts', 'getAllTags', err);
+      return {
+        data: null,
+        error: { message: String(err), code: 'UNKNOWN', details: '', hint: '' } as any,
+        success: false,
+      };
+    }
+  }
+
+  /**
+   * 获取热门标签（按使用频率排序）
+   */
+  async getPopularTags(limit = 20): Promise<SupabaseResponse<{ tag: string; count: number }[]>> {
+    logger.query('posts', 'getPopularTags', { limit });
+
+    try {
+      const { data, error } = await supabase.from('posts').select('tags').not('tags', 'is', null);
+
+      if (error) {
+        logger.error('posts', 'getPopularTags', error);
+        return wrapResponse(null, error) as unknown as SupabaseResponse<
+          { tag: string; count: number }[]
+        >;
+      }
+
+      // 统计每个标签的使用次数
+      const tagCount = new Map<string, number>();
+      if (data) {
+        for (const post of data) {
+          if (Array.isArray(post.tags)) {
+            for (const tag of post.tags) {
+              if (tag && typeof tag === 'string') {
+                const trimmedTag = tag.trim();
+                tagCount.set(trimmedTag, (tagCount.get(trimmedTag) || 0) + 1);
+              }
+            }
+          }
+        }
+      }
+
+      // 转换为数组并按使用次数排序
+      const popularTags = Array.from(tagCount.entries())
+        .map(([tag, count]) => ({ tag, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, limit);
+
+      logger.success('posts', 'getPopularTags', popularTags.length);
+      return { data: popularTags, error: null, success: true };
+    } catch (err) {
+      logger.error('posts', 'getPopularTags', err);
       return {
         data: null,
         error: { message: String(err), code: 'UNKNOWN', details: '', hint: '' } as any,

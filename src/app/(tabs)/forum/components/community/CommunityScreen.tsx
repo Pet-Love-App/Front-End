@@ -2,53 +2,48 @@
  * CommunityScreen - 社区主页面
  *
  * Pinterest/小红书风格的瀑布流社区
- * 支持分类筛选、收藏、搜索等功能
+ * 支持分类筛选、收藏、搜索、用户资料查看等功能
+ * 设计风格：简洁现代，流畅动画，统一配色
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { styled, YStack, Stack } from 'tamagui';
 
 import { supabaseForumService, type Post } from '@/src/lib/supabase';
 import { logger } from '@/src/utils/logger';
 
-import { PostDetailModal } from '../index';
+import { PostDetailScreen } from '../post-detail';
 
 import {
-  GlassSearchBar,
+  ForumHeader,
   CategoryTabs,
   MasonryFeed,
   CreatePostFAB,
-  PostEditorModal,
+  UserProfileModal,
   type PostCardData,
   type CategoryItem,
+  type UserProfile,
 } from './index';
 
-// 样式组件
 const ScreenContainer = styled(YStack, {
   name: 'CommunityScreen',
   flex: 1,
-  backgroundColor: '$backgroundSubtle',
-});
-
-const HeaderContainer = styled(YStack, {
-  name: 'CommunityHeader',
   backgroundColor: '$background',
-  paddingHorizontal: '$4',
-  gap: '$3',
-  paddingBottom: '$3',
-  borderBottomWidth: 1,
-  borderBottomColor: '$borderColorMuted',
-});
-
-const SearchSection = styled(Stack, {
-  name: 'SearchSection',
 });
 
 const TabsSection = styled(Stack, {
   name: 'TabsSection',
-  marginHorizontal: -16,
+  backgroundColor: '$background',
+});
+
+const FeedContainer = styled(Stack, {
+  name: 'FeedContainer',
+  flex: 1,
+  backgroundColor: '$backgroundSubtle',
 });
 
 const CATEGORIES: CategoryItem[] = [
@@ -71,12 +66,13 @@ function postToCardData(post: Post): PostCardData {
     imageHeight: firstImage ? undefined : Math.random() * 80 + 120,
     isVideo: hasVideo,
     author: {
-      id: Number(post.author?.id) || 0,
+      id: post.author?.id || '0',
       name: post.author?.username || '匿名用户',
       avatar: post.author?.avatar || undefined,
       hasReputationBadge: false,
     },
     likeCount: post.favoritesCount || 0,
+    viewCount: post.likesCount || 0,
     isLiked: post.isFavorited,
   };
 }
@@ -84,23 +80,42 @@ function postToCardData(post: Post): PostCardData {
 export function CommunityScreen() {
   const insets = useSafeAreaInsets();
 
-  // 状态
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeCategory, setActiveCategory] = useState('recommend');
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [isPostEditorOpen, setIsPostEditorOpen] = useState(false);
-  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   const cardData = useMemo(() => posts.map(postToCardData), [posts]);
+
+  /**
+   * 加载未读通知数量
+   */
+  const loadUnreadCount = useCallback(async () => {
+    try {
+      const { data, error } = await supabaseForumService.getNotifications(true);
+      if (!error && data) {
+        setUnreadNotifications(data.length);
+      }
+    } catch (err) {
+      logger.error('加载未读通知数失败', err as Error);
+    }
+  }, []);
+
+  // 初始化加载未读数
+  useEffect(() => {
+    loadUnreadCount();
+  }, [loadUnreadCount]);
 
   const loadPosts = useCallback(
     async (refresh = false) => {
       try {
         if (refresh) {
           setIsRefreshing(true);
+          // 刷新时也更新未读数
+          loadUnreadCount();
         } else {
           setIsLoading(true);
         }
@@ -127,12 +142,26 @@ export function CommunityScreen() {
         setIsRefreshing(false);
       }
     },
-    [activeCategory]
+    [activeCategory, loadUnreadCount]
   );
 
   useEffect(() => {
     loadPosts();
   }, [loadPosts]);
+
+  // 页面获得焦点时刷新帖子列表（例如从发帖页面返回）
+  const isFirstFocus = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      // 跳过首次加载（已经在 useEffect 中处理）
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      // 后续的焦点事件触发刷新
+      loadPosts(true);
+    }, [loadPosts])
+  );
 
   // 处理点赞
   const handleLikePress = useCallback(async (post: PostCardData) => {
@@ -167,13 +196,8 @@ export function CommunityScreen() {
     [posts]
   );
 
-  // 处理搜索输入
-  const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-  }, []);
-
-  // 处理搜索提交
-  const handleSearchSubmit = useCallback(
+  // 处理搜索
+  const handleSearch = useCallback(
     async (query: string) => {
       if (!query.trim()) {
         loadPosts(true);
@@ -200,17 +224,22 @@ export function CommunityScreen() {
     [loadPosts]
   );
 
-  // 处理创建帖子
+  // 处理创建帖子 - 跳转到独立页面
   const handleCreatePost = useCallback(() => {
-    setEditingPost(null);
-    setIsPostEditorOpen(true);
+    router.push('/(tabs)/forum/create-post');
   }, []);
 
-  // 处理帖子编辑成功
-  const handlePostEditorSuccess = useCallback(() => {
-    setIsPostEditorOpen(false);
-    loadPosts(true);
-  }, [loadPosts]);
+  // 处理作者点击
+  const handleAuthorPress = useCallback((author: PostCardData['author']) => {
+    setSelectedUser({
+      id: author.id,
+      username: author.name,
+      avatar: author.avatar,
+      postsCount: 0,
+      followersCount: 0,
+      followingCount: 0,
+    });
+  }, []);
 
   // 处理帖子删除
   const handlePostDeleted = useCallback(() => {
@@ -221,45 +250,46 @@ export function CommunityScreen() {
   // 处理从详情页编辑
   const handleEditFromDetail = useCallback((post: Post) => {
     setSelectedPost(null);
-    setEditingPost(post);
-    setIsPostEditorOpen(true);
+    router.push({
+      pathname: '/(tabs)/forum/create-post',
+      params: { editPostId: post.id.toString() },
+    });
   }, []);
 
   return (
     <ScreenContainer>
       <StatusBar barStyle="dark-content" />
 
-      <HeaderContainer paddingTop={insets.top + 8}>
-        <SearchSection>
-          <GlassSearchBar
-            value={searchQuery}
-            onChangeText={handleSearch}
-            onSubmit={handleSearchSubmit}
-            placeholder="搜索话题、标签..."
-          />
-        </SearchSection>
-
-        <TabsSection>
-          <CategoryTabs
-            categories={CATEGORIES}
-            activeId={activeCategory}
-            onSelect={setActiveCategory}
-          />
-        </TabsSection>
-      </HeaderContainer>
-
-      <MasonryFeed
-        data={cardData}
-        onPostPress={handlePostPress}
-        onLikePress={handleLikePress}
-        onRefresh={() => loadPosts(true)}
-        isLoading={isLoading}
-        isRefreshing={isRefreshing}
+      <ForumHeader
+        title="社区"
+        unreadCount={unreadNotifications}
+        onSearch={handleSearch}
+        paddingTop={insets.top}
       />
+
+      <TabsSection>
+        <CategoryTabs
+          categories={CATEGORIES}
+          activeId={activeCategory}
+          onSelect={setActiveCategory}
+        />
+      </TabsSection>
+
+      <FeedContainer>
+        <MasonryFeed
+          data={cardData}
+          onPostPress={handlePostPress}
+          onLikePress={handleLikePress}
+          onAuthorPress={handleAuthorPress}
+          onRefresh={() => loadPosts(true)}
+          isLoading={isLoading}
+          isRefreshing={isRefreshing}
+        />
+      </FeedContainer>
 
       <CreatePostFAB onPress={handleCreatePost} />
 
-      <PostDetailModal
+      <PostDetailScreen
         visible={!!selectedPost}
         post={selectedPost}
         onClose={() => setSelectedPost(null)}
@@ -267,11 +297,10 @@ export function CommunityScreen() {
         onPostDeleted={handlePostDeleted}
       />
 
-      <PostEditorModal
-        visible={isPostEditorOpen}
-        editingPost={editingPost}
-        onClose={() => setIsPostEditorOpen(false)}
-        onSuccess={handlePostEditorSuccess}
+      <UserProfileModal
+        visible={!!selectedUser}
+        user={selectedUser}
+        onClose={() => setSelectedUser(null)}
       />
     </ScreenContainer>
   );

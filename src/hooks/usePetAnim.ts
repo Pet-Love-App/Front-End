@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import LottieView from 'lottie-react-native';
 
-export const usePetAnim = (isTalking: boolean) => {
+export const usePetAnim = () => {
   const lottieRef = useRef<LottieView>(null);
 
   useEffect(() => {

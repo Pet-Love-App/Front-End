@@ -11,6 +11,8 @@ import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { primaryScale, neutralScale, infoScale } from '@/src/design-system/tokens';
 import { useThemeStore } from '@/src/store/themeStore';
 import { useUserStore } from '@/src/store/userStore';
+import { usePetStore } from '@/src/hooks/usePetStore';
+import { Switch } from 'react-native';
 
 import { EditProfileModal } from '../components/EditProfileModal';
 import { LogoutButton } from '../components/LogoutButton';
@@ -35,7 +37,8 @@ function SettingItemNew({
   value,
   onPress,
   showArrow = true,
-}: SettingItemNewProps) {
+  rightElement,
+}: SettingItemNewProps & { rightElement?: React.ReactNode }) {
   return (
     <XStack
       paddingVertical="$3.5"
@@ -61,13 +64,19 @@ function SettingItemNew({
           {label}
         </Text>
       </YStack>
-      {value && (
-        <Text fontSize={14} color={neutralScale.neutral8} marginRight="$2">
-          {value}
-        </Text>
-      )}
-      {showArrow && onPress && (
-        <IconSymbol name="chevron.right" size={16} color={neutralScale.neutral6} />
+      {rightElement ? (
+        rightElement
+      ) : (
+        <>
+          {value && (
+            <Text fontSize={14} color={neutralScale.neutral8} marginRight="$2">
+              {value}
+            </Text>
+          )}
+          {showArrow && onPress && (
+            <IconSymbol name="chevron.right" size={16} color={neutralScale.neutral6} />
+          )}
+        </>
       )}
     </XStack>
   );
@@ -142,14 +151,15 @@ function CardContainer({ children }: CardContainerProps) {
   );
 }
 
-export default function SettingsPage() {
+export default function SettingsScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
-  const _router = useRouter();
   const { themeMode, setThemeMode } = useThemeStore();
   const { user } = useUserStore();
+  const { isVisible, setVisible } = usePetStore();
 
-  const [themeModalVisible, setThemeModalVisible] = useState(false);
-  const [profileModalVisible, setProfileModalVisible] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
 
   const getThemeLabel = () => {
     switch (themeMode) {
@@ -201,25 +211,40 @@ export default function SettingsPage() {
             iconColor={primaryScale.primary8}
             label="编辑个人资料"
             value="用户名 / 头像"
-            onPress={() => setProfileModalVisible(true)}
+            onPress={() => setIsEditProfileOpen(true)}
           />
         </CardContainer>
 
         {/* 外观设置 */}
         <SectionTitle title="外观设置" />
-        <CardContainer>
+        <YStack marginTop="$4" backgroundColor="white" borderRadius={16} overflow="hidden">
           <SettingItemNew
             icon="moon.fill"
-            iconBgColor={infoScale.info2}
-            iconColor={infoScale.info8}
-            label="主题模式"
-            value={getThemeLabel()}
-            onPress={() => setThemeModalVisible(true)}
+            iconBgColor="#F3E8FF"
+            iconColor="#9333EA"
+            label="深色模式"
+            value={themeMode === 'system' ? '跟随系统' : themeMode === 'dark' ? '已开启' : '已关闭'}
+            onPress={() => setIsThemeSelectorOpen(true)}
           />
-        </CardContainer>
+          <SettingItemNew
+            icon="pawprint.fill"
+            iconBgColor="#FFF4E6"
+            iconColor="#FF9500"
+            label="桌面宠物"
+            showArrow={false}
+            rightElement={
+              <Switch
+                value={isVisible}
+                onValueChange={setVisible}
+                trackColor={{ false: neutralScale.neutral4, true: '#FF9500' }}
+                thumbColor={'white'}
+              />
+            }
+          />
+        </YStack>
 
-        {/* 关于 */}
-        <SectionTitle title="关于" />
+        {/* 关于与帮助 */}
+        <SectionTitle title="关于与帮助" />
         <CardContainer>
           <InfoRow label="应用版本" value="1.0.0" />
           <InfoRow label="开发团队" value="Pet Love Team" isLast />
@@ -243,13 +268,13 @@ export default function SettingsPage() {
 
       {/* Modals */}
       <ThemeSelectorModal
-        open={themeModalVisible}
-        onOpenChange={setThemeModalVisible}
+        open={isThemeSelectorOpen}
+        onOpenChange={setIsThemeSelectorOpen}
         currentTheme={themeMode}
         onThemeChange={setThemeMode}
       />
 
-      <EditProfileModal open={profileModalVisible} onOpenChange={setProfileModalVisible} />
+      <EditProfileModal open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen} />
     </YStack>
   );
 }

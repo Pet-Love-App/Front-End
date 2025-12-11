@@ -152,11 +152,11 @@ export function DetailScreen() {
           headerStyle: {
             backgroundColor: '#fff',
           },
-          headerShadowVisible: true,
+          headerShadowVisible: false,
         }}
       />
 
-      <YStack flex={1} position="relative">
+      <YStack flex={1} position="relative" backgroundColor="white">
         {/* 背景渐变 */}
         <YStack position="absolute" width="100%" height="100%">
           <LinearGradient

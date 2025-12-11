@@ -692,6 +692,12 @@ class SupabaseForumService {
               id,
               username,
               avatar_url
+            ),
+            post_media (
+              id,
+              media_type,
+              file_url,
+              created_at
             )
           )
         `
@@ -710,7 +716,7 @@ class SupabaseForumService {
             .filter((fav) => fav.post) // 过滤掉已删除的帖子
             .map((fav) => {
               const post = fav.post!;
-              return convertKeysToCamel({
+              const convertedPost = convertKeysToCamel({
                 ...post,
                 author: post.author
                   ? {
@@ -720,6 +726,12 @@ class SupabaseForumService {
                     }
                   : null,
               }) as Post;
+              return {
+                ...convertedPost,
+                media: post.post_media
+                  ? post.post_media.map((m: DbPostMedia) => convertKeysToCamel(m))
+                  : [],
+              } as Post;
             })
         : [];
 

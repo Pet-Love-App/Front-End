@@ -247,14 +247,28 @@ function PostCardComponent({
           <FooterContainer>
             <Pressable onPress={handleAuthorPress}>
               <AuthorContainer>
-                <Avatar circular size={24}>
-                  <Avatar.Image
-                    source={{
-                      uri: data.author.avatar || 'https://placekitten.com/100/100',
-                    }}
-                  />
-                  <Avatar.Fallback backgroundColor="$backgroundSubtle" />
-                </Avatar>
+                <Stack
+                  width={24}
+                  height={24}
+                  borderRadius={12}
+                  backgroundColor="$color5"
+                  alignItems="center"
+                  justifyContent="center"
+                  overflow="hidden"
+                >
+                  {data.author.avatar ? (
+                    <Image
+                      source={{ uri: data.author.avatar }}
+                      width={24}
+                      height={24}
+                      borderRadius={12}
+                    />
+                  ) : (
+                    <Text fontSize={10} fontWeight="600" color="white">
+                      {data.author.name?.charAt(0)?.toUpperCase() || '?'}
+                    </Text>
+                  )}
+                </Stack>
                 <AuthorName>{data.author.name}</AuthorName>
                 {data.author.hasReputationBadge && (
                   <BadgeIcon>

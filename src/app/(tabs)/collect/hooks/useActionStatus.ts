@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { supabaseCatfoodService } from '@/src/lib/supabase';
+import { appEvents, APP_EVENTS } from '@/src/utils';
 
 interface ActionStatus {
   liked: boolean;
@@ -93,6 +94,8 @@ export function useActionStatus(catfoodId: string): UseActionStatusReturn {
           liked: result.data!.liked,
           likeCount: result.data!.likes,
         }));
+        // 发送点赞变更事件
+        appEvents.emit(APP_EVENTS.LIKE_CHANGED, { catfoodId, liked: result.data!.liked });
       }
     } catch (error) {
       console.error('点赞失败:', error);
@@ -121,10 +124,13 @@ export function useActionStatus(catfoodId: string): UseActionStatusReturn {
 
       if (result.data) {
         // 同步真实状态 - SQL 函数返回 is_favorited 字段
+        const finalFavorited = result.data!.is_favorited ?? newFavorited;
         setStatus((prev) => ({
           ...prev,
-          favorited: result.data!.is_favorited ?? newFavorited,
+          favorited: finalFavorited,
         }));
+        // 发送收藏变更事件
+        appEvents.emit(APP_EVENTS.FAVORITE_CHANGED, { catfoodId, favorited: finalFavorited });
       }
     } catch (error) {
       console.error('收藏失败:', error);

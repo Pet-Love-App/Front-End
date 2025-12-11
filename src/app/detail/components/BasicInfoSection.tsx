@@ -1,7 +1,17 @@
+/**
+ * 基本信息区域组件 - 现代购物App风格
+ * 精美的产品数据展示
+ */
 import { LinearGradient } from 'expo-linear-gradient';
-import { Card, Separator, Text, XStack, YStack } from 'tamagui';
+import { Text, XStack, YStack } from 'tamagui';
 import { IconSymbol, type SymbolName } from '@/src/components/ui/IconSymbol';
-import { warningScale, infoScale, errorScale, neutralScale } from '@/src/design-system/tokens';
+import {
+  warningScale,
+  infoScale,
+  errorScale,
+  neutralScale,
+  primaryScale,
+} from '@/src/design-system/tokens';
 
 interface BasicInfoSectionProps {
   brand: string;
@@ -10,57 +20,69 @@ interface BasicInfoSectionProps {
   catfoodId: number;
 }
 
-interface StatItemProps {
+interface StatCardProps {
   icon: SymbolName;
+  iconBgColor: string;
   iconColor: string;
   label: string;
   value: string;
-  gradientColors: [string, string];
-  accentColor: string;
+  unit?: string;
+  valueColor: string;
+  bgGradient: readonly [string, string];
 }
 
-function StatItem({ icon, iconColor, label, value, gradientColors, accentColor }: StatItemProps) {
+function StatCard({
+  icon,
+  iconBgColor,
+  iconColor,
+  label,
+  value,
+  unit,
+  valueColor,
+  bgGradient,
+}: StatCardProps) {
   return (
-    <YStack flex={1} position="relative" borderRadius="$6" overflow="hidden">
-      <YStack position="absolute" width="100%" height="100%">
-        <LinearGradient
-          colors={gradientColors}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{ width: '100%', height: '100%' }}
-        />
-      </YStack>
-
-      <YStack
-        padding="$3"
-        alignItems="center"
-        gap="$2"
-        borderWidth={2}
-        borderColor={accentColor}
-        borderRadius="$6"
+    <YStack flex={1} borderRadius={16} overflow="hidden">
+      <LinearGradient
+        colors={bgGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={{
+          padding: 16,
+          alignItems: 'center',
+          gap: 10,
+          borderRadius: 16,
+        }}
       >
+        {/* 图标容器 */}
         <YStack
-          width={44}
-          height={44}
-          borderRadius="$8"
-          backgroundColor="white"
-          borderWidth={2}
-          borderColor={accentColor}
+          width={48}
+          height={48}
+          borderRadius={24}
+          backgroundColor={iconBgColor}
           alignItems="center"
           justifyContent="center"
-          flexShrink={0}
         >
           <IconSymbol name={icon} size={24} color={iconColor} />
         </YStack>
 
-        <Text fontSize="$1" color={neutralScale.neutral10} textAlign="center" fontWeight="600">
+        {/* 数值 */}
+        <XStack alignItems="baseline" gap={2}>
+          <Text fontSize={28} fontWeight="900" color={valueColor} letterSpacing={-1}>
+            {value}
+          </Text>
+          {unit && (
+            <Text fontSize={12} fontWeight="600" color={valueColor} opacity={0.7}>
+              {unit}
+            </Text>
+          )}
+        </XStack>
+
+        {/* 标签 */}
+        <Text fontSize={12} color={neutralScale.neutral8} fontWeight="600">
           {label}
         </Text>
-
-        <Text fontSize="$6" fontWeight="900" color={iconColor} letterSpacing={-0.5}>
-          {value}
-        </Text>
-      </YStack>
+      </LinearGradient>
     </YStack>
   );
 }
@@ -69,102 +91,95 @@ export function BasicInfoSection({ brand, score, countNum }: BasicInfoSectionPro
   const likeCount = countNum || 0;
 
   return (
-    <Card
-      padding="$4"
+    <YStack
       marginHorizontal="$3"
       marginBottom="$3"
+      borderRadius={20}
       backgroundColor="white"
-      borderRadius="$6"
+      overflow="hidden"
       borderWidth={1}
       borderColor={neutralScale.neutral3}
     >
-      <YStack gap="$4">
-        <XStack alignItems="center" gap="$2.5">
-          <YStack
-            padding="$2"
-            borderRadius="$10"
-            backgroundColor={infoScale.info2}
-            borderWidth={2}
-            borderColor={infoScale.info6}
-          >
-            <IconSymbol name="info.circle.fill" size={24} color={infoScale.info9} />
-          </YStack>
-          <YStack flex={1}>
-            <Text fontSize="$6" fontWeight="800" color="$foreground" letterSpacing={-0.5}>
-              基本信息
-            </Text>
-            <Text fontSize="$2" color={neutralScale.neutral9} fontWeight="500" marginTop="$1">
-              Basic Information
-            </Text>
-          </YStack>
-        </XStack>
-
-        <Separator borderColor={neutralScale.neutral3} />
-
-        <XStack
-          padding="$4"
-          backgroundColor={neutralScale.neutral1}
-          borderRadius="$5"
+      {/* 品牌信息 */}
+      <XStack
+        padding="$4"
+        alignItems="center"
+        gap="$3"
+        borderBottomWidth={1}
+        borderBottomColor={neutralScale.neutral2}
+      >
+        <YStack
+          width={48}
+          height={48}
+          borderRadius={24}
+          backgroundColor={primaryScale.primary2}
           alignItems="center"
-          gap="$3"
-          borderWidth={1.5}
-          borderColor={neutralScale.neutral4}
+          justifyContent="center"
         >
-          <YStack
-            padding="$2"
-            borderRadius="$8"
-            backgroundColor="white"
-            borderWidth={1.5}
-            borderColor={neutralScale.neutral5}
-          >
-            <IconSymbol name="building.2.fill" size={22} color={neutralScale.neutral10} />
-          </YStack>
-          <YStack flex={1}>
-            <Text fontSize="$2" color={neutralScale.neutral9} fontWeight="500" marginBottom="$1">
-              品牌名称
-            </Text>
-            <Text fontSize="$5" fontWeight="800" color="$foreground" letterSpacing={-0.3}>
-              {brand || '未知品牌'}
-            </Text>
-          </YStack>
-        </XStack>
+          <IconSymbol name="building.2.fill" size={22} color={primaryScale.primary8} />
+        </YStack>
+        <YStack flex={1} gap={2}>
+          <Text fontSize={11} color={neutralScale.neutral8} fontWeight="500">
+            品牌
+          </Text>
+          <Text fontSize="$5" fontWeight="800" color={neutralScale.neutral12} letterSpacing={-0.3}>
+            {brand || '未知品牌'}
+          </Text>
+        </YStack>
+        <YStack
+          backgroundColor={primaryScale.primary2}
+          paddingHorizontal="$3"
+          paddingVertical="$1.5"
+          borderRadius={20}
+        >
+          <Text fontSize={11} fontWeight="700" color={primaryScale.primary9}>
+            官方认证
+          </Text>
+        </YStack>
+      </XStack>
 
-        <Separator borderColor={neutralScale.neutral3} />
-
-        <YStack gap="$2">
-          <Text fontSize="$3" color={neutralScale.neutral10} fontWeight="600" marginBottom="$1">
+      {/* 产品数据统计 */}
+      <YStack padding="$4" gap="$4">
+        <XStack alignItems="center" gap="$2">
+          <YStack width={4} height={16} borderRadius={2} backgroundColor={primaryScale.primary7} />
+          <Text fontSize="$4" fontWeight="700" color={neutralScale.neutral11}>
             产品数据
           </Text>
-          <XStack gap="$3">
-            <StatItem
-              icon="star.fill"
-              iconColor={warningScale.warning8}
-              label="综合评分"
-              value={score ? score.toFixed(1) : '0.0'}
-              gradientColors={[warningScale.warning2, warningScale.warning3]}
-              accentColor={warningScale.warning5}
-            />
+        </XStack>
 
-            <StatItem
-              icon="person.2.fill"
-              iconColor={infoScale.info8}
-              label="评价人数"
-              value={`${countNum || 0}`}
-              gradientColors={[infoScale.info2, infoScale.info3]}
-              accentColor={infoScale.info5}
-            />
+        <XStack gap="$3">
+          <StatCard
+            icon="star.fill"
+            iconBgColor={warningScale.warning3}
+            iconColor={warningScale.warning8}
+            label="综合评分"
+            value={score ? score.toFixed(1) : '0.0'}
+            valueColor={warningScale.warning9}
+            bgGradient={[warningScale.warning1, '#FFFFFF']}
+          />
 
-            <StatItem
-              icon="heart.fill"
-              iconColor={errorScale.error8}
-              label="点赞数量"
-              value={`${likeCount}`}
-              gradientColors={[errorScale.error2, errorScale.error3]}
-              accentColor={errorScale.error5}
-            />
-          </XStack>
-        </YStack>
+          <StatCard
+            icon="person.2.fill"
+            iconBgColor={infoScale.info3}
+            iconColor={infoScale.info8}
+            label="评价人数"
+            value={`${countNum || 0}`}
+            unit="人"
+            valueColor={infoScale.info9}
+            bgGradient={[infoScale.info1, '#FFFFFF']}
+          />
+
+          <StatCard
+            icon="heart.fill"
+            iconBgColor={errorScale.error3}
+            iconColor={errorScale.error7}
+            label="获赞数量"
+            value={`${likeCount}`}
+            valueColor={errorScale.error8}
+            bgGradient={[errorScale.error1, '#FFFFFF']}
+          />
+        </XStack>
       </YStack>
-    </Card>
+    </YStack>
   );
 }

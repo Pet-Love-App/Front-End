@@ -1,8 +1,24 @@
-import { Card, Separator, Text, XStack, YStack } from 'tamagui';
+/**
+ * CatFoodCard - 猫粮卡片组件
+ *
+ * 采用现代购物App风格设计：
+ * - 清晰的视觉层次
+ * - 精致的微交互
+ * - 优雅的排名展示
+ */
+
+import { Image, Pressable, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { ProductImage } from '@/src/components/ui/OptimizedImage';
 import type { CatFood } from '@/src/types/catFood';
-import { rankColors, tagColors } from '@/src/design-system/tokens';
+import {
+  primaryScale,
+  neutralScale,
+  warningScale,
+  errorScale,
+  successScale,
+} from '@/src/design-system/tokens';
 
 interface CatFoodCardProps {
   catfood: CatFood;
@@ -13,11 +29,46 @@ interface CatFoodCardProps {
   showNutritionInfo?: boolean;
 }
 
-const getRankStyle = (rank: number) => {
-  if (rank === 0) return { bg: rankColors.gold[0], text: 'white' };
-  if (rank === 1) return { bg: rankColors.silver[0], text: '#333' };
-  if (rank === 2) return { bg: rankColors.bronze[0], text: 'white' };
-  return { bg: rankColors.normal[0], text: '#666' };
+// 排名徽章配置
+const getRankConfig = (rank: number) => {
+  if (rank === 0) {
+    return {
+      gradient: ['#FFD700', '#FFA500'] as const,
+      textColor: '#FFFFFF',
+      icon: 'crown.fill' as const,
+      bgColor: '#FFF9E6',
+      borderColor: '#FFD700',
+      label: '冠军',
+    };
+  }
+  if (rank === 1) {
+    return {
+      gradient: ['#E8E8E8', '#B0B0B0'] as const,
+      textColor: '#FFFFFF',
+      icon: 'medal.fill' as const,
+      bgColor: '#F8F8F8',
+      borderColor: '#C0C0C0',
+      label: '亚军',
+    };
+  }
+  if (rank === 2) {
+    return {
+      gradient: ['#DEB887', '#CD853F'] as const,
+      textColor: '#FFFFFF',
+      icon: 'medal.fill' as const,
+      bgColor: '#FDF5EE',
+      borderColor: '#CD853F',
+      label: '季军',
+    };
+  }
+  return {
+    gradient: [neutralScale.neutral4, neutralScale.neutral5] as const,
+    textColor: neutralScale.neutral11,
+    icon: 'number' as const,
+    bgColor: '#FFFFFF',
+    borderColor: neutralScale.neutral4,
+    label: '',
+  };
 };
 
 export function CatFoodCard({
@@ -29,154 +80,239 @@ export function CatFoodCard({
   showNutritionInfo = true,
 }: CatFoodCardProps) {
   const handlePress = () => onPress?.(catfood);
-
-  const handleImagePress = (e: { stopPropagation: () => void }) => {
-    e.stopPropagation();
+  const handleImagePress = () => {
     if (catfood.imageUrl && onImagePress) {
       onImagePress(catfood.imageUrl);
     }
   };
 
-  const rankStyle = getRankStyle(index);
+  const rankConfig = getRankConfig(index);
+  const isTopThree = index < 3;
 
   return (
-    <Card
-      bordered
-      borderColor="$borderColor"
-      backgroundColor="$background"
-      animation="quick"
-      scale={0.95}
-      hoverStyle={{ scale: 0.97 }}
-      pressStyle={{ scale: 0.93 }}
-      marginHorizontal="$2"
-      marginBottom="$3"
-      onPress={handlePress}
-    >
-      <Card.Header padded>
-        <XStack gap="$3" alignItems="center">
-          {/* 排名徽章 */}
-          {showRank && (
-            <YStack
-              width={40}
-              height={40}
-              alignItems="center"
-              justifyContent="center"
-              backgroundColor={rankStyle.bg}
-              borderRadius={9999}
-            >
-              <Text fontSize="$6" fontWeight="bold" color={rankStyle.text}>
-                {index + 1}
-              </Text>
-            </YStack>
-          )}
-
-          {/* 猫粮图片 */}
-          {catfood.imageUrl ? (
-            <YStack
-              onPress={handleImagePress}
-              cursor="pointer"
-              hoverStyle={{ opacity: 0.8 }}
-              pressStyle={{ opacity: 0.6 }}
-            >
-              <ProductImage
-                source={catfood.imageUrl}
-                style={{ width: 80, height: 80 }}
-                borderRadius={8}
-                cachePolicy="memory-disk"
-              />
-            </YStack>
-          ) : (
-            <YStack
-              width={80}
-              height={80}
-              backgroundColor="$backgroundMuted"
-              borderRadius="$4"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Text color="$foregroundSubtle" fontSize="$2">
-                无图片
-              </Text>
-            </YStack>
-          )}
-
-          {/* 猫粮信息 */}
-          <YStack flex={1} gap="$2">
-            <Text fontSize="$5" fontWeight="bold" color="$foreground" numberOfLines={2}>
-              {catfood.name}
-            </Text>
-
-            <Text fontSize="$3" color="$foregroundMuted">
-              {catfood.brand || '未知品牌'}
-            </Text>
-
-            {/* 评分和点赞 */}
-            <XStack alignItems="center" gap="$3" flexWrap="wrap">
-              <XStack alignItems="center" gap="$1">
-                <IconSymbol name="star.fill" size={14} color="$warning7" />
-                <Text fontSize="$3" fontWeight="600" color="$foreground">
-                  {catfood.score.toFixed(1)}
-                </Text>
-                <Text fontSize="$2" color="$foregroundSubtle">
-                  ({catfood.countNum})
-                </Text>
-              </XStack>
-              <XStack alignItems="center" gap="$1">
-                <IconSymbol name="heart.fill" size={14} color="$error7" />
-                <Text fontSize="$3" fontWeight="600" color="$error7">
-                  {catfood.like_count || 0}
-                </Text>
-              </XStack>
-            </XStack>
-
-            {/* 标签 */}
-            {catfood.tags && catfood.tags.length > 0 && (
-              <XStack gap="$1.5" flexWrap="wrap">
-                {catfood.tags.slice(0, 3).map((tag, idx) => (
-                  <YStack
-                    key={idx}
-                    paddingHorizontal="$2"
-                    paddingVertical="$1"
-                    backgroundColor={tagColors[idx % tagColors.length]}
-                    borderRadius={9999}
-                  >
-                    <Text fontSize="$1" fontWeight="500" color="#333">
-                      {tag}
+    <Pressable onPress={handlePress}>
+      {({ pressed }) => (
+        <YStack
+          backgroundColor="$background"
+          marginHorizontal="$3"
+          marginBottom="$3"
+          borderRadius={16}
+          borderWidth={isTopThree ? 1.5 : 1}
+          borderColor={isTopThree ? rankConfig.borderColor : neutralScale.neutral3}
+          overflow="hidden"
+          opacity={pressed ? 0.96 : 1}
+          scale={pressed ? 0.985 : 1}
+          animation="quick"
+        >
+          {/* 主内容区 */}
+          <XStack padding="$3.5" gap="$3">
+            {/* 左侧：排名徽章 */}
+            {showRank && (
+              <YStack alignItems="center" gap="$1.5" width={50}>
+                <YStack
+                  width={46}
+                  height={46}
+                  borderRadius={23}
+                  overflow="hidden"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <LinearGradient
+                    colors={rankConfig.gradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  {isTopThree ? (
+                    <IconSymbol name={rankConfig.icon} size={22} color={rankConfig.textColor} />
+                  ) : (
+                    <Text fontSize="$5" fontWeight="900" color={rankConfig.textColor}>
+                      {index + 1}
                     </Text>
-                  </YStack>
-                ))}
-              </XStack>
+                  )}
+                </YStack>
+                {isTopThree && (
+                  <Text fontSize={10} fontWeight="800" color={rankConfig.borderColor}>
+                    {rankConfig.label}
+                  </Text>
+                )}
+              </YStack>
             )}
-          </YStack>
-        </XStack>
-      </Card.Header>
 
-      {/* 营养信息 */}
-      {showNutritionInfo && (catfood.ingredient?.length > 0 || catfood.percentage) && (
-        <>
-          <Separator borderColor="$borderColor" />
-          <Card.Footer padded>
-            <XStack gap="$3" alignItems="center">
-              {catfood.ingredient?.length > 0 && (
-                <XStack alignItems="center" gap="$1">
-                  <IconSymbol name="checkmark.seal.fill" size={14} color="$success7" />
-                  <Text fontSize="$2" color="$success7">
-                    已录入营养成分
+            {/* 中间：产品图片 */}
+            <Pressable onPress={handleImagePress}>
+              <YStack
+                width={90}
+                height={90}
+                borderRadius={12}
+                overflow="hidden"
+                backgroundColor={neutralScale.neutral2}
+                borderWidth={1}
+                borderColor={neutralScale.neutral3}
+              >
+                {catfood.imageUrl ? (
+                  <Image
+                    source={{ uri: catfood.imageUrl }}
+                    style={{ width: '100%', height: '100%' }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <YStack flex={1} alignItems="center" justifyContent="center">
+                    <IconSymbol name="photo" size={32} color={neutralScale.neutral5} />
+                  </YStack>
+                )}
+              </YStack>
+            </Pressable>
+
+            {/* 右侧：产品信息 */}
+            <YStack flex={1} gap="$2" justifyContent="space-between">
+              {/* 名称 */}
+              <Text
+                fontSize="$4"
+                fontWeight="700"
+                color="$foreground"
+                numberOfLines={2}
+                lineHeight={22}
+              >
+                {catfood.name}
+              </Text>
+
+              {/* 品牌标签 */}
+              <XStack alignItems="center">
+                <YStack
+                  backgroundColor={primaryScale.primary2}
+                  paddingHorizontal="$2"
+                  paddingVertical={4}
+                  borderRadius={6}
+                  borderWidth={1}
+                  borderColor={primaryScale.primary4}
+                >
+                  <Text fontSize={11} fontWeight="600" color={primaryScale.primary10}>
+                    {catfood.brand || '未知品牌'}
+                  </Text>
+                </YStack>
+              </XStack>
+
+              {/* 评分和点赞 */}
+              <XStack alignItems="center" gap="$3">
+                {/* 评分 */}
+                <XStack
+                  alignItems="center"
+                  gap="$1"
+                  backgroundColor={warningScale.warning1}
+                  paddingHorizontal="$2"
+                  paddingVertical={4}
+                  borderRadius={6}
+                >
+                  <IconSymbol name="star.fill" size={13} color={warningScale.warning6} />
+                  <Text fontSize={13} fontWeight="800" color={warningScale.warning8}>
+                    {catfood.score?.toFixed(1) || '0.0'}
+                  </Text>
+                  <Text fontSize={10} color={neutralScale.neutral8}>
+                    ({catfood.countNum || 0})
                   </Text>
                 </XStack>
-              )}
-              {catfood.percentage && (
+
+                {/* 点赞 */}
                 <XStack alignItems="center" gap="$1">
-                  <IconSymbol name="chart.line.uptrend.xyaxis" size={14} color="$info7" />
-                  <Text fontSize="$2" color="$info7">
-                    可查看营养分析
+                  <IconSymbol name="heart.fill" size={13} color={errorScale.error5} />
+                  <Text fontSize={13} fontWeight="700" color={errorScale.error7}>
+                    {catfood.like_count || 0}
                   </Text>
                 </XStack>
+              </XStack>
+            </YStack>
+          </XStack>
+
+          {/* 底部信息区：标签 + 营养状态 */}
+          {((catfood.tags && catfood.tags.length > 0) ||
+            (showNutritionInfo && (catfood.ingredient?.length > 0 || catfood.percentage))) && (
+            <YStack
+              paddingHorizontal="$3.5"
+              paddingBottom="$3"
+              paddingTop="$1"
+              gap="$2"
+              borderTopWidth={1}
+              borderTopColor={neutralScale.neutral2}
+            >
+              {/* 标签 */}
+              {catfood.tags && catfood.tags.length > 0 && (
+                <XStack gap="$1.5" flexWrap="wrap">
+                  {catfood.tags.slice(0, 4).map((tag, idx) => (
+                    <YStack
+                      key={idx}
+                      paddingHorizontal="$2"
+                      paddingVertical={3}
+                      backgroundColor={
+                        idx === 0
+                          ? `${primaryScale.primary3}80`
+                          : idx === 1
+                            ? `${warningScale.warning2}80`
+                            : `${neutralScale.neutral3}80`
+                      }
+                      borderRadius={10}
+                    >
+                      <Text
+                        fontSize={10}
+                        fontWeight="600"
+                        color={
+                          idx === 0
+                            ? primaryScale.primary10
+                            : idx === 1
+                              ? warningScale.warning10
+                              : neutralScale.neutral10
+                        }
+                      >
+                        #{tag}
+                      </Text>
+                    </YStack>
+                  ))}
+                </XStack>
               )}
-            </XStack>
-          </Card.Footer>
-        </>
+
+              {/* 营养信息标签 */}
+              {showNutritionInfo && (catfood.ingredient?.length > 0 || catfood.percentage) && (
+                <XStack gap="$2">
+                  {catfood.ingredient?.length > 0 && (
+                    <XStack
+                      alignItems="center"
+                      gap="$1"
+                      backgroundColor={successScale.success1}
+                      paddingHorizontal="$2"
+                      paddingVertical={4}
+                      borderRadius={6}
+                    >
+                      <IconSymbol
+                        name="checkmark.seal.fill"
+                        size={12}
+                        color={successScale.success7}
+                      />
+                      <Text fontSize={10} fontWeight="600" color={successScale.success8}>
+                        已录入营养成分
+                      </Text>
+                    </XStack>
+                  )}
+                  {catfood.percentage && (
+                    <XStack
+                      alignItems="center"
+                      gap="$1"
+                      backgroundColor="#EFF6FF"
+                      paddingHorizontal="$2"
+                      paddingVertical={4}
+                      borderRadius={6}
+                    >
+                      <IconSymbol name="chart.line.uptrend.xyaxis" size={12} color="#2563EB" />
+                      <Text fontSize={10} fontWeight="600" color="#1D4ED8">
+                        可查看分析
+                      </Text>
+                    </XStack>
+                  )}
+                </XStack>
+              )}
+            </YStack>
+          )}
+        </YStack>
       )}
-    </Card>
+    </Pressable>
   );
 }

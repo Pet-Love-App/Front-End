@@ -64,117 +64,107 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
   }, [likeLoading, toggleLike, animateButton, likeScale]);
 
   return (
-    <>
-      {/* 占位防止内容被遮挡 */}
-      <YStack height={80 + Math.max(insets.bottom, 16)} />
+    <YStack
+      position="absolute"
+      bottom={0}
+      left={0}
+      right={0}
+      backgroundColor="$background"
+      borderTopWidth={1}
+      borderColor="$borderColor"
+      paddingBottom={Math.max(insets.bottom, 16)}
+    >
+      <Separator />
 
-      {/* 固定底部操作栏 */}
-      <YStack
-        position="absolute"
-        bottom={0}
-        left={0}
-        right={0}
-        backgroundColor="$background"
-        borderTopWidth={1}
-        borderColor="$borderColor"
-        paddingBottom={Math.max(insets.bottom, 16)}
+      <XStack
+        paddingHorizontal="$5"
+        paddingTop="$4"
+        gap="$4"
+        alignItems="center"
+        justifyContent="space-evenly"
       >
-        <Separator />
-
-        <XStack
-          paddingHorizontal="$5"
-          paddingTop="$4"
-          gap="$4"
-          alignItems="center"
-          justifyContent="space-evenly"
-        >
-          {/* 收藏按钮 */}
-          <YStack flex={1}>
-            <Button
-              height={52}
-              backgroundColor={favorited ? warningScale.warning8 : 'transparent'}
-              borderWidth={2}
-              borderColor={favorited ? warningScale.warning8 : neutralScale.neutral6}
-              borderRadius="$4"
-              onPress={handleFavorite}
-              disabled={favoriteLoading}
-              pressStyle={{
-                scale: 0.97,
-                backgroundColor: favorited ? warningScale.warning9 : neutralScale.neutral2,
-              }}
-              icon={
-                <Animated.View style={{ transform: [{ scale: favoriteScale }] }}>
-                  <IconSymbol
-                    name={favorited ? 'star.fill' : 'star'}
-                    size={24}
-                    color={favorited ? 'white' : neutralScale.neutral10}
-                  />
-                </Animated.View>
-              }
+        {/* 收藏按钮 */}
+        <YStack flex={1}>
+          <Button
+            height={52}
+            backgroundColor={favorited ? warningScale.warning8 : 'transparent'}
+            borderWidth={2}
+            borderColor={favorited ? warningScale.warning8 : neutralScale.neutral6}
+            borderRadius="$4"
+            onPress={handleFavorite}
+            disabled={favoriteLoading}
+            pressStyle={{
+              scale: 0.97,
+              backgroundColor: favorited ? warningScale.warning9 : neutralScale.neutral2,
+            }}
+            icon={
+              <Animated.View style={{ transform: [{ scale: favoriteScale }] }}>
+                <IconSymbol
+                  name={favorited ? 'star.fill' : 'star'}
+                  size={24}
+                  color={favorited ? 'white' : neutralScale.neutral10}
+                />
+              </Animated.View>
+            }
+          >
+            <Text
+              color={favorited ? 'white' : neutralScale.neutral10}
+              fontSize="$5"
+              fontWeight="700"
             >
-              <Text
-                color={favorited ? 'white' : neutralScale.neutral10}
-                fontSize="$5"
-                fontWeight="700"
-              >
-                {favoriteLoading ? '处理中...' : favorited ? '已收藏' : '收藏'}
-              </Text>
-            </Button>
-          </YStack>
+              {favoriteLoading ? '处理中...' : favorited ? '已收藏' : '收藏'}
+            </Text>
+          </Button>
+        </YStack>
 
-          {/* 点赞按钮 */}
-          <YStack flex={1}>
-            <Button
-              height={52}
-              backgroundColor={liked ? errorScale.error8 : 'transparent'}
-              borderWidth={2}
-              borderColor={liked ? errorScale.error8 : neutralScale.neutral6}
-              borderRadius="$4"
-              onPress={handleLike}
-              disabled={likeLoading}
-              pressStyle={{
-                scale: 0.97,
-                backgroundColor: liked ? errorScale.error9 : neutralScale.neutral2,
-              }}
-              icon={
-                <Animated.View style={{ transform: [{ scale: likeScale }] }}>
-                  <IconSymbol
-                    name={liked ? 'heart.fill' : 'heart'}
-                    size={24}
-                    color={liked ? 'white' : neutralScale.neutral10}
-                  />
-                </Animated.View>
-              }
-            >
-              <XStack alignItems="center" gap="$2">
-                <Text
+        {/* 点赞按钮 */}
+        <YStack flex={1}>
+          <Button
+            height={52}
+            backgroundColor={liked ? errorScale.error8 : 'transparent'}
+            borderWidth={2}
+            borderColor={liked ? errorScale.error8 : neutralScale.neutral6}
+            borderRadius="$4"
+            onPress={handleLike}
+            disabled={likeLoading}
+            pressStyle={{
+              scale: 0.97,
+              backgroundColor: liked ? errorScale.error9 : neutralScale.neutral2,
+            }}
+            icon={
+              <Animated.View style={{ transform: [{ scale: likeScale }] }}>
+                <IconSymbol
+                  name={liked ? 'heart.fill' : 'heart'}
+                  size={24}
                   color={liked ? 'white' : neutralScale.neutral10}
-                  fontSize="$5"
-                  fontWeight="700"
+                />
+              </Animated.View>
+            }
+          >
+            <XStack alignItems="center" gap="$2">
+              <Text color={liked ? 'white' : neutralScale.neutral10} fontSize="$5" fontWeight="700">
+                {likeLoading ? '处理中...' : liked ? '已点赞' : '点赞'}
+              </Text>
+              {likeCount > 0 && (
+                <YStack
+                  paddingHorizontal="$2"
+                  paddingVertical="$1"
+                  backgroundColor={liked ? 'rgba(255,255,255,0.2)' : neutralScale.neutral3}
+                  borderRadius="$10"
                 >
-                  {likeLoading ? '处理中...' : liked ? '已点赞' : '点赞'}
-                </Text>
-                {likeCount > 0 && (
-                  <YStack
-                    paddingHorizontal="$2"
-                    paddingVertical="$1"
-                    backgroundColor={liked ? 'rgba(255,255,255,0.2)' : neutralScale.neutral3}
-                    borderRadius="$10"
+                  <Text
+                    color={liked ? 'white' : neutralScale.neutral10}
+                    fontSize="$3"
+                    fontWeight="bold"
                   >
-                    <Text
-                      color={liked ? 'white' : neutralScale.neutral10}
-                      fontSize="$3"
-                      fontWeight="bold"
-                    >
-                      {likeCount}
-                    </Text>
-                  </YStack>
-                )}
-              </XStack>
-            </Button>
-          </YStack>
-        </XStack>
-      </YStack>
-    </>
+                    {likeCount}
+                  </Text>
+                </YStack>
+              )}
+            </XStack>
+          </Button>
+        </YStack>
+      </XStack>
+    </YStack>
   );
 }

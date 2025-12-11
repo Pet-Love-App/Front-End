@@ -1,28 +1,28 @@
 /**
  * 营养成分饼图 - 可视化展示各营养成分占比
+ * 响应式设计，适配不同屏幕尺寸
  */
-import { Dimensions } from 'react-native';
+import { Dimensions, View } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
-import { Card, Text, YStack } from 'tamagui';
-
-import { neutralScale } from '@/src/design-system/tokens';
+import { Text, XStack, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { useResponsiveLayout } from '@/src/hooks/useResponsiveLayout';
+import { neutralScale, successScale, primaryScale } from '@/src/design-system/tokens';
 
 interface NutritionChartSectionProps {
   percentData: Record<string, number | null>;
 }
 
-// 饼图配色方案
+// 专业饼图配色方案 - 柔和渐变色系
 const CHART_COLORS = [
-  '#E74C3C',
-  '#2ECC71',
-  '#3498DB',
-  '#F1C40F',
-  '#9B59B6',
-  '#1ABC9C',
-  '#E67E22',
-  '#34495E',
-  '#95A5A6',
-  '#2C3E50',
+  '#FF7B54', // 橙红 - 蛋白质
+  '#4CAF50', // 绿色 - 脂肪
+  '#2196F3', // 蓝色 - 碳水
+  '#FFC107', // 金黄 - 纤维
+  '#9C27B0', // 紫色 - 灰分
+  '#00BCD4', // 青色 - 水分
+  '#E91E63', // 粉红 - 其他
+  '#607D8B', // 灰蓝
 ];
 
 // 营养成分名称映射
@@ -58,12 +58,14 @@ function preparePieChartData(percentData: Record<string, number | null>) {
     name: item.name,
     population: parseFloat(item.value.toFixed(1)),
     color: CHART_COLORS[index % CHART_COLORS.length],
-    legendFontColor: neutralScale.neutral9,
-    legendFontSize: 12,
+    legendFontColor: neutralScale.neutral10,
+    legendFontSize: 11,
   }));
 }
 
 export function NutritionChartSection({ percentData }: NutritionChartSectionProps) {
+  const { width: screenWidth, isExtraSmallScreen, isSmallScreen } = useResponsiveLayout();
+
   if (!percentData || typeof percentData !== 'object' || Object.keys(percentData).length === 0) {
     return null;
   }
@@ -71,46 +73,108 @@ export function NutritionChartSection({ percentData }: NutritionChartSectionProp
   const chartData = preparePieChartData(percentData);
   if (chartData.length === 0) return null;
 
-  const screenWidth = Dimensions.get('window').width;
+  // 响应式尺寸计算
+  const chartWidth = screenWidth - 32;
+  const chartHeight = isExtraSmallScreen ? 180 : isSmallScreen ? 200 : 220;
 
   return (
-    <Card
-      padding="$4"
+    <YStack
       marginHorizontal="$3"
       marginBottom="$3"
+      borderRadius={20}
       backgroundColor="white"
-      borderRadius="$5"
-      bordered
+      overflow="hidden"
+      borderWidth={1}
       borderColor={neutralScale.neutral3}
     >
-      <YStack gap="$3">
-        <Text fontSize="$6" fontWeight="600" color="$foreground">
-          营养成分分析
-        </Text>
-        <YStack alignItems="center" marginVertical="$4">
+      {/* 标题栏 */}
+      <XStack
+        padding="$4"
+        alignItems="center"
+        gap="$3"
+        borderBottomWidth={1}
+        borderBottomColor={neutralScale.neutral2}
+      >
+        <YStack
+          width={44}
+          height={44}
+          borderRadius={22}
+          backgroundColor={successScale.success2}
+          alignItems="center"
+          justifyContent="center"
+        >
+          <IconSymbol name="chart.pie.fill" size={22} color={successScale.success7} />
+        </YStack>
+        <YStack flex={1}>
+          <Text fontSize="$5" fontWeight="700" color={neutralScale.neutral12}>
+            营养成分分析
+          </Text>
+          <Text fontSize={11} color={neutralScale.neutral8} marginTop={2}>
+            Nutrition Analysis
+          </Text>
+        </YStack>
+      </XStack>
+
+      {/* 图表区域 */}
+      <YStack padding="$4" gap="$4">
+        {/* 饼图 */}
+        <View style={{ alignItems: 'center' }}>
           <PieChart
             data={chartData}
-            width={screenWidth - 64}
-            height={220}
+            width={chartWidth}
+            height={chartHeight}
             chartConfig={{
               backgroundColor: 'transparent',
-              backgroundGradientFrom: '#fff',
-              backgroundGradientTo: '#fff',
-              color: (opacity = 1) => `rgba(99, 102, 241, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+              backgroundGradientFrom: '#FFFFFF',
+              backgroundGradientTo: '#FFFFFF',
+              color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+              labelColor: () => neutralScale.neutral10,
               strokeWidth: 2,
-              barPercentage: 0.5,
               decimalPlaces: 1,
             }}
             accessor="population"
             backgroundColor="transparent"
-            paddingLeft="15"
+            paddingLeft="0"
+            center={[chartWidth / 4, 0]}
             absolute
-            hasLegend
-            avoidFalseZero
+            hasLegend={false}
           />
+        </View>
+
+        {/* 自定义图例 */}
+        <YStack gap="$2" paddingTop="$2">
+          <XStack flexWrap="wrap" gap="$2" justifyContent="center">
+            {chartData.map((item, index) => (
+              <XStack
+                key={index}
+                alignItems="center"
+                gap="$2"
+                backgroundColor={neutralScale.neutral1}
+                paddingHorizontal="$3"
+                paddingVertical="$2"
+                borderRadius={20}
+                borderWidth={1}
+                borderColor={neutralScale.neutral3}
+              >
+                <View
+                  style={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: 6,
+                    backgroundColor: item.color,
+                  }}
+                />
+                <Text fontSize={12} fontWeight="600" color={neutralScale.neutral10}>
+                  {item.name}
+                </Text>
+                <Text fontSize={12} fontWeight="700" color={primaryScale.primary9}>
+                  {item.population}%
+                </Text>
+              </XStack>
+            ))}
+          </XStack>
         </YStack>
       </YStack>
-    </Card>
+    </YStack>
   );
 }

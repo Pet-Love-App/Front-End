@@ -15,9 +15,9 @@ import { FlatList, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { YStack } from 'tamagui';
+import { AppHeader } from '@/src/components/AppHeader';
 import { CatFoodCard } from '@/src/components/CatFoodCard';
 import { Skeleton } from '@/src/components/lazy';
-import { PageHeader } from '@/src/components/PageHeader';
 import type { CatFood } from '@/src/types/catFood';
 import { useLazyLoad } from '@/src/hooks';
 
@@ -140,19 +140,7 @@ export function RankingScreen() {
   return (
     <YStack flex={1} backgroundColor="$background">
       {/* Header */}
-      <PageHeader
-        title="猫粮排行榜"
-        subtitle="数据驱动的专业评测"
-        icon={{
-          name: 'trophy.fill',
-          size: 26,
-          color: '#FEBE98',
-          backgroundColor: '#FFF5ED',
-          borderColor: '#FFE4D1',
-        }}
-        insets={insets}
-        backgroundColor="$background"
-      />
+      <AppHeader title="猫粮排行榜" insets={insets} />
 
       {/* 图片预览模态框 */}
       <ImagePreviewModal

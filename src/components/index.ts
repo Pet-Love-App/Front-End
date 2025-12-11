@@ -1,4 +1,5 @@
 // 基础组件
+export { AppHeader } from './AppHeader';
 export { BreedSelector } from './BreedSelector';
 export { CatFoodCard } from './CatFoodCard';
 export { ExternalLink } from './ExternalLink';

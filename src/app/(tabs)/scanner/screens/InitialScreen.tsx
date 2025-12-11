@@ -5,7 +5,7 @@ import React from 'react';
 import { ScrollView } from 'react-native';
 import type { EdgeInsets } from 'react-native-safe-area-context';
 import { Button, Text, XStack, YStack } from 'tamagui';
-import { PageHeader } from '@/src/components/PageHeader';
+import { AppHeader } from '@/src/components/AppHeader';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { primaryScale, warningScale, successScale, neutralScale } from '@/src/design-system/tokens';
 
@@ -17,19 +17,8 @@ interface InitialScreenProps {
 export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
   return (
     <YStack flex={1} backgroundColor={neutralScale.neutral1}>
-      {/* Header 区域 */}
-      <PageHeader
-        title="智能扫描"
-        subtitle="AI 成分分析助手"
-        icon={{
-          name: 'camera.metering.center.weighted',
-          size: 26,
-          color: primaryScale.primary7,
-          backgroundColor: primaryScale.primary2,
-          borderColor: primaryScale.primary3,
-        }}
-        insets={insets}
-      />
+      {/* Header 区域 - 统一头部样式 */}
+      <AppHeader title="智能扫描" insets={insets} />
 
       {/* 内容区域 */}
       <ScrollView

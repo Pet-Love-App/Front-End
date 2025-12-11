@@ -5,7 +5,7 @@ import { Input, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 import CollectListItem from '@/src/app/(tabs)/collect/components/collectItem';
 import PostCollectItem from '@/src/app/(tabs)/collect/components/PostCollectItem';
 import { PostDetailScreen } from '@/src/app/(tabs)/forum/components/post-detail';
-import { PageHeader } from '@/src/components/PageHeader';
+import { AppHeader } from '@/src/components/AppHeader';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
@@ -157,17 +157,9 @@ export function CollectScreen() {
       {/* 整合的顶部区域 */}
       <YStack backgroundColor="white" borderBottomWidth={1} borderBottomColor="$gray3">
         {/* 标题栏 */}
-        <PageHeader
+        <AppHeader
           title="我的收藏"
-          icon={{
-            name: 'heart.fill',
-            size: 24,
-            color: colors.tint,
-            backgroundColor: colors.tint + '15',
-            borderColor: colors.tint + '30',
-          }}
           insets={insets}
-          showBorder={false}
           rightElement={
             <XStack
               backgroundColor={colors.tint + '15'}

@@ -11,6 +11,7 @@ import { TamaguiProvider } from 'tamagui';
 
 import { useCustomFonts } from '../hooks/useFonts';
 import { useThemeAwareColorScheme } from '../hooks/useThemeAwareColorScheme';
+import { DesktopPet } from '../components/DesktopPet';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -45,6 +46,7 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="+not-found" options={{ headerShown: false }} />
             </Stack>
+            <DesktopPet />
             <StatusBar
               style={colorScheme === 'dark' ? 'light' : 'dark'}
               translucent

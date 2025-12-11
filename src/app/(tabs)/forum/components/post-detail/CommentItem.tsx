@@ -218,7 +218,7 @@ function CommentItemComponent({
       onAuthorPress({
         id: comment.author.id,
         username: comment.author.username || '匿名用户',
-        avatar: comment.author.avatarUrl,
+        avatar: comment.author.avatarUrl || undefined,
       });
     }
   }, [comment.author, onAuthorPress]);

@@ -78,6 +78,11 @@ export function useActionStatus(catfoodId: string): UseActionStatusReturn {
     const newLiked = !status.liked;
     const newCount = newLiked ? status.likeCount + 1 : status.likeCount - 1;
 
+    console.log('[toggleLike] 开始 - 当前状态:', {
+      liked: status.liked,
+      favorited: status.favorited,
+    });
+
     setStatus((prev) => ({
       ...prev,
       liked: newLiked,
@@ -86,6 +91,7 @@ export function useActionStatus(catfoodId: string): UseActionStatusReturn {
 
     try {
       const result = await supabaseCatfoodService.toggleLike(catfoodId);
+      console.log('[toggleLike] API 返回:', result.data);
 
       if (result.data) {
         // 同步真实状态
@@ -96,6 +102,10 @@ export function useActionStatus(catfoodId: string): UseActionStatusReturn {
         }));
         // 发送点赞变更事件
         appEvents.emit(APP_EVENTS.LIKE_CHANGED, { catfoodId, liked: result.data!.liked });
+        console.log('[toggleLike] 完成 - 新状态:', {
+          liked: result.data!.liked,
+          likeCount: result.data!.likes,
+        });
       }
     } catch (error) {
       console.error('点赞失败:', error);
@@ -114,6 +124,11 @@ export function useActionStatus(catfoodId: string): UseActionStatusReturn {
     // 乐观更新
     const newFavorited = !status.favorited;
 
+    console.log('[toggleFavorite] 开始 - 当前状态:', {
+      liked: status.liked,
+      favorited: status.favorited,
+    });
+
     setStatus((prev) => ({
       ...prev,
       favorited: newFavorited,
@@ -121,6 +136,7 @@ export function useActionStatus(catfoodId: string): UseActionStatusReturn {
 
     try {
       const result = await supabaseCatfoodService.toggleFavorite(catfoodId);
+      console.log('[toggleFavorite] API 返回:', result.data);
 
       if (result.data) {
         // 同步真实状态 - SQL 函数返回 is_favorited 字段
@@ -131,6 +147,7 @@ export function useActionStatus(catfoodId: string): UseActionStatusReturn {
         }));
         // 发送收藏变更事件
         appEvents.emit(APP_EVENTS.FAVORITE_CHANGED, { catfoodId, favorited: finalFavorited });
+        console.log('[toggleFavorite] 完成 - 新状态:', { favorited: finalFavorited });
       }
     } catch (error) {
       console.error('收藏失败:', error);

@@ -8,6 +8,7 @@ import { PostDetailScreen } from '@/src/app/(tabs)/forum/components/post-detail'
 import { AppHeader } from '@/src/components/AppHeader';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { primaryScale, neutralScale } from '@/src/design-system/tokens';
+import type { CatfoodFavorite } from '@/src/types/collect';
 
 import { useCollectData, useCollectFilter, usePostCollectData } from '../hooks';
 
@@ -68,7 +69,15 @@ export function CollectScreen() {
 
   // 渲染猫粮收藏列表
   const renderCatFoodList = () => {
+    console.log('[CollectScreen] 渲染状态:', {
+      isLoading,
+      refreshing,
+      error,
+      filteredCount: filteredFavorites.length,
+    });
+
     if (isLoading && !refreshing) {
+      console.log('[CollectScreen] 显示加载中');
       return (
         <YStack flex={1} alignItems="center" justifyContent="center" paddingVertical="$10">
           <Spinner size="large" color={primaryScale.primary7} />
@@ -80,31 +89,74 @@ export function CollectScreen() {
     }
 
     if (error && !isLoading) {
+      console.log('[CollectScreen] 显示错误状态');
       return renderEmptyState(`${error}\n下拉刷新重试`, 'exclamationmark.triangle');
     }
 
     if (filteredFavorites.length === 0) {
+      console.log('[CollectScreen] 显示空状态');
       return renderEmptyState(
         searchText.trim() ? '未找到匹配的收藏' : '还没有收藏任何猫粮哦~\n快去发现喜欢的猫粮吧！',
         'heart.slash'
       );
     }
 
+    console.log('[CollectScreen] 渲染列表，项目数:', filteredFavorites.length);
+    console.log('[CollectScreen] 第一个收藏项:', filteredFavorites[0]);
+
     return (
       <YStack gap="$3" paddingBottom="$4">
-        {filteredFavorites.map((favorite) => (
-          <YStack
-            key={favorite.id}
-            pressStyle={{ scale: 0.98, opacity: 0.9 }}
-            animation="quick"
-            onPress={() => handlePress(favorite.catfood.id)}
-          >
-            <CollectListItem
-              favorite={favorite}
-              onDelete={() => handleDelete(favorite.id, favorite.catfood.id)}
-            />
-          </YStack>
-        ))}
+        {filteredFavorites.map((favorite, index) => {
+          // API 返回的数据是扁平结构，需要转换
+          const rawData = favorite as any;
+          const catfoodId = rawData.id;
+          const favoriteRecordId = rawData.favoriteId;
+
+          console.log(`[CollectScreen] 渲染第 ${index + 1} 项:`, {
+            favoriteRecordId,
+            catfoodId,
+            catfoodName: rawData.name,
+          });
+
+          // 将扁平结构转换为嵌套结构
+          const normalizedFavorite: CatfoodFavorite = {
+            id: favoriteRecordId?.toString() || '',
+            catfoodId: catfoodId?.toString() || '',
+            catfood: {
+              id: catfoodId?.toString() || '',
+              name: rawData.name || '',
+              brand: rawData.brand || '',
+              imageUrl: rawData.imageUrl,
+              score: rawData.score,
+              barcode: rawData.barcode,
+              crudeProtein: rawData.crudeProtein,
+              crudeFat: rawData.crudeFat,
+              carbohydrates: rawData.carbohydrates,
+              crudeFiber: rawData.crudeFiber,
+              crudeAsh: rawData.crudeAsh,
+              others: rawData.others,
+              percentData: rawData.percentData,
+            },
+            favoritedAt: rawData.favoritedAt,
+            createdAt: rawData.createdAt || rawData.favoritedAt,
+          };
+
+          return (
+            <YStack
+              key={favoriteRecordId || index}
+              pressStyle={{ scale: 0.98, opacity: 0.9 }}
+              animation="quick"
+              onPress={() => handlePress(catfoodId)}
+            >
+              <CollectListItem
+                favorite={normalizedFavorite}
+                onDelete={() =>
+                  handleDelete(favoriteRecordId?.toString() || '', catfoodId?.toString() || '')
+                }
+              />
+            </YStack>
+          );
+        })}
       </YStack>
     );
   };
@@ -280,6 +332,14 @@ export function CollectScreen() {
 
       {/* Tab 内容区域 */}
       <YStack flex={1} backgroundColor={neutralScale.neutral1}>
+        {(() => {
+          console.log('[CollectScreen] 当前Tab:', currentTab);
+          console.log('[CollectScreen] 收藏数据:', {
+            favoritesCount,
+            filteredCount: filteredFavorites.length,
+          });
+          return null;
+        })()}
         {currentTab === 'catfood' ? (
           <ScrollView
             flex={1}

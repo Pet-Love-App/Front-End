@@ -74,6 +74,7 @@ const InputRow = styled(XStack, {
 const StyledInput = styled(Input, {
   name: 'CommentTextInput',
   flex: 1,
+  height: 48,
   backgroundColor: neutralScale.neutral2,
   borderRadius: 24,
   paddingHorizontal: 18,
@@ -90,9 +91,9 @@ const StyledInput = styled(Input, {
 
 const SendButtonContainer = styled(YStack, {
   name: 'SendButton',
-  width: 44,
-  height: 44,
-  borderRadius: 22,
+  width: 48,
+  height: 48,
+  borderRadius: 24,
   backgroundColor: primaryScale.primary7,
   alignItems: 'center',
   justifyContent: 'center',

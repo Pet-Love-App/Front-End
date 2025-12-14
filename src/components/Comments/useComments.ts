@@ -3,9 +3,9 @@
  * 职责：封装评论相关的数据获取和操作逻辑
  */
 import { useCallback, useEffect, useState } from 'react';
-import { Alert } from 'react-native';
 
 import { supabaseCommentService, type Comment } from '@/src/lib/supabase';
+import { showAlert } from '@/src/components/dialogs';
 
 interface UseCommentsOptions {
   targetType: 'catfood' | 'post' | 'report';
@@ -83,7 +83,11 @@ export function useComments({
         console.error('加载评论失败:', error);
         // 出错时设置为空数组，避免 undefined
         setComments([]);
-        Alert.alert('加载失败', '无法加载评论列表');
+        showAlert({
+          title: '加载失败',
+          message: '无法加载评论列表',
+          type: 'error',
+        });
       } finally {
         setIsLoading(false);
         setIsRefreshing(false);

@@ -15,7 +15,7 @@ import { CommentItem } from './CommentItem';
 
 interface CommentListProps {
   comments: Comment[];
-  currentUserId?: number;
+  currentUserId?: string;
   isLoading: boolean;
   hasMore: boolean;
   onLike: (commentId: number) => void;

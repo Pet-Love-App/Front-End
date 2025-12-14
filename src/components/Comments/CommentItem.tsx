@@ -8,7 +8,7 @@ import { primaryScale, errorScale } from '@/src/design-system/tokens';
 
 interface CommentItemProps {
   comment: Comment;
-  currentUserId?: number;
+  currentUserId?: string;
   onLike: (commentId: number) => void;
   onDelete: (commentId: number) => void;
 }
@@ -25,7 +25,7 @@ export const CommentItem = memo(function CommentItem({
   return (
     <YStack paddingVertical="$3" gap="$2">
       <XStack gap="$3">
-        <CommentAvatar avatar={comment.author.avatar} authorName={comment.author.username} />
+        <CommentAvatar avatar={comment.author.avatarUrl} authorName={comment.author.username} />
 
         <YStack flex={1} gap="$2">
           {/* 作者信息 */}
@@ -106,7 +106,7 @@ const CommentAvatar = memo(function CommentAvatar({ avatar }: CommentAvatarProps
     <YStack
       width={40}
       height={40}
-      borderRadius="$full"
+      borderRadius={20}
       backgroundColor={primaryScale.primary2}
       alignItems="center"
       justifyContent="center"

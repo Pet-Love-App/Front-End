@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable } from 'react-native';
+import { Pressable } from 'react-native';
 import { Text, TextArea, XStack, YStack } from 'tamagui';
 import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
@@ -7,6 +7,7 @@ import { useResponsiveLayout } from '@/src/hooks/useResponsiveLayout';
 import { supabaseCatfoodService, supabaseCommentService } from '@/src/lib/supabase';
 import { useCatFoodStore } from '@/src/store/catFoodStore';
 import { warningScale, neutralScale, successScale, errorScale } from '@/src/design-system/tokens';
+import { showAlert, toast } from '@/src/components/dialogs';
 
 interface RatingSectionProps {
   catfoodId: number;
@@ -138,7 +139,11 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
           errorMessage = error.message;
         }
 
-        Alert.alert('评分失败', errorMessage);
+        showAlert({
+          title: '评分失败',
+          message: errorMessage,
+          buttons: [{ text: '确定' }],
+        });
       } finally {
         setLoading(false);
       }
@@ -149,7 +154,7 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
   // 处理评论提交
   const handleSubmit = useCallback(async () => {
     if (myRating === 0) {
-      Alert.alert('提示', '请先选择评分');
+      toast.warning('请先选择评分');
       return;
     }
 
@@ -193,12 +198,12 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
 
       // 只有首次评分或提交评论时才提示
       if (!hasRated || myComment.trim()) {
-        Alert.alert('成功', myComment.trim() ? '评分和评论已发布！' : '评分成功！');
+        toast.success(myComment.trim() ? '评分和评论已发布！' : '评分成功！');
       }
       // 否则静默更新，不弹窗
     } catch (error: any) {
       console.error('提交评分失败:', error);
-      Alert.alert('错误', '提交失败，请稍后重试');
+      toast.error('提交失败，请稍后重试');
     } finally {
       setLoading(false);
     }
@@ -207,49 +212,53 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
   // 处理删除评分
   const handleDelete = useCallback(async () => {
     if (!myRatingId) {
-      Alert.alert('提示', '没有可删除的评分');
+      toast.warning('没有可删除的评分');
       return;
     }
 
-    Alert.alert('确认删除', '确定要删除您的评分吗？删除后猫粮的平均分会重新计算。', [
-      { text: '取消', style: 'cancel' },
-      {
-        text: '删除',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            setLoading(true);
-            console.log('🗑️ 开始删除评分，ID:', myRatingId);
+    showAlert({
+      title: '确认删除',
+      message: '确定要删除您的评分吗？删除后猫粮的平均分会重新计算。',
+      buttons: [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '删除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setLoading(true);
+              console.log('🗑️ 开始删除评分，ID:', myRatingId);
 
-            // 删除评分
-            const { error } = await supabaseCatfoodService.deleteRating(String(catfoodId));
+              // 删除评分
+              const { error } = await supabaseCatfoodService.deleteRating(String(catfoodId));
 
-            if (error) {
-              throw new Error(error.message);
+              if (error) {
+                throw new Error(error.message);
+              }
+
+              console.log('✅ 评分删除成功');
+
+              // 重置状态
+              setMyRating(0);
+              setMyComment('');
+              setMyRatingId(null);
+              setHasRated(false);
+
+              // 刷新猫粮数据以更新平均分
+              await fetchCatFoodById(catfoodId);
+              console.log('✅ 数据刷新完成');
+
+              // 静默删除，不弹窗提示
+            } catch (error: any) {
+              console.error('❌ 删除评分失败:', error);
+              toast.error(error.message || '删除评分失败，请稍后重试');
+            } finally {
+              setLoading(false);
             }
-
-            console.log('✅ 评分删除成功');
-
-            // 重置状态
-            setMyRating(0);
-            setMyComment('');
-            setMyRatingId(null);
-            setHasRated(false);
-
-            // 刷新猫粮数据以更新平均分
-            await fetchCatFoodById(catfoodId);
-            console.log('✅ 数据刷新完成');
-
-            // 静默删除，不弹窗提示
-          } catch (error: any) {
-            console.error('❌ 删除评分失败:', error);
-            Alert.alert('删除失败', error.message || '删除评分失败，请稍后重试');
-          } finally {
-            setLoading(false);
-          }
+          },
         },
-      },
-    ]);
+      ],
+    });
   }, [myRatingId, catfoodId, fetchCatFoodById]);
 
   return (
@@ -391,6 +400,8 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
             {/* 提交按钮 */}
             <Button
               size="$4"
+              height={48}
+              fontSize={16}
               backgroundColor={warningScale.warning6}
               borderWidth={0}
               borderRadius={12}
@@ -436,6 +447,8 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
             {/* 删除评分按钮 */}
             <Button
               size="$3"
+              height={40}
+              fontSize={14}
               backgroundColor="transparent"
               borderWidth={1.5}
               borderColor={errorScale.error5}

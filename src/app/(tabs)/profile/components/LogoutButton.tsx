@@ -1,34 +1,39 @@
 /**
  * 登出按钮 - 退出当前账户
  */
-import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useUserStore } from '@/src/store/userStore';
 import { errorScale } from '@/src/design-system/tokens';
+import { showAlert, toast } from '@/src/components/dialogs';
 
 export function LogoutButton() {
   const router = useRouter();
   const { logout } = useUserStore();
 
   const handleLogout = () => {
-    Alert.alert('确认登出', '确定要退出登录吗？', [
-      { text: '取消', style: 'cancel' },
-      {
-        text: '确定',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await logout();
-            router.replace('/login');
-          } catch (error) {
-            console.error('登出失败:', error);
-            Alert.alert('错误', '登出失败，请重试');
-          }
+    showAlert({
+      title: '确认登出',
+      message: '确定要退出登录吗？',
+      type: 'warning',
+      buttons: [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '确定',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await logout();
+              router.replace('/login');
+            } catch (error) {
+              console.error('登出失败:', error);
+              toast.error('登出失败', '请重试');
+            }
+          },
         },
-      },
-    ]);
+      ],
+    });
   };
 
   return (

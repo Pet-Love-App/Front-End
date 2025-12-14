@@ -3,13 +3,13 @@
  * 职责：组合子组件，协调评论相关的用户交互
  */
 import { memo, useCallback } from 'react';
-import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Card, Separator, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import { useUserStore } from '@/src/store/userStore';
+import { showAlert } from '@/src/components/dialogs';
 
 import { CommentInput } from './CommentInput';
 import { CommentList } from './CommentList';
@@ -57,10 +57,15 @@ export const CommentSection = memo(function CommentSection({
   const handleSubmitComment = useCallback(
     async (content: string) => {
       if (!isAuthenticated) {
-        Alert.alert('请先登录', '登录后才能发表评论', [
-          { text: '取消', style: 'cancel' },
-          { text: '去登录', onPress: () => router.push('/login') },
-        ]);
+        showAlert({
+          title: '请先登录',
+          message: '登录后才能发表评论',
+          type: 'warning',
+          buttons: [
+            { text: '取消', style: 'cancel' },
+            { text: '去登录', onPress: () => router.push('/login') },
+          ],
+        });
         throw new Error('未登录');
       }
 
@@ -75,17 +80,26 @@ export const CommentSection = memo(function CommentSection({
   const handleLike = useCallback(
     async (commentId: number) => {
       if (!isAuthenticated) {
-        Alert.alert('请先登录', '登录后才能点赞', [
-          { text: '取消', style: 'cancel' },
-          { text: '去登录', onPress: () => router.push('/login') },
-        ]);
+        showAlert({
+          title: '请先登录',
+          message: '登录后才能点赞',
+          type: 'warning',
+          buttons: [
+            { text: '取消', style: 'cancel' },
+            { text: '去登录', onPress: () => router.push('/login') },
+          ],
+        });
         return;
       }
 
       try {
         await toggleLike(commentId);
       } catch (error) {
-        Alert.alert('❌ 失败', '操作失败，请重试');
+        showAlert({
+          title: '失败',
+          message: '操作失败，请重试',
+          type: 'error',
+        });
       }
     },
     [isAuthenticated, toggleLike, router]
@@ -96,20 +110,29 @@ export const CommentSection = memo(function CommentSection({
    */
   const handleDelete = useCallback(
     (commentId: number) => {
-      Alert.alert('确认删除', '确定要删除这条评论吗？', [
-        { text: '取消', style: 'cancel' },
-        {
-          text: '删除',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteComment(commentId);
-            } catch (error) {
-              Alert.alert('❌ 失败', '删除失败，请重试');
-            }
+      showAlert({
+        title: '确认删除',
+        message: '确定要删除这条评论吗？',
+        type: 'warning',
+        buttons: [
+          { text: '取消', style: 'cancel' },
+          {
+            text: '删除',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await deleteComment(commentId);
+              } catch (error) {
+                showAlert({
+                  title: '失败',
+                  message: '删除失败，请重试',
+                  type: 'error',
+                });
+              }
+            },
           },
-        },
-      ]);
+        ],
+      });
     },
     [deleteComment]
   );

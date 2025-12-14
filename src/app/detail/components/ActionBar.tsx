@@ -2,13 +2,14 @@
  * 底部操作栏 - 包含收藏和点赞功能
  */
 import { useCallback, useMemo, useState } from 'react';
-import { Alert, Animated } from 'react-native';
+import { Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Separator, Text, XStack, YStack } from 'tamagui';
 import { Button } from '@/src/design-system/components';
 import { useActionStatus } from '@/src/app/(tabs)/collect/hooks/useActionStatus';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { warningScale, errorScale, neutralScale } from '@/src/design-system/tokens';
+import { toast } from '@/src/components/dialogs';
 
 interface ActionBarProps {
   catfoodId: number;
@@ -43,7 +44,7 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
       await toggleFavorite();
     } catch (error) {
       console.error('收藏操作失败:', error);
-      Alert.alert('操作失败', '收藏操作失败，请稍后重试');
+      toast.error('收藏操作失败，请稍后重试');
     } finally {
       setFavoriteLoading(false);
     }
@@ -58,7 +59,7 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
       await toggleLike();
     } catch (error) {
       console.error('点赞操作失败:', error);
-      Alert.alert('操作失败', '点赞操作失败，请稍后重试');
+      toast.error('点赞操作失败，请稍后重试');
     } finally {
       setLikeLoading(false);
     }

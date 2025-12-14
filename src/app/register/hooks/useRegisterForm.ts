@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ZodError } from 'zod';
 
 import { useUserStore } from '@/src/store/userStore';
 import { registerSchema } from '@/src/schemas/auth.schema';
+import { showAlert, toast } from '@/src/components/dialogs';
 
 /**
  * 注册表单 Hook
@@ -38,12 +38,36 @@ export function useRegisterForm() {
       // 验证通过，执行注册
       await register(email, username, password);
 
-      Alert.alert('注册成功', '欢迎加入 Pet Love！', [
-        {
-          text: '确定',
-          onPress: () => router.replace('/(tabs)/collect'),
-        },
-      ]);
+      // 检查是否已经自动登录（有 session）
+      const { isAuthenticated } = useUserStore.getState();
+
+      if (isAuthenticated) {
+        // 自动登录成功
+        showAlert({
+          title: '注册成功',
+          message: '欢迎加入 Pet Love！',
+          type: 'success',
+          buttons: [
+            {
+              text: '确定',
+              onPress: () => router.replace('/(tabs)/collect'),
+            },
+          ],
+        });
+      } else {
+        // 需要邮箱验证
+        showAlert({
+          title: '注册成功',
+          message: '请查收验证邮件并完成邮箱验证后登录。',
+          type: 'success',
+          buttons: [
+            {
+              text: '确定',
+              onPress: () => router.back(), // 返回登录页
+            },
+          ],
+        });
+      }
     } catch (error) {
       if (error instanceof ZodError) {
         // 处理验证错误
@@ -60,10 +84,10 @@ export function useRegisterForm() {
 
         // 显示第一个错误
         const firstError = error.errors[0];
-        Alert.alert('验证失败', firstError.message);
+        toast.error('验证失败', firstError.message);
       } else if (error instanceof Error) {
         // 处理 API 错误
-        Alert.alert('注册失败', error.message);
+        toast.error('注册失败', error.message);
         console.error('注册错误:', error);
       }
     }

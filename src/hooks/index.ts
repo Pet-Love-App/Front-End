@@ -10,3 +10,4 @@ export { useBatchLazyLoad, useLazyLoad, useViewportLazyLoad } from './useLazyLoa
 export { useResponsiveLayout } from './useResponsiveLayout';
 export { useThemeAwareColorScheme } from './useThemeAwareColorScheme';
 export { useThemeColor } from './useThemeColor';
+export { useDeepLink } from './useDeepLink';

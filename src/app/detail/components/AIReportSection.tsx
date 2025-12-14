@@ -6,11 +6,12 @@
  * 2. 流式生成模式：实时显示 AI 流式输出
  */
 
-import { Alert, Dimensions } from 'react-native';
+import { Dimensions } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { Card, H4, H5, Separator, Spinner, Text, XStack, YStack } from 'tamagui';
 import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { toast } from '@/src/components/dialogs';
 import {
   getNutritionColor,
   getNutritionLabel,
@@ -238,7 +239,7 @@ export function AIReportSection({
 
   // 营养成分点击（暂时使用 Alert）
   const handleIngredientPress = (name: string) => {
-    Alert.alert('营养成分', `${name}\n\n营养成分详情功能开发中`);
+    toast.info(`${name}\n\n营养成分详情功能开发中`);
   };
 
   // 检查是否有有效营养数据

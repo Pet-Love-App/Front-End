@@ -4,7 +4,6 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -20,6 +19,7 @@ import { Camera, ImagePlus, X, ChevronLeft, Send } from '@tamagui/lucide-icons';
 import { styled, YStack, XStack, Text, TextArea, Stack } from 'tamagui';
 
 import { supabaseForumService, type Post, type PostCategory } from '@/src/lib/supabase';
+import { showAlert } from '@/src/components/dialogs';
 
 import { POST_CATEGORIES, MESSAGES, UI_CONFIG } from './constants';
 import { usePostEditor } from './hooks/usePostEditor';
@@ -262,11 +262,12 @@ export default function CreatePostScreen() {
 
   const editor = usePostEditor({
     onSuccess: () => {
-      Alert.alert(
-        '成功',
-        editingPost ? MESSAGES.SUCCESS.POST_UPDATED : MESSAGES.SUCCESS.POST_CREATED,
-        [{ text: '确定', onPress: () => router.back() }]
-      );
+      showAlert({
+        title: '成功',
+        message: editingPost ? MESSAGES.SUCCESS.POST_UPDATED : MESSAGES.SUCCESS.POST_CREATED,
+        type: 'success',
+        buttons: [{ text: '确定', onPress: () => router.back() }],
+      });
     },
     onError: (error) => {
       errorHandler.handle(error, { title: '提交失败' });

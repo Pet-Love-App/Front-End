@@ -8,7 +8,8 @@
  * - 实时错误提示
  */
 import React, { useState, useEffect } from 'react';
-import { Alert, ScrollView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { showAlert, toast } from '@/src/components/dialogs';
 import { Dialog, Text, XStack, YStack } from 'tamagui';
 import { Button, Input } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
@@ -92,7 +93,7 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
       const { error } = await supabaseProfileService.updateProfile({ username: trimmedUsername });
       if (error) throw new Error(error.message);
       await fetchCurrentUser();
-      Alert.alert('成功', '用户名已更新');
+      toast.success('用户名已更新');
       setEditMode(null);
     } catch (error: any) {
       setUsernameError(error.message || '用户名可能已被占用');
@@ -128,15 +129,20 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
       setIsChangingPassword(true);
       const { error } = await supabaseAuthService.updatePassword({ newPassword });
       if (error) throw new Error(error.message);
-      Alert.alert('成功', '密码已修改，请使用新密码重新登录', [
-        {
-          text: '确定',
-          onPress: () => {
-            handleClose();
-            useUserStore.getState().logout();
+      showAlert({
+        title: '成功',
+        message: '密码已修改，请使用新密码重新登录',
+        type: 'success',
+        buttons: [
+          {
+            text: '确定',
+            onPress: () => {
+              handleClose();
+              useUserStore.getState().logout();
+            },
           },
-        },
-      ]);
+        ],
+      });
     } catch (error: any) {
       setPasswordError(error.message || '无法修改密码');
     } finally {

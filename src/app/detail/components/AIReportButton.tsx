@@ -38,6 +38,8 @@ export function AIReportButton({ hasReport, isLoading, onPress }: AIReportButton
   return (
     <Button
       size="$4"
+      height={48}
+      fontSize={16}
       theme="blue"
       icon={<Feather name="file-text" size={18} />}
       onPress={onPress}

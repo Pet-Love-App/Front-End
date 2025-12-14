@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
@@ -8,6 +7,7 @@ import { CommentSection } from '@/src/components/Comments';
 import { SkeletonAIReport } from '@/src/components/lazy';
 import { useUserStore } from '@/src/store/userStore';
 import { useLazyLoad } from '@/src/hooks';
+import { toast } from '@/src/components/dialogs';
 
 import {
   ActionBar,
@@ -94,13 +94,13 @@ export function DetailScreen() {
    */
   const handleGenerateReport = useCallback(async () => {
     if (!catfoodId) {
-      Alert.alert('错误', '无法获取猫粮信息');
+      toast.error('无法获取猫粮信息');
       return;
     }
 
     const ingredientsText = getIngredientsText();
     if (!ingredientsText) {
-      Alert.alert('提示', '没有可用的配料信息，无法生成报告');
+      toast.warning('没有可用的配料信息，无法生成报告');
       return;
     }
 

@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { supabaseCatfoodService } from '@/src/lib/supabase';
 import type { CatfoodFavorite } from '@/src/types/collect';
 import { appEvents, APP_EVENTS } from '@/src/utils';
+import { showAlert, toast } from '@/src/components/dialogs';
 
 /**
  * 收藏数据管理 Hook
@@ -69,7 +69,7 @@ export function useCollectData() {
     try {
       await fetchFavorites(false);
     } catch (_err) {
-      Alert.alert('刷新失败', '请检查网络连接后重试');
+      toast.error('刷新失败', '请检查网络连接后重试');
     } finally {
       setRefreshing(false);
     }
@@ -77,33 +77,38 @@ export function useCollectData() {
 
   // 删除收藏
   const handleDelete = useCallback((favoriteId: string, catfoodId: string) => {
-    Alert.alert('确认删除', '您确定要取消收藏吗？', [
-      { text: '取消', style: 'cancel' },
-      {
-        text: '确定',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            const result = await supabaseCatfoodService.toggleFavorite(catfoodId);
-            if (result.data) {
-              // 乐观更新：从列表中移除对应的项
-              setFavorites((prev) => {
-                return prev.filter((fav: any) => {
-                  const favId = fav.catfoodId || fav.id;
-                  return favId?.toString() !== catfoodId?.toString();
+    showAlert({
+      title: '确认取消收藏',
+      message: '您确定要取消收藏吗？',
+      type: 'warning',
+      buttons: [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '确定',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const result = await supabaseCatfoodService.toggleFavorite(catfoodId);
+              if (result.data) {
+                // 乐观更新：从列表中移除对应的项
+                setFavorites((prev) => {
+                  return prev.filter((fav: any) => {
+                    const favId = fav.catfoodId || fav.id;
+                    return favId?.toString() !== catfoodId?.toString();
+                  });
                 });
-              });
-              Alert.alert('✅ 成功', '已取消收藏');
-            } else {
-              Alert.alert('❌ 失败', result.error?.message || '取消收藏失败，请重试');
+                toast.success('已取消收藏');
+              } else {
+                toast.error('取消收藏失败', result.error?.message || '请重试');
+              }
+            } catch (err) {
+              toast.error('取消收藏失败', '请重试');
+              console.error('删除收藏失败:', err);
             }
-          } catch (err) {
-            Alert.alert('❌ 失败', '取消收藏失败，请重试');
-            console.error('删除收藏失败:', err);
-          }
+          },
         },
-      },
-    ]);
+      ],
+    });
   }, []);
 
   // 点击收藏项，跳转到详情页

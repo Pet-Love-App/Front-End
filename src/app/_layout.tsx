@@ -13,6 +13,7 @@ import { useCustomFonts } from '../hooks/useFonts';
 import { useThemeAwareColorScheme } from '../hooks/useThemeAwareColorScheme';
 import { useDeepLink } from '../hooks/useDeepLink';
 import { DesktopPet } from '../components/DesktopPet';
+import { ToastManager, AlertManager } from '../components/dialogs';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -51,6 +52,8 @@ export default function RootLayout() {
               <Stack.Screen name="+not-found" options={{ headerShown: false }} />
             </Stack>
             <DesktopPet />
+            <ToastManager />
+            <AlertManager />
             <StatusBar
               style={colorScheme === 'dark' ? 'light' : 'dark'}
               translucent

@@ -119,7 +119,9 @@ export const useUserStore = create<UserState>()(
           // 如果没有 session，说明需要邮箱验证
           if (!data.session) {
             set({ isLoading: false });
-            throw new Error('注册成功！请查收验证邮件并完成邮箱验证。');
+            // 这是成功的情况，返回一个特殊的成功消息
+            logger.info('注册成功，等待邮箱验证');
+            return; // 正常返回，不抛出错误
           }
 
           // 保存 session 和 accessToken 并自动登录
@@ -133,6 +135,7 @@ export const useUserStore = create<UserState>()(
           await get().fetchCurrentUser();
 
           set({ isLoading: false });
+          logger.info('注册并登录成功');
         } catch (error) {
           set({ isLoading: false });
           logger.error('注册失败', error as Error);

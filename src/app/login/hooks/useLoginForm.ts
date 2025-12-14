@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ZodError } from 'zod';
 
 import { useUserStore } from '@/src/store/userStore';
 import { loginSchema } from '@/src/schemas/auth.schema';
+import { toast } from '@/src/components/dialogs';
 
 /**
  * 登录表单 Hook
@@ -41,10 +41,10 @@ export function useLoginForm() {
 
         // 显示第一个错误
         const firstError = error.errors[0];
-        Alert.alert('验证失败', firstError.message);
+        toast.error('验证失败', firstError.message);
       } else if (error instanceof Error) {
         // 处理 API 错误
-        Alert.alert('登录失败', error.message);
+        toast.error('登录失败', error.message);
         console.error('登录错误:', error);
       }
     }

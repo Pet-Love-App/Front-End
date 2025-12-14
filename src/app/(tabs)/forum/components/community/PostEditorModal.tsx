@@ -5,12 +5,13 @@
  */
 
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { Alert, Image, Modal, Pressable, ScrollView } from 'react-native';
+import { Image, Modal, Pressable, ScrollView } from 'react-native';
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styled, XStack, YStack, Text, TextArea, Stack } from 'tamagui';
 
 import type { Post, PostCategory } from '@/src/lib/supabase';
+import { showAlert } from '@/src/components/dialogs';
 
 import { POST_CATEGORIES, MESSAGES, UI_CONFIG } from '../../constants';
 import { usePostEditor } from '../../hooks/usePostEditor';
@@ -191,10 +192,11 @@ export function PostEditorModal({
 
   const editor = usePostEditor({
     onSuccess: () => {
-      Alert.alert(
-        '成功',
-        editingPost ? MESSAGES.SUCCESS.POST_UPDATED : MESSAGES.SUCCESS.POST_CREATED
-      );
+      showAlert({
+        title: '成功',
+        message: editingPost ? MESSAGES.SUCCESS.POST_UPDATED : MESSAGES.SUCCESS.POST_CREATED,
+        type: 'success',
+      });
       onClose();
       onSuccess();
     },

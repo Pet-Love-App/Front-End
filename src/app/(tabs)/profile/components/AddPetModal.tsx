@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
 import {
-  Alert,
   Dimensions,
   Image,
   Keyboard,
@@ -9,6 +8,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { showAlert } from '@/src/components/dialogs';
 import { Dialog, Text, XStack, YStack } from 'tamagui';
 import { Button } from '@/src/design-system/components';
 import { BreedSelector } from '@/src/components/BreedSelector';
@@ -58,7 +58,11 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
     try {
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (perm.status !== 'granted') {
-        Alert.alert('需要权限', '请允许访问相册以选择宠物图片');
+        showAlert({
+          title: '需要权限',
+          message: '请允许访问相册以选择宠物图片',
+          type: 'warning',
+        });
         return;
       }
 
@@ -81,7 +85,11 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
     const name = nameValue.trim();
 
     if (!name) {
-      Alert.alert('提示', '请输入宠物名称');
+      showAlert({
+        title: '提示',
+        message: '请输入宠物名称',
+        type: 'warning',
+      });
       return;
     }
 
@@ -220,6 +228,8 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                       </YStack>
                       <Button
                         size="$3"
+                        height={40}
+                        fontSize={14}
                         icon={<IconSymbol name="camera.fill" size={16} color="white" />}
                         onPress={pickPetImage}
                         backgroundColor="#FEBE98"
@@ -469,17 +479,20 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                 </YStack>
 
                 {/* Description */}
-                <YStack gap="$2" marginBottom="$2">
-                  <Text fontSize={15} fontWeight="700" color={colors.text}>
-                    描述{' '}
-                    <Text fontSize={12} color="$gray10" fontWeight="400">
+                <YStack gap="$2.5" marginBottom="$2">
+                  <XStack alignItems="center" gap="$2">
+                    <IconSymbol name="text.bubble" size={18} color="#FEBE98" />
+                    <Text fontSize={15} fontWeight="700" color={colors.text}>
+                      描述
+                    </Text>
+                    <Text fontSize={12} color="$gray10" fontWeight="500" opacity={0.7}>
                       （选填）
                     </Text>
-                  </Text>
+                  </XStack>
                   <YStack
-                    borderRadius="$4"
-                    borderWidth={1.5}
-                    borderColor="$gray6"
+                    borderRadius="$5"
+                    borderWidth={2}
+                    borderColor={descriptionValue ? '#FDB97A' : '$gray5'}
                     backgroundColor={colors.background}
                     paddingHorizontal="$4"
                     paddingVertical="$3"
@@ -488,7 +501,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                     <TextInput
                       ref={descriptionRef}
                       placeholder="介绍一下你的爱宠吧～性格、习惯、特点等"
-                      placeholderTextColor={colors.icon + '80'}
+                      placeholderTextColor={colors.icon + '70'}
                       value={descriptionValue}
                       onChangeText={setDescriptionValue}
                       multiline
@@ -503,8 +516,20 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                         fontSize: 15,
                         minHeight: 100,
                         lineHeight: 22,
+                        fontWeight: '500',
                       }}
                     />
+                    {descriptionValue.length > 0 && (
+                      <Text
+                        fontSize={11}
+                        color="$gray10"
+                        fontWeight="500"
+                        textAlign="right"
+                        marginTop="$2"
+                      >
+                        {descriptionValue.length}/200
+                      </Text>
+                    )}
                   </YStack>
                 </YStack>
               </YStack>
@@ -523,10 +548,12 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
             <Dialog.Close displayWhenAdapted asChild flex={1}>
               <Button
                 size="$4"
+                height={52}
+                fontSize={16}
                 onPress={() => onOpenChange(false)}
                 backgroundColor="$gray4"
                 color={colors.text}
-                borderRadius="$4"
+                borderRadius="$5"
                 fontWeight="600"
                 pressStyle={{ scale: 0.97, opacity: 0.8 }}
               >
@@ -537,9 +564,11 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
             <Button
               flex={1}
               size="$4"
+              height={52}
+              fontSize={16}
               backgroundColor="#FEBE98"
               color="white"
-              borderRadius="$4"
+              borderRadius="$5"
               fontWeight="700"
               onPress={handleSubmit}
               disabled={submitting || !nameValue.trim()}

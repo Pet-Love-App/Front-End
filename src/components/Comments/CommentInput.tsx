@@ -69,6 +69,8 @@ export const CommentInput = memo(function CommentInput({
 
         <Button
           size="$3"
+          height={44}
+          fontSize={15}
           backgroundColor={primaryScale.primary7}
           color="white"
           onPress={handleSubmit}

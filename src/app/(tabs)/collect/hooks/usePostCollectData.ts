@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert } from 'react-native';
 
 import { supabaseForumService, type Post } from '@/src/lib/supabase';
+import { showAlert, toast } from '@/src/components/dialogs';
 
 /**
  * 帖子收藏数据管理 Hook
@@ -42,7 +42,7 @@ export function usePostCollectData() {
     try {
       await fetchFavoritePosts();
     } catch {
-      Alert.alert('刷新失败', '请检查网络连接后重试');
+      toast.error('刷新失败', '请检查网络连接后重试');
     } finally {
       setRefreshing(false);
     }
@@ -50,25 +50,30 @@ export function usePostCollectData() {
 
   // 取消收藏帖子
   const handleDelete = useCallback((postId: number) => {
-    Alert.alert('确认取消收藏', '您确定要取消收藏此帖子吗？', [
-      { text: '取消', style: 'cancel' },
-      {
-        text: '确定',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            const { error } = await supabaseForumService.toggleFavorite(postId);
-            if (error) throw error;
-            // 乐观更新：立即从列表中移除
-            setFavoritePosts((prev) => prev.filter((post) => post.id !== postId));
-            Alert.alert('✅ 成功', '已取消收藏');
-          } catch (err) {
-            Alert.alert('❌ 失败', '取消收藏失败，请重试');
-            console.error('取消帖子收藏失败:', err);
-          }
+    showAlert({
+      title: '确认取消收藏',
+      message: '您确定要取消收藏此帖子吗？',
+      type: 'warning',
+      buttons: [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '确定',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { error } = await supabaseForumService.toggleFavorite(postId);
+              if (error) throw error;
+              // 乐观更新：立即从列表中移除
+              setFavoritePosts((prev) => prev.filter((post) => post.id !== postId));
+              toast.success('已取消收藏');
+            } catch (err) {
+              toast.error('取消收藏失败', '请重试');
+              console.error('取消帖子收藏失败:', err);
+            }
+          },
         },
-      },
-    ]);
+      ],
+    });
   }, []);
 
   // 点击帖子，打开详情

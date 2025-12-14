@@ -6,7 +6,6 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { Alert } from 'react-native';
 
 import {
   supabaseCommentService,
@@ -15,6 +14,7 @@ import {
   type Post,
 } from '@/src/lib/supabase';
 import { useUserStore } from '@/src/store/userStore';
+import { showAlert } from '@/src/components/dialogs';
 
 import { MESSAGES } from '../../constants';
 
@@ -132,7 +132,11 @@ export function usePostDetail({
       setReplyTarget(null);
       await loadComments();
     } catch {
-      Alert.alert('错误', MESSAGES.ERROR.OPERATION_FAILED);
+      showAlert({
+        title: '错误',
+        message: MESSAGES.ERROR.OPERATION_FAILED,
+        type: 'error',
+      });
     }
   }, [post, newComment, replyTarget, loadComments]);
 
@@ -151,7 +155,11 @@ export function usePostDetail({
         )
       );
     } catch {
-      Alert.alert('错误', MESSAGES.ERROR.OPERATION_FAILED);
+      showAlert({
+        title: '错误',
+        message: MESSAGES.ERROR.OPERATION_FAILED,
+        type: 'error',
+      });
     }
   }, []);
 
@@ -196,7 +204,11 @@ export function usePostDetail({
       );
       setEditingComment(null);
     } catch {
-      Alert.alert('错误', MESSAGES.ERROR.UPDATE_FAILED);
+      showAlert({
+        title: '错误',
+        message: MESSAGES.ERROR.UPDATE_FAILED,
+        type: 'error',
+      });
     }
   }, [editingComment]);
 
@@ -204,22 +216,31 @@ export function usePostDetail({
    * 删除评论（带确认）
    */
   const deleteComment = useCallback((commentId: number) => {
-    Alert.alert('确认删除', MESSAGES.CONFIRM.DELETE_COMMENT, [
-      { text: '取消', style: 'cancel' },
-      {
-        text: '删除',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            const { error } = await supabaseCommentService.deleteComment(commentId);
-            if (error) throw error;
-            setComments((prev) => prev.filter((c) => c.id !== commentId));
-          } catch {
-            Alert.alert('错误', MESSAGES.ERROR.DELETE_FAILED);
-          }
+    showAlert({
+      title: '确认删除',
+      message: MESSAGES.CONFIRM.DELETE_COMMENT,
+      type: 'warning',
+      buttons: [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '删除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { error } = await supabaseCommentService.deleteComment(commentId);
+              if (error) throw error;
+              setComments((prev) => prev.filter((c) => c.id !== commentId));
+            } catch {
+              showAlert({
+                title: '错误',
+                message: MESSAGES.ERROR.DELETE_FAILED,
+                type: 'error',
+              });
+            }
+          },
         },
-      },
-    ]);
+      ],
+    });
   }, []);
 
   /**
@@ -228,22 +249,31 @@ export function usePostDetail({
   const deletePost = useCallback(() => {
     if (!post) return;
 
-    Alert.alert('确认删除', MESSAGES.CONFIRM.DELETE_POST, [
-      { text: '取消', style: 'cancel' },
-      {
-        text: '删除',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            const { error } = await supabaseForumService.deletePost(post.id);
-            if (error) throw error;
-            onPostDeleted?.();
-          } catch {
-            Alert.alert('错误', MESSAGES.ERROR.DELETE_FAILED);
-          }
+    showAlert({
+      title: '确认删除',
+      message: MESSAGES.CONFIRM.DELETE_POST,
+      type: 'warning',
+      buttons: [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '删除',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { error } = await supabaseForumService.deletePost(post.id);
+              if (error) throw error;
+              onPostDeleted?.();
+            } catch {
+              showAlert({
+                title: '错误',
+                message: MESSAGES.ERROR.DELETE_FAILED,
+                type: 'error',
+              });
+            }
+          },
         },
-      },
-    ]);
+      ],
+    });
   }, [post, onPostDeleted]);
 
   return {

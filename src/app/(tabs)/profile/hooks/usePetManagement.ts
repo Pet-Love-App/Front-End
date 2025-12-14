@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Alert } from 'react-native';
 
 import { supabasePetService, type Pet } from '@/src/lib/supabase';
 import { useUserStore } from '@/src/store/userStore';
 import { petInputSchema, type PetInput } from '@/src/schemas/pet.schema';
+import { toast } from '@/src/components/dialogs';
 
 /**
  * 宠物管理 Hook
@@ -38,16 +38,16 @@ export function usePetManagement() {
         } else if (petWithPhoto) {
           setSelectedPet(petWithPhoto);
           await fetchCurrentUser();
-          Alert.alert('成功', '已创建宠物');
+          toast.success('已创建宠物');
           return;
         }
       }
 
       setSelectedPet(pet);
       await fetchCurrentUser();
-      Alert.alert('成功', '已创建宠物');
+      toast.success('已创建宠物');
     } catch (e: any) {
-      Alert.alert('创建失败', e?.message ?? '请检查表单后重试');
+      toast.error('创建失败', e?.message ?? '请检查表单后重试');
       throw e;
     }
   };

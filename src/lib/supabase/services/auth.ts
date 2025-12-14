@@ -205,6 +205,9 @@ class SupabaseAuthService {
     logger.query('auth', 'register', { email: params.email, username: params.username });
 
     try {
+      // 构造重定向 URL - 开发环境使用 exp://，生产环境使用 petlove://
+      const redirectUrl = __DEV__ ? 'exp://127.0.0.1:8081' : 'petlove://';
+
       const { data, error } = await supabase.auth.signUp({
         email: params.email,
         password: params.password,
@@ -212,6 +215,7 @@ class SupabaseAuthService {
           data: {
             username: params.username,
           },
+          emailRedirectTo: redirectUrl,
         },
       });
 
@@ -364,8 +368,11 @@ class SupabaseAuthService {
     logger.query('auth', 'resetPassword', { email: params.email });
 
     try {
+      // 构造重定向 URL - 开发环境使用 exp://，生产环境使用 petlove://
+      const redirectUrl = __DEV__ ? 'exp://127.0.0.1:8081' : 'petlove://';
+
       const { error } = await supabase.auth.resetPasswordForEmail(params.email, {
-        redirectTo: undefined, // 可配置重定向 URL
+        redirectTo: redirectUrl,
       });
 
       if (error) {

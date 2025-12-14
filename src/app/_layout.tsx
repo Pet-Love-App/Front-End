@@ -11,6 +11,7 @@ import { TamaguiProvider } from 'tamagui';
 
 import { useCustomFonts } from '../hooks/useFonts';
 import { useThemeAwareColorScheme } from '../hooks/useThemeAwareColorScheme';
+import { useDeepLink } from '../hooks/useDeepLink';
 import { DesktopPet } from '../components/DesktopPet';
 
 SplashScreen.preventAutoHideAsync();
@@ -23,6 +24,9 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useThemeAwareColorScheme();
   const fontsLoaded = useCustomFonts();
+
+  // 处理深度链接（邮箱验证、密码重置回调）
+  useDeepLink();
 
   useEffect(() => {
     if (fontsLoaded) {

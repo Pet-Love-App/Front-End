@@ -5,6 +5,7 @@ import { ZodError } from 'zod';
 import { useUserStore } from '@/src/store/userStore';
 import { loginSchema } from '@/src/schemas/auth.schema';
 import { toast } from '@/src/components/dialogs';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * 登录表单 Hook
@@ -28,7 +29,8 @@ export function useLoginForm() {
 
       // 验证通过，执行登录
       await login(email, password);
-      router.replace('/(tabs)/collect');
+      // 开发：每次登录都进入引导页（测试用）后续数据库完善，存储seen状态
+      router.replace('/onboarding');
     } catch (error) {
       if (error instanceof ZodError) {
         // 处理验证错误

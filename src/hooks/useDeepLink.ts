@@ -45,7 +45,7 @@ export function useDeepLink() {
                 Alert.alert('验证成功', '邮箱验证成功！欢迎使用 Pet Love！', [
                   {
                     text: '确定',
-                    onPress: () => router.replace('/(tabs)/collect'),
+                    onPress: () => router.replace('/onboarding'),
                   },
                 ]);
               }

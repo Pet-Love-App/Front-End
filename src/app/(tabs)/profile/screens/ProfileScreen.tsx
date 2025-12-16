@@ -44,6 +44,7 @@ export function ProfileScreen() {
     petModalVisible,
     selectedPet,
     handleAddPet,
+    handleDeletePet,
     openAddPetModal,
     closeAddPetModal,
     selectPet,
@@ -172,7 +173,12 @@ export function ProfileScreen() {
         </YStack>
 
         {/* 个人资料标签页 - 宠物、评论、点赞 */}
-        <ProfileTabs pets={user?.pets} isLoading={isLoading && !user} onAddPet={openAddPetModal} />
+        <ProfileTabs
+          pets={user?.pets}
+          isLoading={isLoading && !user}
+          onAddPet={openAddPetModal}
+          onDeletePet={handleDeletePet}
+        />
       </YStack>
 
       {/* 模态框 */}
@@ -182,6 +188,7 @@ export function ProfileScreen() {
         pet={selectedPet}
         open={!!selectedPet}
         onOpenChange={(open) => !open && selectPet(null)}
+        onDelete={handleDeletePet}
       />
 
       <BadgeDetailModal

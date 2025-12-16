@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import { supabasePetService, type Pet } from '@/src/lib/supabase';
+import { supabasePetService } from '@/src/lib/supabase';
 import { useUserStore } from '@/src/store/userStore';
-import { petInputSchema, type PetInput } from '@/src/schemas/pet.schema';
+import { petInputSchema, type PetInput, type Pet } from '@/src/schemas/pet.schema';
 import { toast } from '@/src/components/dialogs';
 
 /**
@@ -34,8 +34,14 @@ export function usePetManagement() {
           photoUri
         );
         if (uploadError) {
-          console.warn('照片上传失败:', uploadError);
-        } else if (petWithPhoto) {
+          console.error('照片上传失败:', uploadError);
+          // 宠物已创建，但照片上传失败
+          setSelectedPet(pet);
+          await fetchCurrentUser();
+          toast.warning('宠物已创建，但照片上传失败', uploadError.message || '请稍后重新上传');
+          return;
+        }
+        if (petWithPhoto) {
           setSelectedPet(petWithPhoto);
           await fetchCurrentUser();
           toast.success('已创建宠物');
@@ -67,10 +73,32 @@ export function usePetManagement() {
     setSelectedPet(pet);
   };
 
+  // 删除宠物
+  const handleDeletePet = async (petId: number) => {
+    try {
+      const { error } = await supabasePetService.deletePet(petId);
+      if (error) {
+        throw new Error(error.message || '删除失败');
+      }
+
+      // 如果删除的是当前选中的宠物，清空选中状态
+      if (selectedPet?.id === petId) {
+        setSelectedPet(null);
+      }
+
+      await fetchCurrentUser();
+      toast.success('已删除宠物');
+    } catch (e: any) {
+      toast.error('删除失败', e?.message ?? '请稍后重试');
+      throw e;
+    }
+  };
+
   return {
     petModalVisible,
     selectedPet,
     handleAddPet,
+    handleDeletePet,
     openAddPetModal,
     closeAddPetModal,
     selectPet,

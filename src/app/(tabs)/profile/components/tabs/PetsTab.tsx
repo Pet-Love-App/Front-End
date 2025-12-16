@@ -18,6 +18,8 @@ interface PetsTabProps {
   isLoading: boolean;
   /** 添加宠物回调 */
   onAddPet: () => void;
+  /** 删除宠物回调 */
+  onDeletePet?: (petId: number) => Promise<void>;
 }
 
 /**
@@ -30,7 +32,12 @@ interface PetsTabProps {
  *
  * @component
  */
-export const PetsTab = memo(function PetsTab({ pets, isLoading, onAddPet }: PetsTabProps) {
+export const PetsTab = memo(function PetsTab({
+  pets,
+  isLoading,
+  onAddPet,
+  onDeletePet,
+}: PetsTabProps) {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
   const [selectedPet, setSelectedPet] = useState<Pet | null>(pets[0] || null);
@@ -175,7 +182,7 @@ export const PetsTab = memo(function PetsTab({ pets, isLoading, onAddPet }: Pets
         </YStack>
 
         {/* 选中宠物的详情面板 */}
-        {selectedPet && <PetInfoPanel pet={selectedPet} />}
+        {selectedPet && <PetInfoPanel pet={selectedPet} onDelete={onDeletePet} />}
       </YStack>
     </ScrollView>
   );

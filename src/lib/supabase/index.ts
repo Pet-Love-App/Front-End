@@ -47,7 +47,7 @@ export { default as supabaseCatfoodService } from './services/catfood';
 
 // ==================== 宠物服务 ====================
 export { supabasePetService } from './services/pet';
-export type { Pet, PetDB, PetInput } from './services/pet';
+export type { PetInput } from './services/pet';
 
 // ==================== 评论服务 ====================
 export { supabaseCommentService } from './services/comment';
@@ -92,3 +92,20 @@ export {
   supabaseReputationService,
 } from './services/reputation';
 export type { ReputationDetail, ReputationLevel, ReputationSummary } from './services/reputation';
+
+// ==================== 宠物健康服务 ====================
+export * as supabasePetHealthService from './services/petHealth';
+export type {
+  CreateHealthRecordParams,
+  CreateWeightRecordParams,
+  HealthRecordType,
+  HealthReminder,
+  PetHealthRecord,
+  PetMood,
+  PetWeightRecord,
+  UpdateHealthRecordParams,
+  UpdateWeightRecordParams,
+  WeightChartDataPoint,
+  WeightStatistics,
+  WeightUnit,
+} from '@/src/types/petHealth';

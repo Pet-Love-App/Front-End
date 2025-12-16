@@ -33,6 +33,8 @@ interface ProfileTabsProps {
   isLoading?: boolean;
   /** 添加宠物回调 */
   onAddPet: () => void;
+  /** 删除宠物回调 */
+  onDeletePet?: (petId: number) => Promise<void>;
 }
 
 /**
@@ -57,6 +59,7 @@ export const ProfileTabs = memo(function ProfileTabs({
   pets = [],
   isLoading = false,
   onAddPet,
+  onDeletePet,
 }: ProfileTabsProps) {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
@@ -116,7 +119,14 @@ export const ProfileTabs = memo(function ProfileTabs({
 
       {/* Tab 内容区域 */}
       <YStack flex={1} width="100%">
-        {activeTab === 'pets' && <PetsTab pets={pets} isLoading={isLoading} onAddPet={onAddPet} />}
+        {activeTab === 'pets' && (
+          <PetsTab
+            pets={pets}
+            isLoading={isLoading}
+            onAddPet={onAddPet}
+            onDeletePet={onDeletePet}
+          />
+        )}
         {activeTab === 'comments' && <CommentsTab />}
         {activeTab === 'likes' && <LikesTab />}
       </YStack>

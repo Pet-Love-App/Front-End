@@ -68,8 +68,16 @@ export function Onboarding() {
     }
   };
 
-  // 调整图片最大尺寸，让图片更大并占据中间更多空间
-  const slideImageMaxHeight = Math.round(height * 0.62);
+  // 计算可用内容高度（扣除顶部和底部大致空间），避免图片占用过多导致描述被裁切
+  const estimatedHeaderHeight = 64; // 顶部 "跳过" 区域及内边距
+  const estimatedFooterHeight = 140; // 底部分页点与按钮的高度与安全区
+  const availableContentHeight = Math.max(
+    200,
+    height - estimatedHeaderHeight - estimatedFooterHeight
+  );
+
+  // 调整图片最大尺寸，让图片更大但基于可用内容区
+  const slideImageMaxHeight = Math.round(availableContentHeight * 0.62);
   const slideImageMaxWidth = Math.round(width * 0.85);
 
   return (

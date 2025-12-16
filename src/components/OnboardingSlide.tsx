@@ -42,7 +42,7 @@ export function OnboardingSlide({
       </Text>
 
       {description ? (
-        <Text fontSize="$4" color="$gray10" textAlign="center">
+        <Text fontSize="$4" color="$gray10" textAlign="center" style={{ flexShrink: 1 }}>
           {description}
         </Text>
       ) : null}

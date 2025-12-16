@@ -70,9 +70,15 @@ export function AddWeightRecordModal({
       setBcs(editRecord.body_condition_score as BodyConditionScore | undefined);
 
       // 转换 PetMood 到 Mood
-      if (editRecord.mood === 'active') setMood('active');
-      else if (editRecord.mood === 'lethargic') setMood('sick');
-      else setMood('calm');
+      if (!editRecord.mood) {
+        setMood(undefined); // 明确处理 null/undefined，保留空心情状态
+      } else if (editRecord.mood === 'active') {
+        setMood('active');
+      } else if (editRecord.mood === 'lethargic') {
+        setMood('sick');
+      } else {
+        setMood('calm'); // 其他未映射的心情值
+      }
 
       setNotes(editRecord.notes || '');
     } else {

@@ -89,10 +89,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
    * 刷新体重数据
    */
   const handleRefresh = useCallback(() => {
-    setRefreshTrigger((prev) => {
-      console.log('🔄 Refreshing weight chart, trigger:', prev + 1);
-      return prev + 1;
-    });
+    setRefreshTrigger((prev) => prev + 1);
   }, []);
 
   /**

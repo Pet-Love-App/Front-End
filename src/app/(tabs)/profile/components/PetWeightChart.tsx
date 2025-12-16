@@ -25,7 +25,6 @@ export function PetWeightChart({ petId, petName, refreshTrigger }: Props) {
   const [chartWidth, setChartWidth] = useState(300); // 默认宽度
 
   const loadData = useCallback(async () => {
-    console.log('🔄 Loading weight data for pet:', petId);
     setLoading(true);
     const [recordsRes, statsRes] = await Promise.all([
       supabasePetHealthService.getPetWeightRecords(petId, 30), // 最近30条
@@ -34,11 +33,9 @@ export function PetWeightChart({ petId, petName, refreshTrigger }: Props) {
     setRecords(recordsRes.data || []);
     setStats(statsRes.data);
     setLoading(false);
-    console.log('✅ Weight data loaded, records count:', recordsRes.data?.length || 0);
   }, [petId]);
 
   useEffect(() => {
-    console.log('📊 PetWeightChart: useEffect triggered, refreshTrigger:', refreshTrigger);
     loadData();
   }, [loadData, refreshTrigger]);
 

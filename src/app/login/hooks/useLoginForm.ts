@@ -5,6 +5,7 @@ import { ZodError } from 'zod';
 import { useUserStore } from '@/src/store/userStore';
 import { loginSchema } from '@/src/schemas/auth.schema';
 import { toast } from '@/src/components/dialogs';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * 登录表单 Hook
@@ -28,7 +29,19 @@ export function useLoginForm() {
 
       // 验证通过，执行登录
       await login(email, password);
-      router.replace('/(tabs)/collect');
+      // 登录后根据本地标记决定是否展示新手引导
+      const storageKey = `hasSeenOnboarding:v1`;
+      try {
+        const seen = await AsyncStorage.getItem(storageKey);
+        if (seen === 'true') {
+          router.replace('/(tabs)/collect');
+        } else {
+          router.replace('/onboarding');
+        }
+      } catch (e) {
+        // 出现读取错误时退回到首页，避免阻塞登录流程
+        router.replace('/(tabs)/collect');
+      }
     } catch (error) {
       if (error instanceof ZodError) {
         // 处理验证错误

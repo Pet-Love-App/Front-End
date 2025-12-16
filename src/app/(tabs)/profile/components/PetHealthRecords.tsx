@@ -90,7 +90,7 @@ export function PetHealthRecords({ petId, petName }: Props) {
           leftIcon={<Syringe size={16} />}
           onPress={() => setFilter('vaccine')}
         >
-          疫苗 ({vaccineRecords.length})
+          {`疫苗 (${vaccineRecords.length})`}
         </Button>
         <Button
           size="sm"
@@ -98,7 +98,7 @@ export function PetHealthRecords({ petId, petName }: Props) {
           leftIcon={<Bug size={16} />}
           onPress={() => setFilter('deworming')}
         >
-          驱虫 ({dewormingRecords.length})
+          {`驱虫 (${dewormingRecords.length})`}
         </Button>
       </XStack>
 

@@ -2,13 +2,13 @@
  * 添加体重记录模态框组件
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Alert, ScrollView } from 'react-native';
 import { Dialog, YStack, XStack, Text, Input, TextArea, Separator } from 'tamagui';
 import { Scale, X } from '@tamagui/lucide-icons';
 import { Button } from '@/src/design-system/components';
 import { supabasePetHealthService } from '@/src/lib/supabase';
-import type { BodyConditionScore, Mood } from '@/src/types/petHealth';
+import type { BodyConditionScore, Mood, PetWeightRecord } from '@/src/types/petHealth';
 
 interface Props {
   petId: number;
@@ -16,6 +16,7 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  editRecord?: PetWeightRecord; // 如果提供，则为编辑模式
 }
 
 const MOODS: { value: Mood; label: string; emoji: string }[] = [
@@ -35,7 +36,14 @@ const BCS_OPTIONS: { value: BodyConditionScore; label: string }[] = [
   { value: 5, label: '5 - 超重' },
 ];
 
-export function AddWeightRecordModal({ petId, petName, open, onOpenChange, onSuccess }: Props) {
+export function AddWeightRecordModal({
+  petId,
+  petName,
+  open,
+  onOpenChange,
+  onSuccess,
+  editRecord,
+}: Props) {
   const [weight, setWeight] = useState('');
   const [unit, setUnit] = useState<'kg' | 'lb'>('kg');
   const [recordDate, setRecordDate] = useState(new Date().toISOString().split('T')[0]);
@@ -43,6 +51,35 @@ export function AddWeightRecordModal({ petId, petName, open, onOpenChange, onSuc
   const [mood, setMood] = useState<Mood | undefined>(undefined);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const resetForm = () => {
+    setWeight('');
+    setUnit('kg');
+    setRecordDate(new Date().toISOString().split('T')[0]);
+    setBcs(undefined);
+    setMood(undefined);
+    setNotes('');
+  };
+
+  // 编辑模式：填充现有数据
+  useEffect(() => {
+    if (editRecord) {
+      setWeight(editRecord.weight.toString());
+      setUnit(editRecord.unit);
+      setRecordDate(editRecord.record_date);
+      setBcs(editRecord.body_condition_score as BodyConditionScore | undefined);
+
+      // 转换 PetMood 到 Mood
+      if (editRecord.mood === 'active') setMood('active');
+      else if (editRecord.mood === 'lethargic') setMood('sick');
+      else setMood('calm');
+
+      setNotes(editRecord.notes || '');
+    } else {
+      // 重置表单
+      resetForm();
+    }
+  }, [editRecord, open]);
 
   const handleSubmit = async () => {
     const weightNum = parseFloat(weight);
@@ -66,7 +103,7 @@ export function AddWeightRecordModal({ petId, petName, open, onOpenChange, onSuc
         else petMood = 'normal';
       }
 
-      const { error } = await supabasePetHealthService.createWeightRecord({
+      const recordData = {
         pet_id: petId,
         weight: weightNum,
         unit,
@@ -74,14 +111,25 @@ export function AddWeightRecordModal({ petId, petName, open, onOpenChange, onSuc
         body_condition_score: bcs,
         mood: petMood,
         notes: notes.trim() || undefined,
-      });
+      };
+
+      let error;
+      if (editRecord) {
+        // 编辑模式：更新现有记录
+        const result = await supabasePetHealthService.updateWeightRecord(editRecord.id, recordData);
+        error = result.error;
+      } else {
+        // 创建新记录
+        const result = await supabasePetHealthService.createWeightRecord(recordData);
+        error = result.error;
+      }
 
       if (error) {
-        Alert.alert('错误', (error as any)?.message || '添加记录失败');
+        Alert.alert('错误', (error as any)?.message || `${editRecord ? '更新' : '添加'}记录失败`);
         return;
       }
 
-      Alert.alert('成功', '体重记录已添加');
+      Alert.alert('成功', `体重记录已${editRecord ? '更新' : '添加'}`);
       resetForm();
       onOpenChange(false);
       onSuccess();
@@ -90,14 +138,6 @@ export function AddWeightRecordModal({ petId, petName, open, onOpenChange, onSuc
     } finally {
       setLoading(false);
     }
-  };
-
-  const resetForm = () => {
-    setWeight('');
-    setRecordDate(new Date().toISOString().split('T')[0]);
-    setBcs(undefined);
-    setMood(undefined);
-    setNotes('');
   };
 
   return (
@@ -128,7 +168,7 @@ export function AddWeightRecordModal({ petId, petName, open, onOpenChange, onSuc
           {/* 标题栏 */}
           <XStack justifyContent="space-between" alignItems="center">
             <Dialog.Title fontSize={20} fontWeight="700">
-              添加体重记录
+              {editRecord ? '编辑体重记录' : '添加体重记录'}
             </Dialog.Title>
             <YStack
               padding="$2"
@@ -142,7 +182,7 @@ export function AddWeightRecordModal({ petId, petName, open, onOpenChange, onSuc
           </XStack>
 
           <Text fontSize={14} color="$gray11">
-            为 {petName} 添加体重记录
+            为 {petName} {editRecord ? '编辑' : '添加'}体重记录
           </Text>
 
           <Separator />
@@ -237,7 +277,9 @@ export function AddWeightRecordModal({ petId, petName, open, onOpenChange, onSuc
                       onPress={() => setMood(moodOption.value)}
                       minWidth="30%"
                     >
-                      {moodOption.emoji} {moodOption.label}
+                      <Text>
+                        {moodOption.emoji} {moodOption.label}
+                      </Text>
                     </Button>
                   ))}
                 </XStack>
@@ -279,7 +321,7 @@ export function AddWeightRecordModal({ petId, petName, open, onOpenChange, onSuc
               loading={loading}
               disabled={loading}
             >
-              添加
+              {editRecord ? '保存' : '添加'}
             </Button>
           </XStack>
         </Dialog.Content>

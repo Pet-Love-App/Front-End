@@ -75,6 +75,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
   const colors = Colors[colorScheme];
   const [activeTab, setActiveTab] = useState<TabKey>('info');
   const [deleting, setDeleting] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   /**
    * 处理 Tab 切换
@@ -82,6 +83,16 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
    */
   const handleTabChange = useCallback((tab: TabKey) => {
     setActiveTab(tab);
+  }, []);
+
+  /**
+   * 刷新体重数据
+   */
+  const handleRefresh = useCallback(() => {
+    setRefreshTrigger((prev) => {
+      console.log('🔄 Refreshing weight chart, trigger:', prev + 1);
+      return prev + 1;
+    });
   }, []);
 
   /**
@@ -296,8 +307,8 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
             nestedScrollEnabled
           >
             <YStack gap="$4">
-              <PetWeightChart petId={pet.id} petName={pet.name} />
-              <PetWeightRecords petId={pet.id} petName={pet.name} />
+              <PetWeightChart petId={pet.id} petName={pet.name} refreshTrigger={refreshTrigger} />
+              <PetWeightRecords petId={pet.id} petName={pet.name} onRefresh={handleRefresh} />
             </YStack>
           </ScrollView>
         )}

@@ -1,10 +1,15 @@
 import { memo, useCallback, useState } from 'react';
-import { Image } from 'react-native';
+import { Image, ScrollView, Alert } from 'react-native';
 import { Card, Text, XStack, YStack } from 'tamagui';
+import { Trash2 } from '@tamagui/lucide-icons';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 import type { Pet } from '@/src/schemas/pet.schema';
+import { Button } from '@/src/design-system/components';
+import { PetHealthRecords } from './PetHealthRecords';
+import { PetWeightChart } from './PetWeightChart';
+import { PetWeightRecords } from './PetWeightRecords';
 
 /**
  * 宠物信息面板组件的 Props 接口
@@ -12,6 +17,8 @@ import type { Pet } from '@/src/schemas/pet.schema';
 interface PetInfoPanelProps {
   /** 宠物数据 */
   pet: Pet;
+  /** 删除宠物回调 */
+  onDelete?: (petId: number) => Promise<void>;
 }
 
 /**
@@ -33,7 +40,7 @@ type TabKey = (typeof TABS)[number]['key'];
 interface InfoRowProps {
   label: string;
   value: string;
-  colors: typeof Colors.light;
+  colors: (typeof Colors)[keyof typeof Colors];
 }
 
 const InfoRow = memo(function InfoRow({ label, value, colors }: InfoRowProps) {
@@ -46,41 +53,6 @@ const InfoRow = memo(function InfoRow({ label, value, colors }: InfoRowProps) {
         {value}
       </Text>
     </XStack>
-  );
-});
-
-/**
- * 空状态组件 - 用于显示功能即将上线的提示
- */
-interface EmptyStateProps {
-  icon: string;
-  title: string;
-  description: string;
-  colors: typeof Colors.light;
-}
-
-const EmptyState = memo(function EmptyState({ icon, title, description, colors }: EmptyStateProps) {
-  return (
-    <YStack gap="$3" alignItems="center" justifyContent="center" minHeight={180} padding="$4">
-      <YStack
-        width={80}
-        height={80}
-        borderRadius="$12"
-        backgroundColor="$gray2"
-        alignItems="center"
-        justifyContent="center"
-      >
-        <IconSymbol name={icon as any} size={40} color={colors.icon + '60'} />
-      </YStack>
-      <YStack gap="$2" alignItems="center">
-        <Text fontSize={16} fontWeight="600" color={colors.text} textAlign="center">
-          {title}
-        </Text>
-        <Text fontSize={14} color={colors.icon} textAlign="center" maxWidth={250}>
-          {description}
-        </Text>
-      </YStack>
-    </YStack>
   );
 });
 
@@ -98,10 +70,12 @@ const EmptyState = memo(function EmptyState({ icon, title, description, colors }
  * <PetInfoPanel pet={selectedPet} />
  * ```
  */
-export const PetInfoPanel = memo(function PetInfoPanel({ pet }: PetInfoPanelProps) {
+export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInfoPanelProps) {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
   const [activeTab, setActiveTab] = useState<TabKey>('info');
+  const [deleting, setDeleting] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   /**
    * 处理 Tab 切换
@@ -110,6 +84,44 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet }: PetInfoPanelProp
   const handleTabChange = useCallback((tab: TabKey) => {
     setActiveTab(tab);
   }, []);
+
+  /**
+   * 刷新体重数据
+   */
+  const handleRefresh = useCallback(() => {
+    setRefreshTrigger((prev) => {
+      console.log('🔄 Refreshing weight chart, trigger:', prev + 1);
+      return prev + 1;
+    });
+  }, []);
+
+  /**
+   * 处理删除宠物
+   */
+  const handleDelete = useCallback(() => {
+    if (!onDelete) return;
+
+    Alert.alert('确认删除', `确定要删除 ${pet.name} 吗？此操作无法撤销。`, [
+      {
+        text: '取消',
+        style: 'cancel',
+      },
+      {
+        text: '删除',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            setDeleting(true);
+            await onDelete(pet.id);
+          } catch (error) {
+            // 错误已在 Hook 中处理
+          } finally {
+            setDeleting(false);
+          }
+        },
+      },
+    ]);
+  }, [onDelete, pet.id, pet.name]);
 
   return (
     <YStack width="90%" marginTop="$4" gap="$3">
@@ -279,23 +291,45 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet }: PetInfoPanelProp
         )}
 
         {activeTab === 'health' && (
-          <EmptyState
-            icon="heart.fill"
-            title="健康档案功能即将上线"
-            description="记录疫苗接种、体检报告、用药记录等健康信息"
-            colors={colors}
-          />
+          <ScrollView
+            style={{ maxHeight: 400 }}
+            showsVerticalScrollIndicator={false}
+            nestedScrollEnabled
+          >
+            <PetHealthRecords petId={pet.id} petName={pet.name} />
+          </ScrollView>
         )}
 
         {activeTab === 'activity' && (
-          <EmptyState
-            icon="chart.bar.fill"
-            title="活动记录功能即将上线"
-            description="追踪运动量、饮食习惯、体重变化等活动数据"
-            colors={colors}
-          />
+          <ScrollView
+            style={{ maxHeight: 400 }}
+            showsVerticalScrollIndicator={false}
+            nestedScrollEnabled
+          >
+            <YStack gap="$4">
+              <PetWeightChart petId={pet.id} petName={pet.name} refreshTrigger={refreshTrigger} />
+              <PetWeightRecords petId={pet.id} petName={pet.name} onRefresh={handleRefresh} />
+            </YStack>
+          </ScrollView>
         )}
       </Card>
+
+      {/* 删除按钮 - 放在最下方 */}
+      {onDelete && (
+        <>
+          <YStack height={1} backgroundColor={colors.icon + '15'} marginVertical="$3" />
+          <Button
+            fullWidth
+            variant="danger"
+            leftIcon={<Trash2 size={18} />}
+            onPress={handleDelete}
+            loading={deleting}
+            disabled={deleting}
+          >
+            删除宠物
+          </Button>
+        </>
+      )}
     </YStack>
   );
 });

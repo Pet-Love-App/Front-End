@@ -1,6 +1,9 @@
-import { Dimensions, Image } from 'react-native';
+import { useState } from 'react';
+import { Dimensions, Image, Alert } from 'react-native';
 import { Dialog, Text, XStack, YStack } from 'tamagui';
 import { Button } from '@/src/design-system/components';
+import { useRouter } from 'expo-router';
+import { Heart, Trash2 } from '@tamagui/lucide-icons';
 
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
@@ -10,13 +13,52 @@ interface PetDetailModalProps {
   pet: Pet | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onDelete?: (petId: number) => Promise<void>;
 }
 
-export function PetDetailModal({ pet, open, onOpenChange }: PetDetailModalProps) {
+export function PetDetailModal({ pet, open, onOpenChange, onDelete }: PetDetailModalProps) {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
+  const router = useRouter();
+  const [deleting, setDeleting] = useState(false);
 
   if (!pet) return null;
+
+  const handleOpenHealth = () => {
+    onOpenChange(false);
+    router.push({
+      pathname: '/(tabs)/profile/pet-health',
+      params: {
+        petId: pet.id.toString(),
+        petName: pet.name,
+      },
+    });
+  };
+
+  const handleDelete = () => {
+    Alert.alert('确认删除', `确定要删除 ${pet.name} 吗？此操作无法撤销。`, [
+      {
+        text: '取消',
+        style: 'cancel',
+      },
+      {
+        text: '删除',
+        style: 'destructive',
+        onPress: async () => {
+          if (!onDelete) return;
+          try {
+            setDeleting(true);
+            await onDelete(pet.id);
+            onOpenChange(false);
+          } catch (error) {
+            // 错误已在 Hook 中处理
+          } finally {
+            setDeleting(false);
+          }
+        },
+      },
+    ]);
+  };
 
   const screenWidth = Dimensions.get('window').width;
   const dialogWidth = Math.min(screenWidth - 48, 400);
@@ -125,11 +167,40 @@ export function PetDetailModal({ pet, open, onOpenChange }: PetDetailModalProps)
             </YStack>
           </YStack>
 
-          <XStack justifyContent="flex-end">
+          {/* 快捷操作按钮 */}
+          <Button
+            fullWidth
+            variant="outline"
+            leftIcon={<Heart size={18} />}
+            onPress={handleOpenHealth}
+          >
+            健康档案 & 体重记录
+          </Button>
+
+          <XStack justifyContent="flex-end" gap="$2">
             <Dialog.Close displayWhenAdapted asChild>
-              <Button onPress={() => onOpenChange(false)}>关闭</Button>
+              <Button variant="outline" onPress={() => onOpenChange(false)} disabled={deleting}>
+                关闭
+              </Button>
             </Dialog.Close>
           </XStack>
+
+          {/* 删除按钮 - 放在最下方，与上面内容分隔 */}
+          {onDelete && (
+            <>
+              <YStack height={1} backgroundColor="$gray5" marginVertical="$2" />
+              <Button
+                fullWidth
+                variant="danger"
+                leftIcon={<Trash2 size={18} />}
+                onPress={handleDelete}
+                loading={deleting}
+                disabled={deleting}
+              >
+                删除宠物
+              </Button>
+            </>
+          )}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog>

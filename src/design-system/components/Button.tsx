@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
-import { Button as TamaguiButton, Spinner, Text, XStack, styled, GetProps } from 'tamagui';
+import { View, StyleSheet } from 'react-native';
+import { Button as TamaguiButton, Spinner, Text, styled, GetProps } from 'tamagui';
 
 const StyledButton = styled(TamaguiButton, {
   name: 'Button',
@@ -76,6 +77,20 @@ const FONT_SIZE_MAP: Record<string, number> = {
   lg: 18,
 };
 
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconLeft: {
+    marginRight: 8,
+  },
+  iconRight: {
+    marginLeft: 8,
+  },
+});
+
 export const Button = forwardRef<React.ElementRef<typeof StyledButton>, ButtonProps>(
   ({ children, loading, disabled, leftIcon, rightIcon, variant, size, ...props }, ref) => {
     const textColor = getTextColor(variant as string);
@@ -93,17 +108,17 @@ export const Button = forwardRef<React.ElementRef<typeof StyledButton>, ButtonPr
         {loading ? (
           <Spinner size="small" color={textColor} />
         ) : (
-          <XStack alignItems="center" justifyContent="center" gap="$2">
-            {leftIcon}
+          <View style={styles.row}>
+            {leftIcon ? <View style={styles.iconLeft}>{leftIcon}</View> : null}
             {typeof children === 'string' ? (
               <Text color={textColor} fontSize={fontSize} fontWeight="600">
                 {children}
               </Text>
-            ) : (
-              children
-            )}
-            {rightIcon}
-          </XStack>
+            ) : children ? (
+              <View>{children}</View>
+            ) : null}
+            {rightIcon ? <View style={styles.iconRight}>{rightIcon}</View> : null}
+          </View>
         )}
       </StyledButton>
     );

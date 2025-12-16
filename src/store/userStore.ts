@@ -119,8 +119,6 @@ export const useUserStore = create<UserState>()(
           // 如果没有 session，说明需要邮箱验证
           if (!data.session) {
             set({ isLoading: false });
-            // 这是成功的情况，返回一个特殊的成功消息
-            logger.info('注册成功，等待邮箱验证');
             return; // 正常返回，不抛出错误
           }
 
@@ -135,7 +133,6 @@ export const useUserStore = create<UserState>()(
           await get().fetchCurrentUser();
 
           set({ isLoading: false });
-          logger.info('注册并登录成功');
         } catch (error) {
           set({ isLoading: false });
           logger.error('注册失败', error as Error);
@@ -157,7 +154,6 @@ export const useUserStore = create<UserState>()(
             isAuthenticated: false,
           });
         } catch (error) {
-          logger.error('登出失败', error as Error);
           // 即使登出失败，也清除本地状态
           set({
             user: null,
@@ -174,7 +170,6 @@ export const useUserStore = create<UserState>()(
           const { data, error } = await supabaseAuthService.refreshSession();
 
           if (error || !data) {
-            logger.warn('刷新令牌失败', { error: error?.message });
             // Token 刷新失败，清除登录状态
             get().logout();
             throw new Error('登录已过期，请重新登录');
@@ -186,7 +181,6 @@ export const useUserStore = create<UserState>()(
             accessToken: data.access_token,
           });
         } catch (error) {
-          logger.error('刷新令牌失败', error as Error);
           throw error;
         }
       },
@@ -199,13 +193,39 @@ export const useUserStore = create<UserState>()(
           const { data, error } = await supabaseProfileService.getCurrentProfile();
 
           if (error || !data) {
-            logger.error('获取用户信息失败', new Error(error?.message || '获取用户信息失败'));
-            throw new Error(error?.message || '获取用户信息失败');
+            // 如果是认证错误，静默处理
+            const errorMessage = error?.message || '获取用户信息失败';
+            const isAuthError =
+              errorMessage.includes('session') ||
+              errorMessage.includes('token') ||
+              errorMessage.includes('Auth');
+
+            if (isAuthError) {
+              // 静默清除本地状态，不打印日志
+              set({
+                user: null,
+                session: null,
+                isAuthenticated: false,
+              });
+            } else {
+              logger.error('获取用户信息失败', new Error(errorMessage));
+            }
+
+            throw new Error(errorMessage);
           }
 
           set({ user: data });
         } catch (error) {
-          logger.error('用户信息获取失败', error as Error);
+          // 认证相关错误不需要打印堆栈
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          const isAuthError =
+            errorMessage.includes('session') ||
+            errorMessage.includes('token') ||
+            errorMessage.includes('Auth');
+
+          if (!isAuthError) {
+            logger.error('用户信息获取失败', error as Error);
+          }
           throw error;
         }
       },
@@ -356,21 +376,24 @@ export const useUserStore = create<UserState>()(
         if (state?.isAuthenticated) {
           supabaseAuthService
             .getSession()
-            .then(({ data: session }) => {
-              if (session) {
-                state.setSession(session);
-                // 刷新用户信息
-                state.fetchCurrentUser().catch((error) => {
-                  logger.warn('刷新用户信息失败', { error: String(error) });
-                });
-              } else {
-                // Session 已过期，清除登录状态
+            .then(({ data: session, error }) => {
+              if (error || !session) {
+                // Session 无效或已过期，静默清除登录状态
                 state.setUser(null);
                 state.setSession(null);
+                return;
               }
+
+              // Session 有效，设置并刷新用户信息
+              state.setSession(session);
+              state.fetchCurrentUser().catch(() => {
+                // 如果获取用户信息失败，静默清除登录状态
+                state.setUser(null);
+                state.setSession(null);
+              });
             })
-            .catch((error) => {
-              logger.warn('获取 Session 失败', { error: String(error) });
+            .catch(() => {
+              // Refresh Token 失效或其他认证错误，静默清除
               state.setUser(null);
               state.setSession(null);
             });

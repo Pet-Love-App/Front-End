@@ -67,6 +67,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.7,
         allowsEditing: true,
         aspect: [1, 1],

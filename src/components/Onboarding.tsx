@@ -7,11 +7,17 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   Platform,
+  StyleSheet,
 } from 'react-native';
 import { YStack, XStack, Text, Button } from 'tamagui';
+import { LinearGradient } from 'expo-linear-gradient';
 import OnboardingSlide from './OnboardingSlide';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
+
+// 应用主题色
+const BRAND_COLOR = '#FEBE98';
+const BRAND_LIGHT = '#FFCCBC';
 
 // 当你改动引导内容时把版本号提升，已看过旧版的用户会再次看到新版
 const ONBOARDING_VERSION = 'v1';
@@ -83,8 +89,8 @@ export function Onboarding() {
   return (
     <YStack flex={1} backgroundColor="$background" justifyContent="space-between">
       <XStack justifyContent="flex-end" padding="$4">
-        <TouchableOpacity onPress={onSkip}>
-          <Text color="$gray10">跳过</Text>
+        <TouchableOpacity onPress={onSkip} style={styles.skipButton}>
+          <Text style={styles.skipText}>跳过</Text>
         </TouchableOpacity>
       </XStack>
 
@@ -113,43 +119,95 @@ export function Onboarding() {
 
       {/* 底部固定间距以避免被系统导航栏或安全区遮挡 */}
       <YStack padding="$3" style={{ paddingBottom: (Platform.OS === 'ios' ? 34 : 20) + 8 }}>
-        <XStack justifyContent="center" alignItems="center" gap="$2" marginBottom="$1">
+        <XStack justifyContent="center" alignItems="center" gap="$2" marginBottom="$4">
           {SLIDES.map((_, i) => (
             <View
               key={i}
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: 4,
-                marginHorizontal: 4,
-                backgroundColor: i === index ? '#333' : '#ccc',
-              }}
+              style={[styles.dot, i === index ? styles.dotActive : styles.dotInactive]}
             />
           ))}
         </XStack>
 
-        <XStack justifyContent="center">
+        <XStack justifyContent="center" paddingHorizontal="$4">
           {index === SLIDES.length - 1 ? (
-            <Button
-              size="$4"
-              onPress={onStart}
-              style={{ minHeight: 44, paddingHorizontal: 20, paddingVertical: 8 }}
-            >
-              开始体验
-            </Button>
+            <TouchableOpacity onPress={onStart} style={styles.buttonContainer} activeOpacity={0.9}>
+              <LinearGradient
+                colors={[BRAND_COLOR, BRAND_LIGHT]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.gradientButton}
+              >
+                <Text style={styles.buttonText}>🚀 开始体验</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           ) : (
-            <Button
-              size="$4"
-              onPress={goNext}
-              style={{ minHeight: 44, paddingHorizontal: 20, paddingVertical: 8 }}
-            >
-              下一页
-            </Button>
+            <TouchableOpacity onPress={goNext} style={styles.buttonContainer} activeOpacity={0.9}>
+              <LinearGradient
+                colors={[BRAND_COLOR, BRAND_LIGHT]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.gradientButton}
+              >
+                <Text style={styles.buttonText}>下一页 →</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           )}
         </XStack>
       </YStack>
     </YStack>
   );
 }
+
+const styles = StyleSheet.create({
+  skipButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#F3F4F6',
+  },
+  skipText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginHorizontal: 4,
+  },
+  dotActive: {
+    backgroundColor: BRAND_COLOR,
+    width: 28,
+    borderRadius: 5,
+  },
+  dotInactive: {
+    backgroundColor: '#E5E7EB',
+  },
+  buttonContainer: {
+    width: '100%',
+    maxWidth: 320,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: BRAND_COLOR,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  gradientButton: {
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 56,
+  },
+  buttonText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+});
 
 export default Onboarding;

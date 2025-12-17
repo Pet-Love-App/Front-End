@@ -15,9 +15,11 @@ import {
   StyleSheet,
   Image,
   ActivityIndicator,
+  Pressable,
 } from 'react-native';
-import { X, Search, Check } from '@tamagui/lucide-icons';
+import { X, Search, Check, Info } from '@tamagui/lucide-icons';
 import { BlurView } from 'expo-blur';
+import { UserProfileModal } from '@/src/components/UserProfileModal';
 
 interface Friend {
   id: string;
@@ -43,6 +45,8 @@ export function MentionFriendsModal({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFriends, setSelectedFriends] = useState<Friend[]>(initialSelected);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [showUserProfile, setShowUserProfile] = useState(false);
 
   // 模拟好友列表（实际项目中应该从 API 获取）
   const mockFriends: Friend[] = useMemo(
@@ -79,38 +83,55 @@ export function MentionFriendsModal({
     onClose();
   }, [selectedFriends, onConfirm, onClose]);
 
+  const handleViewProfile = useCallback((userId: string, event: any) => {
+    event?.stopPropagation();
+    setSelectedUserId(userId);
+    setShowUserProfile(true);
+  }, []);
+
   const renderFriendItem = useCallback(
     ({ item }: { item: Friend }) => {
       const isSelected = selectedFriends.some((f) => f.id === item.id);
 
       return (
-        <TouchableOpacity
-          style={styles.friendItem}
-          onPress={() => toggleFriend(item)}
-          activeOpacity={0.7}
-        >
-          <View style={styles.friendLeft}>
-            <View style={styles.avatarContainer}>
-              {item.avatar ? (
-                <Image source={{ uri: item.avatar }} style={styles.avatar} />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarText}>{item.username.charAt(0).toUpperCase()}</Text>
-                </View>
-              )}
+        <View style={styles.friendItem}>
+          <TouchableOpacity
+            style={styles.friendTouchable}
+            onPress={() => toggleFriend(item)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.friendLeft}>
+              <View style={styles.avatarContainer}>
+                {item.avatar ? (
+                  <Image source={{ uri: item.avatar }} style={styles.avatar} />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <Text style={styles.avatarText}>{item.username.charAt(0).toUpperCase()}</Text>
+                  </View>
+                )}
+              </View>
+              <Text style={styles.friendName}>{item.username}</Text>
             </View>
-            <Text style={styles.friendName}>{item.username}</Text>
-          </View>
 
-          {isSelected && (
-            <View style={styles.checkmark}>
-              <Check size={18} color="#FFFFFF" strokeWidth={3} />
-            </View>
-          )}
-        </TouchableOpacity>
+            {isSelected && (
+              <View style={styles.checkmark}>
+                <Check size={18} color="#FFFFFF" strokeWidth={3} />
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {/* 查看详情按钮 */}
+          <TouchableOpacity
+            style={styles.infoButton}
+            onPress={(e) => handleViewProfile(item.id, e)}
+            activeOpacity={0.7}
+          >
+            <Info size={20} color="#6B7280" strokeWidth={2} />
+          </TouchableOpacity>
+        </View>
       );
     },
-    [selectedFriends, toggleFriend]
+    [selectedFriends, toggleFriend, handleViewProfile]
   );
 
   if (!visible) return null;
@@ -174,6 +195,15 @@ export function MentionFriendsModal({
           </View>
         </View>
       </BlurView>
+
+      {/* 用户详情模态框 */}
+      {selectedUserId && (
+        <UserProfileModal
+          visible={showUserProfile}
+          userId={selectedUserId}
+          onClose={() => setShowUserProfile(false)}
+        />
+      )}
     </Modal>
   );
 }
@@ -188,7 +218,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '80%',
+    height: '70%',
     paddingTop: 20,
   },
   header: {
@@ -255,11 +285,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 12,
+    paddingHorizontal: 20,
+  },
+  friendTouchable: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flex: 1,
   },
   friendLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+  },
+  infoButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
   },
   avatarContainer: {
     marginRight: 12,

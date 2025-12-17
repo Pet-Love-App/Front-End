@@ -150,6 +150,49 @@ export function ProfileScreen() {
           }
         />
 
+        {/* 我的好友入口 */}
+        <YStack width="100%" paddingHorizontal="$4" marginTop="$4">
+          <TouchableOpacity
+            onPress={() => router.push('/profile/friends' as any)}
+            activeOpacity={0.8}
+            style={{
+              backgroundColor: colors.cardBackground,
+              borderRadius: 16,
+              padding: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 2,
+            }}
+          >
+            <YStack flexDirection="row" alignItems="center" gap="$3">
+              <YStack
+                width={40}
+                height={40}
+                borderRadius="$10"
+                backgroundColor="$blue2"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Ionicons name="people-outline" size={22} color="#1DA1F2" />
+              </YStack>
+              <YStack>
+                <Text fontSize={16} fontWeight="600" color={colors.text}>
+                  我的好友
+                </Text>
+                <Text fontSize={13} color={colors.icon}>
+                  管理你的好友和请求
+                </Text>
+              </YStack>
+            </YStack>
+            <Ionicons name="chevron-forward" size={20} color={colors.icon} />
+          </TouchableOpacity>
+        </YStack>
+
         {/* 信誉分和勋章 */}
         <YStack width="100%" paddingHorizontal="$4" gap="$3" marginTop="$4" marginBottom="$2">
           {/* 信誉分卡片 */}
@@ -157,7 +200,7 @@ export function ProfileScreen() {
 
           {/* 调试按钮 - 刷新信誉分 */}
           {__DEV__ && (
-            <Button size="sm" variant="outline" onPress={refresh}>
+            <Button variant="outlined" onPress={refresh}>
               🔄 刷新信誉分数据
             </Button>
           )}

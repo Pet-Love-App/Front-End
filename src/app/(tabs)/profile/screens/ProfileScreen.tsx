@@ -241,7 +241,7 @@ export function ProfileScreen() {
                 alignItems="center"
                 justifyContent="center"
               >
-                <Ionicons name="people-outline" size={22} color="#1DA1F2" />
+                <Ionicons name="people-outline" size={22} color="#FEBE98" />
               </YStack>
               <YStack>
                 <Text fontSize={16} fontWeight="600" color={colors.text}>

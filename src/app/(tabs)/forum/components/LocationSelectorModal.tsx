@@ -62,7 +62,7 @@ interface LocationSelectorModalProps {
   initialLocation?: Location;
 }
 
-const BRAND_COLOR = '#1DA1F2';
+const BRAND_COLOR = '#FEBE98'; // 应用主题色 - 温暖的桃色
 
 // 计算两点之间的距离（米）
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {

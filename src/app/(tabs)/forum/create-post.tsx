@@ -2,7 +2,7 @@
  * 创建帖子页面 - 优雅的社交媒体风格设计
  *
  * 设计特点：
- * - 浅色模式，品牌色 #1DA1F2
+ * - 浅色模式，品牌色 #FEBE98（温暖的桃色）
  * - 大面积媒体预览区（占屏幕 1/3）
  * - 底部工具栏带精致图标和标签
  * - 衬线字体标题 + 无衬线正文
@@ -62,9 +62,9 @@ import { LocationSelectorModal } from './components/LocationSelectorModal';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MEDIA_PREVIEW_HEIGHT = SCREEN_HEIGHT / 3;
 
-// 品牌色
-const BRAND_COLOR = '#1DA1F2';
-const BRAND_LIGHT = '#E8F5FE';
+// 品牌色 - 温暖的桃色
+const BRAND_COLOR = '#FEBE98';
+const BRAND_LIGHT = '#FFF8F5';
 
 // 动画组件
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);

@@ -22,7 +22,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabaseChatService, type Conversation } from '@/src/lib/supabase';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const BRAND_COLOR = '#1DA1F2';
+const BRAND_COLOR = '#FEBE98'; // 应用主题色 - 温暖的桃色
 
 export default function MessagesScreen() {
   const router = useRouter();
@@ -149,7 +149,7 @@ export default function MessagesScreen() {
 
       {/* 自定义头部 */}
       <LinearGradient
-        colors={['#1DA1F2', '#0EA5E9']}
+        colors={['#FEBE98', '#FFCCBC']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.header}

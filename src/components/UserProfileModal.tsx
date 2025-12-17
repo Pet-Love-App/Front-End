@@ -46,7 +46,7 @@ import { useUserStore } from '@/src/store/userStore';
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const BRAND_COLOR = '#1DA1F2';
+const BRAND_COLOR = '#FEBE98'; // 应用主题色 - 温暖的桃色
 
 interface UserProfileModalProps {
   visible: boolean;
@@ -337,7 +337,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       >
         {/* 头部背景 */}
         <LinearGradient
-          colors={['#1DA1F2', '#0EA5E9', '#3B82F6']}
+          colors={['#FEBE98', '#FFCCBC', '#FFD5C4']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.headerGradient}

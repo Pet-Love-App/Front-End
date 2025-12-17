@@ -32,7 +32,7 @@ import {
 import { UserProfileModal } from '@/src/components/UserProfileModal';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const BRAND_COLOR = '#1DA1F2';
+const BRAND_COLOR = '#FEBE98'; // 应用主题色 - 温暖的桃色
 
 type TabType = 'friends' | 'requests';
 
@@ -233,7 +233,7 @@ export default function MyFriendsScreen() {
 
       {/* 自定义头部 */}
       <LinearGradient
-        colors={['#1DA1F2', '#0EA5E9']}
+        colors={['#FEBE98', '#FFCCBC']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.header}

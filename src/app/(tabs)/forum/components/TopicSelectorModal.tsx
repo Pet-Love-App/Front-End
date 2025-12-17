@@ -33,7 +33,7 @@ interface TopicSelectorModalProps {
   initialSelected?: Topic[];
 }
 
-const BRAND_COLOR = '#1DA1F2';
+const BRAND_COLOR = '#FEBE98'; // 应用主题色 - 温暖的桃色
 
 export function TopicSelectorModal({
   visible,

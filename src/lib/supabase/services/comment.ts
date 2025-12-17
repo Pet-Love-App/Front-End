@@ -100,8 +100,25 @@ class SupabaseCommentService {
           author:profiles!author_id (
             id,
             username,
-            avatar_url
+            avatar_url,
+            user_badges (
+              id,
+              badge_id,
+              acquired_at,
+              is_equipped,
+              badge:badges (
+                code,
+                name,
+                icon,
+                description
+              )
+            ),
+            reputation:reputation_summaries!user_id (
+            score,
+            level
           )
+          )
+
         `
         )
         .eq('target_type', targetType)
@@ -130,21 +147,49 @@ class SupabaseCommentService {
       }
 
       // 转换数据
+      // const comments: Comment[] = data
+      //   ? (data as any).map((comment: DbComment) => {
+      //       return convertKeysToCamel({
+      //         ...comment,
+      //         author: comment.author
+      //           ? {
+      //               id: comment.author.id,
+      //               username: comment.author.username,
+      //               avatarUrl: comment.author.avatar_url,
+      //               reputationScore: comment.author.reputation?.score,
+      //               reputationLevel: comment.author.reputation?.level,
+      //               badges: comment.author.user_badges || []
+      //             }
+      //           : null,
+      //       }) as Comment;
+      //     })
+      //   : [];
+      // 修复 getComments 中的数据转换逻辑
       const comments: Comment[] = data
-        ? data.map((comment: DbComment) => {
+        ? (data as any).map((comment: DbComment) => {
+            // 解析 badge 数据（关键修复）
+            const userBadges = comment.author?.user_badges || [];
+            const badges = userBadges
+              .filter((ub) => ub.earned_at) // 过滤无效徽章
+              .map((ub) => ub.code); // 提取 code 字符串
+            const equippedBadge = userBadges.find((ub) => ub.is_equipped)?.code || null;
+
             return convertKeysToCamel({
               ...comment,
               author: comment.author
                 ? {
                     id: comment.author.id,
-                    username: comment.author.username,
-                    avatarUrl: comment.author.avatar_url,
+                    username: comment.author.username || null, // ✅ 容错
+                    avatarUrl: comment.author.avatar_url || null,
+                    reputationScore: comment.author.reputation?.score,
+                    reputationLevel: comment.author.reputation?.level,
+                    badges: badges, // ✅ 传递字符串数组
+                    equippedBadge: equippedBadge, // ✅ 传递佩戴的徽章
                   }
-                : null,
+                : null, // ✅ 允许 author 为 null
             }) as Comment;
           })
         : [];
-
       logger.success('comments', 'getComments', comments.length);
       return { data: comments, error: null, success: true };
     } catch (err) {
@@ -454,7 +499,7 @@ class SupabaseCommentService {
       }
 
       const comments: Comment[] = data
-        ? data.map((comment: DbComment) => {
+        ? (data as any).map((comment: DbComment) => {
             return convertKeysToCamel({
               ...comment,
               author: comment.author

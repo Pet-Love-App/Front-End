@@ -21,6 +21,136 @@ import type {
   DbCatfoodRating,
 } from '../types/database';
 
+import { recalculateReputation, logAbnormalBehavior } from './reputation';
+
+// 扩展类型定义 - 解决嵌套数据访问问题
+interface ProfileWithReputation {
+  reputation_summary?: {
+    score?: number;
+  }[];
+}
+
+interface RatingWithUser {
+  score: number;
+  user?: ProfileWithReputation;
+}
+
+/**
+ * 创建猫粮评分（新增异常检测）
+ */
+export const createRating = async (
+  catfoodId: string,
+  score: number,
+  review?: string,
+  imageUrls?: string[]
+) => {
+  // 修正：正确获取用户信息
+  const userResponse = await supabase.auth.getUser();
+  if (userResponse.error || !userResponse.data.user) {
+    return { data: null, error: { message: '未登录' } };
+  }
+
+  const userId = userResponse.data.user.id;
+
+  // 1. 检测异常评分行为
+  // 检测24小时内评分数量
+  const { data: recentRatings } = await supabase
+    .from('catfood_ratings')
+    .select('score, created_at')
+    .eq('user_id', userId)
+    .gt('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+    .order('created_at', { ascending: false });
+
+  // 记录异常行为：1天内超过5条评分
+  if (recentRatings && recentRatings.length > 5) {
+    await logAbnormalBehavior(userId, 'excessive_ratings', {
+      count: recentRatings.length,
+      timeFrame: '24h',
+    });
+  }
+
+  // 检测极端评分集中
+  if (recentRatings && recentRatings.length > 3) {
+    const extremeRatio =
+      recentRatings.filter((r) => r.score === 1 || r.score === 5).length / recentRatings.length;
+    if (extremeRatio > 0.8) {
+      await logAbnormalBehavior(userId, 'extreme_rating_concentration', {
+        ratio: extremeRatio,
+        count: recentRatings.length,
+      });
+    }
+  }
+
+  // 2. 创建评分
+  const { data, error } = await supabase
+    .from('catfood_ratings')
+    .insert({
+      user_id: userId,
+      catfood_id: catfoodId,
+      score,
+      comment: review,
+      image_urls: imageUrls,
+      created_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  // 3. 创建评分后重算用户信用分
+  await recalculateReputation(userId);
+
+  // 4. 更新商品平均分（加权）
+  await calculateCatfoodScore(catfoodId);
+
+  return { data: convertKeysToCamel(data), error: null };
+};
+
+/**
+ * 计算商品加权平均分（基于用户信用分）
+ */
+export const calculateCatfoodScore = async (catfoodId: string) => {
+  const { data: ratings } = await supabase
+    .from('catfood_ratings')
+    .select(
+      `
+      score,
+      user:profiles(reputation_summary:reputation_summaries(score))
+    `
+    )
+    .eq('catfood_id', catfoodId);
+
+  if (!ratings || ratings.length === 0) {
+    // 更新商品表平均分
+    await supabase.from('catfoods').update({ avg_rating: 0 }).eq('id', catfoodId);
+    return 0;
+  }
+
+  let weightedSum = 0;
+  let totalWeight = 0;
+
+  for (const rating of ratings as RatingWithUser[]) {
+    // 修正：安全访问嵌套的信用分数据
+    const userCreditScore = rating.user?.reputation_summary?.[0]?.score || 0;
+    const weight = 0.5 + (userCreditScore / 100) * 1;
+
+    weightedSum += rating.score * weight;
+    totalWeight += weight;
+  }
+
+  const finalScore = weightedSum / totalWeight;
+
+  // 更新商品表平均分
+  await supabase
+    .from('catfoods')
+    .update({ avg_rating: parseFloat(finalScore.toFixed(1)) })
+    .eq('id', catfoodId);
+
+  return finalScore;
+};
+
 /**
  * 猫粮评分类型（camelCase）
  */
@@ -180,20 +310,20 @@ export const getCatfoodDetail = async (id: string) => {
     }
 
     // 查询当前用户的点赞状态
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const userResponse = await supabase.auth.getUser();
     let isLiked = false;
     let isFavorited = false;
 
-    if (user) {
+    if (userResponse.data.user) {
+      const userId = userResponse.data.user.id;
+      // 修复：使用 maybeSingle() 替代 single() + catch
       // 查询点赞状态
       const { data: likeData } = await supabase
         .from('catfood_likes')
         .select('id')
         .eq('catfood_id', id)
-        .eq('user_id', user.id)
-        .single();
+        .eq('user_id', userId)
+        .maybeSingle();
       isLiked = !!likeData;
 
       // 查询收藏状态
@@ -201,8 +331,8 @@ export const getCatfoodDetail = async (id: string) => {
         .from('catfood_favorites')
         .select('id')
         .eq('catfood_id', id)
-        .eq('user_id', user.id)
-        .single();
+        .eq('user_id', userId)
+        .maybeSingle();
       isFavorited = !!favData;
     }
 
@@ -293,10 +423,8 @@ export const toggleFavorite = async (catfoodId: string | number) => {
  */
 export const checkLike = async (catfoodId: string) => {
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
+    const userResponse = await supabase.auth.getUser();
+    if (!userResponse.data.user) {
       return { data: false, error: null };
     }
 
@@ -304,7 +432,7 @@ export const checkLike = async (catfoodId: string) => {
       .from('catfood_likes')
       .select('id')
       .eq('catfood_id', catfoodId)
-      .eq('user_id', user.id)
+      .eq('user_id', userResponse.data.user.id)
       .maybeSingle();
 
     if (error) {
@@ -322,10 +450,8 @@ export const checkLike = async (catfoodId: string) => {
  */
 export const checkFavorite = async (catfoodId: string) => {
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
+    const userResponse = await supabase.auth.getUser();
+    if (!userResponse.data.user) {
       return { data: false, error: null };
     }
 
@@ -333,7 +459,7 @@ export const checkFavorite = async (catfoodId: string) => {
       .from('catfood_favorites')
       .select('id')
       .eq('catfood_id', catfoodId)
-      .eq('user_id', user.id)
+      .eq('user_id', userResponse.data.user.id)
       .maybeSingle();
 
     if (error) {
@@ -376,6 +502,11 @@ export const getUserFavorites = async (params: PaginationParams = {}) => {
   logger.query('favorites', 'list', params);
 
   try {
+    const userResponse = await supabase.auth.getUser();
+    if (!userResponse.data.user) {
+      return { data: [], error: null };
+    }
+
     const { data, error } = await supabase
       .from('catfood_favorites')
       .select(
@@ -398,6 +529,7 @@ export const getUserFavorites = async (params: PaginationParams = {}) => {
         )
       `
       )
+      .eq('user_id', userResponse.data.user.id)
       .order('created_at', { ascending: false })
       .range(from, to);
 
@@ -454,13 +586,10 @@ export const getUserLikes = async (params: PaginationParams = {}) => {
   logger.query('likes', 'list', params);
 
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
+    const userResponse = await supabase.auth.getUser();
+    if (!userResponse.data.user) {
       return {
-        data: null,
+        data: [],
         error: { message: '未登录' },
       };
     }
@@ -487,7 +616,7 @@ export const getUserLikes = async (params: PaginationParams = {}) => {
         )
       `
       )
-      .eq('user_id', user.id)
+      .eq('user_id', userResponse.data.user.id)
       .order('created_at', { ascending: false })
       .range(from, to);
 
@@ -533,50 +662,6 @@ export const getUserLikes = async (params: PaginationParams = {}) => {
 };
 
 /**
- * 创建评分
- */
-export const createRating = async (catfoodId: string, score: number, review?: string) => {
-  logger.query('ratings', 'create', { catfoodId, score });
-
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return { data: null, error: { message: '未登录' } };
-    }
-
-    // 使用upsert，如果已有评分则更新
-    const { data, error } = await supabase
-      .from('catfood_ratings')
-      .upsert(
-        {
-          catfood_id: catfoodId,
-          user_id: user.id,
-          score,
-          comment: review,
-        },
-        {
-          onConflict: 'catfood_id,user_id',
-        }
-      )
-      .select()
-      .single();
-
-    if (error) {
-      logger.error('ratings', 'create', error);
-      return { data: null, error: handleSupabaseError(error, 'create_rating') };
-    }
-
-    logger.success('ratings', 'create');
-    return { data: convertKeysToCamel(data), error: null };
-  } catch (err) {
-    logger.error('ratings', 'create', err);
-    return { data: null, error: { message: String(err) } };
-  }
-};
-
-/**
  * 获取用户对某个猫粮的评分
  */
 export const getUserRating = async (
@@ -585,10 +670,8 @@ export const getUserRating = async (
   logger.query('ratings', 'getUserRating', { catfoodId });
 
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
+    const userResponse = await supabase.auth.getUser();
+    if (!userResponse.data.user) {
       return { data: null, error: null };
     }
 
@@ -596,7 +679,7 @@ export const getUserRating = async (
       .from('catfood_ratings')
       .select('*')
       .eq('catfood_id', catfoodId)
-      .eq('user_id', user.id)
+      .eq('user_id', userResponse.data.user.id)
       .single();
 
     if (error && error.code !== 'PGRST116') {
@@ -620,10 +703,8 @@ export const deleteRating = async (catfoodId: string) => {
   logger.query('ratings', 'delete', { catfoodId });
 
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
+    const userResponse = await supabase.auth.getUser();
+    if (!userResponse.data.user) {
       return { data: null, error: { message: '未登录' } };
     }
 
@@ -631,12 +712,17 @@ export const deleteRating = async (catfoodId: string) => {
       .from('catfood_ratings')
       .delete()
       .eq('catfood_id', catfoodId)
-      .eq('user_id', user.id);
+      .eq('user_id', userResponse.data.user.id);
 
     if (error) {
       logger.error('ratings', 'delete', error);
       return { data: null, error: handleSupabaseError(error, 'delete_rating') };
     }
+
+    // 删除后重算信用分
+    await recalculateReputation(userResponse.data.user.id);
+    // 更新商品平均分
+    await calculateCatfoodScore(catfoodId);
 
     logger.success('ratings', 'delete');
     return { data: { success: true }, error: null };

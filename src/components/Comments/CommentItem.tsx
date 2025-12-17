@@ -1,138 +1,149 @@
-import { memo } from 'react';
-import { TouchableOpacity } from 'react-native';
-import { Separator, Text, XStack, YStack } from 'tamagui';
+// src/components/Comments/CommentItem.tsx
+import { View, Text, StyleSheet } from 'react-native';
+import { XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { AvatarImage } from '@/src/components/ui/OptimizedImage';
-import type { Comment } from '@/src/lib/supabase';
-import { primaryScale, errorScale } from '@/src/design-system/tokens';
+import { CommentAuthor } from '@/src/types/comment';
+import { BADGE_CONFIGS } from '@/src/constants/badges';
+import { neutralScale } from '@/src/design-system/tokens';
 
+// 定义Props类型
 interface CommentItemProps {
-  comment: Comment;
-  currentUserId?: string;
-  onLike: (commentId: number) => void;
-  onDelete: (commentId: number) => void;
+  author: CommentAuthor;
+  content: string;
+  createdAt: string;
+  likes: number;
+  isLiked: boolean;
+  isOwner?: boolean;
 }
 
-export const CommentItem = memo(function CommentItem({
-  comment,
-  currentUserId,
-  onLike,
-  onDelete,
+export default function CommentItem({
+  author,
+  content,
+  createdAt,
+  likes,
+  isLiked,
+  isOwner = false,
 }: CommentItemProps) {
-  const isOwner = comment.author.id === currentUserId;
-  const likeCount = comment.likes || 0;
+  // 修复徽章展示逻辑
+  const renderBadges = () => {
+    if (!author.badges || author.badges.length === 0) return null;
+
+    return author.badges.slice(0, 2).map((badgeCode: string, idx: number) => {
+      const badge = BADGE_CONFIGS[badgeCode];
+      if (!badge) return null;
+
+      return (
+        <YStack
+          key={idx}
+          width={16}
+          height={16}
+          borderRadius={8}
+          backgroundColor={`${badge.color}20`}
+          alignItems="center"
+          justifyContent="center"
+          marginLeft={2}
+        >
+          <IconSymbol name={badge.icon as any} size={10} color={badge.color} />
+        </YStack>
+      );
+    });
+  };
+
+  // 信用等级文本转换
+  const getReputationLevelText = (level?: string) => {
+    switch (level) {
+      case 'novice':
+        return '新手猫奴';
+      case 'intermediate':
+        return '进阶猫友';
+      case 'advanced':
+        return '资深铲屎官';
+      case 'expert':
+        return '猫粮专家';
+      default:
+        return '';
+    }
+  };
 
   return (
-    <YStack paddingVertical="$3" gap="$2">
-      <XStack gap="$3">
-        <CommentAvatar avatar={comment.author.avatarUrl} authorName={comment.author.username} />
+    <View style={styles.commentContainer}>
+      {/* 作者信息 */}
+      <XStack alignItems="center" marginBottom={4}>
+        <Text style={styles.authorName}>{author.username || '匿名用户'}</Text>
 
-        <YStack flex={1} gap="$2">
-          {/* 作者信息 */}
-          <XStack alignItems="center" justifyContent="space-between">
-            <XStack gap="$2" alignItems="center">
-              <Text fontSize="$4" fontWeight="600" color="$foreground">
-                {comment.author.username}
-              </Text>
-              {isOwner && (
-                <YStack
-                  backgroundColor={primaryScale.primary2}
-                  paddingHorizontal="$2"
-                  paddingVertical="$0.5"
-                  borderRadius="$2"
-                >
-                  <Text fontSize="$1" color={primaryScale.primary9}>
-                    我
-                  </Text>
-                </YStack>
-              )}
-            </XStack>
+        {isOwner && <Text style={styles.ownerTag}>我</Text>}
 
-            {isOwner && (
-              <TouchableOpacity onPress={() => onDelete(comment.id)}>
-                <IconSymbol name="trash" size={16} color="$foregroundSubtle" />
-              </TouchableOpacity>
-            )}
-          </XStack>
+        {renderBadges()}
 
-          {/* 内容 */}
-          <Text fontSize="$3" color="$foreground" lineHeight={20}>
-            {comment.content}
+        {author.reputationLevel && (
+          <Text style={styles.reputationLevel}>
+            {getReputationLevelText(author.reputationLevel)}
           </Text>
-
-          {/* 时间和点赞 */}
-          <XStack gap="$4" alignItems="center">
-            <Text fontSize="$2" color="$foregroundSubtle">
-              {formatTime(comment.createdAt)}
-            </Text>
-
-            <TouchableOpacity onPress={() => onLike(comment.id)}>
-              <XStack gap="$1" alignItems="center">
-                <IconSymbol
-                  name={comment.isLiked ? 'heart.fill' : 'heart'}
-                  size={14}
-                  color={comment.isLiked ? errorScale.error6 : '$foregroundSubtle'}
-                />
-                {likeCount > 0 && (
-                  <Text
-                    fontSize="$2"
-                    color={comment.isLiked ? errorScale.error6 : '$foregroundSubtle'}
-                  >
-                    {likeCount}
-                  </Text>
-                )}
-              </XStack>
-            </TouchableOpacity>
-          </XStack>
-        </YStack>
+        )}
       </XStack>
 
-      <Separator marginTop="$2" borderColor="$borderMuted" />
-    </YStack>
-  );
-});
+      {/* 评论内容 */}
+      <Text style={styles.content}>{content}</Text>
 
-interface CommentAvatarProps {
-  avatar?: string | null;
-  authorName: string;
+      {/* 底部信息 */}
+      <XStack justifyContent="space-between" style={styles.footer}>
+        <Text style={styles.time}>{createdAt}</Text>
+        <XStack alignItems="center">
+          <IconSymbol
+            name={isLiked ? 'heart.fill' : 'heart'}
+            size={12}
+            color={isLiked ? '#ef4444' : neutralScale.neutral6}
+          />
+          <Text style={styles.likes}>{likes}</Text>
+        </XStack>
+      </XStack>
+    </View>
+  );
 }
 
-const CommentAvatar = memo(function CommentAvatar({ avatar }: CommentAvatarProps) {
-  if (avatar) {
-    return <AvatarImage source={avatar} size={40} cachePolicy="memory-disk" />;
-  }
-
-  return (
-    <YStack
-      width={40}
-      height={40}
-      borderRadius={20}
-      backgroundColor={primaryScale.primary2}
-      alignItems="center"
-      justifyContent="center"
-    >
-      <IconSymbol name="person.fill" size={20} color={primaryScale.primary7} />
-    </YStack>
-  );
+const styles = StyleSheet.create({
+  commentContainer: {
+    padding: 12,
+    marginVertical: 4,
+    backgroundColor: 'white',
+    borderRadius: 8,
+  },
+  authorName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: neutralScale.neutral12,
+  },
+  ownerTag: {
+    fontSize: 10,
+    color: '#3b82f6',
+    backgroundColor: '#eff6ff',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 4,
+    marginLeft: 4,
+  },
+  reputationLevel: {
+    fontSize: 10,
+    color: neutralScale.neutral6,
+    marginLeft: 4,
+  },
+  content: {
+    fontSize: 14,
+    color: neutralScale.neutral11,
+    lineHeight: 20,
+    marginBottom: 8,
+  },
+  footer: {
+    fontSize: 12,
+    color: neutralScale.neutral8,
+  },
+  time: {
+    fontSize: 12,
+    color: neutralScale.neutral8,
+  },
+  likes: {
+    fontSize: 12,
+    color: neutralScale.neutral8,
+    marginLeft: 4,
+  },
 });
-
-function formatTime(dateString: string): string {
-  const now = new Date();
-  const date = new Date(dateString);
-  const diff = now.getTime() - date.getTime();
-
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 1) return '刚刚';
-  if (minutes < 60) return `${minutes}分钟前`;
-  if (hours < 24) return `${hours}小时前`;
-  if (days < 7) return `${days}天前`;
-
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-}

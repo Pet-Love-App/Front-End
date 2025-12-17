@@ -3,12 +3,13 @@ import { TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { ScrollView, Text, YStack } from 'tamagui';
+import { ScrollView, Text, View, YStack } from 'tamagui';
 import { Button } from '@/src/design-system/components';
 
 import { Colors } from '@/src/constants/theme';
 import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
-
+import { CreditScoreRing } from '../components/CreditScoreRing';
+import { BadgeGridPreview } from '../components/BadgeGrid';
 import {
   AddPetModal,
   PetDetailModal,
@@ -59,15 +60,30 @@ export function ProfileScreen() {
     unequipBadge,
     refresh,
   } = useReputation(user?.id);
+  const scoreDistribution = {
+    profile: reputation ? (reputation.profile_completeness / 15) * 100 : 0, // 资料完整度满分15
+    credibility: reputation ? (reputation.review_credibility / 40) * 100 : 0, // 评价可信度满分40
+    contribution: reputation ? (reputation.community_contribution / 25) * 100 : 0, // 社区贡献满分25
+    compliance: reputation ? (reputation.compliance / 20) * 100 : 0, // 合规性满分20
+  };
 
+  // 导航到信用分详情
+  const handleCreditDetail = () => {
+    router.push('/(tabs)/profile/credit-exp' as any);
+  };
+
+  // 导航到全部徽章页面
+  const handleViewAllBadges = () => {
+    router.push('/(tabs)/profile/all-badges' as any);
+  };
   // 勋章详情模态框
   const [selectedBadge, setSelectedBadge] = useState<any>(null);
 
   // 获取已装备的勋章配置
-  const equippedBadge = badges.find((b) => b.is_equipped);
-  const equippedBadgeConfig = equippedBadge?.badge?.code
-    ? BADGE_CONFIGS[equippedBadge.badge.code]
-    : null;
+  // const equippedBadge = badges.find((b) => b.is_equipped);
+  // const equippedBadgeConfig = equippedBadge?.badge?.code
+  //   ? BADGE_CONFIGS[equippedBadge.badge.code]
+  //   : null;
 
   // 未认证视图
   if (_hasHydrated && !isAuthenticated) {
@@ -139,37 +155,39 @@ export function ProfileScreen() {
           username={user?.username}
           bio="专业的宠物爱好者 🐱"
           onAvatarUpdate={fetchCurrentUser}
-          equippedBadge={
-            equippedBadgeConfig
-              ? {
-                  icon: equippedBadgeConfig.icon,
-                  color: equippedBadgeConfig.color,
-                  gradient: equippedBadgeConfig.gradient,
-                }
-              : null
-          }
+          // equippedBadge={
+          //   equippedBadgeConfig
+          //     ? {
+          //         icon: equippedBadgeConfig.icon,
+          //         color: equippedBadgeConfig.color,
+          //         gradient: equippedBadgeConfig.gradient,
+          //       }
+          //     : null
+          // }
         />
 
         {/* 信誉分和勋章 */}
         <YStack width="100%" paddingHorizontal="$4" gap="$3" marginTop="$4" marginBottom="$2">
-          {/* 信誉分卡片 */}
-          {reputation && <ReputationCard reputation={reputation} onPress={refresh} />}
+          <View style={{ flexDirection: 'row', gap: 20 }}>
+            {/* 左侧：信用分环形展示 */}
+            <View style={{ flex: 1 }}>
+              <CreditScoreRing
+                score={reputation?.score || 0}
+                distribution={scoreDistribution}
+                onPress={handleCreditDetail}
+              />
+            </View>
 
-          {/* 调试按钮 - 刷新信誉分 */}
-          {__DEV__ && (
-            <Button size="sm" variant="outline" onPress={refresh}>
-              🔄 刷新信誉分数据
-            </Button>
-          )}
-
-          {/* 勋章展示 */}
-          {badges.length > 0 && (
-            <BadgeGrid
-              badges={badges}
-              onBadgePress={(badge) => setSelectedBadge(badge)}
-              maxDisplay={8}
-            />
-          )}
+            {/* 右侧：徽章预览 */}
+            <View style={{ flex: 1 }}>
+              <BadgeGridPreview
+                badges={badges}
+                onViewAll={handleViewAllBadges}
+                onBadgePress={(badge) => setSelectedBadge(badge)}
+                maxDisplay={3}
+              />
+            </View>
+          </View>
         </YStack>
 
         {/* 个人资料标签页 - 宠物、评论、点赞 */}
@@ -191,13 +209,19 @@ export function ProfileScreen() {
         onDelete={handleDeletePet}
       />
 
-      <BadgeDetailModal
+      {/* <BadgeDetailModal
         visible={!!selectedBadge}
         badge={selectedBadge}
         onClose={() => setSelectedBadge(null)}
-        onEquip={equipBadge}
-        onUnequip={unequipBadge}
-      />
+        onEquip={(badgeCode: string) => equipBadge(Number(badgeCode))}
+      // 适配 onUnequip 无参数的要求
+      onUnequip={() => {
+        if (selectedBadge) {
+          return unequipBadge(selectedBadge.badge.id);
+        }
+        return Promise.resolve(false);
+      }}
+      /> */}
     </ScrollView>
   );
 }

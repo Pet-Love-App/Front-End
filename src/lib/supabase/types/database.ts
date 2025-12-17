@@ -20,8 +20,18 @@ export interface DbUser {
   is_admin?: boolean;
   created_at: string;
   updated_at?: string;
+  reputation?: DbReputationSummary | null;
+  user_badges?: DbUserBadge[] | null;
 }
-
+export interface CommentAuthor {
+  id: string;
+  username: string | null;
+  avatar: string | null;
+  reputationScore?: number; // 信用分
+  reputationLevel?: string; // 信用等级
+  userbadges?: DbUserBadge[] | null; // 拥有的徽章
+  equippedBadge?: string | null;
+}
 export interface DbUserProfile extends DbUser {
   follower_count?: number;
   following_count?: number;
@@ -214,18 +224,99 @@ export interface DbNotification {
 
 // ==================== 声望相关 ====================
 
+// export interface DbReputationSummary {
+//   id: number;
+//   user_id: string;
+//   score: number;
+//   profile_completeness: number;
+//   review_quality: number;
+//   community_contribution: number;
+//   compliance: number;
+//   level: string;
+//   updated_at: string;
+// }
 export interface DbReputationSummary {
   id: number;
   user_id: string;
-  score: number;
-  profile_completeness: number;
-  review_quality: number;
-  community_contribution: number;
-  compliance: number;
-  level: string;
+  score: number; // 总分（0-100）
+  profile_completeness: number; // 资料完整度（0-15）
+  review_credibility: number; // 评价可信度（0-40）
+  rating_consistency: number; // 评分一致性（0-15）
+  review_behavior_health: number; // 评价行为健康度（0-15）
+  review_quality: number; // 评价质量（0-10）
+  community_contribution: number; // 社区贡献（0-25）
+  compliance: number; // 合规性（0-20）
+  level: string; // 等级（新手/进阶/资深/专家）
+  updated_at: string; // 更新时间
+}
+
+// 2. 新增异常行为日志表（新增接口）
+export interface DbAbnormalBehaviorLog {
+  id: number;
+  user_id: string;
+  behavior_type: string; // excessive_ratings/extreme_rating_concentration等
+  behavior_details: Record<string, any>; // 行为详情
+  created_at: string;
+}
+
+// 3. 新增信用分申诉表（新增接口）
+export interface DbCreditAppeal {
+  id: number;
+  user_id: string;
+  reason: string; // 申诉理由
+  related_rating_id?: string; // 关联评分ID
+  status: 'pending' | 'approved' | 'rejected'; // 申诉状态
+  admin_feedback?: string; // 管理员反馈
+  created_at: string;
   updated_at: string;
 }
 
+// 4. 更新数据库类型导出（确保包含新表）
+export interface Database {
+  public: {
+    Tables: {
+      reputation_summaries: {
+        Row: DbReputationSummary;
+        Insert: Omit<DbReputationSummary, 'id' | 'updated_at'> & { updated_at?: string };
+        Update: Partial<DbReputationSummary>;
+      };
+      abnormal_behavior_logs: {
+        Row: DbAbnormalBehaviorLog;
+        Insert: Omit<DbAbnormalBehaviorLog, 'id' | 'created_at'> & { created_at?: string };
+        Update: Partial<DbAbnormalBehaviorLog>;
+      };
+      credit_appeals: {
+        Row: DbCreditAppeal;
+        Insert: Omit<DbCreditAppeal, 'id' | 'created_at' | 'updated_at'> & {
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<DbCreditAppeal>;
+      };
+      profiles: {
+        Row: DbUser;
+        Insert: Omit<DbUser, 'id' | 'created_at'> & { created_at?: string };
+        Update: Partial<DbUser>;
+      };
+
+      // 2. user_badges 表（解决 badges.ts 中 user_badges 不存在的错误）
+      user_badges: {
+        Row: DbUserBadge & { id: number; user_id: string };
+        Insert: Omit<DbUserBadge, 'id' | 'earned_at'> & { user_id: string; earned_at?: string };
+        Update: Partial<DbUserBadge>;
+      };
+
+      // 3. badges 表（解决 badges.ts 中 badges 不存在的错误）
+      badges: {
+        Row: DbBadge;
+        Insert: Omit<DbBadge, 'id'>;
+        Update: Partial<DbBadge>;
+      };
+
+      // 保留原有表定义（如catfood_ratings、catfoods、profiles等）
+    };
+  };
+}
 export interface DbBadge {
   id: number;
   code: string;
@@ -237,12 +328,17 @@ export interface DbBadge {
 }
 
 export interface DbUserBadge {
-  id: number;
-  user_id: string;
-  badge_id: number;
-  badge?: DbBadge;
-  acquired_at: string;
-  is_equipped: boolean;
+  code: string; // 徽章编码（novice/intermediate/advanced/expert/reliable_reviewer/consistent_ratings）
+  name: string; // 徽章名称
+  icon: string; // 图标名称（对应IconSymbol）
+  color: string; // 主色值
+  gradient?: string[]; // 渐变颜色数组
+  rarity: 'common' | 'uncommon' | 'rare' | 'epic'; // 稀有度
+  requirement: string; // 获取条件
+  description: string; // 徽章描述
+  benefits?: string[]; // 徽章权益
+  earned_at?: string; // 获取时间
+  is_equipped: boolean; // 是否已装备
 }
 
 // ==================== AI 报告相关 ====================

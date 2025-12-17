@@ -12,6 +12,12 @@ export interface CommentAuthor {
   username: string;
   /** 头像 URL */
   avatar?: string | null;
+  /** 信誉分 */
+  reputationScore?: number;
+  /** 信誉等级 */
+  reputationLevel?: string;
+  /** 拥有的徽章 */
+  badges?: string[];
 }
 
 /**

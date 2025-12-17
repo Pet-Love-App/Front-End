@@ -4,6 +4,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/src/lib/supabase/types/database'; // 确认路径正确
 
 import { logger } from '@/src/utils/logger';
 

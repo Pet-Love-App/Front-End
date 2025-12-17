@@ -824,6 +824,22 @@ class SupabaseForumService {
         return wrapResponse(null, error) as unknown as SupabaseResponse<Post[]>;
       }
 
+      // 批量查询点赞状态（性能优化）
+      const postIds = data
+        ? (data as unknown as DbPostFavorite[]).filter((fav) => fav.post).map((fav) => fav.post!.id)
+        : [];
+
+      const { data: likesData } =
+        postIds.length > 0
+          ? await supabase
+              .from('post_likes')
+              .select('post_id')
+              .eq('user_id', user.id)
+              .in('post_id', postIds)
+          : { data: null };
+
+      const likedPostIds = new Set(likesData?.map((like: any) => like.post_id) || []);
+
       const posts: Post[] = data
         ? (data as unknown as DbPostFavorite[])
             .filter((fav) => fav.post) // 过滤掉已删除的帖子
@@ -839,11 +855,14 @@ class SupabaseForumService {
                     }
                   : null,
               }) as Post;
+
               return {
                 ...convertedPost,
                 media: post.post_media
                   ? post.post_media.map((m: DbPostMedia) => convertKeysToCamel(m))
                   : [],
+                isLiked: likedPostIds.has(post.id),
+                isFavorited: true, // 收藏夹中的帖子肯定是已收藏的
               } as Post;
             })
         : [];

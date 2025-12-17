@@ -74,7 +74,7 @@ export function usePostDetail({
   // 用户信息
   const currentUser = useUserStore((s) => s.user);
   const currentUserId = currentUser?.id || null;
-  const isPostAuthor = !!(currentUser && post && currentUser.id === post.author.id);
+  const isPostAuthor = !!(currentUser && post && post.author && currentUser.id === post.author.id);
 
   /**
    * 加载评论列表

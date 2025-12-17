@@ -149,6 +149,11 @@ class SupabaseForumService {
       const { page = 1, pageSize = 20, order: _order = 'latest', tag, tags, category } = params;
       const { from, to } = calculatePagination({ page, pageSize });
 
+      // 获取当前用户
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       let query = supabase
         .from('posts')
         .select(
@@ -186,11 +191,43 @@ class SupabaseForumService {
         return wrapResponse(null, error) as unknown as SupabaseResponse<Post[]>;
       }
 
+      // 获取当前用户的点赞和收藏状态
+      let likedPostIds: Set<number> = new Set();
+      let favoritedPostIds: Set<number> = new Set();
+
+      if (user && data && data.length > 0) {
+        const postIds = data.map((p: DbPost) => p.id);
+
+        // 获取用户已点赞的帖子
+        const { data: likes } = await supabase
+          .from('post_likes')
+          .select('post_id')
+          .eq('user_id', user.id)
+          .in('post_id', postIds);
+
+        if (likes) {
+          likedPostIds = new Set(likes.map((l) => l.post_id));
+        }
+
+        // 获取用户已收藏的帖子
+        const { data: favorites } = await supabase
+          .from('post_favorites')
+          .select('post_id')
+          .eq('user_id', user.id)
+          .in('post_id', postIds);
+
+        if (favorites) {
+          favoritedPostIds = new Set(favorites.map((f) => f.post_id));
+        }
+      }
+
       // 转换数据
       const posts: Post[] = data
         ? data.map((post: DbPost): Post => {
             return convertKeysToCamel({
               ...post,
+              isLiked: likedPostIds.has(post.id),
+              isFavorited: favoritedPostIds.has(post.id),
               author: post.author
                 ? {
                     id: post.author.id,
@@ -624,7 +661,7 @@ class SupabaseForumService {
         .select('id')
         .eq('post_id', postId)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       let action: 'favorited' | 'unfavorited';
 
@@ -693,7 +730,7 @@ class SupabaseForumService {
         .select('id')
         .eq('post_id', postId)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       let action: 'liked' | 'unliked';
 

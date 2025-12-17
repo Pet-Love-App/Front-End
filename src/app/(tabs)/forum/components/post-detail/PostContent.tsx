@@ -9,8 +9,6 @@ import { styled, YStack, XStack, Text, Avatar } from 'tamagui';
 import Tag from '@/src/components/ui/Tag';
 import type { Post } from '@/src/lib/supabase';
 
-import { ForumColors } from '../../constants';
-
 export interface PostContentProps {
   /** 帖子数据 */
   post: Post;
@@ -21,48 +19,75 @@ export interface PostContentProps {
 // 样式组件
 const Container = styled(YStack, {
   name: 'PostContent',
-  padding: '$4',
-  gap: '$3',
-  backgroundColor: '$background',
+  paddingHorizontal: 20,
+  paddingTop: 20,
+  paddingBottom: 16,
+  gap: 16,
+  backgroundColor: '#fff',
 });
 
 const AuthorRow = styled(XStack, {
   name: 'AuthorRow',
   alignItems: 'center',
-  gap: '$3',
+  gap: 12,
+});
+
+const AuthorAvatar = styled(Avatar, {
+  name: 'AuthorAvatar',
+  borderWidth: 2,
+  borderColor: 'rgba(0, 0, 0, 0.04)',
 });
 
 const AuthorInfo = styled(YStack, {
   name: 'AuthorInfo',
   flex: 1,
-  gap: '$1',
+  gap: 2,
 });
 
 const AuthorName = styled(Text, {
   name: 'AuthorName',
   fontSize: 15,
   fontWeight: '600',
-  color: ForumColors.clay,
+  color: '#1a1a1a',
+  letterSpacing: -0.2,
+});
+
+const PostMeta = styled(XStack, {
+  name: 'PostMeta',
+  alignItems: 'center',
+  gap: 6,
+});
+
+const MetaDot = styled(YStack, {
+  name: 'MetaDot',
+  width: 3,
+  height: 3,
+  borderRadius: 1.5,
+  backgroundColor: '#c4c4c4',
 });
 
 const PostTime = styled(Text, {
   name: 'PostTime',
-  fontSize: 12,
-  color: '$colorSubtle',
+  fontSize: 13,
+  color: '#8e8e93',
+  letterSpacing: -0.1,
 });
 
+// 正文样式 - 杂志级排版
 const ContentText = styled(Text, {
   name: 'ContentText',
-  fontSize: 15,
-  lineHeight: 24,
-  color: ForumColors.text,
+  fontSize: 16,
+  lineHeight: 26,
+  color: '#262626',
+  letterSpacing: 0.2,
+  fontWeight: '400',
 });
 
 const TagsContainer = styled(XStack, {
   name: 'TagsContainer',
   flexWrap: 'wrap',
-  gap: '$2',
-  marginTop: '$1',
+  gap: 8,
+  marginTop: 4,
 });
 
 /**
@@ -79,12 +104,12 @@ function formatPostTime(dateStr: string): string {
     const diffDays = Math.floor(diffHours / 24);
 
     if (diffSecs < 60) return '刚刚';
-    if (diffMins < 60) return `${diffMins}分钟前`;
-    if (diffHours < 24) return `${diffHours}小时前`;
-    if (diffDays < 7) return `${diffDays}天前`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)}周前`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)}个月前`;
-    return `${Math.floor(diffDays / 365)}年前`;
+    if (diffMins < 60) return `${diffMins} 分钟前`;
+    if (diffHours < 24) return `${diffHours} 小时前`;
+    if (diffDays < 7) return `${diffDays} 天前`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} 周前`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)} 个月前`;
+    return `${Math.floor(diffDays / 365)} 年前`;
   } catch {
     return '';
   }
@@ -104,26 +129,39 @@ function PostContentComponent({ post, onAuthorPress }: PostContentProps) {
     <Container>
       {/* 作者信息行 */}
       <AuthorRow>
-        <Avatar circular size="$4" onPress={handleAuthorPress} pressStyle={{ opacity: 0.8 }}>
+        <AuthorAvatar
+          circular
+          size="$4"
+          onPress={handleAuthorPress}
+          pressStyle={{ opacity: 0.8, scale: 0.98 }}
+        >
           <Avatar.Image
             source={{ uri: post.author?.avatar || undefined }}
             accessibilityLabel={post.author?.username || '用户'}
           />
-          <Avatar.Fallback backgroundColor="$backgroundSubtle">
-            <Text fontSize={14} color="$colorMuted">
+          <Avatar.Fallback backgroundColor="#f5f5f5" delayMs={200}>
+            <Text fontSize={14} fontWeight="600" color="#8e8e93">
               {post.author?.username?.charAt(0)?.toUpperCase() || '?'}
             </Text>
           </Avatar.Fallback>
-        </Avatar>
+        </AuthorAvatar>
 
         <AuthorInfo>
           <AuthorName onPress={handleAuthorPress}>{post.author?.username || '匿名用户'}</AuthorName>
-          <PostTime>{formatPostTime(post.createdAt)}</PostTime>
+          <PostMeta>
+            <PostTime>{formatPostTime(post.createdAt)}</PostTime>
+            {post.category && (
+              <>
+                <MetaDot />
+                <PostTime>{getCategoryLabel(post.category)}</PostTime>
+              </>
+            )}
+          </PostMeta>
         </AuthorInfo>
       </AuthorRow>
 
-      {/* 帖子正文 */}
-      <ContentText>{post.content}</ContentText>
+      {/* 帖子正文 - 高质量排版 */}
+      <ContentText selectable>{post.content}</ContentText>
 
       {/* 标签列表 */}
       {post.tags && post.tags.length > 0 && (
@@ -135,6 +173,19 @@ function PostContentComponent({ post, onAuthorPress }: PostContentProps) {
       )}
     </Container>
   );
+}
+
+/**
+ * 获取分类标签
+ */
+function getCategoryLabel(category: string): string {
+  const labels: Record<string, string> = {
+    help: '求助',
+    share: '分享',
+    science: '科普',
+    warning: '避雷',
+  };
+  return labels[category] || category;
 }
 
 export const PostContent = memo(PostContentComponent);

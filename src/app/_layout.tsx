@@ -14,6 +14,7 @@ import { useThemeAwareColorScheme } from '../hooks/useThemeAwareColorScheme';
 import { useDeepLink } from '../hooks/useDeepLink';
 import { DesktopPet } from '../components/DesktopPet';
 import { ToastManager, AlertManager } from '../components/dialogs';
+import { useUserStore } from '../store/userStore';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,6 +26,7 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useThemeAwareColorScheme();
   const fontsLoaded = useCustomFonts();
+  const isAuthenticated = useUserStore((s) => s.isAuthenticated);
 
   // 处理深度链接（邮箱验证、密码重置回调）
   useDeepLink();
@@ -51,7 +53,8 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="+not-found" options={{ headerShown: false }} />
             </Stack>
-            <DesktopPet />
+            {/* 只有登录后才显示桌宠 */}
+            {isAuthenticated && <DesktopPet />}
             <ToastManager />
             <AlertManager />
             <StatusBar

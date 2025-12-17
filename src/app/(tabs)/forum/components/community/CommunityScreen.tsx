@@ -23,11 +23,10 @@ import {
   CategoryTabs,
   MasonryFeed,
   CreatePostFAB,
-  UserProfileModal,
   type PostCardData,
   type CategoryItem,
-  type UserProfile,
 } from './index';
+import { UserProfileModal } from '@/src/components/UserProfileModal';
 
 const ScreenContainer = styled(YStack, {
   name: 'CommunityScreen',
@@ -85,7 +84,7 @@ export function CommunityScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeCategory, setActiveCategory] = useState('recommend');
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   const cardData = useMemo(() => posts.map(postToCardData), [posts]);
@@ -292,14 +291,7 @@ export function CommunityScreen() {
 
   // 处理作者点击
   const handleAuthorPress = useCallback((author: PostCardData['author']) => {
-    setSelectedUser({
-      id: author.id,
-      username: author.name,
-      avatar: author.avatar,
-      postsCount: 0,
-      followersCount: 0,
-      followingCount: 0,
-    });
+    setSelectedUserId(author.id);
   }, []);
 
   // 处理帖子删除
@@ -362,11 +354,13 @@ export function CommunityScreen() {
         onPostDeleted={handlePostDeleted}
       />
 
-      <UserProfileModal
-        visible={!!selectedUser}
-        user={selectedUser}
-        onClose={() => setSelectedUser(null)}
-      />
+      {selectedUserId && (
+        <UserProfileModal
+          visible={!!selectedUserId}
+          userId={selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+        />
+      )}
     </ScreenContainer>
   );
 }

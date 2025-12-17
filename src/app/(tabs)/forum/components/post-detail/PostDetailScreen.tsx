@@ -24,7 +24,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { supabaseForumService, type Post } from '@/src/lib/supabase';
 
-import { UserProfileModal } from '../community/UserProfileModal';
+import { UserProfileModal } from '@/src/components/UserProfileModal';
 import { CommentSection } from './CommentSection';
 import { CommentInput } from './CommentInput';
 import { PostActions } from './PostActions';
@@ -386,15 +386,7 @@ function PostDetailScreenComponent({
       {selectedUser && (
         <UserProfileModal
           visible={!!selectedUser}
-          user={{
-            id: selectedUser.id,
-            username: selectedUser.username,
-            avatar: selectedUser.avatar || undefined,
-            postsCount: 0,
-            followersCount: 0,
-            followingCount: 0,
-            isFollowing: false,
-          }}
+          userId={selectedUser.id}
           onClose={() => setSelectedUser(null)}
         />
       )}

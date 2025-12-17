@@ -42,6 +42,7 @@ import {
   supabaseFollowService,
   type Profile,
 } from '@/src/lib/supabase';
+import { useUserStore } from '@/src/store/userStore';
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -61,6 +62,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onSendMessage,
 }) => {
   const router = useRouter();
+  const currentUser = useUserStore((state) => state.user);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(false);
   const [friendStatus, setFriendStatus] = useState<'none' | 'sent' | 'received' | 'friends'>(
@@ -70,6 +72,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const [followStats, setFollowStats] = useState({ followersCount: 0, followingCount: 0 });
   const [actionLoading, setActionLoading] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+
+  // 检查是否是当前用户自己
+  const isCurrentUser = currentUser?.id === userId;
 
   useEffect(() => {
     if (visible && userId) {
@@ -133,13 +138,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       const response = await supabaseFollowService.toggleFollow(userId);
       if (response.success && response.data) {
         setIsFollowing(response.data.isFollowing);
-        // 更新统计
-        setFollowStats((prev) => ({
-          ...prev,
-          followersCount: response.data!.isFollowing
-            ? prev.followersCount + 1
-            : prev.followersCount - 1,
-        }));
+        // 重新加载统计数据以确保准确性
+        await loadFollowStats();
       }
     } catch (error) {
       console.error('Failed to toggle follow:', error);
@@ -390,11 +390,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   </View>
                 </View>
 
-                {/* 操作按钮组 */}
-                <View style={styles.buttonGroup}>
-                  {renderFollowButton()}
-                  {renderFriendButton()}
-                </View>
+                {/* 操作按钮组 - 只在不是当前用户时显示 */}
+                {!isCurrentUser && (
+                  <View style={styles.buttonGroup}>
+                    {renderFollowButton()}
+                    {renderFriendButton()}
+                  </View>
+                )}
               </View>
 
               {/* 其他信息 */}
@@ -442,16 +444,21 @@ const styles = StyleSheet.create({
     right: 0,
     height: SCREEN_HEIGHT * 0.85,
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 20,
   },
   headerGradient: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: 200,
+    height: 180,
   },
   closeButton: {
     position: 'absolute',
@@ -491,22 +498,22 @@ const styles = StyleSheet.create({
   },
   profileHeader: {
     alignItems: 'center',
-    paddingTop: 60,
+    paddingTop: 50,
     paddingHorizontal: 24,
   },
   avatarContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 4,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 5,
     borderColor: '#FFFFFF',
     overflow: 'hidden',
     backgroundColor: '#F3F4F6',
-    elevation: 8,
+    elevation: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
   },
   avatar: {
     width: '100%',
@@ -520,73 +527,80 @@ const styles = StyleSheet.create({
     backgroundColor: BRAND_COLOR,
   },
   username: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 26,
+    fontWeight: '800',
     color: '#111827',
-    marginTop: 16,
+    marginTop: 18,
+    letterSpacing: -0.5,
   },
   bio: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#6B7280',
     textAlign: 'center',
-    marginTop: 8,
-    lineHeight: 20,
+    marginTop: 10,
+    lineHeight: 22,
+    paddingHorizontal: 16,
   },
   statsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: 28,
     backgroundColor: '#F9FAFB',
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
+    borderRadius: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 40,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
   },
   statItem: {
     alignItems: 'center',
     flex: 1,
   },
   statValue: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: '800',
     color: '#111827',
+    letterSpacing: -0.5,
   },
   statLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 4,
+    fontSize: 13,
+    color: '#9CA3AF',
+    marginTop: 6,
+    fontWeight: '500',
   },
   statDivider: {
     width: 1,
-    height: 32,
+    height: 40,
     backgroundColor: '#E5E7EB',
   },
   buttonGroup: {
     flexDirection: 'row',
     width: '100%',
-    marginTop: 20,
-    gap: 12,
+    marginTop: 24,
+    gap: 14,
   },
   followButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    gap: 6,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    gap: 8,
   },
   followButtonInactive: {
     backgroundColor: '#FF6B6B',
   },
   followButtonActive: {
-    backgroundColor: '#F3F4F6',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
   },
   followButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: -0.3,
   },
   followButtonTextInactive: {
     color: '#FFFFFF',
@@ -599,10 +613,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    gap: 6,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    gap: 8,
   },
   friendButtonPrimary: {
     backgroundColor: BRAND_COLOR,
@@ -611,46 +625,59 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981',
   },
   friendButtonDisabled: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
   },
   friendButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: '#FFFFFF',
+    letterSpacing: -0.3,
   },
   friendButtonTextDisabled: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: '#9CA3AF',
+    letterSpacing: -0.3,
   },
   infoSection: {
-    marginTop: 32,
+    marginTop: 36,
     paddingHorizontal: 24,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 19,
+    fontWeight: '800',
     color: '#111827',
-    marginBottom: 16,
+    marginBottom: 18,
+    letterSpacing: -0.5,
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 14,
+    gap: 14,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
   },
   infoIcon: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   infoText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#4B5563',
     flex: 1,
+    fontWeight: '500',
   },
   postsSection: {
     marginTop: 32,

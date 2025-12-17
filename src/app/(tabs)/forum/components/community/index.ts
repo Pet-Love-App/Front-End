@@ -15,4 +15,3 @@ export { MasonryFeed, type MasonryFeedProps } from './MasonryFeed';
 export { CommunityScreen } from './CommunityScreen';
 export { PostEditorModal, type PostEditorModalProps } from './PostEditorModal';
 export { ForumHeader, type ForumHeaderProps } from './ForumHeader';
-export { UserProfileModal, type UserProfile, type UserProfileModalProps } from './UserProfileModal';

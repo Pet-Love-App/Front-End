@@ -109,3 +109,15 @@ export type {
   WeightStatistics,
   WeightUnit,
 } from '@/src/types/petHealth';
+
+// ==================== 好友系统服务 ====================
+export { supabaseFriendsService } from './services/friends';
+export type { Friend, FriendRequest } from './services/friends';
+
+// ==================== 聊天系统服务 ====================
+export { supabaseChatService } from './services/chat';
+export type { Conversation, Message, UnreadCount } from './services/chat';
+
+// ==================== 关注系统服务 ====================
+export { supabaseFollowService } from './services/follow';
+export type { Follow, FollowStats } from './services/follow';

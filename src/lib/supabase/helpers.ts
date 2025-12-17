@@ -161,10 +161,13 @@ export const logger = {
   query: (table: string, operation: string, params?: unknown) => {
     appLogger.debug('Supabase Query', { table, operation, params: params || null });
   },
-  success: (table: string, operation: string, count?: number) => {
+  success: (table: string, operation: string, count?: number | string) => {
     appLogger.info('Supabase Success', { table, operation, count });
   },
   error: (table: string, operation: string, error: unknown) => {
     appLogger.error('Supabase Error', error as Error, { table, operation });
+  },
+  info: (message: string, data?: Record<string, unknown>) => {
+    appLogger.info(message, data as any);
   },
 };

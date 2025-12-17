@@ -23,11 +23,10 @@ import {
   CategoryTabs,
   MasonryFeed,
   CreatePostFAB,
-  UserProfileModal,
   type PostCardData,
   type CategoryItem,
-  type UserProfile,
 } from './index';
+import { UserProfileModal } from '@/src/components/UserProfileModal';
 
 const ScreenContainer = styled(YStack, {
   name: 'CommunityScreen',
@@ -71,9 +70,9 @@ function postToCardData(post: Post): PostCardData {
       avatar: post.author?.avatar || undefined,
       hasReputationBadge: false,
     },
-    likeCount: post.favoritesCount || 0,
-    viewCount: post.likesCount || 0,
-    isLiked: post.isFavorited,
+    likeCount: post.likesCount || 0,
+    viewCount: 0, // 暂未实现浏览数统计
+    isLiked: post.isLiked,
   };
 }
 
@@ -85,7 +84,7 @@ export function CommunityScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeCategory, setActiveCategory] = useState('recommend');
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   const cardData = useMemo(() => posts.map(postToCardData), [posts]);
@@ -145,9 +144,36 @@ export function CommunityScreen() {
     [activeCategory, loadUnreadCount]
   );
 
+  // 初始加载和标签切换时加载帖子
   useEffect(() => {
-    loadPosts();
-  }, [loadPosts]);
+    const load = async () => {
+      try {
+        setIsLoading(true);
+
+        let result;
+
+        if (activeCategory === 'favorites') {
+          result = await supabaseForumService.getMyFavorites();
+        } else if (activeCategory === 'recommend') {
+          result = await supabaseForumService.getPosts({ order: 'latest' });
+        } else {
+          result = await supabaseForumService.getPosts({
+            order: 'latest',
+            category: activeCategory as 'help' | 'share' | 'science' | 'warning',
+          });
+        }
+
+        if (result.error) throw result.error;
+        setPosts(result.data || []);
+      } catch (error) {
+        logger.error('加载帖子失败', error as Error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    load();
+  }, [activeCategory]);
 
   // 页面获得焦点时刷新帖子列表（例如从发帖页面返回）
   const isFirstFocus = useRef(true);
@@ -163,27 +189,27 @@ export function CommunityScreen() {
     }, [loadPosts])
   );
 
-  // 处理点赞（实际为收藏）
+  // 处理点赞
   const handleLikePress = useCallback(
     async (post: PostCardData) => {
       // 先乐观更新UI
-      const wasLiked = posts.find((p) => p.id === post.id)?.isFavorited ?? false;
-      const prevCount = posts.find((p) => p.id === post.id)?.favoritesCount ?? 0;
+      const wasLiked = posts.find((p) => p.id === post.id)?.isLiked ?? false;
+      const prevCount = posts.find((p) => p.id === post.id)?.likesCount ?? 0;
 
       setPosts((prev) =>
         prev.map((p) =>
           p.id === post.id
             ? {
                 ...p,
-                isFavorited: !wasLiked,
-                favoritesCount: wasLiked ? Math.max(0, prevCount - 1) : prevCount + 1,
+                isLiked: !wasLiked,
+                likesCount: wasLiked ? Math.max(0, prevCount - 1) : prevCount + 1,
               }
             : p
         )
       );
 
       try {
-        const { data, error } = await supabaseForumService.toggleFavorite(post.id);
+        const { data, error } = await supabaseForumService.toggleLike(post.id);
         if (error) throw error;
 
         // 用服务器返回的真实数据更新
@@ -193,8 +219,8 @@ export function CommunityScreen() {
               p.id === post.id
                 ? {
                     ...p,
-                    isFavorited: data.action === 'favorited',
-                    favoritesCount: data.favoritesCount ?? p.favoritesCount,
+                    isLiked: data.action === 'liked',
+                    likesCount: data.likesCount ?? p.likesCount,
                   }
                 : p
             )
@@ -207,8 +233,8 @@ export function CommunityScreen() {
             p.id === post.id
               ? {
                   ...p,
-                  isFavorited: wasLiked,
-                  favoritesCount: prevCount,
+                  isLiked: wasLiked,
+                  likesCount: prevCount,
                 }
               : p
           )
@@ -265,14 +291,7 @@ export function CommunityScreen() {
 
   // 处理作者点击
   const handleAuthorPress = useCallback((author: PostCardData['author']) => {
-    setSelectedUser({
-      id: author.id,
-      username: author.name,
-      avatar: author.avatar,
-      postsCount: 0,
-      followersCount: 0,
-      followingCount: 0,
-    });
+    setSelectedUserId(author.id);
   }, []);
 
   // 处理帖子删除
@@ -326,16 +345,22 @@ export function CommunityScreen() {
       <PostDetailScreen
         visible={!!selectedPost}
         post={selectedPost}
-        onClose={() => setSelectedPost(null)}
+        onClose={() => {
+          setSelectedPost(null);
+          // 关闭详情页后刷新列表，确保状态同步
+          loadPosts(true);
+        }}
         onEditPost={handleEditFromDetail}
         onPostDeleted={handlePostDeleted}
       />
 
-      <UserProfileModal
-        visible={!!selectedUser}
-        user={selectedUser}
-        onClose={() => setSelectedUser(null)}
-      />
+      {selectedUserId && (
+        <UserProfileModal
+          visible={!!selectedUserId}
+          userId={selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+        />
+      )}
     </ScreenContainer>
   );
 }

@@ -4,12 +4,12 @@
  * 支持：普通评论、回复评论
  */
 
-import React, { memo, useCallback, useRef } from 'react';
-import { TextInput as RNTextInput, Pressable } from 'react-native';
+import React, { memo, useCallback, useRef, useEffect } from 'react';
+import { TextInput as RNTextInput, Pressable, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Send, X, AtSign } from '@tamagui/lucide-icons';
 import { styled, XStack, YStack, Text, Input } from 'tamagui';
-import { primaryScale, neutralScale } from '@/src/design-system/tokens';
+import Animated, { useAnimatedStyle, withSpring, useSharedValue } from 'react-native-reanimated';
 
 import type { Comment } from '@/src/lib/supabase';
 
@@ -33,10 +33,9 @@ const Container = styled(YStack, {
   name: 'CommentInput',
   paddingHorizontal: 16,
   paddingTop: 12,
-  paddingBottom: 16,
-  backgroundColor: 'white',
-  borderTopWidth: 1,
-  borderTopColor: neutralScale.neutral3,
+  backgroundColor: '#fff',
+  borderTopWidth: 0.5,
+  borderTopColor: 'rgba(0, 0, 0, 0.06)',
   gap: 10,
 });
 
@@ -44,7 +43,7 @@ const ReplyBanner = styled(XStack, {
   name: 'ReplyBanner',
   alignItems: 'center',
   justifyContent: 'space-between',
-  backgroundColor: primaryScale.primary2,
+  backgroundColor: '#f0f7ff',
   paddingHorizontal: 14,
   paddingVertical: 10,
   borderRadius: 12,
@@ -61,8 +60,9 @@ const ReplyInfo = styled(XStack, {
 const ReplyText = styled(Text, {
   name: 'ReplyText',
   fontSize: 13,
-  color: primaryScale.primary9,
+  color: '#007aff',
   flex: 1,
+  fontWeight: '500',
 });
 
 const InputRow = styled(XStack, {
@@ -71,53 +71,52 @@ const InputRow = styled(XStack, {
   gap: 10,
 });
 
+const InputWrapper = styled(XStack, {
+  name: 'InputWrapper',
+  flex: 1,
+  height: 44,
+  backgroundColor: '#f5f5f7',
+  borderRadius: 22,
+  paddingHorizontal: 16,
+  alignItems: 'center',
+  borderWidth: 1,
+  borderColor: 'transparent',
+});
+
 const StyledInput = styled(Input, {
   name: 'CommentTextInput',
   flex: 1,
-  height: 48,
-  backgroundColor: neutralScale.neutral2,
-  borderRadius: 24,
-  paddingHorizontal: 18,
-  paddingVertical: 12,
+  height: 44,
+  backgroundColor: 'transparent',
   fontSize: 15,
-  borderWidth: 1.5,
-  borderColor: neutralScale.neutral3,
-  color: neutralScale.neutral12,
-  focusStyle: {
-    borderColor: primaryScale.primary6,
-    backgroundColor: 'white',
-  },
+  color: '#1a1a1a',
+  borderWidth: 0,
+  paddingHorizontal: 0,
 });
 
-const SendButtonContainer = styled(YStack, {
+const SendButton = styled(YStack, {
   name: 'SendButton',
-  width: 48,
-  height: 48,
-  borderRadius: 24,
-  backgroundColor: primaryScale.primary7,
+  width: 44,
+  height: 44,
+  borderRadius: 22,
   alignItems: 'center',
   justifyContent: 'center',
-  variants: {
-    disabled: {
-      true: {
-        backgroundColor: neutralScale.neutral3,
-      },
-    },
-  } as const,
 });
 
-const CancelButtonContainer = styled(YStack, {
+const CancelButton = styled(YStack, {
   name: 'CancelReplyBtn',
-  width: 28,
-  height: 28,
-  borderRadius: 14,
-  backgroundColor: primaryScale.primary3,
+  width: 24,
+  height: 24,
+  borderRadius: 12,
+  backgroundColor: 'rgba(0, 122, 255, 0.15)',
   alignItems: 'center',
   justifyContent: 'center',
 });
+
+const AnimatedSendButton = Animated.createAnimatedComponent(SendButton);
 
 /**
- * 评论输入框组件
+ * 评论输入框组件 - 现代感设计
  */
 function CommentInputComponent({
   value,
@@ -129,14 +128,38 @@ function CommentInputComponent({
 }: CommentInputProps) {
   const inputRef = useRef<RNTextInput>(null);
   const insets = useSafeAreaInsets();
-
-  const handleSubmit = useCallback(() => {
-    if (value.trim() && !disabled) {
-      onSubmit();
-    }
-  }, [value, disabled, onSubmit]);
+  const sendButtonScale = useSharedValue(1);
+  const sendButtonBg = useSharedValue(0);
 
   const canSubmit = value.trim().length > 0 && !disabled;
+
+  // 发送按钮动画
+  useEffect(() => {
+    sendButtonBg.value = withSpring(canSubmit ? 1 : 0, { damping: 15 });
+  }, [canSubmit, sendButtonBg]);
+
+  const sendButtonStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: sendButtonScale.value }],
+    backgroundColor: canSubmit ? '#007aff' : '#e5e5ea',
+  }));
+
+  const handleSubmit = useCallback(() => {
+    if (canSubmit) {
+      sendButtonScale.value = withSpring(0.9, { damping: 15 });
+      setTimeout(() => {
+        sendButtonScale.value = withSpring(1, { damping: 15 });
+      }, 100);
+      onSubmit();
+      Keyboard.dismiss();
+    }
+  }, [canSubmit, onSubmit, sendButtonScale]);
+
+  // 当有回复目标时自动聚焦
+  useEffect(() => {
+    if (replyTarget) {
+      inputRef.current?.focus();
+    }
+  }, [replyTarget]);
 
   return (
     <Container style={{ paddingBottom: Math.max(16, insets.bottom) }}>
@@ -144,33 +167,42 @@ function CommentInputComponent({
       {replyTarget && (
         <ReplyBanner>
           <ReplyInfo>
-            <AtSign size={14} color={primaryScale.primary8} />
+            <AtSign size={14} color="#007aff" />
             <ReplyText numberOfLines={1}>回复 {replyTarget.author?.username || '用户'}</ReplyText>
           </ReplyInfo>
-          <Pressable onPress={onCancelReply}>
-            <CancelButtonContainer>
-              <X size={14} color={primaryScale.primary8} />
-            </CancelButtonContainer>
+          <Pressable onPress={onCancelReply} hitSlop={8}>
+            <CancelButton>
+              <X size={14} color="#007aff" />
+            </CancelButton>
           </Pressable>
         </ReplyBanner>
       )}
 
       {/* 输入区域 */}
       <InputRow>
-        <StyledInput
-          ref={inputRef}
-          value={value}
-          onChangeText={onChangeText}
-          placeholder={replyTarget ? '写下你的回复...' : '写下你的评论...'}
-          placeholderTextColor={neutralScale.neutral6}
-          editable={!disabled}
-          onSubmitEditing={handleSubmit}
-          returnKeyType="send"
-        />
+        <InputWrapper
+          style={{
+            borderColor: value.length > 0 ? '#007aff' : 'transparent',
+            backgroundColor: value.length > 0 ? '#fff' : '#f5f5f7',
+          }}
+        >
+          <StyledInput
+            ref={inputRef}
+            value={value}
+            onChangeText={onChangeText}
+            placeholder={replyTarget ? '写下你的回复...' : '写下你的评论...'}
+            placeholderTextColor="#8e8e93"
+            editable={!disabled}
+            onSubmitEditing={handleSubmit}
+            returnKeyType="send"
+            multiline={false}
+          />
+        </InputWrapper>
+
         <Pressable onPress={handleSubmit} disabled={!canSubmit}>
-          <SendButtonContainer disabled={!canSubmit}>
-            <Send size={20} color={canSubmit ? 'white' : neutralScale.neutral5} />
-          </SendButtonContainer>
+          <AnimatedSendButton style={sendButtonStyle}>
+            <Send size={20} color={canSubmit ? '#fff' : '#c7c7cc'} style={{ marginLeft: 2 }} />
+          </AnimatedSendButton>
         </Pressable>
       </InputRow>
     </Container>

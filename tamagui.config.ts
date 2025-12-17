@@ -221,6 +221,10 @@ export const tamaguiConfig = createTamagui({
   themes,
   tokens,
   media,
+  settings: {
+    // 允许 Sheet 组件使用动画
+    allowedStyleValues: 'somewhat-strict-web',
+  },
 });
 
 export default tamaguiConfig;

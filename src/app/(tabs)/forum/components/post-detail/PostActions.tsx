@@ -10,12 +10,11 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   withSequence,
+  withTiming,
+  Easing,
 } from 'react-native-reanimated';
 import { Heart, MessageCircle, Share2, Bookmark } from '@tamagui/lucide-icons';
-import { styled, XStack, Text } from 'tamagui';
-import { Button } from '@/src/design-system/components';
-
-import { ForumColors } from '../../constants';
+import { styled, XStack, YStack, Text, Stack } from 'tamagui';
 
 export interface PostActionsProps {
   /** 点赞数 */
@@ -41,39 +40,55 @@ const Container = styled(XStack, {
   name: 'PostActions',
   alignItems: 'center',
   justifyContent: 'space-around',
-  paddingVertical: '$3',
-  paddingHorizontal: '$4',
-  borderTopWidth: 1,
-  borderBottomWidth: 1,
-  borderColor: '$borderColor',
-  backgroundColor: '$background',
+  paddingVertical: 12,
+  paddingHorizontal: 16,
+  backgroundColor: '#fff',
+  borderTopWidth: 0.5,
+  borderTopColor: 'rgba(0, 0, 0, 0.06)',
 });
 
-const ActionButton = styled(Button, {
-  name: 'ActionButton',
-  flexDirection: 'row',
+const ActionItem = styled(XStack, {
+  name: 'ActionItem',
   alignItems: 'center',
-  gap: '$2',
-  backgroundColor: 'transparent',
-  paddingHorizontal: '$3',
-  paddingVertical: '$2',
-  borderRadius: '$3',
+  justifyContent: 'center',
+  gap: 6,
+  paddingHorizontal: 16,
+  paddingVertical: 10,
+  borderRadius: 20,
   pressStyle: {
-    backgroundColor: '$backgroundHover',
-    opacity: 0.8,
+    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+    scale: 0.96,
   },
 });
 
-const ActionText = styled(Text, {
-  name: 'ActionText',
-  fontSize: 13,
-  color: '$colorMuted',
+const ActionCount = styled(Text, {
+  name: 'ActionCount',
+  fontSize: 14,
+  fontWeight: '600',
+  color: '#8e8e93',
 });
 
-const AnimatedButton = Animated.createAnimatedComponent(ActionButton);
+const ActiveCount = styled(Text, {
+  name: 'ActiveCount',
+  fontSize: 14,
+  fontWeight: '600',
+});
+
+const AnimatedActionItem = Animated.createAnimatedComponent(ActionItem);
+const AnimatedHeart = Animated.createAnimatedComponent(Stack);
 
 /**
- * 帖子操作栏组件
+ * 格式化数字显示
+ */
+function formatCount(count: number): string {
+  if (count === 0) return '';
+  if (count >= 10000) return `${(count / 10000).toFixed(1)}w`;
+  if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
+  return count.toString();
+}
+
+/**
+ * 帖子操作栏组件 - 底部悬浮设计
  */
 function PostActionsComponent({
   likeCount,
@@ -85,56 +100,98 @@ function PostActionsComponent({
   onShare,
   onBookmark,
 }: PostActionsProps) {
-  const likeScale = useSharedValue(1);
-
   // 点赞动画
+  const likeScale = useSharedValue(1);
+  const heartScale = useSharedValue(1);
+
+  // 收藏动画
+  const bookmarkScale = useSharedValue(1);
+
+  // 点赞按钮动画样式
   const likeAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: likeScale.value }],
   }));
 
+  // 爱心图标动画样式
+  const heartAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: heartScale.value }],
+  }));
+
+  // 收藏按钮动画样式
+  const bookmarkAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: bookmarkScale.value }],
+  }));
+
   const handleLike = useCallback(() => {
-    // 触发弹跳动画
-    likeScale.value = withSequence(withSpring(1.3), withSpring(1));
+    // 触发流畅的弹跳动画
+    likeScale.value = withSequence(
+      withTiming(0.9, { duration: 100, easing: Easing.out(Easing.quad) }),
+      withSpring(1, { damping: 10, stiffness: 400 })
+    );
+
+    // 爱心图标特殊动画（点赞时放大更多）
+    if (!isLiked) {
+      heartScale.value = withSequence(
+        withTiming(1.4, { duration: 150, easing: Easing.out(Easing.quad) }),
+        withSpring(1, { damping: 8, stiffness: 300 })
+      );
+    } else {
+      heartScale.value = withSequence(
+        withTiming(0.8, { duration: 100 }),
+        withSpring(1, { damping: 10 })
+      );
+    }
+
     onLike?.();
-  }, [onLike, likeScale]);
+  }, [onLike, isLiked, likeScale, heartScale]);
+
+  const handleBookmark = useCallback(() => {
+    bookmarkScale.value = withSequence(
+      withTiming(0.85, { duration: 100 }),
+      withSpring(1, { damping: 10, stiffness: 400 })
+    );
+    onBookmark?.();
+  }, [onBookmark, bookmarkScale]);
 
   return (
     <Container>
       {/* 点赞按钮 */}
-      <AnimatedButton onPress={handleLike} style={likeAnimatedStyle}>
-        <Heart
-          size={20}
-          color={isLiked ? '#ef4444' : ForumColors.text}
-          fill={isLiked ? '#ef4444' : 'transparent'}
-        />
-        <ActionText style={{ color: isLiked ? '#ef4444' : ForumColors.text }}>
-          {likeCount > 0 ? likeCount : '点赞'}
-        </ActionText>
-      </AnimatedButton>
+      <AnimatedActionItem onPress={handleLike} style={likeAnimatedStyle}>
+        <AnimatedHeart style={heartAnimatedStyle}>
+          <Heart
+            size={22}
+            color={isLiked ? '#ff3b30' : '#8e8e93'}
+            fill={isLiked ? '#ff3b30' : 'transparent'}
+            strokeWidth={isLiked ? 0 : 1.8}
+          />
+        </AnimatedHeart>
+        {likeCount > 0 && (
+          <ActiveCount style={{ color: isLiked ? '#ff3b30' : '#8e8e93' }}>
+            {formatCount(likeCount)}
+          </ActiveCount>
+        )}
+      </AnimatedActionItem>
 
       {/* 评论按钮 */}
-      <ActionButton onPress={onComment}>
-        <MessageCircle size={20} color={ForumColors.text} />
-        <ActionText>{commentCount > 0 ? commentCount : '评论'}</ActionText>
-      </ActionButton>
+      <ActionItem onPress={onComment}>
+        <MessageCircle size={22} color="#8e8e93" strokeWidth={1.8} />
+        {commentCount > 0 && <ActionCount>{formatCount(commentCount)}</ActionCount>}
+      </ActionItem>
 
       {/* 收藏按钮 */}
-      <ActionButton onPress={onBookmark}>
+      <AnimatedActionItem onPress={handleBookmark} style={bookmarkAnimatedStyle}>
         <Bookmark
-          size={20}
-          color={isBookmarked ? ForumColors.clay : ForumColors.text}
-          fill={isBookmarked ? ForumColors.clay : 'transparent'}
+          size={22}
+          color={isBookmarked ? '#007aff' : '#8e8e93'}
+          fill={isBookmarked ? '#007aff' : 'transparent'}
+          strokeWidth={isBookmarked ? 0 : 1.8}
         />
-        <ActionText style={{ color: isBookmarked ? ForumColors.clay : ForumColors.text }}>
-          收藏
-        </ActionText>
-      </ActionButton>
+      </AnimatedActionItem>
 
       {/* 分享按钮 */}
-      <ActionButton onPress={onShare}>
-        <Share2 size={20} color={ForumColors.text} />
-        <ActionText>分享</ActionText>
-      </ActionButton>
+      <ActionItem onPress={onShare}>
+        <Share2 size={22} color="#8e8e93" strokeWidth={1.8} />
+      </ActionItem>
     </Container>
   );
 }

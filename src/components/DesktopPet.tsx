@@ -1,25 +1,62 @@
-import React, { useEffect, useState } from 'react';
-import { Animated, StyleSheet, View, Text, Modal, TouchableOpacity, Pressable } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import {
+  Animated,
+  StyleSheet,
+  View,
+  Text,
+  Modal,
+  TouchableOpacity,
+  Pressable,
+  Easing,
+} from 'react-native';
 import LottieView from 'lottie-react-native';
 import { usePetDrag } from '../hooks/usePetDrag';
 import { usePetAnim } from '../hooks/usePetAnim';
 import { usePetStore } from '../hooks/usePetStore';
 import { ScreenHelper } from '../utils/screenHelper';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 
-const PET_SIZE = 100;
-const BUBBLE_WIDTH = 160;
+const PET_SIZE = 90;
+const TAB_BAR_HEIGHT = 85;
 
 export const DesktopPet = () => {
   const { currentFact, nextFact, isTalking, setTalking, isVisible, setVisible } = usePetStore();
   const { lottieRef } = usePetAnim();
   const [showMenu, setShowMenu] = useState(false);
 
+  // 气泡动画
+  const bubbleAnim = useRef(new Animated.Value(0)).current;
+  const bubbleScale = useRef(new Animated.Value(0)).current;
+
+  // 气泡出现动画
+  useEffect(() => {
+    if (isTalking) {
+      Animated.parallel([
+        Animated.spring(bubbleScale, {
+          toValue: 1,
+          friction: 6,
+          tension: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(bubbleAnim, {
+          toValue: 1,
+          duration: 300,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      bubbleScale.setValue(0);
+      bubbleAnim.setValue(0);
+    }
+  }, [isTalking, currentFact, bubbleAnim, bubbleScale]);
+
   // 自动切换冷知识
   useEffect(() => {
     const timer = setInterval(() => {
       nextFact();
-    }, 5000);
+    }, 6000);
     return () => clearInterval(timer);
   }, [nextFact]);
 
@@ -37,17 +74,22 @@ export const DesktopPet = () => {
     setShowMenu(false);
   };
 
+  // 拖拽功能 - 初始位置在左下角 tab 栏上方
   const { pan, panResponder } = usePetDrag(
-    ScreenHelper.width - PET_SIZE - 20, // 初始位置 X
-    ScreenHelper.height - PET_SIZE - 150, // 初始位置 Y
+    15, // 初始 X 位置（左侧）
+    ScreenHelper.height - PET_SIZE - TAB_BAR_HEIGHT - 80, // 初始 Y 位置（tab 上方）
     PET_SIZE,
-    PET_SIZE
+    PET_SIZE + 40 // 包含气泡的高度
   );
 
   if (!isVisible) return null;
 
+  // 判断是否为提示语
+  const isTipMessage = currentFact.includes('长按');
+
   return (
     <>
+      {/* 可拖拽的容器 */}
       <Animated.View
         style={[
           styles.container,
@@ -57,7 +99,6 @@ export const DesktopPet = () => {
         ]}
         {...panResponder.panHandlers}
       >
-        {/* 使用 Pressable 处理点击和长按，同时嵌套 View 响应 PanResponder */}
         <Pressable
           onPress={handlePress}
           onLongPress={handleLongPress}
@@ -66,21 +107,54 @@ export const DesktopPet = () => {
         >
           {/* 对话气泡 */}
           {isTalking && (
-            <View style={styles.bubble}>
-              <Text style={styles.bubbleText}>{currentFact}</Text>
-              <View style={styles.bubbleArrow} />
-            </View>
+            <Animated.View
+              style={[
+                styles.bubbleContainer,
+                {
+                  opacity: bubbleAnim,
+                  transform: [
+                    { scale: bubbleScale },
+                    {
+                      translateY: bubbleAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [10, 0],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={isTipMessage ? ['#FFE5B4', '#FFDAB9'] : ['#E8F5E9', '#C8E6C9']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.bubble}
+              >
+                <Text style={[styles.bubbleText, isTipMessage && styles.tipText]}>
+                  {currentFact}
+                </Text>
+              </LinearGradient>
+              {/* 气泡箭头 */}
+              <View style={styles.arrowContainer}>
+                <View
+                  style={[
+                    styles.bubbleArrow,
+                    { borderTopColor: isTipMessage ? '#FFDAB9' : '#C8E6C9' },
+                  ]}
+                />
+              </View>
+            </Animated.View>
           )}
 
           {/* 宠物动画 */}
           <View style={styles.petContainer}>
             <LottieView
               ref={lottieRef}
-              source={require('../../assets/animations/rolling_cat_animation.json')}
+              source={require('../../assets/animations/scary_cat.json')}
               style={styles.lottie}
               autoPlay={true}
               loop={true}
-              speed={1.0}
+              speed={0.8}
               resizeMode="contain"
               renderMode="HARDWARE"
             />
@@ -100,7 +174,7 @@ export const DesktopPet = () => {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>桌面宠物设置</Text>
             <Text style={styles.modalMessage}>
-              如果隐藏后想重新显示，请前往“个人-设置”进行重新开启。
+              如果隐藏后想重新显示，请前往"个人-设置"进行重新开启。
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -127,16 +201,16 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     width: PET_SIZE,
-    height: PET_SIZE,
+    height: PET_SIZE + 80,
     zIndex: 9999,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
   },
   touchArea: {
     width: '100%',
     height: '100%',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
   },
   petContainer: {
     width: PET_SIZE,
@@ -146,41 +220,46 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  // 气泡样式
+  bubbleContainer: {
+    marginBottom: -10,
+    alignItems: 'center',
+  },
   bubble: {
-    position: 'absolute',
-    bottom: PET_SIZE - 10,
-    backgroundColor: 'white',
-    padding: 10,
-    borderRadius: 12,
-    width: BUBBLE_WIDTH, // 保持基础宽度，但允许内容撑开（如果需要完全自适应可移除 width）
-    maxWidth: 200, // 限制最大宽度防止溢出屏幕太多
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 14,
+    minWidth: 100,
+    maxWidth: 170,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 5,
-    marginBottom: 5,
-    alignSelf: 'center', // 确保气泡相对于宠物居中
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
   },
   bubbleText: {
     fontSize: 12,
-    color: '#333',
-    lineHeight: 16,
+    color: '#2E7D32',
+    lineHeight: 17,
     textAlign: 'left',
+    fontWeight: '500',
+  },
+  tipText: {
+    color: '#E65100',
+    fontWeight: '600',
+  },
+  arrowContainer: {
+    alignItems: 'center',
   },
   bubbleArrow: {
-    position: 'absolute',
-    bottom: -6,
-    left: '50%',
-    marginLeft: -6,
     width: 0,
     height: 0,
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderTopWidth: 6,
+    borderLeftWidth: 7,
+    borderRightWidth: 7,
+    borderTopWidth: 7,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: 'white',
+    marginTop: -1,
   },
   // Modal Styles
   modalOverlay: {
@@ -231,7 +310,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   confirmButton: {
-    backgroundColor: '#FF6B6B', // 使用醒目的颜色
+    backgroundColor: '#FF6B6B',
   },
   cancelButtonText: {
     color: '#666',

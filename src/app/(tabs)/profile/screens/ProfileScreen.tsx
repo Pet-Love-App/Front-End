@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { useState, useEffect } from 'react';
+import { TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ScrollView, Text, YStack } from 'tamagui';
+import { supabaseChatService } from '@/src/lib/supabase';
 import { Button } from '@/src/design-system/components';
 
 import { Colors } from '@/src/constants/theme';
@@ -63,6 +64,29 @@ export function ProfileScreen() {
   // 勋章详情模态框
   const [selectedBadge, setSelectedBadge] = useState<any>(null);
 
+  // 未读消息计数
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    loadUnreadCount();
+
+    // 订阅实时更新
+    const unsubscribe = supabaseChatService.subscribeToConversations(() => {
+      loadUnreadCount();
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  const loadUnreadCount = async () => {
+    const response = await supabaseChatService.getTotalUnreadCount();
+    if (response.success && response.data !== null) {
+      setUnreadCount(response.data);
+    }
+  };
+
   // 获取已装备的勋章配置
   const equippedBadge = badges.find((b) => b.is_equipped);
   const equippedBadgeConfig = equippedBadge?.badge?.code
@@ -110,6 +134,50 @@ export function ProfileScreen() {
       }}
     >
       <YStack flex={1} alignItems="center" position="relative">
+        {/* 消息按钮 - 浮动在左上角 */}
+        <YStack position="absolute" top={20} left={20} zIndex={100}>
+          <TouchableOpacity
+            onPress={() => router.push('/profile/messages' as any)}
+            activeOpacity={0.7}
+          >
+            <YStack
+              width={44}
+              height={44}
+              borderRadius="$10"
+              backgroundColor="rgba(255, 255, 255, 0.95)"
+              alignItems="center"
+              justifyContent="center"
+              shadowColor="#000"
+              shadowOffset={{ width: 0, height: 2 }}
+              shadowOpacity={0.15}
+              shadowRadius={4}
+              elevation={4}
+            >
+              <Ionicons name="chatbubbles-outline" size={22} color={colors.icon} />
+              {unreadCount > 0 && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: -4,
+                    right: -4,
+                    backgroundColor: '#EF4444',
+                    borderRadius: 10,
+                    minWidth: 20,
+                    height: 20,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingHorizontal: 4,
+                  }}
+                >
+                  <Text style={{ fontSize: 11, fontWeight: '700', color: '#FFFFFF' }}>
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </YStack>
+          </TouchableOpacity>
+        </YStack>
+
         {/* 设置按钮 - 浮动在右上角 */}
         <YStack position="absolute" top={20} right={20} zIndex={100}>
           <TouchableOpacity
@@ -150,6 +218,44 @@ export function ProfileScreen() {
           }
         />
 
+        {/* 我的好友入口 */}
+        <YStack width="100%" paddingHorizontal="$4" marginTop="$4">
+          <TouchableOpacity
+            onPress={() => router.push('/profile/friends' as any)}
+            activeOpacity={0.8}
+            style={{
+              backgroundColor: colors.cardBackground,
+              borderRadius: 16,
+              padding: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <YStack flexDirection="row" alignItems="center" gap="$3">
+              <YStack
+                width={40}
+                height={40}
+                borderRadius="$10"
+                backgroundColor="$blue2"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Ionicons name="people-outline" size={22} color="#FEBE98" />
+              </YStack>
+              <YStack>
+                <Text fontSize={16} fontWeight="600" color={colors.text}>
+                  我的好友
+                </Text>
+                <Text fontSize={13} color={colors.icon}>
+                  管理你的好友和请求
+                </Text>
+              </YStack>
+            </YStack>
+            <Ionicons name="chevron-forward" size={20} color={colors.icon} />
+          </TouchableOpacity>
+        </YStack>
+
         {/* 信誉分和勋章 */}
         <YStack width="100%" paddingHorizontal="$4" gap="$3" marginTop="$4" marginBottom="$2">
           {/* 信誉分卡片 */}
@@ -157,7 +263,7 @@ export function ProfileScreen() {
 
           {/* 调试按钮 - 刷新信誉分 */}
           {__DEV__ && (
-            <Button size="sm" variant="outline" onPress={refresh}>
+            <Button variant="outlined" onPress={refresh}>
               🔄 刷新信誉分数据
             </Button>
           )}

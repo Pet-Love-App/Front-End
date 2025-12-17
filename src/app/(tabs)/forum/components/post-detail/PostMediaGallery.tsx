@@ -1,18 +1,19 @@
 /**
  * PostMediaGallery - 帖子媒体画廊
  *
- * 展示帖子中的图片和视频
- * 支持：图片预览、视频标识、网格布局
+ * 全宽无边框沉浸式设计
+ * 支持：图片预览、视频标识、轮播指示器
  */
 
-import React, { memo, useCallback } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import React, { memo, useCallback, useState, useRef, useEffect } from 'react';
+import { Pressable, Dimensions, FlatList, ViewToken, Image } from 'react-native';
+import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { Play } from '@tamagui/lucide-icons';
 import { styled, XStack, YStack, Stack } from 'tamagui';
 import { OptimizedImage } from '@/src/components/ui/OptimizedImage';
 import type { PostMedia } from '@/src/lib/supabase';
 
-import { ForumColors } from '../../constants';
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export interface PostMediaGalleryProps {
   /** 媒体列表 */
@@ -24,113 +25,155 @@ export interface PostMediaGalleryProps {
 // 样式组件
 const Container = styled(YStack, {
   name: 'MediaGallery',
-  padding: '$4',
-  paddingTop: 0,
-  gap: '$2',
+  width: '100%',
+  backgroundColor: '#000',
 });
 
-const GridContainer = styled(XStack, {
-  name: 'MediaGrid',
-  flexWrap: 'wrap',
-  gap: '$2',
-});
-
-const MediaItemContainer = styled(Stack, {
+const MediaItem = styled(Stack, {
   name: 'MediaItem',
-  borderRadius: 12,
-  overflow: 'hidden',
-  backgroundColor: '$backgroundSubtle',
+  width: SCREEN_WIDTH,
+  minHeight: 200,
+  maxHeight: SCREEN_WIDTH * 1.5,
+  backgroundColor: '#f8f8f8',
+  justifyContent: 'center',
+  alignItems: 'center',
 });
 
 const VideoOverlay = styled(Stack, {
   name: 'VideoOverlay',
-  ...StyleSheet.absoluteFillObject,
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundColor: 'rgba(0, 0, 0, 0.3)',
 });
 
 const PlayButton = styled(Stack, {
   name: 'PlayButton',
-  width: 48,
-  height: 48,
-  borderRadius: 24,
-  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  width: 64,
+  height: 64,
+  borderRadius: 32,
+  backgroundColor: 'rgba(255, 255, 255, 0.95)',
   alignItems: 'center',
   justifyContent: 'center',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.3,
+  shadowRadius: 8,
 });
 
-/**
- * 计算媒体项尺寸
- */
-function calculateItemSize(totalCount: number, index: number): { width: number; height: number } {
-  // 单图大尺寸
-  if (totalCount === 1) {
-    return { width: 280, height: 280 };
-  }
-  // 双图横向排列
-  if (totalCount === 2) {
-    return { width: 160, height: 160 };
-  }
-  // 三图及以上，第一张大，其他小
-  if (totalCount >= 3 && index === 0) {
-    return { width: 200, height: 200 };
-  }
-  // 普通小图
-  return { width: 100, height: 100 };
+// 指示器样式
+const IndicatorContainer = styled(XStack, {
+  name: 'IndicatorContainer',
+  position: 'absolute',
+  bottom: 16,
+  left: 0,
+  right: 0,
+  justifyContent: 'center',
+  alignItems: 'center',
+  gap: 6,
+});
+
+const AnimatedDot = Animated.createAnimatedComponent(Stack);
+
+interface DotProps {
+  index: number;
+  currentIndex: number;
 }
+
+const Dot = memo(function Dot({ index, currentIndex }: DotProps) {
+  const isActive = index === currentIndex;
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      width: withSpring(isActive ? 24 : 8, { damping: 15 }),
+      backgroundColor: isActive ? '#fff' : 'rgba(255, 255, 255, 0.5)',
+    };
+  });
+
+  return (
+    <AnimatedDot
+      style={[
+        {
+          height: 8,
+          borderRadius: 4,
+        },
+        animatedStyle,
+      ]}
+    />
+  );
+});
 
 /**
  * 单个媒体项组件
  */
-interface MediaItemProps {
+interface MediaItemComponentProps {
   media: PostMedia;
-  index: number;
-  totalCount: number;
   onPress?: () => void;
 }
 
-const MediaItem = memo(function MediaItem({ media, index, totalCount, onPress }: MediaItemProps) {
-  const size = calculateItemSize(totalCount, index);
+const MediaItemComponent = memo(function MediaItemComponent({
+  media,
+  onPress,
+}: MediaItemComponentProps) {
   const isVideo = media.mediaType === 'video';
+  const [imageHeight, setImageHeight] = useState(SCREEN_WIDTH);
+
+  // 根据图片实际比例计算高度
+  useEffect(() => {
+    if (media.fileUrl && !isVideo) {
+      Image.getSize(
+        media.fileUrl,
+        (width, height) => {
+          const aspectRatio = height / width;
+          const calculatedHeight = Math.min(
+            Math.max(SCREEN_WIDTH * aspectRatio, 200),
+            SCREEN_WIDTH * 1.5
+          );
+          setImageHeight(calculatedHeight);
+        },
+        () => {
+          setImageHeight(SCREEN_WIDTH);
+        }
+      );
+    }
+  }, [media.fileUrl, isVideo]);
 
   return (
     <Pressable onPress={onPress}>
-      <MediaItemContainer style={{ width: size.width, height: size.height }}>
-        {isVideo ? (
-          <>
-            {/* 视频缩略图（如果有） */}
-            {media.fileUrl && (
-              <OptimizedImage
-                source={media.fileUrl}
-                style={{ width: '100%', height: '100%' }}
-                contentFit="cover"
-                cachePolicy="memory-disk"
-              />
-            )}
-            <VideoOverlay>
-              <PlayButton>
-                <Play size={24} color={ForumColors.clay} fill={ForumColors.clay} />
-              </PlayButton>
-            </VideoOverlay>
-          </>
-        ) : (
-          <OptimizedImage
-            source={media.fileUrl}
-            style={{ width: '100%', height: '100%' }}
-            contentFit="cover"
-            cachePolicy="memory-disk"
-          />
+      <Stack
+        width={SCREEN_WIDTH}
+        height={imageHeight}
+        backgroundColor="#f8f8f8"
+        justifyContent="center"
+        alignItems="center"
+      >
+        <OptimizedImage
+          source={media.fileUrl}
+          style={{ width: SCREEN_WIDTH, height: imageHeight }}
+          contentFit="contain"
+          cachePolicy="memory-disk"
+        />
+        {isVideo && (
+          <VideoOverlay>
+            <PlayButton>
+              <Play size={28} color="#1a1a1a" fill="#1a1a1a" />
+            </PlayButton>
+          </VideoOverlay>
         )}
-      </MediaItemContainer>
+      </Stack>
     </Pressable>
   );
 });
 
 /**
- * 帖子媒体画廊组件
+ * 帖子媒体画廊组件 - 沉浸式全宽设计
  */
 function PostMediaGalleryComponent({ media, onMediaPress }: PostMediaGalleryProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
   const handlePress = useCallback(
     (item: PostMedia, index: number) => {
       onMediaPress?.(item, index);
@@ -138,23 +181,56 @@ function PostMediaGalleryComponent({ media, onMediaPress }: PostMediaGalleryProp
     [onMediaPress]
   );
 
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      if (viewableItems.length > 0 && viewableItems[0].index !== null) {
+        setCurrentIndex(viewableItems[0].index);
+      }
+    },
+    []
+  );
+
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 50,
+  }).current;
+
   if (!media || media.length === 0) {
     return null;
   }
 
+  // 单张图片直接展示
+  if (media.length === 1) {
+    return (
+      <Container>
+        <MediaItemComponent media={media[0]} onPress={() => handlePress(media[0], 0)} />
+      </Container>
+    );
+  }
+
+  // 多张图片轮播
   return (
     <Container>
-      <GridContainer>
+      <FlatList
+        data={media}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item, index }) => (
+          <MediaItemComponent media={item} onPress={() => handlePress(item, index)} />
+        )}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+        decelerationRate="fast"
+        snapToInterval={SCREEN_WIDTH}
+        snapToAlignment="start"
+      />
+      {/* 精细指示器 */}
+      <IndicatorContainer>
         {media.map((item, index) => (
-          <MediaItem
-            key={item.id}
-            media={item}
-            index={index}
-            totalCount={media.length}
-            onPress={() => handlePress(item, index)}
-          />
+          <Dot key={item.id} index={index} currentIndex={currentIndex} />
         ))}
-      </GridContainer>
+      </IndicatorContainer>
     </Container>
   );
 }

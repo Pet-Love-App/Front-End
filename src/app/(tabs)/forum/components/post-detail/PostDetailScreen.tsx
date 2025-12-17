@@ -1,28 +1,39 @@
 /**
  * PostDetailScreen - 帖子详情页
  *
- * 组件化设计，将帖子详情拆分为多个独立组件：
- * - PostDetailHeader: 顶部导航栏
- * - PostContent: 帖子内容（作者、正文、标签）
- * - PostMediaGallery: 媒体画廊
- * - PostActions: 操作栏（点赞、评论、分享）
- * - CommentSection: 评论区
+ * Premium Design with:
+ * - 全宽无边框媒体展示
+ * - 悬浮底部操作栏
+ * - 固定底部评论输入框
+ * - 流畅的过渡动画
  */
 
-import React, { memo, useCallback, useEffect, useState } from 'react';
-import { BackHandler, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import React, { memo, useCallback, useEffect, useState, useRef } from 'react';
+import { BackHandler, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { styled, YStack } from 'tamagui';
+import { styled, YStack, ScrollView } from 'tamagui';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+  Easing,
+  runOnJS,
+} from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { supabaseForumService, type Post } from '@/src/lib/supabase';
 
-import { UserProfileModal, type UserProfile } from '../community/UserProfileModal';
+import { UserProfileModal } from '@/src/components/UserProfileModal';
 import { CommentSection } from './CommentSection';
+import { CommentInput } from './CommentInput';
 import { PostActions } from './PostActions';
 import { PostContent } from './PostContent';
 import { PostDetailHeader } from './PostDetailHeader';
 import { PostMediaGallery } from './PostMediaGallery';
 import { usePostDetail } from './usePostDetail';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export interface PostDetailScreenProps {
   /** 是否显示 */
@@ -46,26 +57,31 @@ const Container = styled(YStack, {
   left: 0,
   right: 0,
   bottom: 0,
-  backgroundColor: '$background',
+  backgroundColor: '#fff',
   zIndex: 300,
-  shadowColor: 'rgba(0, 0, 0, 0.15)',
-  shadowOffset: { width: 0, height: -4 },
-  shadowOpacity: 1,
-  shadowRadius: 16,
-  elevation: 8,
 });
 
 const ContentScrollView = styled(ScrollView, {
   name: 'PostContentScroll',
   flex: 1,
-  backgroundColor: '$background',
+  backgroundColor: '#fff',
 });
 
 const Divider = styled(YStack, {
   name: 'Divider',
   height: 8,
-  backgroundColor: '$backgroundSubtle',
+  backgroundColor: '#f5f5f7',
 });
+
+// 底部固定区域
+const BottomFixedContainer = styled(YStack, {
+  name: 'BottomFixed',
+  backgroundColor: '#fff',
+  borderTopWidth: 0.5,
+  borderTopColor: 'rgba(0, 0, 0, 0.06)',
+});
+
+const AnimatedContainer = Animated.createAnimatedComponent(Container);
 
 /**
  * 帖子详情页组件
@@ -79,9 +95,14 @@ function PostDetailScreenComponent({
   onPostDeleted,
 }: PostDetailScreenProps) {
   const insets = useSafeAreaInsets();
+  const scrollRef = useRef<any>(null);
+
+  // 动画状态
+  const translateY = useSharedValue(SCREEN_HEIGHT);
+  const opacity = useSharedValue(0);
 
   // 帖子状态（用于点赞/收藏）
-  const [localPost, setLocalPost] = React.useState<Post | null>(post);
+  const [localPost, setLocalPost] = useState<Post | null>(post);
   // 用户信息模态框
   const [selectedUser, setSelectedUser] = useState<{
     id: string;
@@ -90,9 +111,25 @@ function PostDetailScreenComponent({
   } | null>(null);
 
   // 当外部 post 变化时同步
-  React.useEffect(() => {
+  useEffect(() => {
     setLocalPost(post);
   }, [post]);
+
+  // 入场/出场 - 无动画，直接显示
+  useEffect(() => {
+    if (visible) {
+      translateY.value = 0;
+      opacity.value = 1;
+    } else {
+      translateY.value = SCREEN_HEIGHT;
+      opacity.value = 0;
+    }
+  }, [visible, translateY, opacity]);
+
+  const containerAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+    opacity: opacity.value,
+  }));
 
   // 使用详情页 Hook 管理所有状态和逻辑
   const {
@@ -132,7 +169,7 @@ function PostDetailScreenComponent({
    * 滚动到评论区
    */
   const scrollToComments = useCallback(() => {
-    // 评论区会在 CommentSection 组件中处理
+    scrollRef.current?.scrollToEnd({ animated: true });
   }, []);
 
   /**
@@ -176,7 +213,6 @@ function PostDetailScreenComponent({
       const { data, error } = await supabaseForumService.toggleLike(localPost.id);
       if (error) throw error;
 
-      // 用服务器返回的真实数据更新
       if (data) {
         setLocalPost((prev) =>
           prev
@@ -199,7 +235,6 @@ function PostDetailScreenComponent({
             }
           : null
       );
-      console.error('点赞失败:', error);
     }
   }, [localPost]);
 
@@ -209,7 +244,6 @@ function PostDetailScreenComponent({
   const handleBookmark = useCallback(async () => {
     if (!localPost) return;
 
-    // 乐观更新 UI
     const wasBookmarked = localPost.isFavorited ?? false;
     const prevCount = localPost.favoritesCount ?? 0;
 
@@ -227,7 +261,6 @@ function PostDetailScreenComponent({
       const { data, error } = await supabaseForumService.toggleFavorite(localPost.id);
       if (error) throw error;
 
-      // 用服务器返回的真实数据更新
       if (data) {
         setLocalPost((prev) =>
           prev
@@ -240,7 +273,6 @@ function PostDetailScreenComponent({
         );
       }
     } catch (error) {
-      // 出错时回滚
       setLocalPost((prev) =>
         prev
           ? {
@@ -250,7 +282,6 @@ function PostDetailScreenComponent({
             }
           : null
       );
-      console.error('收藏失败:', error);
     }
   }, [localPost]);
 
@@ -260,7 +291,7 @@ function PostDetailScreenComponent({
 
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       onClose();
-      return true; // 阻止默认行为
+      return true;
     });
 
     return () => backHandler.remove();
@@ -272,32 +303,36 @@ function PostDetailScreenComponent({
   }
 
   return (
-    <Container style={{ top: headerOffset, paddingTop: insets.top }}>
+    <AnimatedContainer
+      style={[{ top: headerOffset, paddingTop: insets.top }, containerAnimatedStyle]}
+    >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={headerOffset + insets.top}
       >
-        {/* 顶部导航栏 */}
+        {/* 顶部导航栏 - 极简设计 */}
         <PostDetailHeader
           isAuthor={isPostAuthor}
           onClose={onClose}
           onEdit={handleEdit}
           onDelete={deletePost}
+          onShare={handleShare}
         />
 
         {/* 帖子内容区域 */}
         <ContentScrollView
+          ref={scrollRef}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom }}
+          contentContainerStyle={{ paddingBottom: 0 }}
         >
-          {/* 帖子内容 */}
-          <PostContent post={localPost} />
-
-          {/* 媒体画廊 */}
+          {/* 媒体画廊 - 全宽沉浸式 */}
           {localPost.media && localPost.media.length > 0 && (
             <PostMediaGallery media={localPost.media} />
           )}
+
+          {/* 帖子内容 - 高质量排版 */}
+          <PostContent post={localPost} />
 
           {/* 操作栏 */}
           <PostActions
@@ -334,25 +369,28 @@ function PostDetailScreenComponent({
             onAuthorPress={handleAuthorPress}
           />
         </ContentScrollView>
+
+        {/* 固定底部评论输入框 */}
+        <BottomFixedContainer>
+          <CommentInput
+            value={newComment}
+            onChangeText={setNewComment}
+            onSubmit={submitComment}
+            replyTarget={replyTarget}
+            onCancelReply={() => setReplyTarget(null)}
+          />
+        </BottomFixedContainer>
       </KeyboardAvoidingView>
 
       {/* 用户信息模态框 */}
       {selectedUser && (
         <UserProfileModal
           visible={!!selectedUser}
-          user={{
-            id: selectedUser.id,
-            username: selectedUser.username,
-            avatar: selectedUser.avatar || undefined,
-            postsCount: 0,
-            followersCount: 0,
-            followingCount: 0,
-            isFollowing: false,
-          }}
+          userId={selectedUser.id}
           onClose={() => setSelectedUser(null)}
         />
       )}
-    </Container>
+    </AnimatedContainer>
   );
 }
 

@@ -145,9 +145,36 @@ export function CommunityScreen() {
     [activeCategory, loadUnreadCount]
   );
 
+  // 初始加载和标签切换时加载帖子
   useEffect(() => {
-    loadPosts();
-  }, [loadPosts]);
+    const load = async () => {
+      try {
+        setIsLoading(true);
+
+        let result;
+
+        if (activeCategory === 'favorites') {
+          result = await supabaseForumService.getMyFavorites();
+        } else if (activeCategory === 'recommend') {
+          result = await supabaseForumService.getPosts({ order: 'latest' });
+        } else {
+          result = await supabaseForumService.getPosts({
+            order: 'latest',
+            category: activeCategory as 'help' | 'share' | 'science' | 'warning',
+          });
+        }
+
+        if (result.error) throw result.error;
+        setPosts(result.data || []);
+      } catch (error) {
+        logger.error('加载帖子失败', error as Error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    load();
+  }, [activeCategory]);
 
   // 页面获得焦点时刷新帖子列表（例如从发帖页面返回）
   const isFirstFocus = useRef(true);
@@ -328,7 +355,7 @@ export function CommunityScreen() {
         post={selectedPost}
         onClose={() => {
           setSelectedPost(null);
-          // 关闭详情页后刷新列表，确保点赞状态同步
+          // 关闭详情页后刷新列表，确保状态同步
           loadPosts(true);
         }}
         onEditPost={handleEditFromDetail}

@@ -4,7 +4,7 @@
     "slug": "pet_love",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/appIcon.png",
+    "icon": "./assets/appIcon.jpg",
     "scheme": "petlove",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
@@ -13,7 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/appIcon.png",
+        "foregroundImage": "./assets/appIcon.jpg",
         "backgroundColor": "#E6F4FE"
       },
       "edgeToEdgeEnabled": true,
@@ -35,7 +35,7 @@
         "expo-splash-screen",
         {
           "exclude": ["**/_components/**/*", "**/*.ts", "**/*.d.ts"],
-          "image": "./assets/appIcon.png",
+          "image": "./assets/appIcon.jpg",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",

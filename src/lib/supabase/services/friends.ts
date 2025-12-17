@@ -310,6 +310,69 @@ class SupabaseFriendsService {
   }
 
   /**
+   * 通过发送者 ID 接受好友请求
+   */
+  async acceptFriendRequestBySenderId(senderId: string): Promise<SupabaseResponse<boolean>> {
+    logger.query('friend_requests', 'acceptFriendRequestBySenderId', { senderId });
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        return {
+          data: null,
+          error: { message: '未登录', code: 'NOT_AUTHENTICATED', details: '', hint: '' } as any,
+          success: false,
+        };
+      }
+
+      // 查找来自该发送者的待处理请求
+      const { data: request, error: findError } = await supabase
+        .from('friend_requests')
+        .select('id')
+        .eq('sender_id', senderId)
+        .eq('receiver_id', user.id)
+        .eq('status', 'pending')
+        .maybeSingle();
+
+      if (findError) {
+        logger.error('friend_requests', 'acceptFriendRequestBySenderId.find', findError);
+        return wrapResponse(null, findError) as unknown as SupabaseResponse<boolean>;
+      }
+
+      if (!request) {
+        return {
+          data: null,
+          error: { message: '未找到好友请求', code: 'NOT_FOUND', details: '', hint: '' } as any,
+          success: false,
+        };
+      }
+
+      // 接受请求
+      const { error: updateError } = await supabase
+        .from('friend_requests')
+        .update({ status: 'accepted' })
+        .eq('id', request.id);
+
+      if (updateError) {
+        logger.error('friend_requests', 'acceptFriendRequestBySenderId.update', updateError);
+        return wrapResponse(null, updateError) as unknown as SupabaseResponse<boolean>;
+      }
+
+      logger.success('friend_requests', 'acceptFriendRequestBySenderId');
+      return { data: true, error: null, success: true };
+    } catch (err) {
+      logger.error('friend_requests', 'acceptFriendRequestBySenderId', err);
+      return {
+        data: null,
+        error: { message: String(err), code: 'UNKNOWN', details: '', hint: '' } as any,
+        success: false,
+      };
+    }
+  }
+
+  /**
    * 删除好友
    */
   async removeFriend(friendId: string): Promise<SupabaseResponse<boolean>> {

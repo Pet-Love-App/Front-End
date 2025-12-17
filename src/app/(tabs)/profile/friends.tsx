@@ -21,9 +21,14 @@ import {
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Users, UserPlus, ChevronLeft, Search } from '@tamagui/lucide-icons';
+import { Users, UserPlus, ChevronLeft, Search, MessageCircle } from '@tamagui/lucide-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { supabaseFriendsService, type Friend, type FriendRequest } from '@/src/lib/supabase';
+import {
+  supabaseFriendsService,
+  supabaseChatService,
+  type Friend,
+  type FriendRequest,
+} from '@/src/lib/supabase';
 import { UserProfileModal } from '@/src/components/UserProfileModal';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -99,37 +104,58 @@ export default function MyFriendsScreen() {
     setShowUserProfile(true);
   };
 
+  const handleStartChat = async (friendId: string) => {
+    try {
+      const response = await supabaseChatService.getOrCreateConversation(friendId);
+      if (response.success && response.data) {
+        router.push(`/profile/chat?conversationId=${response.data.id}&userId=${friendId}` as any);
+      }
+    } catch (error) {
+      console.error('Failed to start chat:', error);
+    }
+  };
+
   const renderFriendItem = ({ item }: { item: Friend }) => (
-    <TouchableOpacity
-      style={styles.friendCard}
-      onPress={() => handleViewProfile(item.friendId)}
-      activeOpacity={0.8}
-    >
-      <View style={styles.friendAvatar}>
-        {item.friendAvatar ? (
-          <Image source={{ uri: item.friendAvatar }} style={styles.avatar} />
-        ) : (
-          <View style={styles.avatarPlaceholder}>
-            <Text style={styles.avatarText}>{item.friendUsername.charAt(0).toUpperCase()}</Text>
-          </View>
-        )}
-      </View>
-      <View style={styles.friendInfo}>
-        <Text style={styles.friendName}>{item.friendUsername}</Text>
-        {item.friendBio && (
-          <Text style={styles.friendBio} numberOfLines={1}>
-            {item.friendBio}
+    <View style={styles.friendCard}>
+      <TouchableOpacity
+        style={styles.friendTouchable}
+        onPress={() => handleViewProfile(item.friendId)}
+        activeOpacity={0.8}
+      >
+        <View style={styles.friendAvatar}>
+          {item.friendAvatar ? (
+            <Image source={{ uri: item.friendAvatar }} style={styles.avatar} />
+          ) : (
+            <View style={styles.avatarPlaceholder}>
+              <Text style={styles.avatarText}>{item.friendUsername.charAt(0).toUpperCase()}</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.friendInfo}>
+          <Text style={styles.friendName}>{item.friendUsername}</Text>
+          {item.friendBio && (
+            <Text style={styles.friendBio} numberOfLines={1}>
+              {item.friendBio}
+            </Text>
+          )}
+          <Text style={styles.friendDate}>
+            {new Date(item.createdAt).toLocaleDateString('zh-CN', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
           </Text>
-        )}
-        <Text style={styles.friendDate}>
-          {new Date(item.createdAt).toLocaleDateString('zh-CN', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          })}
-        </Text>
-      </View>
-    </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.chatButton}
+        onPress={() => handleStartChat(item.friendId)}
+        activeOpacity={0.8}
+      >
+        <MessageCircle size={20} color={BRAND_COLOR} strokeWidth={2} />
+      </TouchableOpacity>
+    </View>
   );
 
   const renderRequestItem = ({ item }: { item: FriendRequest }) => (
@@ -329,11 +355,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
   },
   backButton: {
     width: 40,
@@ -411,15 +432,16 @@ const styles = StyleSheet.create({
   friendCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+  },
+  friendTouchable: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   friendAvatar: {
     marginRight: 16,
@@ -460,16 +482,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9CA3AF',
   },
+  chatButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E8F5FE',
+    borderRadius: 22,
+    marginLeft: 12,
+  },
   requestCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
   },
   requestInfo: {
     flexDirection: 'row',

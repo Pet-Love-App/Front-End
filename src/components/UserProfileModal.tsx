@@ -27,12 +27,21 @@ import {
   User,
   UserPlus,
   UserMinus,
+  UserCheck,
   MessageCircle,
   X,
   MapPin,
   Calendar,
+  Heart,
 } from '@tamagui/lucide-icons';
-import { supabaseFriendsService, supabaseProfileService, type Profile } from '@/src/lib/supabase';
+import { useRouter } from 'expo-router';
+import {
+  supabaseFriendsService,
+  supabaseProfileService,
+  supabaseChatService,
+  supabaseFollowService,
+  type Profile,
+} from '@/src/lib/supabase';
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -51,17 +60,23 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onClose,
   onSendMessage,
 }) => {
+  const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(false);
   const [friendStatus, setFriendStatus] = useState<'none' | 'sent' | 'received' | 'friends'>(
     'none'
   );
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followStats, setFollowStats] = useState({ followersCount: 0, followingCount: 0 });
   const [actionLoading, setActionLoading] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
   useEffect(() => {
     if (visible && userId) {
       loadUserProfile();
       loadFriendStatus();
+      loadFollowStatus();
+      loadFollowStats();
     }
   }, [visible, userId]);
 
@@ -87,6 +102,50 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       }
     } catch (error) {
       console.error('Failed to load friend status:', error);
+    }
+  };
+
+  const loadFollowStatus = async () => {
+    try {
+      const response = await supabaseFollowService.isFollowing(userId);
+      if (response.success) {
+        setIsFollowing(response.data || false);
+      }
+    } catch (error) {
+      console.error('Failed to load follow status:', error);
+    }
+  };
+
+  const loadFollowStats = async () => {
+    try {
+      const response = await supabaseFollowService.getFollowStats(userId);
+      if (response.success && response.data) {
+        setFollowStats(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load follow stats:', error);
+    }
+  };
+
+  const handleToggleFollow = async () => {
+    setFollowLoading(true);
+    try {
+      const response = await supabaseFollowService.toggleFollow(userId);
+      if (response.success && response.data) {
+        setIsFollowing(response.data.isFollowing);
+        // 更新统计
+        setFollowStats((prev) => ({
+          ...prev,
+          followersCount: response.data!.isFollowing
+            ? prev.followersCount + 1
+            : prev.followersCount - 1,
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to toggle follow:', error);
+      alert('操作失败，请稍后再试');
+    } finally {
+      setFollowLoading(false);
     }
   };
 
@@ -127,6 +186,84 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     }
   };
 
+  const handleAcceptRequest = async () => {
+    setActionLoading(true);
+    try {
+      const response = await supabaseFriendsService.acceptFriendRequestBySenderId(userId);
+      if (response.success) {
+        setFriendStatus('friends');
+      } else {
+        alert(response.error?.message || '接受失败');
+      }
+    } catch (error) {
+      console.error('Failed to accept friend request:', error);
+      alert('接受失败，请稍后再试');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (friendStatus !== 'friends') {
+      alert('只能给好友发送消息');
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      // 获取或创建会话
+      const response = await supabaseChatService.getOrCreateConversation(userId);
+
+      if (response.success && response.data) {
+        onClose();
+        // 跳转到聊天界面
+        router.push(`/profile/chat?conversationId=${response.data.id}&userId=${userId}` as any);
+      } else {
+        alert('无法开始聊天，请稍后再试');
+      }
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+      alert('无法开始聊天，请稍后再试');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const renderFollowButton = () => {
+    return (
+      <TouchableOpacity
+        style={[
+          styles.followButton,
+          isFollowing ? styles.followButtonActive : styles.followButtonInactive,
+        ]}
+        onPress={handleToggleFollow}
+        disabled={followLoading}
+        activeOpacity={0.8}
+      >
+        {followLoading ? (
+          <ActivityIndicator size="small" color={isFollowing ? '#6B7280' : '#FFFFFF'} />
+        ) : (
+          <>
+            <Heart
+              size={16}
+              color={isFollowing ? '#6B7280' : '#FFFFFF'}
+              strokeWidth={2}
+              fill={isFollowing ? '#6B7280' : 'transparent'}
+            />
+            <Text
+              style={[
+                styles.followButtonText,
+                isFollowing ? styles.followButtonTextActive : styles.followButtonTextInactive,
+              ]}
+            >
+              {isFollowing ? '已关注' : '关注'}
+            </Text>
+          </>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   const renderActionButton = () => {
     if (actionLoading) {
       return (
@@ -142,7 +279,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           <View style={styles.actionButtonGroup}>
             <TouchableOpacity
               style={[styles.actionButton, styles.actionButtonPrimary]}
-              onPress={() => onSendMessage?.(userId)}
+              onPress={handleSendMessage}
               activeOpacity={0.8}
             >
               <MessageCircle size={18} color="#FFFFFF" strokeWidth={2} />
@@ -165,9 +302,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         );
       case 'received':
         return (
-          <View style={[styles.actionButton, styles.actionButtonPrimary]}>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.actionButtonPrimary]}
+            onPress={handleAcceptRequest}
+            activeOpacity={0.8}
+          >
+            <UserCheck size={18} color="#FFFFFF" strokeWidth={2} />
             <Text style={styles.actionButtonText}>接受好友请求</Text>
-          </View>
+          </TouchableOpacity>
         );
       default:
         return (
@@ -247,22 +389,20 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 {/* 统计信息 */}
                 <View style={styles.statsContainer}>
                   <View style={styles.statItem}>
-                    <Text style={styles.statValue}>0</Text>
-                    <Text style={styles.statLabel}>帖子</Text>
-                  </View>
-                  <View style={styles.statDivider} />
-                  <View style={styles.statItem}>
-                    <Text style={styles.statValue}>0</Text>
+                    <Text style={styles.statValue}>{followStats.followersCount}</Text>
                     <Text style={styles.statLabel}>粉丝</Text>
                   </View>
                   <View style={styles.statDivider} />
                   <View style={styles.statItem}>
-                    <Text style={styles.statValue}>0</Text>
+                    <Text style={styles.statValue}>{followStats.followingCount}</Text>
                     <Text style={styles.statLabel}>关注</Text>
                   </View>
                 </View>
 
-                {/* 操作按钮 */}
+                {/* 关注按钮 */}
+                <View style={styles.followContainer}>{renderFollowButton()}</View>
+
+                {/* 好友操作按钮 */}
                 <View style={styles.actionContainer}>{renderActionButton()}</View>
               </View>
 
@@ -429,9 +569,40 @@ const styles = StyleSheet.create({
     height: 32,
     backgroundColor: '#E5E7EB',
   },
+  followContainer: {
+    width: '100%',
+    marginTop: 20,
+  },
+  followButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 24,
+    gap: 6,
+  },
+  followButtonInactive: {
+    backgroundColor: '#FF6B6B',
+  },
+  followButtonActive: {
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+  },
+  followButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  followButtonTextInactive: {
+    color: '#FFFFFF',
+  },
+  followButtonTextActive: {
+    color: '#6B7280',
+  },
   actionContainer: {
     width: '100%',
-    marginTop: 24,
+    marginTop: 16,
   },
   actionButtonGroup: {
     flexDirection: 'row',

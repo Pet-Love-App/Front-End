@@ -167,7 +167,7 @@ export const logger = {
   error: (table: string, operation: string, error: unknown) => {
     appLogger.error('Supabase Error', error as Error, { table, operation });
   },
-  info: (table: string, message: string) => {
-    appLogger.info(`${table}: ${message}`);
+  info: (message: string, data?: Record<string, unknown>) => {
+    appLogger.info(message, data as any);
   },
 };

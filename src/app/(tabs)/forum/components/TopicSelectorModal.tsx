@@ -4,10 +4,20 @@
  * 允许用户选择或创建新话题
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { Modal, View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import {
+  Modal,
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
 import { X, Search, Hash, TrendingUp, Plus } from '@tamagui/lucide-icons';
 import { BlurView } from 'expo-blur';
+import { supabaseForumService } from '@/src/lib/supabase';
 
 interface Topic {
   id: string;
@@ -33,35 +43,61 @@ export function TopicSelectorModal({
 }: TopicSelectorModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTopics, setSelectedTopics] = useState<Topic[]>(initialSelected);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // 模拟热门话题列表
-  const hotTopics: Topic[] = useMemo(
-    () => [
-      { id: '1', name: '宠物日常', postCount: 1234, isHot: true },
-      { id: '2', name: '猫咪', postCount: 987, isHot: true },
-      { id: '3', name: '狗狗', postCount: 856, isHot: true },
-      { id: '4', name: '养宠经验', postCount: 654 },
-      { id: '5', name: '宠物健康', postCount: 543 },
-      { id: '6', name: '宠物美食', postCount: 432 },
-      { id: '7', name: '宠物训练', postCount: 321 },
-    ],
-    []
-  );
+  // 加载真实话题列表
+  useEffect(() => {
+    if (visible) {
+      loadTopics();
+    }
+  }, [visible]);
+
+  const loadTopics = async () => {
+    setIsLoading(true);
+    try {
+      const response = await supabaseForumService.getPosts({ pageSize: 100 });
+      if (response.success && response.data) {
+        // 从帖子中提取所有标签
+        const tagMap = new Map<string, number>();
+        response.data.forEach((post) => {
+          if (post.tags && Array.isArray(post.tags)) {
+            post.tags.forEach((tag: string) => {
+              const count = tagMap.get(tag) || 0;
+              tagMap.set(tag, count + 1);
+            });
+          }
+        });
+
+        // 转换为 Topic 对象并按使用次数排序
+        const topicList: Topic[] = Array.from(tagMap.entries())
+          .map(([name, postCount]) => ({
+            id: name,
+            name,
+            postCount,
+            isHot: postCount >= 3, // 使用次数 >= 3 则标记为热门
+          }))
+          .sort((a, b) => (b.postCount || 0) - (a.postCount || 0));
+
+        setTopics(topicList);
+      }
+    } catch (error) {
+      console.error('Failed to load topics:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredTopics = useMemo(() => {
-    if (!searchQuery.trim()) return hotTopics;
-    return hotTopics.filter((topic) =>
-      topic.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [hotTopics, searchQuery]);
+    if (!searchQuery.trim()) return topics;
+    return topics.filter((topic) => topic.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [topics, searchQuery]);
 
   const canCreateNew = useMemo(() => {
     if (!searchQuery.trim()) return false;
-    const exists = hotTopics.some(
-      (topic) => topic.name.toLowerCase() === searchQuery.toLowerCase()
-    );
+    const exists = topics.some((topic) => topic.name.toLowerCase() === searchQuery.toLowerCase());
     return !exists;
-  }, [searchQuery, hotTopics]);
+  }, [searchQuery, topics]);
 
   const toggleTopic = useCallback((topic: Topic) => {
     setSelectedTopics((prev) => {

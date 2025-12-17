@@ -4,7 +4,7 @@
  * 允许用户选择要@的好友
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -20,6 +20,7 @@ import {
 import { X, Search, Check, Info } from '@tamagui/lucide-icons';
 import { BlurView } from 'expo-blur';
 import { UserProfileModal } from '@/src/components/UserProfileModal';
+import { supabaseFriendsService, type Friend as FriendType } from '@/src/lib/supabase';
 
 interface Friend {
   id: string;
@@ -47,25 +48,40 @@ export function MentionFriendsModal({
   const [isLoading, setIsLoading] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [showUserProfile, setShowUserProfile] = useState(false);
+  const [friends, setFriends] = useState<Friend[]>([]);
 
-  // 模拟好友列表（实际项目中应该从 API 获取）
-  const mockFriends: Friend[] = useMemo(
-    () => [
-      { id: '1', username: '小明', avatar: 'https://i.pravatar.cc/150?img=1' },
-      { id: '2', username: '小红', avatar: 'https://i.pravatar.cc/150?img=2' },
-      { id: '3', username: '张三', avatar: 'https://i.pravatar.cc/150?img=3' },
-      { id: '4', username: '李四', avatar: 'https://i.pravatar.cc/150?img=4' },
-      { id: '5', username: '王五', avatar: 'https://i.pravatar.cc/150?img=5' },
-    ],
-    []
-  );
+  // 加载真实好友列表
+  useEffect(() => {
+    if (visible) {
+      loadFriends();
+    }
+  }, [visible]);
+
+  const loadFriends = async () => {
+    setIsLoading(true);
+    try {
+      const response = await supabaseFriendsService.getMyFriends();
+      if (response.success && response.data) {
+        const friendList: Friend[] = response.data.map((f) => ({
+          id: f.friendId,
+          username: f.friendUsername,
+          avatar: f.friendAvatar,
+        }));
+        setFriends(friendList);
+      }
+    } catch (error) {
+      console.error('Failed to load friends:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredFriends = useMemo(() => {
-    if (!searchQuery.trim()) return mockFriends;
-    return mockFriends.filter((friend) =>
+    if (!searchQuery.trim()) return friends;
+    return friends.filter((friend) =>
       friend.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [mockFriends, searchQuery]);
+  }, [friends, searchQuery]);
 
   const toggleFriend = useCallback((friend: Friend) => {
     setSelectedFriends((prev) => {

@@ -105,6 +105,7 @@
     "expo-image-picker": "~17.0.10",
     "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.10",
+    "expo-location": "~19.0.8",
     "expo-router": "~6.0.19",
     "expo-secure-store": "~15.0.8",
     "expo-sharing": "~14.0.8",

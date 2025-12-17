@@ -264,10 +264,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     );
   };
 
-  const renderActionButton = () => {
+  const renderFriendButton = () => {
     if (actionLoading) {
       return (
-        <View style={[styles.actionButton, styles.actionButtonPrimary]}>
+        <View style={[styles.friendButton, styles.friendButtonPrimary]}>
           <ActivityIndicator size="small" color="#FFFFFF" />
         </View>
       );
@@ -276,50 +276,41 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     switch (friendStatus) {
       case 'friends':
         return (
-          <View style={styles.actionButtonGroup}>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.actionButtonPrimary]}
-              onPress={handleSendMessage}
-              activeOpacity={0.8}
-            >
-              <MessageCircle size={18} color="#FFFFFF" strokeWidth={2} />
-              <Text style={styles.actionButtonText}>发送消息</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.actionButtonSecondary]}
-              onPress={handleRemoveFriend}
-              activeOpacity={0.8}
-            >
-              <UserMinus size={18} color="#FF3B30" strokeWidth={2} />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={[styles.friendButton, styles.friendButtonSuccess]}
+            onPress={handleSendMessage}
+            activeOpacity={0.8}
+          >
+            <MessageCircle size={16} color="#FFFFFF" strokeWidth={2} />
+            <Text style={styles.friendButtonText}>发送消息</Text>
+          </TouchableOpacity>
         );
       case 'sent':
         return (
-          <View style={[styles.actionButton, styles.actionButtonDisabled]}>
-            <Text style={styles.actionButtonTextDisabled}>已发送请求</Text>
+          <View style={[styles.friendButton, styles.friendButtonDisabled]}>
+            <Text style={styles.friendButtonTextDisabled}>已发送请求</Text>
           </View>
         );
       case 'received':
         return (
           <TouchableOpacity
-            style={[styles.actionButton, styles.actionButtonPrimary]}
+            style={[styles.friendButton, styles.friendButtonPrimary]}
             onPress={handleAcceptRequest}
             activeOpacity={0.8}
           >
-            <UserCheck size={18} color="#FFFFFF" strokeWidth={2} />
-            <Text style={styles.actionButtonText}>接受好友请求</Text>
+            <UserCheck size={16} color="#FFFFFF" strokeWidth={2} />
+            <Text style={styles.friendButtonText}>接受请求</Text>
           </TouchableOpacity>
         );
       default:
         return (
           <TouchableOpacity
-            style={[styles.actionButton, styles.actionButtonPrimary]}
+            style={[styles.friendButton, styles.friendButtonPrimary]}
             onPress={handleSendFriendRequest}
             activeOpacity={0.8}
           >
-            <UserPlus size={18} color="#FFFFFF" strokeWidth={2} />
-            <Text style={styles.actionButtonText}>添加好友</Text>
+            <UserPlus size={16} color="#FFFFFF" strokeWidth={2} />
+            <Text style={styles.friendButtonText}>添加好友</Text>
           </TouchableOpacity>
         );
     }
@@ -340,8 +331,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       </Pressable>
 
       <Animated.View
-        entering={SlideInDown.springify().damping(20)}
-        exiting={SlideOutDown.springify().damping(20)}
+        entering={FadeIn.duration(200)}
+        exiting={FadeOut.duration(200)}
         style={styles.container}
       >
         {/* 头部背景 */}
@@ -399,11 +390,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   </View>
                 </View>
 
-                {/* 关注按钮 */}
-                <View style={styles.followContainer}>{renderFollowButton()}</View>
-
-                {/* 好友操作按钮 */}
-                <View style={styles.actionContainer}>{renderActionButton()}</View>
+                {/* 操作按钮组 */}
+                <View style={styles.buttonGroup}>
+                  {renderFollowButton()}
+                  {renderFriendButton()}
+                </View>
               </View>
 
               {/* 其他信息 */}
@@ -569,17 +560,20 @@ const styles = StyleSheet.create({
     height: 32,
     backgroundColor: '#E5E7EB',
   },
-  followContainer: {
+  buttonGroup: {
+    flexDirection: 'row',
     width: '100%',
     marginTop: 20,
+    gap: 12,
   },
   followButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 24,
+    paddingHorizontal: 20,
+    borderRadius: 12,
     gap: 6,
   },
   followButtonInactive: {
@@ -600,41 +594,31 @@ const styles = StyleSheet.create({
   followButtonTextActive: {
     color: '#6B7280',
   },
-  actionContainer: {
-    width: '100%',
-    marginTop: 16,
-  },
-  actionButtonGroup: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  actionButton: {
+  friendButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     borderRadius: 12,
-    gap: 8,
+    gap: 6,
   },
-  actionButtonPrimary: {
+  friendButtonPrimary: {
     backgroundColor: BRAND_COLOR,
   },
-  actionButtonSecondary: {
-    backgroundColor: '#FEE2E2',
-    flex: 0,
-    paddingHorizontal: 14,
+  friendButtonSuccess: {
+    backgroundColor: '#10B981',
   },
-  actionButtonDisabled: {
+  friendButtonDisabled: {
     backgroundColor: '#E5E7EB',
   },
-  actionButtonText: {
+  friendButtonText: {
     fontSize: 15,
     fontWeight: '600',
     color: '#FFFFFF',
   },
-  actionButtonTextDisabled: {
+  friendButtonTextDisabled: {
     fontSize: 15,
     fontWeight: '600',
     color: '#9CA3AF',

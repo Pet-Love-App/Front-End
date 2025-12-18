@@ -104,12 +104,16 @@ export function useCatfoodRealtime(options: UseCatfoodRealtimeOptions = {}) {
 
     // 订阅频道
     channel.subscribe((status) => {
-      logger.info('Realtime 订阅状态', { status, channelName });
-
       if (status === 'SUBSCRIBED') {
         logger.info('✅ Realtime 订阅成功', { channelName });
       } else if (status === 'CHANNEL_ERROR') {
-        logger.error('❌ Realtime 订阅失败', new Error(status));
+        // WebSocket 连接错误是正常的，通常是网络波动或热重载导致
+        // Supabase 会自动重连，不需要特别处理
+        logger.warn('⚠️ Realtime 连接中断，正在重连...', { channelName });
+      } else if (status === 'TIMED_OUT') {
+        logger.error('❌ Realtime 订阅超时', new Error(status));
+      } else if (status === 'CLOSED') {
+        logger.info('🔌 Realtime 连接已关闭', { channelName });
       }
     });
 

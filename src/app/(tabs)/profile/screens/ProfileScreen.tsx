@@ -97,11 +97,12 @@ export function ProfileScreen() {
     };
   }, []);
 
-  // 当页面获得焦点时刷新未读计数
+  // 当页面获得焦点时刷新未读计数和信誉分
   useFocusEffect(
     useCallback(() => {
       loadUnreadCount();
-    }, [])
+      refresh(); // 自动刷新信誉分
+    }, [refresh])
   );
 
   const loadUnreadCount = async () => {
@@ -283,14 +284,7 @@ export function ProfileScreen() {
         {/* 信誉分和勋章 */}
         <YStack width="100%" paddingHorizontal="$4" gap="$3" marginTop="$4" marginBottom="$2">
           {/* 信誉分卡片 */}
-          {reputation && <ReputationCard reputation={reputation} onPress={refresh} />}
-
-          {/* 调试按钮 - 刷新信誉分 */}
-          {__DEV__ && (
-            <Button variant="outlined" onPress={refresh}>
-              🔄 刷新信誉分数据
-            </Button>
-          )}
+          {reputation && <ReputationCard reputation={reputation} />}
 
           {/* 勋章展示 */}
           {badges.length > 0 && (

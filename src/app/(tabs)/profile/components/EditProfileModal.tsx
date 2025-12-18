@@ -3,6 +3,7 @@
  *
  * 功能：
  * - 修改用户名
+ * - 修改个人简介
  * - 修改密码
  * - 表单验证
  * - 实时错误提示
@@ -32,7 +33,7 @@ interface EditProfileModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-type EditMode = 'username' | 'password' | null;
+type EditMode = 'username' | 'bio' | 'password' | null;
 
 export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) {
   const { user, fetchCurrentUser } = useUserStore();
@@ -44,6 +45,11 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
   const [username, setUsername] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [isUpdatingUsername, setIsUpdatingUsername] = useState(false);
+
+  // 个人简介相关状态
+  const [bio, setBio] = useState('');
+  const [bioError, setBioError] = useState('');
+  const [isUpdatingBio, setIsUpdatingBio] = useState(false);
 
   // 密码相关状态
   const [currentPassword, setCurrentPassword] = useState('');
@@ -58,13 +64,15 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
       setEditMode(null);
       setUsername(user?.username || '');
       setUsernameError('');
+      setBio(user?.bio || '');
+      setBioError('');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       setPasswordError('');
       setShowPasswords(false);
     }
-  }, [open, user?.username]);
+  }, [open, user?.username, user?.bio]);
 
   const handleClose = () => onOpenChange(false);
 
@@ -99,6 +107,40 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
       setUsernameError(error.message || '用户名可能已被占用');
     } finally {
       setIsUpdatingUsername(false);
+    }
+  };
+
+  const validateBio = (value: string): boolean => {
+    const trimmed = value.trim();
+    if (trimmed.length > 200) {
+      setBioError('个人简介不能超过200个字符');
+      return false;
+    }
+    if (trimmed === user?.bio) {
+      setBioError('个人简介没有变化');
+      return false;
+    }
+    setBioError('');
+    return true;
+  };
+
+  const handleUpdateBio = async () => {
+    const trimmedBio = bio.trim();
+    if (!validateBio(trimmedBio)) return;
+
+    try {
+      setIsUpdatingBio(true);
+      const { error } = await supabaseProfileService.updateProfile({
+        bio: trimmedBio || undefined,
+      });
+      if (error) throw new Error(error.message);
+      await fetchCurrentUser();
+      toast.success('个人简介已更新');
+      setEditMode(null);
+    } catch (error: any) {
+      setBioError(error.message || '更新失败，请重试');
+    } finally {
+      setIsUpdatingBio(false);
     }
   };
 
@@ -151,6 +193,7 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
   };
 
   const canUpdateUsername = username.trim() && username.trim() !== user?.username && !usernameError;
+  const canUpdateBio = bio.trim() !== (user?.bio || '') && !bioError;
   const canChangePassword = currentPassword && newPassword && confirmPassword && !passwordError;
 
   return (
@@ -193,7 +236,7 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
               编辑个人资料
             </Text>
             <Text fontSize={14} color={neutralScale.neutral9} textAlign="center">
-              修改用户名或密码
+              修改用户名、个人简介或密码
             </Text>
           </YStack>
 
@@ -305,6 +348,123 @@ export function EditProfileModal({ open, onOpenChange }: EditProfileModalProps) 
                         loading={isUpdatingUsername}
                       >
                         {isUpdatingUsername ? '更新中' : '确认更新'}
+                      </Button>
+                    </XStack>
+                  </YStack>
+                )}
+              </YStack>
+
+              {/* 个人简介卡片 */}
+              <YStack
+                backgroundColor={editMode === 'bio' ? successScale.success1 : neutralScale.neutral1}
+                borderRadius={16}
+                borderWidth={2}
+                borderColor={editMode === 'bio' ? successScale.success4 : neutralScale.neutral3}
+                padding="$4"
+                gap="$3"
+              >
+                <TouchableOpacity
+                  onPress={() => setEditMode(editMode === 'bio' ? null : 'bio')}
+                  activeOpacity={0.7}
+                >
+                  <XStack alignItems="center" justifyContent="space-between" flex={1}>
+                    <XStack alignItems="center" gap="$3" flex={1}>
+                      <YStack
+                        width={40}
+                        height={40}
+                        borderRadius={20}
+                        backgroundColor={successScale.success3}
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <IconSymbol name="text.alignleft" size={20} color={successScale.success9} />
+                      </YStack>
+                      <YStack flex={1} minWidth={0}>
+                        <Text fontSize={16} fontWeight="700" color={neutralScale.neutral12}>
+                          个人简介
+                        </Text>
+                        <Text
+                          fontSize={13}
+                          color={neutralScale.neutral9}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {user?.bio || '未填写'}
+                        </Text>
+                      </YStack>
+                    </XStack>
+                    <YStack flexShrink={0}>
+                      <IconSymbol
+                        name={editMode === 'bio' ? 'chevron.up' : 'chevron.down'}
+                        size={20}
+                        color={neutralScale.neutral9}
+                      />
+                    </YStack>
+                  </XStack>
+                </TouchableOpacity>
+
+                {editMode === 'bio' && (
+                  <YStack gap="$3" marginTop="$2">
+                    <YStack gap="$2">
+                      <XStack justifyContent="space-between" alignItems="center">
+                        <Text fontSize={13} color={neutralScale.neutral10} fontWeight="600">
+                          个人简介
+                        </Text>
+                        <Text fontSize={12} color={neutralScale.neutral8}>
+                          {bio.length}/200
+                        </Text>
+                      </XStack>
+                      <TextInput
+                        placeholder="介绍一下你自己吧..."
+                        placeholderTextColor={neutralScale.neutral6}
+                        value={bio}
+                        onChangeText={(text) => {
+                          setBio(text);
+                          if (bioError) setBioError('');
+                        }}
+                        onBlur={() => bio.trim() && validateBio(bio)}
+                        multiline
+                        numberOfLines={4}
+                        maxLength={200}
+                        textAlignVertical="top"
+                        style={[styles.textArea, bioError && styles.inputError]}
+                      />
+                      {bioError && (
+                        <XStack alignItems="center" gap="$1.5">
+                          <IconSymbol
+                            name="exclamationmark.circle.fill"
+                            size={14}
+                            color={errorScale.error9}
+                          />
+                          <Text fontSize={12} color={errorScale.error9} fontWeight="500">
+                            {bioError}
+                          </Text>
+                        </XStack>
+                      )}
+                    </YStack>
+
+                    <XStack gap="$2">
+                      <Button
+                        flex={1}
+                        size="md"
+                        variant="outline"
+                        onPress={() => {
+                          setEditMode(null);
+                          setBio(user?.bio || '');
+                          setBioError('');
+                        }}
+                      >
+                        取消
+                      </Button>
+                      <Button
+                        flex={1}
+                        size="md"
+                        variant="primary"
+                        onPress={handleUpdateBio}
+                        disabled={!canUpdateBio || isUpdatingBio}
+                        loading={isUpdatingBio}
+                      >
+                        {isUpdatingBio ? '更新中' : '确认更新'}
                       </Button>
                     </XStack>
                   </YStack>
@@ -511,6 +671,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
     paddingRight: 48,
+    fontSize: 15,
+    fontWeight: '500',
+    color: neutralScale.neutral12,
+  },
+  textArea: {
+    minHeight: 100,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    borderColor: neutralScale.neutral4,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     fontSize: 15,
     fontWeight: '500',
     color: neutralScale.neutral12,

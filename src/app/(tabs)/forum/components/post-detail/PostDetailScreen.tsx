@@ -22,9 +22,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
-import { supabaseForumService, type Post } from '@/src/lib/supabase';
+import { supabaseForumService, type Post, type PostMedia } from '@/src/lib/supabase';
 
 import { UserProfileModal } from '@/src/components/UserProfileModal';
+import { VideoPlayer } from '@/src/components/VideoPlayer';
 import { CommentSection } from './CommentSection';
 import { CommentInput } from './CommentInput';
 import { PostActions } from './PostActions';
@@ -109,6 +110,10 @@ function PostDetailScreenComponent({
     username: string;
     avatar?: string;
   } | null>(null);
+
+  // 视频播放器状态
+  const [videoPlayerVisible, setVideoPlayerVisible] = useState(false);
+  const [currentVideoUrl, setCurrentVideoUrl] = useState<string>('');
 
   // 当外部 post 变化时同步
   useEffect(() => {
@@ -285,6 +290,14 @@ function PostDetailScreenComponent({
     }
   }, [localPost]);
 
+  // 处理媒体点击（视频播放）
+  const handleMediaPress = useCallback((media: PostMedia, _index: number) => {
+    if (media.mediaType === 'video') {
+      setCurrentVideoUrl(media.fileUrl);
+      setVideoPlayerVisible(true);
+    }
+  }, []);
+
   // 处理 Android 系统返回键
   useEffect(() => {
     if (!visible) return;
@@ -328,7 +341,7 @@ function PostDetailScreenComponent({
         >
           {/* 媒体画廊 - 全宽沉浸式 */}
           {localPost.media && localPost.media.length > 0 && (
-            <PostMediaGallery media={localPost.media} />
+            <PostMediaGallery media={localPost.media} onMediaPress={handleMediaPress} />
           )}
 
           {/* 帖子内容 - 高质量排版 */}
@@ -390,6 +403,13 @@ function PostDetailScreenComponent({
           onClose={() => setSelectedUser(null)}
         />
       )}
+
+      {/* 视频播放器 */}
+      <VideoPlayer
+        visible={videoPlayerVisible}
+        videoUrl={currentVideoUrl}
+        onClose={() => setVideoPlayerVisible(false)}
+      />
     </AnimatedContainer>
   );
 }

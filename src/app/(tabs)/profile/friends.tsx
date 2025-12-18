@@ -108,7 +108,9 @@ export default function MyFriendsScreen() {
     try {
       const response = await supabaseChatService.getOrCreateConversation(friendId);
       if (response.success && response.data) {
-        router.push(`/profile/chat?conversationId=${response.data.id}&userId=${friendId}` as any);
+        router.push(
+          `/(tabs)/profile/chat?conversationId=${response.data.id}&userId=${friendId}` as any
+        );
       }
     } catch (error) {
       console.error('Failed to start chat:', error);

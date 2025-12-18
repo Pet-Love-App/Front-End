@@ -11,11 +11,14 @@ import { Pressable } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { Heart, Play, Award, Eye } from '@tamagui/lucide-icons';
 import { styled, YStack, XStack, Text, Stack, Image, Avatar, useTheme } from 'tamagui';
+import { PostImage } from './PostImage';
+import { VideoPreview } from '../VideoPreview';
 
 export interface PostCardData {
   id: number;
   title: string;
   imageUrl: string;
+  videoUrl?: string; // 视频 URL，用于生成缩略图
   imageHeight?: number;
   isVideo?: boolean;
   author: {
@@ -102,7 +105,8 @@ const AuthorContainer = styled(XStack, {
 const AuthorName = styled(Text, {
   name: 'AuthorName',
   fontSize: 12,
-  color: '$colorMuted',
+  color: '$color',
+  opacity: 0.6,
   numberOfLines: 1,
   flexShrink: 1,
 });
@@ -112,7 +116,7 @@ const BadgeIcon = styled(Stack, {
   width: 16,
   height: 16,
   borderRadius: 8,
-  backgroundColor: '$secondary',
+  backgroundColor: '$blue10',
   alignItems: 'center',
   justifyContent: 'center',
 });
@@ -138,7 +142,8 @@ const StatItem = styled(XStack, {
 const StatText = styled(Text, {
   name: 'StatText',
   fontSize: 12,
-  color: '$colorMuted',
+  color: '$color',
+  opacity: 0.6,
 });
 
 const AnimatedCardContainer = Animated.createAnimatedComponent(CardContainer);
@@ -229,15 +234,31 @@ function PostCardComponent({
     return count.toString();
   };
 
+  // 判断是否应该显示视频缩略图（动态生成）
+  // 条件：是视频帖子 + 有视频 URL + 没有预存的图片/缩略图
+  const shouldShowVideoThumbnail = data.isVideo && data.videoUrl && !data.imageUrl;
+
   return (
     <Pressable onPress={handlePress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
       <AnimatedCardContainer width={columnWidth} style={cardAnimatedStyle}>
         <ImageContainer height={imageHeight}>
-          <Image source={{ uri: data.imageUrl }} width="100%" height="100%" resizeMode="cover" />
-          {data.isVideo && (
-            <VideoOverlay>
-              <Play size={16} color="#FFFFFF" fill="#FFFFFF" />
-            </VideoOverlay>
+          {shouldShowVideoThumbnail ? (
+            // 使用 VideoPreview 组件显示视频缩略图
+            <VideoPreview
+              videoUri={data.videoUrl!}
+              width={columnWidth}
+              height={imageHeight}
+              showPlayButton={true}
+            />
+          ) : (
+            <>
+              <PostImage uri={data.imageUrl} width="100%" height="100%" resizeMode="cover" />
+              {data.isVideo && (
+                <VideoOverlay>
+                  <Play size={16} color="#FFFFFF" fill="#FFFFFF" />
+                </VideoOverlay>
+              )}
+            </>
           )}
         </ImageContainer>
 

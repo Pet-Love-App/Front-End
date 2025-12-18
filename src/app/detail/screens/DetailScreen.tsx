@@ -165,6 +165,7 @@ export function DetailScreen() {
           brand={catFood.brand}
           score={catFood.score}
           countNum={catFood.countNum}
+          likeCount={catFood.like_count || 0}
           catfoodId={catFood.id}
         />
 

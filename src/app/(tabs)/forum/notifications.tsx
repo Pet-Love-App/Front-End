@@ -328,10 +328,10 @@ export default function NotificationsScreen() {
       }
     }
 
-    // 跳转到相关帖子详情
+    // 跳转到相关帖子详情（独立全屏页面）
     if (item.post?.id) {
       router.push({
-        pathname: '/forum/post-detail',
+        pathname: '/post-detail',
         params: {
           postId: item.post.id.toString(),
           commentId: item.comment?.id?.toString() || '',

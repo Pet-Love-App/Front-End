@@ -34,6 +34,7 @@ export function useRankingFilter(catfoods: CatFood[]) {
   }, [catfoods]);
 
   // 搜索、品牌筛选和排序逻辑 - 使用 useMemo 优化性能
+  // 当 catfoods 数组引用变化时（数据更新），会自动触发重新排序
   const filteredCatFoods = useMemo(() => {
     let result = catfoods;
 
@@ -62,7 +63,7 @@ export function useRankingFilter(catfoods: CatFood[]) {
       });
     }
 
-    // 排序
+    // 排序 - 当数据更新时会自动使用最新值重新排序
     return [...result].sort((a, b) => {
       if (sortBy === 'likes') {
         // 按点赞数排序（降序）

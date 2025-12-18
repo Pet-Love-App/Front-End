@@ -172,7 +172,7 @@ export function usePostEditor(options: UsePostEditorOptions = {}) {
       // 2. 打开图片选择器
       console.log('[usePostEditor] Launching image library...');
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        mediaTypes: ['images', 'videos'],
         allowsMultipleSelection: true,
         quality: 0.8,
       });
@@ -237,7 +237,7 @@ export function usePostEditor(options: UsePostEditorOptions = {}) {
       // 2. 打开相机
       console.log('[usePostEditor] Launching camera...');
       const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        mediaTypes: ['images', 'videos'],
         quality: 0.8,
         allowsEditing: true,
       });

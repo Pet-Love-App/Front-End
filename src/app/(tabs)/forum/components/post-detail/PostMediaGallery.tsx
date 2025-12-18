@@ -9,11 +9,18 @@ import React, { memo, useCallback, useState, useRef, useEffect } from 'react';
 import { Pressable, Dimensions, FlatList, ViewToken, Image } from 'react-native';
 import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { Play } from '@tamagui/lucide-icons';
-import { styled, XStack, YStack, Stack } from 'tamagui';
+import { styled, XStack, YStack, Stack, Text } from 'tamagui';
 import { OptimizedImage } from '@/src/components/ui/OptimizedImage';
+import { VideoPreview } from '../VideoPreview';
 import type { PostMedia } from '@/src/lib/supabase';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// 图片显示配置
+const GALLERY_PADDING = 16; // 画廊内边距
+const IMAGE_WIDTH = SCREEN_WIDTH - GALLERY_PADDING * 2; // 图片宽度
+const MAX_IMAGE_HEIGHT = SCREEN_WIDTH * 0.85; // 最大高度限制
+const MIN_IMAGE_HEIGHT = 180; // 最小高度
 
 export interface PostMediaGalleryProps {
   /** 媒体列表 */
@@ -26,17 +33,20 @@ export interface PostMediaGalleryProps {
 const Container = styled(YStack, {
   name: 'MediaGallery',
   width: '100%',
-  backgroundColor: '#000',
+  backgroundColor: '#f8f9fa',
+  paddingVertical: 12,
 });
 
 const MediaItem = styled(Stack, {
   name: 'MediaItem',
-  width: SCREEN_WIDTH,
-  minHeight: 200,
-  maxHeight: SCREEN_WIDTH * 1.5,
+  width: IMAGE_WIDTH,
+  minHeight: MIN_IMAGE_HEIGHT,
+  maxHeight: MAX_IMAGE_HEIGHT,
   backgroundColor: '#f8f8f8',
   justifyContent: 'center',
   alignItems: 'center',
+  borderRadius: 12,
+  overflow: 'hidden',
 });
 
 const VideoOverlay = styled(Stack, {
@@ -67,10 +77,7 @@ const PlayButton = styled(Stack, {
 // 指示器样式
 const IndicatorContainer = styled(XStack, {
   name: 'IndicatorContainer',
-  position: 'absolute',
-  bottom: 16,
-  left: 0,
-  right: 0,
+  marginTop: 12,
   justifyContent: 'center',
   alignItems: 'center',
   gap: 6,
@@ -88,8 +95,8 @@ const Dot = memo(function Dot({ index, currentIndex }: DotProps) {
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
-      width: withSpring(isActive ? 24 : 8, { damping: 15 }),
-      backgroundColor: isActive ? '#fff' : 'rgba(255, 255, 255, 0.5)',
+      width: withSpring(isActive ? 20 : 6, { damping: 15 }),
+      backgroundColor: isActive ? '#FEBE98' : 'rgba(0, 0, 0, 0.15)',
     };
   });
 
@@ -97,8 +104,8 @@ const Dot = memo(function Dot({ index, currentIndex }: DotProps) {
     <AnimatedDot
       style={[
         {
-          height: 8,
-          borderRadius: 4,
+          height: 6,
+          borderRadius: 3,
         },
         animatedStyle,
       ]}
@@ -119,7 +126,7 @@ const MediaItemComponent = memo(function MediaItemComponent({
   onPress,
 }: MediaItemComponentProps) {
   const isVideo = media.mediaType === 'video';
-  const [imageHeight, setImageHeight] = useState(SCREEN_WIDTH);
+  const [imageHeight, setImageHeight] = useState(IMAGE_WIDTH * 0.75);
 
   // 根据图片实际比例计算高度
   useEffect(() => {
@@ -129,39 +136,47 @@ const MediaItemComponent = memo(function MediaItemComponent({
         (width, height) => {
           const aspectRatio = height / width;
           const calculatedHeight = Math.min(
-            Math.max(SCREEN_WIDTH * aspectRatio, 200),
-            SCREEN_WIDTH * 1.5
+            Math.max(IMAGE_WIDTH * aspectRatio, MIN_IMAGE_HEIGHT),
+            MAX_IMAGE_HEIGHT
           );
           setImageHeight(calculatedHeight);
         },
         () => {
-          setImageHeight(SCREEN_WIDTH);
+          setImageHeight(IMAGE_WIDTH * 0.75);
         }
       );
+    } else if (isVideo) {
+      // 视频使用 16:9 比例
+      setImageHeight(IMAGE_WIDTH * 0.5625);
     }
   }, [media.fileUrl, isVideo]);
 
   return (
     <Pressable onPress={onPress}>
       <Stack
-        width={SCREEN_WIDTH}
+        width={IMAGE_WIDTH}
         height={imageHeight}
-        backgroundColor="#f8f8f8"
+        backgroundColor="#000000"
         justifyContent="center"
         alignItems="center"
+        borderRadius={12}
+        overflow="hidden"
       >
-        <OptimizedImage
-          source={media.fileUrl}
-          style={{ width: SCREEN_WIDTH, height: imageHeight }}
-          contentFit="contain"
-          cachePolicy="memory-disk"
-        />
-        {isVideo && (
-          <VideoOverlay>
-            <PlayButton>
-              <Play size={28} color="#1a1a1a" fill="#1a1a1a" />
-            </PlayButton>
-          </VideoOverlay>
+        {isVideo ? (
+          // 视频预览：使用 VideoPreview 组件显示第一帧缩略图
+          <VideoPreview
+            videoUri={media.fileUrl}
+            width={IMAGE_WIDTH}
+            height={imageHeight}
+            showPlayButton={true}
+          />
+        ) : (
+          <OptimizedImage
+            source={media.fileUrl}
+            style={{ width: IMAGE_WIDTH, height: imageHeight }}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+          />
         )}
       </Stack>
     </Pressable>
@@ -198,10 +213,10 @@ function PostMediaGalleryComponent({ media, onMediaPress }: PostMediaGalleryProp
     return null;
   }
 
-  // 单张图片直接展示
+  // 单张图片直接展示（居中显示）
   if (media.length === 1) {
     return (
-      <Container>
+      <Container alignItems="center">
         <MediaItemComponent media={media[0]} onPress={() => handlePress(media[0], 0)} />
       </Container>
     );
@@ -216,13 +231,16 @@ function PostMediaGalleryComponent({ media, onMediaPress }: PostMediaGalleryProp
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={{ paddingHorizontal: GALLERY_PADDING }}
         renderItem={({ item, index }) => (
-          <MediaItemComponent media={item} onPress={() => handlePress(item, index)} />
+          <Stack marginRight={index < media.length - 1 ? 8 : 0}>
+            <MediaItemComponent media={item} onPress={() => handlePress(item, index)} />
+          </Stack>
         )}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
         decelerationRate="fast"
-        snapToInterval={SCREEN_WIDTH}
+        snapToInterval={IMAGE_WIDTH + 8}
         snapToAlignment="start"
       />
       {/* 精细指示器 */}

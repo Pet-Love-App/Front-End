@@ -103,7 +103,9 @@ export default function MessagesScreen() {
       currentUserId === conversation.participant1Id
         ? conversation.participant2Id
         : conversation.participant1Id;
-    router.push(`/profile/chat?conversationId=${conversation.id}&userId=${otherUserId}` as any);
+    router.push(
+      `/(tabs)/profile/chat?conversationId=${conversation.id}&userId=${otherUserId}` as any
+    );
   };
 
   const getOtherUser = (conversation: Conversation) => {

@@ -53,7 +53,7 @@ function SettingItemNew({
         width={40}
         height={40}
         borderRadius={12}
-        backgroundColor={iconBgColor}
+        style={{ backgroundColor: iconBgColor }}
         alignItems="center"
         justifyContent="center"
       >
@@ -210,7 +210,7 @@ export default function SettingsScreen() {
             iconBgColor={primaryScale.primary2}
             iconColor={primaryScale.primary8}
             label="编辑个人资料"
-            value="用户名 / 头像"
+            value="用户名 / 密码 / 简介"
             onPress={() => setIsEditProfileOpen(true)}
           />
         </CardContainer>

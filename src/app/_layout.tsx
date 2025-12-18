@@ -14,6 +14,7 @@ import { useThemeAwareColorScheme } from '../hooks/useThemeAwareColorScheme';
 import { useDeepLink } from '../hooks/useDeepLink';
 import { DesktopPet } from '../components/DesktopPet';
 import { ToastManager, AlertManager } from '../components/dialogs';
+import { DismissKeyboardView } from '../components/DismissKeyboardView';
 import { useUserStore } from '../store/userStore';
 
 SplashScreen.preventAutoHideAsync();
@@ -46,22 +47,24 @@ export default function RootLayout() {
       <TamaguiProvider config={tamaguiConfig}>
         <PortalProvider>
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="login" options={{ headerShown: false }} />
-              <Stack.Screen name="register" options={{ headerShown: false }} />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" options={{ headerShown: false }} />
-            </Stack>
-            {/* 只有登录后才显示桌宠 */}
-            {isAuthenticated && <DesktopPet />}
-            <ToastManager />
-            <AlertManager />
-            <StatusBar
-              style={colorScheme === 'dark' ? 'light' : 'dark'}
-              translucent
-              backgroundColor="transparent"
-            />
+            <DismissKeyboardView>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen name="login" options={{ headerShown: false }} />
+                <Stack.Screen name="register" options={{ headerShown: false }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="+not-found" options={{ headerShown: false }} />
+              </Stack>
+              {/* 只有登录后才显示桌宠 */}
+              {isAuthenticated && <DesktopPet />}
+              <ToastManager />
+              <AlertManager />
+              <StatusBar
+                style={colorScheme === 'dark' ? 'light' : 'dark'}
+                translucent
+                backgroundColor="transparent"
+              />
+            </DismissKeyboardView>
           </ThemeProvider>
         </PortalProvider>
       </TamaguiProvider>

@@ -42,14 +42,8 @@ export function FilterChips({
           backgroundColor={sortBy === 'score' && selectedBrand === 'all' ? '#FFF5ED' : 'white'}
           borderWidth={2}
           borderColor={sortBy === 'score' && selectedBrand === 'all' ? '#FEBE98' : '#E5E7EB'}
-          gap="$2"
           alignItems="center"
         >
-          <IconSymbol
-            name="sparkles"
-            size={16}
-            color={sortBy === 'score' && selectedBrand === 'all' ? '#FEBE98' : '#6B7280'}
-          />
           <Text
             fontSize={14}
             fontWeight="700"
@@ -70,14 +64,8 @@ export function FilterChips({
           backgroundColor={sortBy === 'score' ? '#FEF3C7' : 'white'}
           borderWidth={2}
           borderColor={sortBy === 'score' ? '#F59E0B' : '#E5E7EB'}
-          gap="$2"
           alignItems="center"
         >
-          <IconSymbol
-            name="star.fill"
-            size={16}
-            color={sortBy === 'score' ? '#F59E0B' : '#6B7280'}
-          />
           <Text
             fontSize={14}
             fontWeight="700"
@@ -98,14 +86,8 @@ export function FilterChips({
           backgroundColor={sortBy === 'likes' ? '#FEE2E2' : 'white'}
           borderWidth={2}
           borderColor={sortBy === 'likes' ? '#EF4444' : '#E5E7EB'}
-          gap="$2"
           alignItems="center"
         >
-          <IconSymbol
-            name="heart.fill"
-            size={16}
-            color={sortBy === 'likes' ? '#EF4444' : '#6B7280'}
-          />
           <Text
             fontSize={14}
             fontWeight="700"
@@ -129,11 +111,6 @@ export function FilterChips({
           gap="$2"
           alignItems="center"
         >
-          <IconSymbol
-            name="building.2.fill"
-            size={16}
-            color={selectedBrand !== 'all' ? '#F97316' : '#6B7280'}
-          />
           <Text
             fontSize={14}
             fontWeight="700"

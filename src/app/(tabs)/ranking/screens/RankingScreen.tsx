@@ -101,7 +101,7 @@ export function RankingScreen() {
         {/* 搜索框和筛选区域 */}
         <SearchFilterSection
           searchQuery={searchQuery}
-          onSearchChange={handleSearchChange}
+          onSearch={handleSearchChange}
           onClearSearch={handleClearSearch}
           sortBy={sortBy}
           onSortChange={setSortBy}

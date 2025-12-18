@@ -46,23 +46,47 @@ const FeedContainer = styled(Stack, {
 });
 
 const CATEGORIES: CategoryItem[] = [
-  { id: 'recommend', label: '推荐', icon: '✨' },
-  { id: 'favorites', label: '收藏', icon: '❤️' },
-  { id: 'help', label: '求助', icon: '🆘' },
-  { id: 'share', label: '分享', icon: '📢' },
-  { id: 'science', label: '科普', icon: '📚' },
-  { id: 'warning', label: '避雷', icon: '⚠️' },
+  { id: 'recommend', label: '推荐' },
+  { id: 'help', label: '求助' },
+  { id: 'share', label: '分享' },
+  { id: 'science', label: '科普' },
+  { id: 'warning', label: '避雷' },
 ];
 
 function postToCardData(post: Post): PostCardData {
   const firstImage = post.media?.find((m) => m.mediaType === 'image');
-  const hasVideo = post.media?.some((m) => m.mediaType === 'video');
+  const firstVideo = post.media?.find((m) => m.mediaType === 'video');
+  const hasVideo = !!firstVideo;
+
+  // 确定显示的图片 URL：
+  // 1. 优先使用图片
+  // 2. 如果只有视频，优先使用数据库存储的缩略图
+  // 3. 如果没有缩略图，传递视频 URL 让前端动态生成
+  let imageUrl = firstImage?.fileUrl || '';
+  let videoUrl: string | undefined;
+  let needsVideoThumbnail = false; // 标记是否需要动态生成视频缩略图
+
+  if (!firstImage && firstVideo) {
+    // 只有视频没有图片时
+    if (firstVideo.thumbnailUrl) {
+      // 使用数据库存储的缩略图
+      imageUrl = firstVideo.thumbnailUrl;
+    } else {
+      // 没有缩略图，传递视频 URL 让前端动态生成
+      videoUrl = firstVideo.fileUrl;
+      needsVideoThumbnail = true;
+    }
+  }
+
+  // 如果没有任何图片来源，使用占位图（仅用于纯文字帖子）
+  const finalImageUrl = imageUrl || (needsVideoThumbnail ? '' : 'https://placekitten.com/400/500');
 
   return {
     id: post.id,
     title: post.content?.slice(0, 50) || '无标题',
-    imageUrl: firstImage?.fileUrl || 'https://placekitten.com/400/500',
-    imageHeight: firstImage ? undefined : Math.random() * 80 + 120,
+    imageUrl: finalImageUrl,
+    videoUrl, // 视频 URL，用于前端动态生成缩略图（作为后备方案）
+    imageHeight: firstImage || firstVideo ? undefined : Math.random() * 80 + 120,
     isVideo: hasVideo,
     author: {
       id: post.author?.id || '0',
@@ -121,9 +145,7 @@ export function CommunityScreen() {
 
         let result;
 
-        if (activeCategory === 'favorites') {
-          result = await supabaseForumService.getMyFavorites();
-        } else if (activeCategory === 'recommend') {
+        if (activeCategory === 'recommend') {
           result = await supabaseForumService.getPosts({ order: 'latest' });
         } else {
           result = await supabaseForumService.getPosts({
@@ -152,9 +174,7 @@ export function CommunityScreen() {
 
         let result;
 
-        if (activeCategory === 'favorites') {
-          result = await supabaseForumService.getMyFavorites();
-        } else if (activeCategory === 'recommend') {
+        if (activeCategory === 'recommend') {
           result = await supabaseForumService.getPosts({ order: 'latest' });
         } else {
           result = await supabaseForumService.getPosts({
@@ -265,16 +285,34 @@ export function CommunityScreen() {
       }
       try {
         setIsLoading(true);
-        const { data, error } = await supabaseForumService.getPosts({
-          order: 'latest',
-        });
-        if (error) throw error;
-        const filtered = (data || []).filter(
-          (post) =>
-            post.content?.toLowerCase().includes(query.toLowerCase()) ||
-            post.tags?.some((tag) => tag.toLowerCase().includes(query.toLowerCase()))
-        );
-        setPosts(filtered);
+
+        // 检查是否是标签搜索（以 # 开头）
+        if (query.startsWith('#')) {
+          const tag = query.slice(1).trim();
+          if (tag) {
+            // 使用服务器端标签过滤
+            const { data, error } = await supabaseForumService.getPosts({
+              order: 'latest',
+              tag,
+            });
+            if (error) throw error;
+            setPosts(data || []);
+          } else {
+            loadPosts(true);
+          }
+        } else {
+          // 普通搜索：获取所有帖子并在客户端过滤
+          const { data, error } = await supabaseForumService.getPosts({
+            order: 'latest',
+          });
+          if (error) throw error;
+          const filtered = (data || []).filter(
+            (post) =>
+              post.content?.toLowerCase().includes(query.toLowerCase()) ||
+              post.tags?.some((tag) => tag.toLowerCase().includes(query.toLowerCase()))
+          );
+          setPosts(filtered);
+        }
       } catch (error) {
         logger.error('搜索失败', error as Error);
       } finally {

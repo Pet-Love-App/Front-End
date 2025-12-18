@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { YStack } from 'tamagui';
 import SearchBox from '@/src/components/searchBox';
 
@@ -8,7 +9,7 @@ import { StatisticsBar } from './StatisticsBar';
 interface SearchFilterSectionProps {
   // 搜索相关
   searchQuery: string;
-  onSearchChange: (text: string) => void;
+  onSearch: (text: string) => void; // 点击搜索按钮时触发
   onClearSearch: () => void;
 
   // 排序相关
@@ -35,7 +36,7 @@ interface SearchFilterSectionProps {
  */
 export function SearchFilterSection({
   searchQuery,
-  onSearchChange,
+  onSearch,
   onClearSearch,
   sortBy,
   onSortChange,
@@ -49,16 +50,24 @@ export function SearchFilterSection({
   filteredCount,
   totalCount,
 }: SearchFilterSectionProps) {
+  // 本地输入状态
+  const [inputValue, setInputValue] = useState(searchQuery);
+
   return (
     <YStack backgroundColor="#FAFAFA" paddingTop="$3">
       {/* 搜索框 */}
       <YStack paddingHorizontal="$4" paddingBottom="$3">
         <SearchBox
-          value={searchQuery}
-          onChangeText={onSearchChange}
-          onClear={onClearSearch}
+          value={inputValue}
+          onChangeText={setInputValue}
+          onSearch={onSearch}
+          onClear={() => {
+            setInputValue('');
+            onClearSearch();
+          }}
           placeholder="搜索猫粮名称、品牌或标签..."
           size="$4"
+          showSearchButton={true}
         />
       </YStack>
 

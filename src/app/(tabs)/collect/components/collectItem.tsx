@@ -50,14 +50,7 @@ export default function CollectListItem({ favorite, onDelete }: CollectListItemP
   const scoreColor = catfood.score != null ? getScoreColor(catfood.score) : null;
 
   return (
-    <Card
-      size="$4"
-      bordered
-      borderColor={neutralScale.neutral3}
-      backgroundColor="white"
-      pressStyle={{ scale: 0.98, opacity: 0.95 }}
-      animation="quick"
-    >
+    <Card size="$4" bordered borderColor={neutralScale.neutral3} backgroundColor="white">
       <Card.Header padding="$4">
         <XStack gap="$3" alignItems="center">
           {/* 猫粮图片 */}

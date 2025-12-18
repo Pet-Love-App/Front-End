@@ -126,7 +126,10 @@ export function CollectScreen() {
             <TouchableOpacity
               key={favoriteRecordId || index}
               activeOpacity={0.7}
-              onPress={() => handlePress(catfoodId)}
+              onPress={() => {
+                console.log('点击收藏项', { catfoodId, rawData });
+                handlePress(catfoodId?.toString() || '');
+              }}
             >
               <CollectListItem
                 favorite={normalizedFavorite}
@@ -240,7 +243,7 @@ export function CollectScreen() {
               padding={0}
               height={24}
               fontSize={15}
-              color="$foreground"
+              color={neutralScale.neutral12}
               focusStyle={{ borderWidth: 0 }}
             />
           </XStack>

@@ -114,10 +114,15 @@ export function useCollectData() {
   // 点击收藏项，跳转到详情页
   const handlePress = useCallback(
     (catfoodId: string) => {
+      console.log('点击收藏项，跳转到详情页:', catfoodId);
+      if (!catfoodId) {
+        console.error('catfoodId 为空');
+        return;
+      }
       router.push({
         pathname: '/detail',
         params: { id: catfoodId },
-      });
+      } as any);
     },
     [router]
   );

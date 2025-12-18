@@ -161,7 +161,7 @@ export function ProfileScreen() {
         {/* 消息按钮 - 浮动在左上角 */}
         <YStack position="absolute" top={20} left={20} zIndex={100}>
           <TouchableOpacity
-            onPress={() => router.push('/profile/messages' as any)}
+            onPress={() => router.push('/(tabs)/profile/messages' as any)}
             activeOpacity={0.7}
           >
             <YStack
@@ -205,7 +205,7 @@ export function ProfileScreen() {
         {/* 设置按钮 - 浮动在右上角 */}
         <YStack position="absolute" top={20} right={20} zIndex={100}>
           <TouchableOpacity
-            onPress={() => router.push('/profile/settings' as any)}
+            onPress={() => router.push('/(tabs)/profile/settings' as any)}
             activeOpacity={0.7}
           >
             <YStack
@@ -229,7 +229,7 @@ export function ProfileScreen() {
         {/* 个人资料头部 - 用户头像和信息 */}
         <ProfileHeader
           username={user?.username}
-          bio="专业的宠物爱好者 🐱"
+          bio={user?.bio || '这个人很懒，什么都没留下~'}
           onAvatarUpdate={fetchCurrentUser}
           equippedBadge={
             equippedBadgeConfig
@@ -245,7 +245,7 @@ export function ProfileScreen() {
         {/* 我的好友入口 */}
         <YStack width="100%" paddingHorizontal="$4" marginTop="$4">
           <TouchableOpacity
-            onPress={() => router.push('/profile/friends' as any)}
+            onPress={() => router.push('/(tabs)/profile/friends' as any)}
             activeOpacity={0.8}
             style={{
               backgroundColor: colors.cardBackground,

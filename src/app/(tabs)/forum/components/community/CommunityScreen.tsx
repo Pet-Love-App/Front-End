@@ -47,7 +47,6 @@ const FeedContainer = styled(Stack, {
 
 const CATEGORIES: CategoryItem[] = [
   { id: 'recommend', label: '推荐', icon: '✨' },
-  { id: 'favorites', label: '收藏', icon: '❤️' },
   { id: 'help', label: '求助', icon: '🆘' },
   { id: 'share', label: '分享', icon: '📢' },
   { id: 'science', label: '科普', icon: '📚' },
@@ -121,9 +120,7 @@ export function CommunityScreen() {
 
         let result;
 
-        if (activeCategory === 'favorites') {
-          result = await supabaseForumService.getMyFavorites();
-        } else if (activeCategory === 'recommend') {
+        if (activeCategory === 'recommend') {
           result = await supabaseForumService.getPosts({ order: 'latest' });
         } else {
           result = await supabaseForumService.getPosts({
@@ -152,9 +149,7 @@ export function CommunityScreen() {
 
         let result;
 
-        if (activeCategory === 'favorites') {
-          result = await supabaseForumService.getMyFavorites();
-        } else if (activeCategory === 'recommend') {
+        if (activeCategory === 'recommend') {
           result = await supabaseForumService.getPosts({ order: 'latest' });
         } else {
           result = await supabaseForumService.getPosts({
@@ -265,16 +260,34 @@ export function CommunityScreen() {
       }
       try {
         setIsLoading(true);
-        const { data, error } = await supabaseForumService.getPosts({
-          order: 'latest',
-        });
-        if (error) throw error;
-        const filtered = (data || []).filter(
-          (post) =>
-            post.content?.toLowerCase().includes(query.toLowerCase()) ||
-            post.tags?.some((tag) => tag.toLowerCase().includes(query.toLowerCase()))
-        );
-        setPosts(filtered);
+
+        // 检查是否是标签搜索（以 # 开头）
+        if (query.startsWith('#')) {
+          const tag = query.slice(1).trim();
+          if (tag) {
+            // 使用服务器端标签过滤
+            const { data, error } = await supabaseForumService.getPosts({
+              order: 'latest',
+              tag,
+            });
+            if (error) throw error;
+            setPosts(data || []);
+          } else {
+            loadPosts(true);
+          }
+        } else {
+          // 普通搜索：获取所有帖子并在客户端过滤
+          const { data, error } = await supabaseForumService.getPosts({
+            order: 'latest',
+          });
+          if (error) throw error;
+          const filtered = (data || []).filter(
+            (post) =>
+              post.content?.toLowerCase().includes(query.toLowerCase()) ||
+              post.tags?.some((tag) => tag.toLowerCase().includes(query.toLowerCase()))
+          );
+          setPosts(filtered);
+        }
       } catch (error) {
         logger.error('搜索失败', error as Error);
       } finally {

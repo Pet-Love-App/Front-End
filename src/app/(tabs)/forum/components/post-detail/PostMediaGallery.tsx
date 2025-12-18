@@ -9,7 +9,7 @@ import React, { memo, useCallback, useState, useRef, useEffect } from 'react';
 import { Pressable, Dimensions, FlatList, ViewToken, Image } from 'react-native';
 import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { Play } from '@tamagui/lucide-icons';
-import { styled, XStack, YStack, Stack } from 'tamagui';
+import { styled, XStack, YStack, Stack, Text } from 'tamagui';
 import { OptimizedImage } from '@/src/components/ui/OptimizedImage';
 import type { PostMedia } from '@/src/lib/supabase';
 
@@ -138,6 +138,9 @@ const MediaItemComponent = memo(function MediaItemComponent({
           setImageHeight(SCREEN_WIDTH);
         }
       );
+    } else if (isVideo) {
+      // 视频使用固定高度
+      setImageHeight(SCREEN_WIDTH * 0.75);
     }
   }, [media.fileUrl, isVideo]);
 
@@ -146,16 +149,34 @@ const MediaItemComponent = memo(function MediaItemComponent({
       <Stack
         width={SCREEN_WIDTH}
         height={imageHeight}
-        backgroundColor="#f8f8f8"
+        backgroundColor="#000000"
         justifyContent="center"
         alignItems="center"
       >
-        <OptimizedImage
-          source={media.fileUrl}
-          style={{ width: SCREEN_WIDTH, height: imageHeight }}
-          contentFit="contain"
-          cachePolicy="memory-disk"
-        />
+        {isVideo ? (
+          // 视频预览：显示黑色背景和播放按钮
+          <Stack
+            width={SCREEN_WIDTH}
+            height={imageHeight}
+            backgroundColor="#1a1a1a"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Stack backgroundColor="rgba(255, 255, 255, 0.15)" padding="$4" borderRadius={12}>
+              <Play size={48} color="#FFFFFF" />
+            </Stack>
+            <Text color="#FFFFFF" fontSize={14} marginTop="$4" opacity={0.8}>
+              点击播放视频
+            </Text>
+          </Stack>
+        ) : (
+          <OptimizedImage
+            source={media.fileUrl}
+            style={{ width: SCREEN_WIDTH, height: imageHeight }}
+            contentFit="contain"
+            cachePolicy="memory-disk"
+          />
+        )}
         {isVideo && (
           <VideoOverlay>
             <PlayButton>

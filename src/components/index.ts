@@ -33,3 +33,6 @@ export {
 
 // 评论组件
 export { CommentInput, CommentItem, CommentList, CommentSection, useComments } from './Comments';
+
+// 媒体组件
+export { VideoPlayer } from './VideoPlayer';

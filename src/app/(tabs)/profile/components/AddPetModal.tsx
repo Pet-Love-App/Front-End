@@ -67,7 +67,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         quality: 0.7,
         allowsEditing: true,
         aspect: [1, 1],
@@ -510,7 +510,6 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                       textAlignVertical="top"
                       autoCapitalize="none"
                       returnKeyType="default"
-                      blurOnSubmit={false}
                       keyboardType="default"
                       style={{
                         color: colors.text,

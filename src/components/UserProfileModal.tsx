@@ -217,7 +217,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       if (response.success && response.data) {
         onClose();
         // 跳转到聊天界面
-        router.push(`/profile/chat?conversationId=${response.data.id}&userId=${userId}` as any);
+        router.push(
+          `/(tabs)/profile/chat?conversationId=${response.data.id}&userId=${userId}` as any
+        );
       } else {
         alert('无法开始聊天，请稍后再试');
       }

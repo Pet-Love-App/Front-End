@@ -11,6 +11,7 @@ import { Pressable } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { Heart, Play, Award, Eye } from '@tamagui/lucide-icons';
 import { styled, YStack, XStack, Text, Stack, Image, Avatar, useTheme } from 'tamagui';
+import { PostImage } from './PostImage';
 
 export interface PostCardData {
   id: number;
@@ -102,7 +103,8 @@ const AuthorContainer = styled(XStack, {
 const AuthorName = styled(Text, {
   name: 'AuthorName',
   fontSize: 12,
-  color: '$colorMuted',
+  color: '$color',
+  opacity: 0.6,
   numberOfLines: 1,
   flexShrink: 1,
 });
@@ -112,7 +114,7 @@ const BadgeIcon = styled(Stack, {
   width: 16,
   height: 16,
   borderRadius: 8,
-  backgroundColor: '$secondary',
+  backgroundColor: '$blue10',
   alignItems: 'center',
   justifyContent: 'center',
 });
@@ -138,7 +140,8 @@ const StatItem = styled(XStack, {
 const StatText = styled(Text, {
   name: 'StatText',
   fontSize: 12,
-  color: '$colorMuted',
+  color: '$color',
+  opacity: 0.6,
 });
 
 const AnimatedCardContainer = Animated.createAnimatedComponent(CardContainer);
@@ -233,7 +236,7 @@ function PostCardComponent({
     <Pressable onPress={handlePress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
       <AnimatedCardContainer width={columnWidth} style={cardAnimatedStyle}>
         <ImageContainer height={imageHeight}>
-          <Image source={{ uri: data.imageUrl }} width="100%" height="100%" resizeMode="cover" />
+          <PostImage uri={data.imageUrl} width="100%" height="100%" resizeMode="cover" />
           {data.isVideo && (
             <VideoOverlay>
               <Play size={16} color="#FFFFFF" fill="#FFFFFF" />

@@ -5,7 +5,14 @@
  */
 
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { Image, Modal, Pressable, ScrollView } from 'react-native';
+import {
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styled, XStack, YStack, Text, TextArea, Stack } from 'tamagui';
@@ -52,7 +59,7 @@ const EditorHeader = styled(XStack, {
   alignItems: 'center',
   justifyContent: 'space-between',
   borderBottomWidth: 1,
-  borderBottomColor: '$borderColorMuted',
+  borderBottomColor: '$borderColor',
 });
 
 const HeaderButton = styled(Text, {
@@ -65,14 +72,16 @@ const HeaderButton = styled(Text, {
   variants: {
     variant: {
       cancel: {
-        color: '$colorMuted',
+        color: '$color',
+        opacity: 0.6,
       },
       submit: {
         color: '$primary',
         fontWeight: '600',
       },
       disabled: {
-        color: '$colorDisabled',
+        color: '$color',
+        opacity: 0.3,
       },
     },
   } as const,
@@ -108,10 +117,11 @@ const CategoryText = styled(Text, {
   variants: {
     active: {
       true: {
-        color: '$primaryContrast',
+        color: 'white',
       },
       false: {
-        color: '$colorMuted',
+        color: '$color',
+        opacity: 0.6,
       },
     },
   } as const,
@@ -143,7 +153,8 @@ const SectionTitle = styled(Text, {
   name: 'SectionTitle',
   fontSize: '$2',
   fontWeight: '600',
-  color: '$colorMuted',
+  color: '$color',
+  opacity: 0.6,
   marginBottom: '$2',
 });
 
@@ -293,92 +304,94 @@ export function PostEditorModal({
               </Pressable>
             </EditorHeader>
 
-            <ScrollView
-              style={{ flex: 1 }}
-              contentContainerStyle={{ padding: 16, gap: 20 }}
-              keyboardShouldPersistTaps="handled"
-            >
-              <YStack gap="$2">
-                <SectionTitle>选择分类</SectionTitle>
-                <XStack gap="$2" flexWrap="wrap">
-                  {POST_CATEGORIES.map((cat) => (
-                    <Pressable key={cat.key} onPress={() => handleCategorySelect(cat.key)}>
-                      <CategoryButton active={editor.category === cat.key}>
-                        <CategoryText active={editor.category === cat.key}>
-                          {cat.label}
-                        </CategoryText>
-                      </CategoryButton>
-                    </Pressable>
-                  ))}
-                </XStack>
-              </YStack>
-
-              <YStack gap="$2">
-                <SectionTitle>添加标签</SectionTitle>
-                <StyledTextArea
-                  value={editor.tagsText}
-                  onChangeText={editor.setTagsText}
-                  placeholder="输入标签，用空格或逗号分隔"
-                  numberOfLines={1}
-                  height={44}
-                />
-              </YStack>
-
-              <YStack gap="$2">
-                <SectionTitle>帖子内容</SectionTitle>
-                <StyledTextArea
-                  value={editor.content}
-                  onChangeText={editor.setContent}
-                  placeholder="分享你的想法..."
-                  numberOfLines={6}
-                  minHeight={150}
-                  textAlignVertical="top"
-                />
-              </YStack>
-
-              <YStack gap="$2">
-                <SectionTitle>添加图片/视频 ({editor.pickedFiles.length}/9)</SectionTitle>
-
-                <XStack gap="$2" flexWrap="wrap">
-                  {editor.pickedFiles.map((file, idx) => (
-                    <MediaPreview key={idx}>
-                      <Image
-                        source={{ uri: file.uri }}
-                        style={{ width: '100%', height: '100%' }}
-                        resizeMode="cover"
-                      />
-                      <Pressable onPress={() => editor.removeFile(idx)}>
-                        <RemoveButton>
-                          <Text color="white" fontSize="$1">
-                            ✕
-                          </Text>
-                        </RemoveButton>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <ScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={{ padding: 16, gap: 20 }}
+                keyboardShouldPersistTaps="handled"
+              >
+                <YStack gap="$2">
+                  <SectionTitle>选择分类</SectionTitle>
+                  <XStack gap="$2" flexWrap="wrap">
+                    {POST_CATEGORIES.map((cat) => (
+                      <Pressable key={cat.key} onPress={() => handleCategorySelect(cat.key)}>
+                        <CategoryButton active={editor.category === cat.key}>
+                          <CategoryText active={editor.category === cat.key}>
+                            {cat.label}
+                          </CategoryText>
+                        </CategoryButton>
                       </Pressable>
-                    </MediaPreview>
-                  ))}
+                    ))}
+                  </XStack>
+                </YStack>
 
-                  {editor.pickedFiles.length < 9 && (
-                    <Pressable onPress={handlePickImages}>
-                      <AddMediaButton
-                        width={UI_CONFIG.THUMBNAIL_SIZE}
-                        height={UI_CONFIG.THUMBNAIL_SIZE}
-                      >
-                        <Text fontSize="$5" color="$colorMuted">
-                          +
-                        </Text>
-                      </AddMediaButton>
-                    </Pressable>
-                  )}
-                </XStack>
-              </YStack>
-            </ScrollView>
+                <YStack gap="$2">
+                  <SectionTitle>添加标签</SectionTitle>
+                  <StyledTextArea
+                    value={editor.tagsText}
+                    onChangeText={editor.setTagsText}
+                    placeholder="输入标签，用空格或逗号分隔"
+                    numberOfLines={1}
+                    height={44}
+                  />
+                </YStack>
+
+                <YStack gap="$2">
+                  <SectionTitle>帖子内容</SectionTitle>
+                  <StyledTextArea
+                    value={editor.content}
+                    onChangeText={editor.setContent}
+                    placeholder="分享你的想法..."
+                    numberOfLines={6}
+                    minHeight={150}
+                    textAlignVertical="top"
+                  />
+                </YStack>
+
+                <YStack gap="$2">
+                  <SectionTitle>添加图片/视频 ({editor.pickedFiles.length}/9)</SectionTitle>
+
+                  <XStack gap="$2" flexWrap="wrap">
+                    {editor.pickedFiles.map((file, idx) => (
+                      <MediaPreview key={idx}>
+                        <Image
+                          source={{ uri: file.uri }}
+                          style={{ width: '100%', height: '100%' }}
+                          resizeMode="cover"
+                        />
+                        <Pressable onPress={() => editor.removeFile(idx)}>
+                          <RemoveButton>
+                            <Text color="white" fontSize="$1">
+                              ✕
+                            </Text>
+                          </RemoveButton>
+                        </Pressable>
+                      </MediaPreview>
+                    ))}
+
+                    {editor.pickedFiles.length < 9 && (
+                      <Pressable onPress={handlePickImages}>
+                        <AddMediaButton
+                          width={UI_CONFIG.THUMBNAIL_SIZE}
+                          height={UI_CONFIG.THUMBNAIL_SIZE}
+                        >
+                          <Text fontSize="$5" color="$color" opacity={0.6}>
+                            +
+                          </Text>
+                        </AddMediaButton>
+                      </Pressable>
+                    )}
+                  </XStack>
+                </YStack>
+              </ScrollView>
+            </TouchableWithoutFeedback>
 
             <YStack
               paddingHorizontal="$4"
               paddingVertical="$3"
               paddingBottom={insets.bottom + 16}
               borderTopWidth={1}
-              borderTopColor="$borderColorMuted"
+              borderTopColor="$borderColor"
             >
               <Pressable onPress={handleSubmit} disabled={!canSubmit}>
                 <XStack
@@ -389,7 +402,8 @@ export function PostEditorModal({
                   justifyContent="center"
                 >
                   <Text
-                    color={canSubmit ? '$primaryContrast' : '$colorDisabled'}
+                    color={canSubmit ? 'white' : '$color'}
+                    opacity={canSubmit ? 1 : 0.3}
                     fontSize="$4"
                     fontWeight="600"
                   >

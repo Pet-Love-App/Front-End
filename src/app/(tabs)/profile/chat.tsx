@@ -277,7 +277,6 @@ export default function ChatScreen() {
               multiline
               maxLength={1000}
               returnKeyType="send"
-              blurOnSubmit={false}
               onSubmitEditing={handleSend}
             />
 

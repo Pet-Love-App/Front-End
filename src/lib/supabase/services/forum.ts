@@ -174,15 +174,24 @@ class SupabaseForumService {
         )
         .range(from, to);
 
+      // 分类过滤
+      if (category) {
+        query = query.eq('category', category);
+      }
+
+      // 标签过滤 - 使用 PostgreSQL 数组操作符
+      if (tag) {
+        // 单个标签：检查 tags 数组是否包含该标签
+        query = query.contains('tags', [tag]);
+      } else if (tags && tags.length > 0) {
+        // 多个标签：检查 tags 数组是否包含任意一个标签
+        // 使用 overlaps 操作符（&&）检查数组是否有交集
+        query = query.overlaps('tags', tags);
+      }
+
       // 排序（注意：posts 表只有 created_at 和 updated_at 字段，无法按评论数排序）
       // 如需按评论数排序，需要创建数据库视图或使用 RPC
       query = query.order('created_at', { ascending: false });
-
-      // 注意：posts 表没有 category 和 tags 字段
-      // 如需支持分类和标签过滤，需要先在数据库添加这些字段
-      void category; // 暂时忽略分类参数
-      void tag; // 暂时忽略标签参数
-      void tags; // 暂时忽略标签数组参数
 
       const { data, error } = await query;
 

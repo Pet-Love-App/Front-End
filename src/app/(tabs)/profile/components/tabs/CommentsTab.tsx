@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from 'react';
-import { Alert, RefreshControl, ScrollView } from 'react-native';
+import { Alert, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Card, Spinner, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { Colors } from '@/src/constants/theme';
@@ -20,6 +21,7 @@ import { useUserStore } from '@/src/store/userStore';
 export const CommentsTab = memo(function CommentsTab() {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
+  const router = useRouter();
   const { _hasHydrated, isAuthenticated } = useUserStore();
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,6 +63,28 @@ export const CommentsTab = memo(function CommentsTab() {
   }, [_hasHydrated, isAuthenticated]);
 
   /**
+   * 跳转到评论所在的内容详情页
+   */
+  const handleNavigateToComment = (comment: Comment) => {
+    if (comment.targetType === 'post') {
+      // 跳转到帖子详情 - 暂时不支持，因为论坛详情是模态框
+      Alert.alert('提示', '论坛帖子详情页功能开发中');
+    } else if (comment.targetType === 'catfood') {
+      // 跳转到猫粮详情
+      router.push({
+        pathname: '/detail',
+        params: { id: comment.targetId.toString() },
+      } as any);
+    } else if (comment.targetType === 'report') {
+      // 跳转到报告详情
+      router.push({
+        pathname: '/detail',
+        params: { id: comment.targetId.toString() },
+      } as any);
+    }
+  };
+
+  /**
    * 格式化时间
    */
   const formatTime = (dateString: string) => {
@@ -76,6 +100,18 @@ export const CommentsTab = memo(function CommentsTab() {
     if (hours < 24) return `${hours}小时前`;
     if (days < 30) return `${days}天前`;
     return date.toLocaleDateString('zh-CN');
+  };
+
+  /**
+   * 获取评论目标类型的显示文字
+   */
+  const getTargetTypeLabel = (targetType: string) => {
+    const labels: Record<string, string> = {
+      post: '帖子',
+      catfood: '猫粮',
+      report: '报告',
+    };
+    return labels[targetType] || '内容';
   };
 
   if (isLoading) {
@@ -134,42 +170,65 @@ export const CommentsTab = memo(function CommentsTab() {
     >
       <YStack width="100%" alignItems="center" paddingVertical="$4" gap="$3">
         {comments.map((comment) => (
-          <Card
+          <TouchableOpacity
             key={comment.id}
-            width="90%"
-            padding="$4"
-            backgroundColor={colors.background}
-            borderWidth={1}
-            borderColor={colors.icon + '15'}
-            borderRadius="$4"
+            onPress={() => handleNavigateToComment(comment)}
+            activeOpacity={0.8}
+            style={{ width: '90%' }}
           >
-            <YStack gap="$3">
-              {/* 评论内容 */}
-              <Text fontSize={15} color={colors.text} lineHeight={22}>
-                {comment.content}
-              </Text>
+            <Card
+              padding="$4"
+              backgroundColor={colors.background}
+              borderWidth={1}
+              borderColor={colors.icon + '15'}
+              borderRadius="$4"
+              pressStyle={{ scale: 0.98, opacity: 0.9 }}
+            >
+              <YStack gap="$3">
+                {/* 评论目标类型标签 */}
+                <XStack alignItems="center" gap="$2">
+                  <YStack
+                    backgroundColor="$orange10"
+                    paddingHorizontal="$2"
+                    paddingVertical="$1"
+                    borderRadius="$2"
+                  >
+                    <Text fontSize={11} fontWeight="600" color="white">
+                      {getTargetTypeLabel(comment.targetType)}
+                    </Text>
+                  </YStack>
+                  <Text fontSize={12} color="$color" opacity={0.5}>
+                    点击查看
+                  </Text>
+                </XStack>
 
-              {/* 评论信息 */}
-              <XStack justifyContent="space-between" alignItems="center">
-                <XStack gap="$2" alignItems="center">
-                  <IconSymbol name="clock" size={14} color={colors.icon} />
-                  <Text fontSize={12} color={colors.icon}>
-                    {formatTime(comment.createdAt)}
-                  </Text>
+                {/* 评论内容 */}
+                <Text fontSize={15} color={colors.text} lineHeight={22}>
+                  {comment.content}
+                </Text>
+
+                {/* 评论信息 */}
+                <XStack justifyContent="space-between" alignItems="center">
+                  <XStack gap="$2" alignItems="center">
+                    <IconSymbol name="clock" size={14} color={colors.icon} />
+                    <Text fontSize={12} color={colors.icon}>
+                      {formatTime(comment.createdAt)}
+                    </Text>
+                  </XStack>
+                  <XStack gap="$1" alignItems="center">
+                    <IconSymbol
+                      name={comment.isLiked ? 'heart.fill' : 'heart.fill'}
+                      size={14}
+                      color={comment.isLiked ? '#FEBE98' : colors.icon}
+                    />
+                    <Text fontSize={12} color={colors.icon}>
+                      {comment.likes || 0}
+                    </Text>
+                  </XStack>
                 </XStack>
-                <XStack gap="$1" alignItems="center">
-                  <IconSymbol
-                    name={comment.isLiked ? 'heart.fill' : 'heart.fill'}
-                    size={14}
-                    color={comment.isLiked ? '#FEBE98' : colors.icon}
-                  />
-                  <Text fontSize={12} color={colors.icon}>
-                    {comment.likes || 0}
-                  </Text>
-                </XStack>
-              </XStack>
-            </YStack>
-          </Card>
+              </YStack>
+            </Card>
+          </TouchableOpacity>
         ))}
       </YStack>
     </ScrollView>

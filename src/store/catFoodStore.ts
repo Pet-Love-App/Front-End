@@ -149,6 +149,12 @@ interface CatFoodState {
    */
   addCatFoods: (catfoods: CatFood[], listType?: ListType) => void;
 
+  /**
+   * 批量更新多个猫粮（用于实时同步）
+   * @param updates 更新数组
+   */
+  batchUpdateCatFoods: (updates: { id: number; data: Partial<CatFood> }[]) => void;
+
   // ==================== 缓存管理 ====================
 
   /**
@@ -521,14 +527,14 @@ export const useCatFoodStore = create<CatFoodState>()(
       },
 
       /**
-       * 更新猫粮数据（乐观更新）
+       * 更新猫粮数据（乐观更新 + 实时同步）
        */
       updateCatFood: (id: number, data: Partial<CatFood>) => {
         const state = get();
         const existingCatFood = state.entities[id];
 
         if (!existingCatFood) {
-          logger.warn('猫粮不存在', { id });
+          logger.warn('猫粮不存在，跳过更新', { id });
           return;
         }
 
@@ -541,7 +547,24 @@ export const useCatFoodStore = create<CatFoodState>()(
           },
         });
 
-        logger.debug('乐观更新猫粮', { id });
+        logger.debug('更新猫粮数据', { id, fields: Object.keys(data) });
+      },
+
+      /**
+       * 批量更新多个猫粮数据（用于实时同步）
+       */
+      batchUpdateCatFoods: (updates: { id: number; data: Partial<CatFood> }[]) => {
+        const state = get();
+        const newEntities = { ...state.entities };
+
+        updates.forEach(({ id, data }) => {
+          if (newEntities[id]) {
+            newEntities[id] = { ...newEntities[id], ...data };
+          }
+        });
+
+        set({ entities: newEntities });
+        logger.debug('批量更新猫粮', { count: updates.length });
       },
 
       /**
@@ -751,7 +774,7 @@ export const useCatFoodStore = create<CatFoodState>()(
 
 /**
  * 获取全部猫粮列表
- * 使用 ID 字符串作为稳定的依赖
+ * 使用 ID 字符串作为稳定的依赖，并监听 entities 变化以支持实时更新
  */
 export const useAllCatFoods = () => {
   // 订阅 IDs 数组
@@ -759,13 +782,15 @@ export const useAllCatFoods = () => {
   const isLoading = useCatFoodStore((state) => state.isLoading);
   const hasMore = useCatFoodStore((state) => state.pagination.all.hasMore);
 
-  // 使用 ID 字符串作为稳定依赖，并通过 useCatFoodStore 获取实际数据
+  // 订阅 entities 对象，当任何猫粮数据变化时触发更新
+  const entities = useCatFoodStore((state) => state.entities);
+
+  // 使用 ID 字符串和 entities 的引用作为依赖
   const idsKey = allIds.join(',');
 
   const catfoods = useMemo(() => {
-    const state = useCatFoodStore.getState();
-    return allIds.map((id) => state.entities[id]).filter(Boolean);
-  }, [idsKey]);
+    return allIds.map((id) => entities[id]).filter(Boolean);
+  }, [allIds, entities]);
 
   return { catfoods, isLoading, hasMore };
 };

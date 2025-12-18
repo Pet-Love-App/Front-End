@@ -17,6 +17,7 @@ interface BasicInfoSectionProps {
   brand: string;
   score: number | null;
   countNum: number;
+  likeCount: number;
   catfoodId: number;
 }
 
@@ -59,7 +60,7 @@ function StatCard({
           width={48}
           height={48}
           borderRadius={24}
-          backgroundColor={iconBgColor}
+          backgroundColor={iconBgColor as any}
           alignItems="center"
           justifyContent="center"
         >
@@ -68,11 +69,11 @@ function StatCard({
 
         {/* 数值 */}
         <XStack alignItems="baseline" gap={2}>
-          <Text fontSize={28} fontWeight="900" color={valueColor} letterSpacing={-1}>
+          <Text fontSize={28} fontWeight="900" color={valueColor as any} letterSpacing={-1}>
             {value}
           </Text>
           {unit && (
-            <Text fontSize={12} fontWeight="600" color={valueColor} opacity={0.7}>
+            <Text fontSize={12} fontWeight="600" color={valueColor as any} opacity={0.7}>
               {unit}
             </Text>
           )}
@@ -87,9 +88,7 @@ function StatCard({
   );
 }
 
-export function BasicInfoSection({ brand, score, countNum }: BasicInfoSectionProps) {
-  const likeCount = countNum || 0;
-
+export function BasicInfoSection({ brand, score, countNum, likeCount }: BasicInfoSectionProps) {
   return (
     <YStack
       marginHorizontal="$3"

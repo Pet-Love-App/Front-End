@@ -21,7 +21,8 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
   const [loading, setLoading] = useState(false);
   const [hasRated, setHasRated] = useState(false);
 
-  const fetchCatFoodById = useCatFoodStore((state) => state.fetchCatFoodById);
+  const updateCatFood = useCatFoodStore((state) => state.updateCatFood);
+  const getCatFoodById = useCatFoodStore((state) => state.getCatFoodById);
   const { width, isExtraSmallScreen } = useResponsiveLayout();
 
   // 响应式计算星星尺寸和间距
@@ -98,6 +99,10 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
         return;
       }
 
+      // 保存旧评分用于回滚和计算
+      const oldScore = myRating;
+      const wasRated = hasRated;
+
       try {
         setLoading(true);
 
@@ -118,18 +123,42 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
 
         console.log('✅ 评分提交成功');
 
-        // 刷新猫粮数据以更新平均分
-        console.log('🔄 刷新猫粮数据...');
-        await fetchCatFoodById(catfoodId);
-        console.log('✅ 数据刷新完成');
+        // 🚀 乐观更新：立即更新评分统计，无需刷新整个页面
+        const currentCatFood = getCatFoodById(catfoodId);
+        if (currentCatFood) {
+          let newScore: number;
+          let newCountNum: number;
 
-        // 不弹窗，只在控制台记录成功
+          if (wasRated) {
+            // 更新评分：替换旧评分
+            newCountNum = currentCatFood.countNum;
+            newScore =
+              (currentCatFood.score * currentCatFood.countNum - oldScore + score) / newCountNum;
+          } else {
+            // 首次评分：增加计数
+            newCountNum = currentCatFood.countNum + 1;
+            newScore = (currentCatFood.score * currentCatFood.countNum + score) / newCountNum;
+          }
+
+          updateCatFood(catfoodId, {
+            score: Number(newScore.toFixed(2)),
+            countNum: newCountNum,
+          });
+
+          console.log('✨ 乐观更新完成:', {
+            type: wasRated ? '更新评分' : '首次评分',
+            newScore: newScore.toFixed(2),
+            newCountNum,
+          });
+        }
+
+        // Realtime 订阅会自动同步服务器的最终数据
       } catch (error: any) {
         console.error('❌ 评分失败:', error);
 
         // 回滚UI
-        setMyRating(0);
-        setHasRated(false);
+        setMyRating(oldScore);
+        setHasRated(wasRated);
 
         // 只在出错时才弹窗提示
         let errorMessage = '评分失败，请稍后重试';
@@ -148,7 +177,7 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
         setLoading(false);
       }
     },
-    [catfoodId, myComment, loading, fetchCatFoodById]
+    [catfoodId, myComment, myRating, hasRated, loading, updateCatFood, getCatFoodById]
   );
 
   // 处理评论提交
@@ -193,8 +222,23 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
 
       setHasRated(true);
 
-      // 刷新猫粮数据以更新平均分
-      await fetchCatFoodById(catfoodId);
+      // 🚀 乐观更新：不刷新页面，Realtime 会自动同步最终数据
+      // 如果是首次评分，需要手动更新统计
+      if (!hasRated) {
+        const currentCatFood = getCatFoodById(catfoodId);
+        if (currentCatFood) {
+          const newCountNum = currentCatFood.countNum + 1;
+          const newScore =
+            (currentCatFood.score * currentCatFood.countNum + myRating) / newCountNum;
+
+          updateCatFood(catfoodId, {
+            score: Number(newScore.toFixed(2)),
+            countNum: newCountNum,
+          });
+
+          console.log('✨ 乐观更新完成 (handleSubmit)');
+        }
+      }
 
       // 只有首次评分或提交评论时才提示
       if (!hasRated || myComment.trim()) {
@@ -207,7 +251,7 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
     } finally {
       setLoading(false);
     }
-  }, [catfoodId, myRating, myComment, loading, hasRated, fetchCatFoodById]);
+  }, [catfoodId, myRating, myComment, loading, hasRated, updateCatFood, getCatFoodById]);
 
   // 处理删除评分
   const handleDelete = useCallback(async () => {
@@ -244,10 +288,24 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
               setMyRatingId(null);
               setHasRated(false);
 
-              // 刷新猫粮数据以更新平均分
-              await fetchCatFoodById(catfoodId);
-              console.log('✅ 数据刷新完成');
+              // 🚀 乐观更新：立即更新评分统计
+              const currentCatFood = getCatFoodById(catfoodId);
+              if (currentCatFood && currentCatFood.countNum > 0) {
+                const newCountNum = currentCatFood.countNum - 1;
+                const newScore =
+                  newCountNum > 0
+                    ? (currentCatFood.score * currentCatFood.countNum - myRating) / newCountNum
+                    : 0;
 
+                updateCatFood(catfoodId, {
+                  score: Number(newScore.toFixed(2)),
+                  countNum: newCountNum,
+                });
+
+                console.log('✨ 乐观更新完成 (删除评分)');
+              }
+
+              // Realtime 订阅会自动同步服务器的最终数据
               // 静默删除，不弹窗提示
             } catch (error: any) {
               console.error('❌ 删除评分失败:', error);
@@ -259,7 +317,7 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
         },
       ],
     });
-  }, [myRatingId, catfoodId, fetchCatFoodById]);
+  }, [myRatingId, catfoodId, myRating, updateCatFood, getCatFoodById]);
 
   return (
     <YStack

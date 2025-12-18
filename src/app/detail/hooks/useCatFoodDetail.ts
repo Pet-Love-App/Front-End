@@ -3,10 +3,12 @@ import { Alert } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 
 import { useCatFoodStore } from '@/src/store/catFoodStore';
+import { useCatfoodRealtime } from '@/src/hooks/useCatfoodRealtime';
 
 /**
  * 猫粮详情数据管理 Hook
  * 负责猫粮详情数据的获取
+ * 包含实时数据同步功能
  */
 export function useCatFoodDetail() {
   const params = useLocalSearchParams();
@@ -25,6 +27,18 @@ export function useCatFoodDetail() {
     [catfoodId]
   );
   const catFood = useCatFoodStore(catFoodSelector);
+
+  // 🔥 启用实时订阅 - 监听当前猫粮的评分、点赞变化
+  useCatfoodRealtime({
+    enabled: !!catfoodId, // 只在有猫粮ID时启用
+    catfoodId: catfoodId || undefined,
+    onUpdate: (updatedCatfood) => {
+      console.log('🔔 详情页收到实时更新:', updatedCatfood.name, {
+        score: updatedCatfood.score,
+        countNum: updatedCatfood.countNum,
+      });
+    },
+  });
 
   useEffect(() => {
     if (catfoodId && !catFood) {

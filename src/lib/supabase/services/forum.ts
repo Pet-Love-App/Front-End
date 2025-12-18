@@ -10,6 +10,7 @@
 import { decode } from 'base64-arraybuffer';
 // 使用 legacy API，因为新 API (File/Directory) 在 SDK 54 中仍需迁移
 import * as FileSystem from 'expo-file-system/legacy';
+import * as VideoThumbnails from 'expo-video-thumbnails';
 
 import { supabase } from '../client';
 import {
@@ -37,6 +38,7 @@ export interface PostMedia {
   id: number;
   mediaType: 'image' | 'video';
   fileUrl: string;
+  thumbnailUrl?: string | null; // 视频缩略图 URL
   createdAt: string;
 }
 
@@ -168,6 +170,7 @@ class SupabaseForumService {
             id,
             media_type,
             file_url,
+            thumbnail_url,
             created_at
           )
         `
@@ -284,6 +287,7 @@ class SupabaseForumService {
             id,
             media_type,
             file_url,
+            thumbnail_url,
             created_at
           )
         `
@@ -427,6 +431,7 @@ class SupabaseForumService {
   /**
    * 上传帖子媒体文件
    * 使用 base64 解码方式上传，解决 React Native blob 兼容性问题
+   * 对于视频，会自动生成并上传缩略图
    */
   private async uploadPostMedia(
     postId: number,
@@ -496,6 +501,22 @@ class SupabaseForumService {
 
       console.log('[ForumService] Public URL:', publicUrl);
 
+      // 如果是视频，生成并上传缩略图
+      let thumbnailUrl: string | null = null;
+      if (mediaType === 'video') {
+        try {
+          console.log('[ForumService] Generating video thumbnail...');
+          const thumbnailResult = await this.generateAndUploadThumbnail(fileUri, postId, userId);
+          if (thumbnailResult) {
+            thumbnailUrl = thumbnailResult;
+            console.log('[ForumService] Thumbnail URL:', thumbnailUrl);
+          }
+        } catch (thumbErr) {
+          console.warn('[ForumService] Failed to generate thumbnail:', thumbErr);
+          // 缩略图生成失败不影响视频上传
+        }
+      }
+
       // 插入 post_media 记录
       const { data: mediaData, error: mediaError } = await supabase
         .from('post_media')
@@ -503,6 +524,7 @@ class SupabaseForumService {
           post_id: postId,
           media_type: mediaType,
           file_url: publicUrl,
+          thumbnail_url: thumbnailUrl,
         })
         .select()
         .single();
@@ -528,6 +550,57 @@ class SupabaseForumService {
         error: { message: String(err), code: 'UNKNOWN', details: '', hint: '' } as any,
         success: false,
       };
+    }
+  }
+
+  /**
+   * 生成并上传视频缩略图
+   */
+  private async generateAndUploadThumbnail(
+    videoUri: string,
+    postId: number,
+    userId: string
+  ): Promise<string | null> {
+    try {
+      // 生成缩略图（取视频第 0 毫秒的帧）
+      const { uri: thumbnailUri } = await VideoThumbnails.getThumbnailAsync(videoUri, {
+        time: 0,
+        quality: 0.8,
+      });
+
+      console.log('[ForumService] Thumbnail generated:', thumbnailUri);
+
+      // 读取缩略图为 base64
+      const thumbnailBase64 = await FileSystem.readAsStringAsync(thumbnailUri, {
+        encoding: 'base64',
+      });
+
+      // 生成缩略图文件名
+      const thumbnailFileName = `${userId}/${postId}/thumb_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+
+      // 上传缩略图
+      const thumbnailArrayBuffer = decode(thumbnailBase64);
+      const { error: thumbUploadError } = await supabase.storage
+        .from('post-media')
+        .upload(thumbnailFileName, thumbnailArrayBuffer, {
+          contentType: 'image/jpeg',
+          upsert: false,
+        });
+
+      if (thumbUploadError) {
+        console.error('[ForumService] Thumbnail upload error:', thumbUploadError);
+        return null;
+      }
+
+      // 获取缩略图公开 URL
+      const {
+        data: { publicUrl: thumbnailPublicUrl },
+      } = supabase.storage.from('post-media').getPublicUrl(thumbnailFileName);
+
+      return thumbnailPublicUrl;
+    } catch (err) {
+      console.error('[ForumService] generateAndUploadThumbnail error:', err);
+      return null;
     }
   }
 
@@ -819,6 +892,7 @@ class SupabaseForumService {
               id,
               media_type,
               file_url,
+              thumbnail_url,
               created_at
             )
           )

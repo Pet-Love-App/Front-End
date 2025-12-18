@@ -12,11 +12,13 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-na
 import { Heart, Play, Award, Eye } from '@tamagui/lucide-icons';
 import { styled, YStack, XStack, Text, Stack, Image, Avatar, useTheme } from 'tamagui';
 import { PostImage } from './PostImage';
+import { VideoPreview } from '../VideoPreview';
 
 export interface PostCardData {
   id: number;
   title: string;
   imageUrl: string;
+  videoUrl?: string; // 视频 URL，用于生成缩略图
   imageHeight?: number;
   isVideo?: boolean;
   author: {
@@ -232,15 +234,31 @@ function PostCardComponent({
     return count.toString();
   };
 
+  // 判断是否应该显示视频缩略图（动态生成）
+  // 条件：是视频帖子 + 有视频 URL + 没有预存的图片/缩略图
+  const shouldShowVideoThumbnail = data.isVideo && data.videoUrl && !data.imageUrl;
+
   return (
     <Pressable onPress={handlePress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
       <AnimatedCardContainer width={columnWidth} style={cardAnimatedStyle}>
         <ImageContainer height={imageHeight}>
-          <PostImage uri={data.imageUrl} width="100%" height="100%" resizeMode="cover" />
-          {data.isVideo && (
-            <VideoOverlay>
-              <Play size={16} color="#FFFFFF" fill="#FFFFFF" />
-            </VideoOverlay>
+          {shouldShowVideoThumbnail ? (
+            // 使用 VideoPreview 组件显示视频缩略图
+            <VideoPreview
+              videoUri={data.videoUrl!}
+              width={columnWidth}
+              height={imageHeight}
+              showPlayButton={true}
+            />
+          ) : (
+            <>
+              <PostImage uri={data.imageUrl} width="100%" height="100%" resizeMode="cover" />
+              {data.isVideo && (
+                <VideoOverlay>
+                  <Play size={16} color="#FFFFFF" fill="#FFFFFF" />
+                </VideoOverlay>
+              )}
+            </>
           )}
         </ImageContainer>
 

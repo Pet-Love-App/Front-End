@@ -55,13 +55,38 @@ const CATEGORIES: CategoryItem[] = [
 
 function postToCardData(post: Post): PostCardData {
   const firstImage = post.media?.find((m) => m.mediaType === 'image');
-  const hasVideo = post.media?.some((m) => m.mediaType === 'video');
+  const firstVideo = post.media?.find((m) => m.mediaType === 'video');
+  const hasVideo = !!firstVideo;
+
+  // 确定显示的图片 URL：
+  // 1. 优先使用图片
+  // 2. 如果只有视频，优先使用数据库存储的缩略图
+  // 3. 如果没有缩略图，传递视频 URL 让前端动态生成
+  let imageUrl = firstImage?.fileUrl || '';
+  let videoUrl: string | undefined;
+  let needsVideoThumbnail = false; // 标记是否需要动态生成视频缩略图
+
+  if (!firstImage && firstVideo) {
+    // 只有视频没有图片时
+    if (firstVideo.thumbnailUrl) {
+      // 使用数据库存储的缩略图
+      imageUrl = firstVideo.thumbnailUrl;
+    } else {
+      // 没有缩略图，传递视频 URL 让前端动态生成
+      videoUrl = firstVideo.fileUrl;
+      needsVideoThumbnail = true;
+    }
+  }
+
+  // 如果没有任何图片来源，使用占位图（仅用于纯文字帖子）
+  const finalImageUrl = imageUrl || (needsVideoThumbnail ? '' : 'https://placekitten.com/400/500');
 
   return {
     id: post.id,
     title: post.content?.slice(0, 50) || '无标题',
-    imageUrl: firstImage?.fileUrl || 'https://placekitten.com/400/500',
-    imageHeight: firstImage ? undefined : Math.random() * 80 + 120,
+    imageUrl: finalImageUrl,
+    videoUrl, // 视频 URL，用于前端动态生成缩略图（作为后备方案）
+    imageHeight: firstImage || firstVideo ? undefined : Math.random() * 80 + 120,
     isVideo: hasVideo,
     author: {
       id: post.author?.id || '0',

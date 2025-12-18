@@ -51,6 +51,7 @@ export interface DbPostMedia {
   post_id: number;
   media_type: 'image' | 'video';
   file_url: string;
+  thumbnail_url?: string | null; // 视频缩略图 URL
   created_at: string;
 }
 

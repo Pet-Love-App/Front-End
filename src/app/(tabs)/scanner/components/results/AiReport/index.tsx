@@ -2,14 +2,17 @@
  * AI 报告详情页面
  */
 
+import { TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ScrollView, Text, XStack, YStack } from 'tamagui';
-import { Button } from '@/src/design-system/components';
+import { ScrollView, YStack } from 'tamagui';
 import {
   AdditiveDetailModal,
   NutrientAnalysisSection,
   SafetyAnalysisSection,
 } from '@/src/app/detail/components';
+import { PageHeader } from '@/src/components/PageHeader';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { neutralScale } from '@/src/design-system/tokens';
 import { hasValidNutritionData } from '@/src/constants/nutrition';
 import type { GenerateReportResponse } from '@/src/services/api';
 import { useItemDetail } from '@/src/hooks';
@@ -43,25 +46,35 @@ export function AiReportDetail({ report, onRetake, onClose }: AiReportDetailProp
 
   return (
     <>
-      <YStack flex={1} backgroundColor="$background" paddingTop={insets.top + 20}>
+      <YStack flex={1} backgroundColor="$background">
         {/* 顶部标题栏 */}
-        <XStack
-          paddingHorizontal="$4"
-          paddingVertical="$3"
-          alignItems="center"
-          justifyContent="space-between"
-          borderBottomWidth={1}
-          borderBottomColor="$borderColor"
-        >
-          <Text fontSize="$7" fontWeight="bold">
-            AI 分析报告
-          </Text>
-          {onClose && (
-            <Button size="sm" variant="ghost" rounded onPress={onClose}>
-              ✕
-            </Button>
-          )}
-        </XStack>
+        <PageHeader
+          title="AI 分析报告"
+          icon={{
+            name: 'sparkles',
+            color: '#FF6B35',
+            backgroundColor: '#FFF3EE',
+            borderColor: '#FFE0D3',
+          }}
+          insets={insets}
+          variant="compact"
+          rightElement={
+            onClose ? (
+              <TouchableOpacity onPress={onClose} activeOpacity={0.7}>
+                <YStack
+                  width={36}
+                  height={36}
+                  borderRadius={18}
+                  backgroundColor={neutralScale.neutral2}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <IconSymbol name="xmark" size={18} color={neutralScale.neutral9} />
+                </YStack>
+              </TouchableOpacity>
+            ) : undefined
+          }
+        />
 
         {/* 滚动内容区域 */}
         <ScrollView flex={1} showsVerticalScrollIndicator={false}>

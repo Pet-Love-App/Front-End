@@ -1,7 +1,7 @@
 /**
  * 营养分析图表组合组件 - 包含饼状图、柱状图和数据表格
  */
-import { Dimensions } from 'react-native';
+import { Dimensions, ScrollView } from 'react-native';
 import { BarChart, PieChart } from 'react-native-chart-kit';
 import { Card, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
@@ -10,23 +10,23 @@ interface NutritionAnalysisChartsProps {
   data: Record<string, number | null>;
 }
 
-// 营养成分名称映射和颜色配置
+// 营养成分名称映射和颜色配置 - 使用更现代的配色方案
 const NUTRITION_CONFIG: Record<string, { name: string; color: string; icon: string }> = {
-  protein: { name: '粗蛋白', color: '#E74C3C', icon: 'bolt.fill' },
-  crude_protein: { name: '粗蛋白', color: '#E74C3C', icon: 'bolt.fill' },
-  fat: { name: '粗脂肪', color: '#F39C12', icon: 'drop.fill' },
-  crude_fat: { name: '粗脂肪', color: '#F39C12', icon: 'drop.fill' },
-  carbohydrates: { name: '碳水化合物', color: '#3498DB', icon: 'leaf.fill' },
-  fiber: { name: '粗纤维', color: '#2ECC71', icon: 'wind' },
-  crude_fiber: { name: '粗纤维', color: '#2ECC71', icon: 'wind' },
-  ash: { name: '粗灰分', color: '#9B59B6', icon: 'sparkles' },
-  crude_ash: { name: '粗灰分', color: '#9B59B6', icon: 'sparkles' },
-  moisture: { name: '水分', color: '#1ABC9C', icon: 'drop.fill' },
+  protein: { name: '粗蛋白', color: '#FF6B6B', icon: 'bolt.fill' },
+  crude_protein: { name: '粗蛋白', color: '#FF6B6B', icon: 'bolt.fill' },
+  fat: { name: '粗脂肪', color: '#FFB347', icon: 'drop.fill' },
+  crude_fat: { name: '粗脂肪', color: '#FFB347', icon: 'drop.fill' },
+  carbohydrates: { name: '碳水化合物', color: '#4ECDC4', icon: 'leaf.fill' },
+  fiber: { name: '粗纤维', color: '#45B7D1', icon: 'wind' },
+  crude_fiber: { name: '粗纤维', color: '#45B7D1', icon: 'wind' },
+  ash: { name: '粗灰分', color: '#A06CD5', icon: 'sparkles' },
+  crude_ash: { name: '粗灰分', color: '#A06CD5', icon: 'sparkles' },
+  moisture: { name: '水分', color: '#6BCB77', icon: 'drop.fill' },
   others: { name: '其他', color: '#95A5A6', icon: 'ellipsis.circle.fill' },
 };
 
 // 默认颜色池（用于未知字段）
-const DEFAULT_COLORS = ['#34495E', '#E67E22', '#16A085', '#C0392B', '#8E44AD'];
+const DEFAULT_COLORS = ['#5D5FEF', '#F093FB', '#F5576C', '#4FACFE', '#43E97B'];
 
 export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) {
   // 验证数据
@@ -84,52 +84,35 @@ export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) 
 
   const screenWidth = Dimensions.get('window').width;
 
-  // 更精细的响应式图表配置 - 多层级适配
-  const isVerySmallScreen = screenWidth < 360; // 超小屏
-  const isSmallScreen = screenWidth < 380; // 小屏
-  const isMediumScreen = screenWidth < 420; // 中屏
-
-  const chartPadding = isVerySmallScreen ? 12 : isSmallScreen ? 16 : 32;
+  // 响应式配置
+  const isSmallScreen = screenWidth < 380;
+  const chartPadding = isSmallScreen ? 24 : 32;
   const chartWidth = screenWidth - chartPadding * 2;
 
-  // 饼图尺寸优化 - 根据数据项数量和屏幕大小动态调整
-  const dataItemCount = validEntries.filter((entry) => entry.value > 0).length;
-  const needsExtraSpace = dataItemCount > 4; // 超过4项需要更多空间
-
-  // 动态计算饼图高度，考虑数据项数量
-  const getPieChartHeight = () => {
-    const baseHeight = isVerySmallScreen ? 180 : isSmallScreen ? 200 : isMediumScreen ? 240 : 280;
-    return needsExtraSpace ? baseHeight + 20 : baseHeight;
-  };
-
-  const pieChartHeight = getPieChartHeight();
-
-  // 左边距 - 给饼图本身留足空间
-  const pieChartPaddingLeft = isVerySmallScreen ? '0' : isSmallScreen ? '5' : '15';
-
-  // 图例字体大小 - 更小屏幕用更小字体
-  const pieLegendFontSize = isVerySmallScreen ? 8 : isSmallScreen ? 9 : 11;
-
-  // 饼图中心点 - 关键：向左移动饼图，为右侧标签留出充足空间
-  const pieChartRadius = isVerySmallScreen ? 50 : isSmallScreen ? 55 : 65; // 饼图半径
-  const legendSpace = chartWidth * (isVerySmallScreen ? 0.45 : isSmallScreen ? 0.42 : 0.38); // 标签区域宽度
-  const pieChartCenter: [number, number] = [
-    pieChartRadius + 10, // 左边距 + 半径
-    0,
-  ];
-
+  // 饼图配置 - 纯净饼图，不带内置 legend
+  const pieChartSize = Math.min(chartWidth * 0.55, 180); // 饼图直径
   const barChartHeight = isSmallScreen ? 200 : 220;
 
-  // 准备饼状图数据 - 只显示大于 0 的值
+  // 柱状图动态宽度 - 根据数据项数量计算，确保每个柱子有足够空间
+  const minBarWidth = 60; // 每个柱子最小宽度
+  const dataCount = validEntries.length;
+  const calculatedBarWidth = Math.max(chartWidth - 32, dataCount * minBarWidth + 60);
+  const needsScroll = calculatedBarWidth > chartWidth - 32; // 是否需要滚动
+
+  // 准备饼状图数据 - 只显示大于 0 的值，按值排序
   const pieData = validEntries
     .filter((entry) => entry.value > 0)
+    .sort((a, b) => b.value - a.value)
     .map((entry) => ({
       name: entry.name,
       population: parseFloat(entry.value.toFixed(1)),
       color: entry.color,
-      legendFontColor: '#555',
-      legendFontSize: pieLegendFontSize, // 响应式字体大小
+      legendFontColor: 'transparent', // 隐藏内置 legend
+      legendFontSize: 0,
     }));
+
+  // 计算总和用于百分比显示
+  const totalValue = pieData.reduce((sum, item) => sum + item.population, 0);
 
   // 准备柱状图数据
   const barData = {
@@ -143,91 +126,132 @@ export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) 
   };
 
   return (
-    <YStack gap="$3">
-      {/* 饼状图卡片 - 只在有非零数据时显示 */}
+    <YStack gap="$4">
+      {/* 饼状图卡片 - 全新设计，图表和图例分离 */}
       {pieData.length > 0 && (
         <Card
-          padding={isVerySmallScreen ? '$3' : '$4'}
-          marginHorizontal={isVerySmallScreen ? '$2' : isSmallScreen ? '$3' : '$4'}
+          padding="$4"
+          marginHorizontal="$4"
           backgroundColor="white"
           borderRadius="$6"
           elevate
           shadowColor="$shadowColor"
-          shadowOffset={{ width: 0, height: 2 }}
-          shadowOpacity={0.1}
-          shadowRadius={8}
+          shadowOffset={{ width: 0, height: 4 }}
+          shadowOpacity={0.08}
+          shadowRadius={12}
         >
           <YStack gap="$4">
-            <XStack alignItems="center" gap="$2.5">
+            {/* 标题 */}
+            <XStack alignItems="center" gap="$3">
               <YStack
-                backgroundColor="$red2"
-                padding="$2"
-                borderRadius="$3"
+                backgroundColor="#FFF0F0"
+                padding="$2.5"
+                borderRadius="$4"
                 borderWidth={1.5}
-                borderColor="$red6"
+                borderColor="#FFD4D4"
               >
-                <IconSymbol name="chart.pie.fill" size={22} color="#E74C3C" />
+                <IconSymbol name="chart.pie.fill" size={24} color="#FF6B6B" />
               </YStack>
               <YStack flex={1}>
                 <Text fontSize="$6" fontWeight="800" color="$gray12" letterSpacing={-0.3}>
                   营养成分占比
                 </Text>
-                <Text fontSize="$2" color="$gray10" marginTop="$1">
-                  直观展示各成分比例
+                <Text fontSize="$2" color="$gray9" marginTop={2}>
+                  基于干物质计算
                 </Text>
               </YStack>
             </XStack>
 
-            <YStack alignItems="center" paddingVertical="$2">
-              <PieChart
-                data={pieData}
-                width={chartWidth}
-                height={pieChartHeight}
-                chartConfig={{
-                  backgroundColor: 'transparent',
-                  backgroundGradientFrom: '#ffffff',
-                  backgroundGradientTo: '#ffffff',
-                  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                  labelColor: (opacity = 1) => `rgba(60, 60, 67, ${opacity})`,
-                  strokeWidth: 2,
-                  decimalPlaces: 1,
-                }}
-                accessor="population"
-                backgroundColor="transparent"
-                paddingLeft={pieChartPaddingLeft}
-                center={pieChartCenter}
-                absolute
-                hasLegend={true}
-                avoidFalseZero
-                style={{
-                  borderRadius: 16,
-                  marginLeft: isVerySmallScreen ? -10 : isSmallScreen ? -5 : 0, // 微调整体位置
-                }}
-              />
-            </YStack>
+            {/* 饼图 + 自定义图例 横向布局 */}
+            <XStack alignItems="center" justifyContent="space-between" gap="$3">
+              {/* 左侧：饼图 */}
+              <YStack alignItems="center" justifyContent="center" width={pieChartSize + 20}>
+                <PieChart
+                  data={pieData}
+                  width={pieChartSize + 20}
+                  height={pieChartSize}
+                  chartConfig={{
+                    backgroundColor: 'transparent',
+                    backgroundGradientFrom: '#ffffff',
+                    backgroundGradientTo: '#ffffff',
+                    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                    labelColor: () => 'transparent',
+                    strokeWidth: 0,
+                    decimalPlaces: 1,
+                  }}
+                  accessor="population"
+                  backgroundColor="transparent"
+                  paddingLeft="0"
+                  center={[pieChartSize / 4, 0]}
+                  absolute={false}
+                  hasLegend={false}
+                  avoidFalseZero
+                />
+              </YStack>
 
-            {/* 数据摘要 */}
+              {/* 右侧：自定义图例 */}
+              <YStack flex={1} gap="$2">
+                {pieData.map((item, index) => {
+                  const percentage =
+                    totalValue > 0 ? ((item.population / totalValue) * 100).toFixed(1) : '0';
+                  return (
+                    <XStack
+                      key={index}
+                      alignItems="center"
+                      gap="$2"
+                      paddingVertical="$1.5"
+                      paddingHorizontal="$2"
+                      backgroundColor={`${item.color}10` as any}
+                      borderRadius="$3"
+                    >
+                      <YStack
+                        width={12}
+                        height={12}
+                        borderRadius={6}
+                        backgroundColor={item.color as any}
+                        shadowColor={item.color as any}
+                        shadowOffset={{ width: 0, height: 2 }}
+                        shadowOpacity={0.4}
+                        shadowRadius={3}
+                      />
+                      <Text
+                        fontSize={13}
+                        color="$gray11"
+                        fontWeight="600"
+                        flex={1}
+                        numberOfLines={1}
+                      >
+                        {item.name}
+                      </Text>
+                      <Text fontSize={14} color={item.color as any} fontWeight="800">
+                        {item.population}%
+                      </Text>
+                    </XStack>
+                  );
+                })}
+              </YStack>
+            </XStack>
+
+            {/* 底部统计摘要 */}
             <YStack
-              backgroundColor="$gray2"
+              backgroundColor="$gray1"
               padding="$3"
               borderRadius="$4"
               borderWidth={1}
-              borderColor="$gray4"
+              borderColor="$gray3"
             >
-              <XStack justifyContent="space-around" flexWrap="wrap" gap="$2">
-                {pieData.slice(0, 3).map((item, index) => (
-                  <XStack key={index} alignItems="center" gap="$2">
-                    <YStack
-                      width={10}
-                      height={10}
-                      borderRadius="$10"
-                      backgroundColor={item.color}
-                    />
-                    <Text fontSize="$2" color="$gray11" fontWeight="600">
-                      {item.name} {item.population}%
-                    </Text>
-                  </XStack>
-                ))}
+              <XStack justifyContent="space-between" alignItems="center">
+                <Text fontSize="$3" color="$gray10" fontWeight="600">
+                  📊 数据来源：产品标签
+                </Text>
+                <XStack gap="$1" alignItems="baseline">
+                  <Text fontSize="$5" fontWeight="800" color="$gray12">
+                    {totalValue.toFixed(1)}
+                  </Text>
+                  <Text fontSize="$2" color="$gray9">
+                    % 总计
+                  </Text>
+                </XStack>
               </XStack>
             </YStack>
           </YStack>
@@ -236,79 +260,125 @@ export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) 
 
       {/* 柱状图卡片 */}
       <Card
-        padding={isSmallScreen ? '$3' : '$4'}
-        marginHorizontal={isSmallScreen ? '$3' : '$4'}
+        padding="$4"
+        marginHorizontal="$4"
         backgroundColor="white"
         borderRadius="$6"
         elevate
         shadowColor="$shadowColor"
-        shadowOffset={{ width: 0, height: 2 }}
-        shadowOpacity={0.1}
-        shadowRadius={8}
+        shadowOffset={{ width: 0, height: 4 }}
+        shadowOpacity={0.08}
+        shadowRadius={12}
       >
-        <YStack gap={isSmallScreen ? '$3' : '$4'}>
-          <XStack alignItems="center" gap="$2.5">
+        <YStack gap="$4">
+          <XStack alignItems="center" gap="$3">
             <YStack
-              backgroundColor="$blue2"
-              padding={isSmallScreen ? '$1.5' : '$2'}
-              borderRadius="$3"
+              backgroundColor="#E8F4FD"
+              padding="$2.5"
+              borderRadius="$4"
               borderWidth={1.5}
-              borderColor="$blue6"
+              borderColor="#B8DDFB"
             >
-              <IconSymbol name="chart.bar.fill" size={isSmallScreen ? 18 : 22} color="#3498DB" />
+              <IconSymbol name="chart.bar.fill" size={24} color="#45B7D1" />
             </YStack>
             <YStack flex={1}>
-              <Text
-                fontSize={isSmallScreen ? '$5' : '$6'}
-                fontWeight="800"
-                color="$gray12"
-                letterSpacing={-0.3}
-              >
-                营养成分对比
+              <Text fontSize="$6" fontWeight="800" color="$gray12" letterSpacing={-0.3}>
+                含量对比分析
               </Text>
-              <Text fontSize="$2" color="$gray10" marginTop="$1">
-                各成分含量数值对比
+              <Text fontSize="$2" color="$gray9" marginTop={2}>
+                各营养成分数值对比
               </Text>
             </YStack>
           </XStack>
 
-          <YStack alignItems="center" paddingVertical={isSmallScreen ? '$1' : '$2'}>
-            <BarChart
-              data={barData}
-              width={chartWidth}
-              height={barChartHeight}
-              yAxisLabel=""
-              yAxisSuffix="%"
-              chartConfig={{
-                backgroundColor: '#ffffff',
-                backgroundGradientFrom: '#ffffff',
-                backgroundGradientTo: '#f8f9fa',
-                decimalPlaces: 1,
-                color: (opacity = 1) => `rgba(52, 152, 219, ${opacity})`,
-                labelColor: (opacity = 1) => `rgba(60, 60, 67, ${opacity})`,
-                style: {
-                  borderRadius: 16,
-                },
-                propsForBackgroundLines: {
-                  strokeDasharray: '3,3',
-                  stroke: '#e1e4e8',
-                  strokeWidth: 1,
-                },
-                propsForLabels: {
-                  fontSize: isSmallScreen ? 10 : 11,
-                  fontWeight: '600',
-                },
+          {/* 滑动提示 */}
+          {needsScroll && (
+            <XStack
+              backgroundColor="#FEF3C7"
+              padding="$2"
+              borderRadius="$3"
+              gap="$2"
+              alignItems="center"
+              marginBottom="$2"
+            >
+              <IconSymbol name="hand.draw.fill" size={16} color="#D97706" />
+              <Text fontSize="$2" color="#92400E" fontWeight="600">
+                👆 左右滑动查看全部数据
+              </Text>
+            </XStack>
+          )}
+
+          {/* 可滚动的柱状图容器 */}
+          <YStack
+            backgroundColor="$gray1"
+            borderRadius="$4"
+            marginHorizontal={-8}
+            overflow="hidden"
+          >
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={needsScroll}
+              contentContainerStyle={{
+                paddingVertical: 8,
+                paddingHorizontal: 8,
               }}
-              withCustomBarColorFromData={true}
-              flatColor={true}
-              showBarTops={true}
-              fromZero
-              segments={4}
-              style={{
-                borderRadius: 16,
-              }}
-            />
+              bounces={needsScroll}
+              scrollEnabled={needsScroll}
+            >
+              <BarChart
+                data={barData}
+                width={calculatedBarWidth}
+                height={barChartHeight}
+                yAxisLabel=""
+                yAxisSuffix="%"
+                chartConfig={{
+                  backgroundColor: 'transparent',
+                  backgroundGradientFrom: '#F8FAFC',
+                  backgroundGradientTo: '#F8FAFC',
+                  decimalPlaces: 1,
+                  color: (opacity = 1) => `rgba(69, 183, 209, ${opacity})`,
+                  labelColor: (opacity = 1) => `rgba(71, 85, 105, ${opacity})`,
+                  style: {
+                    borderRadius: 12,
+                  },
+                  propsForBackgroundLines: {
+                    strokeDasharray: '4,4',
+                    stroke: '#E2E8F0',
+                    strokeWidth: 1,
+                  },
+                  propsForLabels: {
+                    fontSize: 11,
+                    fontWeight: '600',
+                  },
+                  barPercentage: 0.6,
+                }}
+                withCustomBarColorFromData={true}
+                flatColor={true}
+                showBarTops={true}
+                showValuesOnTopOfBars={true}
+                fromZero
+                segments={4}
+                style={{
+                  borderRadius: 12,
+                }}
+              />
+            </ScrollView>
           </YStack>
+
+          {/* 图表说明 */}
+          <XStack
+            backgroundColor="#F0FDF4"
+            padding="$2.5"
+            borderRadius="$3"
+            gap="$2"
+            alignItems="center"
+          >
+            <IconSymbol name="info.circle.fill" size={16} color="#22C55E" />
+            <Text fontSize="$2" color="#166534" flex={1}>
+              柱状图高度表示各成分在产品中的百分比含量
+              {needsScroll && '（共 ' + dataCount + ' 项数据）'}
+            </Text>
+          </XStack>
         </YStack>
       </Card>
 
@@ -320,102 +390,151 @@ export function NutritionAnalysisCharts({ data }: NutritionAnalysisChartsProps) 
         borderRadius="$6"
         elevate
         shadowColor="$shadowColor"
-        shadowOffset={{ width: 0, height: 2 }}
-        shadowOpacity={0.1}
-        shadowRadius={8}
+        shadowOffset={{ width: 0, height: 4 }}
+        shadowOpacity={0.08}
+        shadowRadius={12}
       >
         <YStack gap="$4">
-          <XStack alignItems="center" gap="$2.5">
+          <XStack alignItems="center" gap="$3">
             <YStack
-              backgroundColor="$green2"
-              padding="$2"
-              borderRadius="$3"
+              backgroundColor="#ECFDF5"
+              padding="$2.5"
+              borderRadius="$4"
               borderWidth={1.5}
-              borderColor="$green6"
+              borderColor="#A7F3D0"
             >
-              <IconSymbol name="list.bullet.rectangle" size={22} color="#2ECC71" />
+              <IconSymbol name="list.bullet.rectangle" size={24} color="#6BCB77" />
             </YStack>
             <YStack flex={1}>
               <Text fontSize="$6" fontWeight="800" color="$gray12" letterSpacing={-0.3}>
                 营养成分详情
               </Text>
-              <Text fontSize="$2" color="$gray10" marginTop="$1">
-                精确数值数据表
+              <Text fontSize="$2" color="$gray9" marginTop={2}>
+                精确数值一览
               </Text>
             </YStack>
           </XStack>
 
-          <YStack gap="$2.5">
-            {validEntries.map((entry, index) => (
-              <XStack
-                key={entry.key}
-                paddingVertical="$3.5"
-                paddingHorizontal="$4"
-                backgroundColor={index % 2 === 0 ? '$gray2' : 'white'}
-                borderRadius="$4"
-                alignItems="center"
-                justifyContent="space-between"
-                borderWidth={1}
-                borderColor={index % 2 === 0 ? '$gray3' : '$gray2'}
-              >
-                <XStack gap="$3" alignItems="center" flex={1}>
-                  <YStack
-                    width={12}
-                    height={12}
-                    borderRadius="$10"
-                    backgroundColor={entry.color}
-                    borderWidth={2}
-                    borderColor="white"
-                    shadowColor={entry.color}
-                    shadowOffset={{ width: 0, height: 1 }}
-                    shadowOpacity={0.3}
-                    shadowRadius={2}
-                  />
-                  <YStack backgroundColor={`${entry.color}15`} padding="$1.5" borderRadius="$2">
-                    <IconSymbol name={entry.icon as any} size={16} color={entry.color} />
-                  </YStack>
-                  <Text fontSize="$4" color="$gray12" fontWeight="600">
-                    {entry.name}
-                  </Text>
-                </XStack>
+          {/* 表头 */}
+          <XStack
+            paddingVertical="$2"
+            paddingHorizontal="$3"
+            backgroundColor="$gray2"
+            borderRadius="$3"
+          >
+            <Text fontSize="$2" color="$gray10" fontWeight="700" flex={1}>
+              成分名称
+            </Text>
+            <Text fontSize="$2" color="$gray10" fontWeight="700" width={80} textAlign="right">
+              含量
+            </Text>
+            <Text fontSize="$2" color="$gray10" fontWeight="700" width={60} textAlign="right">
+              占比
+            </Text>
+          </XStack>
 
-                <XStack gap="$1.5" alignItems="baseline">
-                  <Text fontSize="$8" fontWeight="800" color={entry.color} letterSpacing={-0.5}>
-                    {entry.value.toFixed(1)}
+          {/* 数据行 */}
+          <YStack gap="$2">
+            {validEntries.map((entry, index) => {
+              const percentage =
+                totalValue > 0 ? ((entry.value / totalValue) * 100).toFixed(0) : '0';
+              return (
+                <XStack
+                  key={entry.key}
+                  paddingVertical="$3"
+                  paddingHorizontal="$3"
+                  backgroundColor={index % 2 === 0 ? '$gray1' : 'white'}
+                  borderRadius="$3"
+                  alignItems="center"
+                  borderWidth={1}
+                  borderColor="$gray2"
+                >
+                  <XStack gap="$2.5" alignItems="center" flex={1}>
+                    <YStack
+                      width={8}
+                      height={8}
+                      borderRadius={4}
+                      backgroundColor={entry.color as any}
+                    />
+                    <YStack
+                      backgroundColor={`${entry.color}15` as any}
+                      padding="$1.5"
+                      borderRadius="$2"
+                    >
+                      <IconSymbol name={entry.icon as any} size={14} color={entry.color} />
+                    </YStack>
+                    <Text fontSize="$3" color="$gray12" fontWeight="600">
+                      {entry.name}
+                    </Text>
+                  </XStack>
+
+                  <Text
+                    fontSize="$4"
+                    fontWeight="800"
+                    color={entry.color as any}
+                    width={80}
+                    textAlign="right"
+                  >
+                    {entry.value.toFixed(1)}%
                   </Text>
-                  <Text fontSize="$3" color="$gray10" fontWeight="600">
-                    %
-                  </Text>
+
+                  <YStack
+                    width={50}
+                    height={6}
+                    backgroundColor="$gray3"
+                    borderRadius={3}
+                    marginLeft="$2"
+                    overflow="hidden"
+                  >
+                    <YStack
+                      width={`${Math.min(parseFloat(percentage), 100)}%` as any}
+                      height="100%"
+                      backgroundColor={entry.color as any}
+                      borderRadius={3}
+                    />
+                  </YStack>
                 </XStack>
-              </XStack>
-            ))}
+              );
+            })}
           </YStack>
 
-          {/* 总计提示 */}
-          <YStack
+          {/* 总计行 */}
+          <XStack
             paddingVertical="$3.5"
-            paddingHorizontal="$4"
-            marginTop="$2"
-            backgroundColor="$blue2"
+            paddingHorizontal="$3"
+            marginTop="$1"
+            backgroundColor="#EEF2FF"
             borderRadius="$4"
             borderWidth={2}
-            borderColor="$blue6"
+            borderColor="#C7D2FE"
+            alignItems="center"
           >
-            <XStack justifyContent="space-between" alignItems="center">
-              <XStack gap="$2" alignItems="center">
-                <IconSymbol name="sum" size={18} color="#3498DB" />
-                <Text fontSize="$4" color="$blue11" fontWeight="700">
-                  总计
+            <XStack gap="$2" alignItems="center" flex={1}>
+              <IconSymbol name="sum" size={18} color="#6366F1" />
+              <Text fontSize="$4" color="#4338CA" fontWeight="700">
+                总计
+              </Text>
+            </XStack>
+            <Text fontSize="$6" fontWeight="800" color="#4338CA">
+              {validEntries.reduce((sum, entry) => sum + entry.value, 0).toFixed(1)}%
+            </Text>
+          </XStack>
+
+          {/* 数据说明 */}
+          <YStack
+            backgroundColor="#FFFBEB"
+            padding="$3"
+            borderRadius="$3"
+            borderWidth={1}
+            borderColor="#FDE68A"
+          >
+            <XStack gap="$2" alignItems="flex-start">
+              <IconSymbol name="exclamationmark.triangle.fill" size={16} color="#F59E0B" />
+              <YStack flex={1}>
+                <Text fontSize="$2" color="#92400E" lineHeight={18}>
+                  以上数据基于产品包装标注，实际含量可能因批次略有差异。建议结合猫咪实际情况选择合适的猫粮。
                 </Text>
-              </XStack>
-              <XStack gap="$1.5" alignItems="baseline">
-                <Text fontSize="$8" fontWeight="800" color="$blue11" letterSpacing={-0.5}>
-                  {validEntries.reduce((sum, entry) => sum + entry.value, 0).toFixed(1)}
-                </Text>
-                <Text fontSize="$3" color="$blue10" fontWeight="600">
-                  %
-                </Text>
-              </XStack>
+              </YStack>
             </XStack>
           </YStack>
         </YStack>

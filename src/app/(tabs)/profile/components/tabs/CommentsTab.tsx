@@ -180,9 +180,8 @@ export const CommentsTab = memo(function CommentsTab() {
               padding="$4"
               backgroundColor={colors.background}
               borderWidth={1}
-              borderColor={colors.icon + '15'}
+              style={{ borderColor: colors.icon + '15' }}
               borderRadius="$4"
-              pressStyle={{ scale: 0.98, opacity: 0.9 }}
             >
               <YStack gap="$3">
                 {/* 评论目标类型标签 */}

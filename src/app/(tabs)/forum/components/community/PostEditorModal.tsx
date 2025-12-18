@@ -23,6 +23,7 @@ import { showAlert } from '@/src/components/dialogs';
 import { POST_CATEGORIES, MESSAGES, UI_CONFIG } from '../../constants';
 import { usePostEditor } from '../../hooks/usePostEditor';
 import { createErrorHandler } from '../../utils';
+import { VideoPreview } from '../VideoPreview';
 
 export interface PostEditorModalProps {
   visible: boolean;
@@ -352,22 +353,34 @@ export function PostEditorModal({
                   <SectionTitle>添加图片/视频 ({editor.pickedFiles.length}/9)</SectionTitle>
 
                   <XStack gap="$2" flexWrap="wrap">
-                    {editor.pickedFiles.map((file, idx) => (
-                      <MediaPreview key={idx}>
-                        <Image
-                          source={{ uri: file.uri }}
-                          style={{ width: '100%', height: '100%' }}
-                          resizeMode="cover"
-                        />
-                        <Pressable onPress={() => editor.removeFile(idx)}>
-                          <RemoveButton>
-                            <Text color="white" fontSize="$1">
-                              ✕
-                            </Text>
-                          </RemoveButton>
-                        </Pressable>
-                      </MediaPreview>
-                    ))}
+                    {editor.pickedFiles.map((file, idx) => {
+                      const isVideo = file.type?.startsWith('video');
+                      return (
+                        <MediaPreview key={idx}>
+                          {isVideo ? (
+                            <VideoPreview
+                              videoUri={file.uri}
+                              width={UI_CONFIG.THUMBNAIL_SIZE}
+                              height={UI_CONFIG.THUMBNAIL_SIZE}
+                              showPlayButton={true}
+                            />
+                          ) : (
+                            <Image
+                              source={{ uri: file.uri }}
+                              style={{ width: '100%', height: '100%' }}
+                              resizeMode="cover"
+                            />
+                          )}
+                          <Pressable onPress={() => editor.removeFile(idx)}>
+                            <RemoveButton>
+                              <Text color="white" fontSize="$1">
+                                ✕
+                              </Text>
+                            </RemoveButton>
+                          </Pressable>
+                        </MediaPreview>
+                      );
+                    })}
 
                     {editor.pickedFiles.length < 9 && (
                       <Pressable onPress={handlePickImages}>

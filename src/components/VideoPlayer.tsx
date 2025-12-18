@@ -4,7 +4,7 @@
  * 使用 expo-av 实现简单的视频播放功能
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Modal, Pressable, ActivityIndicator, StyleSheet, Dimensions } from 'react-native';
 import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { X } from '@tamagui/lucide-icons';
@@ -37,6 +37,14 @@ export function VideoPlayer({ visible, videoUrl, onClose }: VideoPlayerProps) {
       setError(status.error);
     }
   };
+
+  // 当组件挂载时重置状态
+  useEffect(() => {
+    if (visible) {
+      setIsLoading(true);
+      setError(null);
+    }
+  }, [visible]);
 
   const handleClose = () => {
     // 停止播放
@@ -89,12 +97,25 @@ export function VideoPlayer({ visible, videoUrl, onClose }: VideoPlayerProps) {
             <>
               <Video
                 ref={videoRef}
-                source={{ uri: videoUrl }}
+                source={{
+                  uri: videoUrl,
+                  // 优化视频加载
+                  overrideFileExtensionAndroid: videoUrl.includes('.mp4') ? 'mp4' : undefined,
+                }}
                 style={styles.video}
                 useNativeControls
                 resizeMode={ResizeMode.CONTAIN}
                 shouldPlay
+                isLooping={false}
+                // 启用流式播放，不需要等待完全下载
+                progressUpdateIntervalMillis={500}
+                // 优化缓冲
                 onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
+                // 视频质量优化
+                onError={(error) => {
+                  console.error('Video playback error:', error);
+                  setError('视频播放失败，请检查网络连接');
+                }}
               />
               {isLoading && (
                 <Stack

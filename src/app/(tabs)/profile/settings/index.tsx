@@ -53,7 +53,7 @@ function SettingItemNew({
         width={40}
         height={40}
         borderRadius={12}
-        backgroundColor={iconBgColor}
+        style={{ backgroundColor: iconBgColor }}
         alignItems="center"
         justifyContent="center"
       >

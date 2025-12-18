@@ -11,6 +11,7 @@ import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated'
 import { Play } from '@tamagui/lucide-icons';
 import { styled, XStack, YStack, Stack, Text } from 'tamagui';
 import { OptimizedImage } from '@/src/components/ui/OptimizedImage';
+import { VideoPreview } from '../VideoPreview';
 import type { PostMedia } from '@/src/lib/supabase';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -154,21 +155,13 @@ const MediaItemComponent = memo(function MediaItemComponent({
         alignItems="center"
       >
         {isVideo ? (
-          // 视频预览：显示黑色背景和播放按钮
-          <Stack
+          // 视频预览：使用 VideoPreview 组件显示第一帧缩略图
+          <VideoPreview
+            videoUri={media.fileUrl}
             width={SCREEN_WIDTH}
             height={imageHeight}
-            backgroundColor="#1a1a1a"
-            justifyContent="center"
-            alignItems="center"
-          >
-            <Stack backgroundColor="rgba(255, 255, 255, 0.15)" padding="$4" borderRadius={12}>
-              <Play size={48} color="#FFFFFF" />
-            </Stack>
-            <Text color="#FFFFFF" fontSize={14} marginTop="$4" opacity={0.8}>
-              点击播放视频
-            </Text>
-          </Stack>
+            showPlayButton={true}
+          />
         ) : (
           <OptimizedImage
             source={media.fileUrl}
@@ -176,13 +169,6 @@ const MediaItemComponent = memo(function MediaItemComponent({
             contentFit="contain"
             cachePolicy="memory-disk"
           />
-        )}
-        {isVideo && (
-          <VideoOverlay>
-            <PlayButton>
-              <Play size={28} color="#1a1a1a" fill="#1a1a1a" />
-            </PlayButton>
-          </VideoOverlay>
         )}
       </Stack>
     </Pressable>

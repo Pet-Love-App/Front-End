@@ -60,6 +60,7 @@ import { createErrorHandler } from './utils';
 import { MentionFriendsModal } from './components/MentionFriendsModal';
 import { TopicSelectorModal } from './components/TopicSelectorModal';
 import { LocationSelectorModal } from './components/LocationSelectorModal';
+import { VideoPreview } from './components/VideoPreview';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MEDIA_PREVIEW_HEIGHT = SCREEN_HEIGHT / 3;
@@ -202,13 +203,15 @@ export default function CreatePostScreen() {
           entering={FadeInRight.delay(index * 50).springify()}
           style={styles.mediaSlide}
         >
-          <Image source={{ uri: item.uri }} style={styles.mediaImage} resizeMode="cover" />
-          {isVideo && (
-            <View style={styles.videoOverlay}>
-              <View style={styles.playButton}>
-                <Play size={32} color="#FFFFFF" fill="#FFFFFF" />
-              </View>
-            </View>
+          {isVideo ? (
+            <VideoPreview
+              videoUri={item.uri}
+              width={SCREEN_WIDTH}
+              height={MEDIA_PREVIEW_HEIGHT}
+              showPlayButton={true}
+            />
+          ) : (
+            <Image source={{ uri: item.uri }} style={styles.mediaImage} resizeMode="cover" />
           )}
           <TouchableOpacity
             style={styles.removeMediaButton}

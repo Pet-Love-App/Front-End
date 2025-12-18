@@ -2,6 +2,7 @@
 export { AppHeader } from './AppHeader';
 export { BreedSelector } from './BreedSelector';
 export { CatFoodCard } from './CatFoodCard';
+export { DismissKeyboardView } from './DismissKeyboardView';
 export { ExternalLink } from './ExternalLink';
 export { HapticTab } from './HapticTab';
 export { LottieAnimation } from './LottieAnimation';

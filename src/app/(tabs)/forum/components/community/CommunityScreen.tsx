@@ -46,11 +46,11 @@ const FeedContainer = styled(Stack, {
 });
 
 const CATEGORIES: CategoryItem[] = [
-  { id: 'recommend', label: '推荐', icon: '✨' },
-  { id: 'help', label: '求助', icon: '🆘' },
-  { id: 'share', label: '分享', icon: '📢' },
-  { id: 'science', label: '科普', icon: '📚' },
-  { id: 'warning', label: '避雷', icon: '⚠️' },
+  { id: 'recommend', label: '推荐' },
+  { id: 'help', label: '求助' },
+  { id: 'share', label: '分享' },
+  { id: 'science', label: '科普' },
+  { id: 'warning', label: '避雷' },
 ];
 
 function postToCardData(post: Post): PostCardData {

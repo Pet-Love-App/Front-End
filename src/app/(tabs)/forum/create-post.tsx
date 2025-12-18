@@ -24,6 +24,8 @@ import {
   Text,
   Keyboard,
   TouchableWithoutFeedback,
+  LayoutAnimation,
+  UIManager,
 } from 'react-native';
 import Animated, {
   FadeIn,
@@ -62,6 +64,11 @@ import { TopicSelectorModal } from './components/TopicSelectorModal';
 import { LocationSelectorModal } from './components/LocationSelectorModal';
 import { VideoPreview } from './components/VideoPreview';
 
+// 启用 Android LayoutAnimation
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MEDIA_PREVIEW_HEIGHT = SCREEN_HEIGHT / 3;
 
@@ -94,9 +101,33 @@ export default function CreatePostScreen() {
   const [selectedTopics, setSelectedTopics] = useState<any[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<any>(null);
 
+  // 键盘状态
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
   // 动画值
   const submitButtonScale = useSharedValue(1);
   const headerOpacity = useSharedValue(1);
+
+  // 监听键盘显示/隐藏
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const keyboardShowListener = Keyboard.addListener(showEvent, () => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setIsKeyboardVisible(true);
+    });
+
+    const keyboardHideListener = Keyboard.addListener(hideEvent, () => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setIsKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardShowListener.remove();
+      keyboardHideListener.remove();
+    };
+  }, []);
 
   const editor = usePostEditor({
     onSuccess: () => {
@@ -245,8 +276,7 @@ export default function CreatePostScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <KeyboardAvoidingView
         style={styles.flex1}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={0}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* 顶部导航栏 */}
         <View style={styles.header}>
@@ -287,6 +317,8 @@ export default function CreatePostScreen() {
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
+            keyboardDismissMode="interactive"
+            automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
           >
             {/* 媒体预览区 - 占屏幕 1/3 */}
             <View style={styles.mediaSection}>
@@ -436,87 +468,89 @@ export default function CreatePostScreen() {
           </ScrollView>
         </TouchableWithoutFeedback>
 
-        {/* 底部工具栏 */}
-        <View style={[styles.bottomToolbar, { paddingBottom: insets.bottom + 8 }]}>
-          <View style={styles.toolbarLeft}>
-            <TouchableOpacity
-              style={styles.toolButton}
-              onPress={handlePickImages}
-              activeOpacity={0.7}
-            >
-              <ImagePlus size={22} color="#262626" strokeWidth={1.8} />
-              <Text style={styles.toolButtonLabel}>图片</Text>
-            </TouchableOpacity>
+        {/* 底部工具栏 - 键盘弹出时隐藏 */}
+        {!isKeyboardVisible && (
+          <View style={[styles.bottomToolbar, { paddingBottom: insets.bottom + 8 }]}>
+            <View style={styles.toolbarLeft}>
+              <TouchableOpacity
+                style={styles.toolButton}
+                onPress={handlePickImages}
+                activeOpacity={0.7}
+              >
+                <ImagePlus size={22} color="#262626" strokeWidth={1.8} />
+                <Text style={styles.toolButtonLabel}>图片</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.toolButton}
-              onPress={handleTakePhoto}
-              activeOpacity={0.7}
-            >
-              <Camera size={22} color="#262626" strokeWidth={1.8} />
-              <Text style={styles.toolButtonLabel}>拍摄</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.toolButton}
+                onPress={handleTakePhoto}
+                activeOpacity={0.7}
+              >
+                <Camera size={22} color="#262626" strokeWidth={1.8} />
+                <Text style={styles.toolButtonLabel}>拍摄</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.toolButton}
-              onPress={() => setShowMentionModal(true)}
-              activeOpacity={0.7}
-            >
-              <View>
-                <AtSign
+              <TouchableOpacity
+                style={styles.toolButton}
+                onPress={() => setShowMentionModal(true)}
+                activeOpacity={0.7}
+              >
+                <View>
+                  <AtSign
+                    size={22}
+                    color={mentionedFriends.length > 0 ? BRAND_COLOR : '#262626'}
+                    strokeWidth={1.8}
+                  />
+                  {mentionedFriends.length > 0 && (
+                    <View style={styles.badgeIcon}>
+                      <Text style={styles.badgeIconText}>{mentionedFriends.length}</Text>
+                    </View>
+                  )}
+                </View>
+                <Text
+                  style={[
+                    styles.toolButtonLabel,
+                    mentionedFriends.length > 0 && styles.toolButtonLabelActive,
+                  ]}
+                >
+                  @好友
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.toolButton}
+                onPress={() => setShowTopicModal(true)}
+                activeOpacity={0.7}
+              >
+                <Hash size={22} color="#262626" strokeWidth={1.8} />
+                <Text style={styles.toolButtonLabel}>话题</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.toolButton}
+                onPress={() => setShowLocationModal(true)}
+                activeOpacity={0.7}
+              >
+                <MapPin
                   size={22}
-                  color={mentionedFriends.length > 0 ? BRAND_COLOR : '#262626'}
+                  color={selectedLocation ? BRAND_COLOR : '#262626'}
                   strokeWidth={1.8}
                 />
-                {mentionedFriends.length > 0 && (
-                  <View style={styles.badgeIcon}>
-                    <Text style={styles.badgeIconText}>{mentionedFriends.length}</Text>
-                  </View>
-                )}
-              </View>
-              <Text
-                style={[
-                  styles.toolButtonLabel,
-                  mentionedFriends.length > 0 && styles.toolButtonLabelActive,
-                ]}
-              >
-                @好友
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.toolButton}
-              onPress={() => setShowTopicModal(true)}
-              activeOpacity={0.7}
-            >
-              <Hash size={22} color="#262626" strokeWidth={1.8} />
-              <Text style={styles.toolButtonLabel}>话题</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.toolButton}
-              onPress={() => setShowLocationModal(true)}
-              activeOpacity={0.7}
-            >
-              <MapPin
-                size={22}
-                color={selectedLocation ? BRAND_COLOR : '#262626'}
-                strokeWidth={1.8}
-              />
-              <Text
-                style={[styles.toolButtonLabel, selectedLocation && styles.toolButtonLabelActive]}
-              >
-                位置
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {editor.pickedFiles.length > 0 && (
-            <View style={styles.mediaCount}>
-              <Text style={styles.mediaCountText}>{editor.pickedFiles.length}/9</Text>
+                <Text
+                  style={[styles.toolButtonLabel, selectedLocation && styles.toolButtonLabelActive]}
+                >
+                  位置
+                </Text>
+              </TouchableOpacity>
             </View>
-          )}
-        </View>
+
+            {editor.pickedFiles.length > 0 && (
+              <View style={styles.mediaCount}>
+                <Text style={styles.mediaCountText}>{editor.pickedFiles.length}/9</Text>
+              </View>
+            )}
+          </View>
+        )}
       </KeyboardAvoidingView>
 
       {/* @好友模态框 */}
@@ -556,6 +590,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 20,
   },
 
   // 顶部导航栏

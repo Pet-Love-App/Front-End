@@ -66,21 +66,29 @@ export const CommentsTab = memo(function CommentsTab() {
    * 跳转到评论所在的内容详情页
    */
   const handleNavigateToComment = (comment: Comment) => {
+    console.log('[CommentsTab] 点击评论，跳转到:', comment.targetType, comment.targetId);
+
     if (comment.targetType === 'post') {
-      // 跳转到帖子详情 - 暂时不支持，因为论坛详情是模态框
-      Alert.alert('提示', '论坛帖子详情页功能开发中');
+      // 跳转到帖子详情页面（独立全屏页面，返回时会正确回到 profile）
+      router.push({
+        pathname: '/post-detail',
+        params: {
+          postId: comment.targetId.toString(),
+          commentId: comment.id.toString(),
+        },
+      });
     } else if (comment.targetType === 'catfood') {
       // 跳转到猫粮详情
       router.push({
         pathname: '/detail',
-        params: { id: comment.targetId.toString() },
-      } as any);
+        params: { id: comment.targetId },
+      });
     } else if (comment.targetType === 'report') {
       // 跳转到报告详情
       router.push({
         pathname: '/detail',
-        params: { id: comment.targetId.toString() },
-      } as any);
+        params: { id: comment.targetId },
+      });
     }
   };
 

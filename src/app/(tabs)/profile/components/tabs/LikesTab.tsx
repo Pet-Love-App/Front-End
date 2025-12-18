@@ -70,10 +70,11 @@ export const LikesTab = memo(function LikesTab() {
    * 跳转到猫粮详情
    */
   const handleNavigateToDetail = (catfoodId: number) => {
+    console.log('[LikesTab] 点击猫粮，跳转到详情:', catfoodId);
     router.push({
       pathname: '/detail',
-      params: { id: catfoodId.toString() },
-    } as any);
+      params: { id: catfoodId },
+    });
   };
 
   if (isLoading) {
@@ -138,9 +139,8 @@ export const LikesTab = memo(function LikesTab() {
               padding="$4"
               backgroundColor={colors.background}
               borderWidth={1}
-              borderColor={colors.icon + '15'}
+              style={{ borderColor: colors.icon + '15' }}
               borderRadius="$4"
-              pressStyle={{ scale: 0.98, opacity: 0.9 }}
             >
               <XStack gap="$3" alignItems="center">
                 {/* 猫粮图片 */}

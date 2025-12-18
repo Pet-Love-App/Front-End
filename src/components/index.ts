@@ -2,8 +2,6 @@
 export { AppHeader } from './AppHeader';
 export { BreedSelector } from './BreedSelector';
 export { CatFoodCard } from './CatFoodCard';
-export { CatFoodCardPremium } from './CatFoodCardPremium';
-export { NutritionRadarChart } from './NutritionRadarChart';
 export { ExternalLink } from './ExternalLink';
 export { HapticTab } from './HapticTab';
 export { LottieAnimation } from './LottieAnimation';

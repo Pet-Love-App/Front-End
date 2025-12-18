@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ScrollView, Text, YStack } from 'tamagui';
-import { supabaseChatService } from '@/src/lib/supabase';
+import { supabaseChatService, supabase } from '@/src/lib/supabase';
 import { Button } from '@/src/design-system/components';
 
 import { Colors } from '@/src/constants/theme';
@@ -70,15 +70,39 @@ export function ProfileScreen() {
   useEffect(() => {
     loadUnreadCount();
 
-    // 订阅实时更新
-    const unsubscribe = supabaseChatService.subscribeToConversations(() => {
+    // 订阅会话变化
+    const unsubscribeConversations = supabaseChatService.subscribeToConversations(() => {
       loadUnreadCount();
     });
 
+    // 订阅未读计数变化
+    const unreadChannel = supabase
+      .channel('profile_unread_counts')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'unread_counts',
+        },
+        () => {
+          loadUnreadCount();
+        }
+      )
+      .subscribe();
+
     return () => {
-      unsubscribe();
+      unsubscribeConversations();
+      supabase.removeChannel(unreadChannel);
     };
   }, []);
+
+  // 当页面获得焦点时刷新未读计数
+  useFocusEffect(
+    useCallback(() => {
+      loadUnreadCount();
+    }, [])
+  );
 
   const loadUnreadCount = async () => {
     const response = await supabaseChatService.getTotalUnreadCount();

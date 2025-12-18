@@ -15,11 +15,11 @@ import {
   RefreshControl,
   Dimensions,
 } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRouter, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MessageCircle, ChevronLeft, User } from '@tamagui/lucide-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { supabaseChatService, type Conversation } from '@/src/lib/supabase';
+import { supabaseChatService, supabase, type Conversation } from '@/src/lib/supabase';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const BRAND_COLOR = '#FEBE98'; // 应用主题色 - 温暖的桃色
@@ -30,19 +30,54 @@ export default function MessagesScreen() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    // 获取当前用户ID
+    const initUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+    initUser();
     loadConversations();
 
-    // 订阅实时更新
-    const unsubscribe = supabaseChatService.subscribeToConversations(() => {
+    // 订阅会话和消息变化
+    const unsubscribeConversations = supabaseChatService.subscribeToConversations(() => {
       loadConversations();
     });
 
+    // 订阅未读计数变化
+    const unreadChannel = supabase
+      .channel('unread_counts:all')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'unread_counts',
+        },
+        () => {
+          loadConversations();
+        }
+      )
+      .subscribe();
+
     return () => {
-      unsubscribe();
+      unsubscribeConversations();
+      supabase.removeChannel(unreadChannel);
     };
   }, []);
+
+  // 当页面重新获得焦点时刷新数据（从聊天页面返回时）
+  useFocusEffect(
+    useCallback(() => {
+      loadConversations();
+    }, [])
+  );
 
   const loadConversations = async () => {
     setLoading(true);
@@ -63,15 +98,35 @@ export default function MessagesScreen() {
   };
 
   const handleOpenConversation = (conversation: Conversation) => {
-    router.push(`/profile/chat?conversationId=${conversation.id}` as any);
+    // 获取对方用户ID并传递
+    const otherUserId =
+      currentUserId === conversation.participant1Id
+        ? conversation.participant2Id
+        : conversation.participant1Id;
+    router.push(`/profile/chat?conversationId=${conversation.id}&userId=${otherUserId}` as any);
   };
 
   const getOtherUser = (conversation: Conversation) => {
-    // 这里需要从当前用户判断对方是谁
-    // 简化版：假设 participant1 是当前用户
+    // 根据当前用户判断对方是谁
+    if (!currentUserId) {
+      return {
+        username: '未知用户',
+        avatar: undefined,
+      };
+    }
+
+    // 如果当前用户是 participant1，显示 participant2
+    if (currentUserId === conversation.participant1Id) {
+      return {
+        username: conversation.participant2Username || '未知用户',
+        avatar: conversation.participant2Avatar,
+      };
+    }
+
+    // 否则显示 participant1
     return {
-      username: conversation.participant2Username || '未知用户',
-      avatar: conversation.participant2Avatar,
+      username: conversation.participant1Username || '未知用户',
+      avatar: conversation.participant1Avatar,
     };
   };
 

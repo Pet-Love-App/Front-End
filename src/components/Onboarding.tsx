@@ -137,7 +137,7 @@ export function Onboarding() {
                 end={{ x: 1, y: 0 }}
                 style={styles.gradientButton}
               >
-                <Text style={styles.buttonText}>🚀 开始体验</Text>
+                <Text style={styles.buttonText}>开始体验</Text>
               </LinearGradient>
             </TouchableOpacity>
           ) : (

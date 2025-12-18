@@ -1,4 +1,4 @@
-import { RefreshControl } from 'react-native';
+import { RefreshControl, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Input, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 
@@ -123,10 +123,9 @@ export function CollectScreen() {
           };
 
           return (
-            <YStack
+            <TouchableOpacity
               key={favoriteRecordId || index}
-              pressStyle={{ scale: 0.98, opacity: 0.9 }}
-              animation="quick"
+              activeOpacity={0.7}
               onPress={() => handlePress(catfoodId)}
             >
               <CollectListItem
@@ -135,7 +134,7 @@ export function CollectScreen() {
                   handleDelete(favoriteRecordId?.toString() || '', catfoodId?.toString() || '')
                 }
               />
-            </YStack>
+            </TouchableOpacity>
           );
         })}
       </YStack>

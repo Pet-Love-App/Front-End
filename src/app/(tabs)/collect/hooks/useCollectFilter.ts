@@ -22,10 +22,13 @@ export function useCollectFilter(favorites: CatfoodFavorite[]) {
     return safeFavorites.filter((favorite) => {
       if (!searchText.trim()) return true;
       const keyword = searchText.toLowerCase();
-      return (
-        favorite.catfood?.name?.toLowerCase().includes(keyword) ||
-        favorite.catfood?.brand?.toLowerCase().includes(keyword)
-      );
+
+      // 支持扁平结构（API直接返回的数据）
+      const rawData = favorite as any;
+      const name = rawData.name || favorite.catfood?.name || '';
+      const brand = rawData.brand || favorite.catfood?.brand || '';
+
+      return name.toLowerCase().includes(keyword) || brand.toLowerCase().includes(keyword);
     });
   }, [favorites, searchText]);
 

@@ -238,16 +238,7 @@ export default function ScannerScreen() {
 
     // AI 报告详情页
     if (flowState === 'ai-report-detail' && aiReport) {
-      return (
-        <AiReportDetail
-          report={aiReport}
-          onSave={handleSaveReportWrapper}
-          onRetake={handleRetakePhoto}
-          isSaving={isProcessing}
-          isAdmin={user?.isAdmin || false}
-          hasExistingReport={!!selectedCatFood?.percentage}
-        />
-      );
+      return <AiReportDetail report={aiReport} onRetake={handleRetakePhoto} />;
     }
 
     // 初始页（默认页）

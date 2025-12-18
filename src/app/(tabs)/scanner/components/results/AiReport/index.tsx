@@ -20,25 +20,11 @@ import { NutritionAnalysisCharts } from './NutritionAnalysisCharts';
 
 export interface AiReportDetailProps {
   report: GenerateReportResponse;
-  onSave?: () => void;
   onRetake?: () => void;
   onClose?: () => void;
-  isSaving?: boolean;
-  /** 是否为管理员用户 */
-  isAdmin?: boolean;
-  /** 猫粮是否已有报告 */
-  hasExistingReport?: boolean;
 }
 
-export function AiReportDetail({
-  report,
-  onSave,
-  onRetake,
-  onClose,
-  isSaving,
-  isAdmin = false,
-  hasExistingReport = false,
-}: AiReportDetailProps) {
+export function AiReportDetail({ report, onRetake, onClose }: AiReportDetailProps) {
   const insets = useSafeAreaInsets();
 
   const {
@@ -109,37 +95,9 @@ export function AiReportDetail({
             {/* 营养成分分析图表（饼状图 + 柱状图 + 数据表格） */}
             {percentData && <NutritionAnalysisCharts data={percentData} />}
 
-            {/* 自动保存提示 */}
-            {onSave && (
-              <YStack paddingHorizontal="$4" marginTop="$4">
-                <YStack
-                  backgroundColor="$green2"
-                  padding="$3"
-                  borderRadius="$3"
-                  borderWidth={1}
-                  borderColor="$green6"
-                  alignItems="center"
-                >
-                  <XStack gap="$2" alignItems="center">
-                    <Text fontSize="$5">✅</Text>
-                    <Text fontSize="$4" color="$green11" fontWeight="600">
-                      报告已自动保存到猫粮
-                    </Text>
-                  </XStack>
-                </YStack>
-              </YStack>
-            )}
-
             {/* 操作按钮 */}
             <YStack paddingHorizontal="$4" marginTop="$4">
-              <ActionButtons
-                onSave={onSave}
-                onRetake={onRetake}
-                onClose={onClose}
-                isSaving={isSaving}
-                isAdmin={isAdmin}
-                hasExistingReport={hasExistingReport}
-              />
+              <ActionButtons onRetake={onRetake} onClose={onClose} />
             </YStack>
           </YStack>
         </ScrollView>

@@ -58,7 +58,12 @@ export default function ChatScreen() {
 
     // 订阅实时消息
     const unsubscribe = supabaseChatService.subscribeToMessages(conversationId, (newMessage) => {
-      setMessages((prev) => [...prev, newMessage]);
+      setMessages((prev) => {
+        // 避免重复添加（发送消息时已手动添加）
+        const exists = prev.some((msg) => msg.id === newMessage.id);
+        if (exists) return prev;
+        return [...prev, newMessage];
+      });
       scrollToBottom();
 
       // 如果不是自己发送的消息，标记为已读
@@ -114,7 +119,13 @@ export default function ChatScreen() {
       const response = await supabaseChatService.sendMessage(conversationId, content);
 
       if (response.success && response.data) {
-        // 实时订阅会自动添加消息，这里不需要手动添加
+        // 立即添加消息到本地列表（不依赖实时订阅延迟）
+        setMessages((prev) => {
+          // 检查消息是否已存在（避免实时订阅重复添加）
+          const exists = prev.some((msg) => msg.id === response.data!.id);
+          if (exists) return prev;
+          return [...prev, response.data!];
+        });
         scrollToBottom();
       }
     } catch (error) {

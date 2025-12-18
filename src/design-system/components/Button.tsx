@@ -30,7 +30,7 @@ const StyledButton = styled(TamaguiButton, {
       },
       danger: {
         backgroundColor: '$red',
-        hoverStyle: { backgroundColor: '$error8' },
+        hoverStyle: { backgroundColor: '$red10' },
       },
     },
     size: {
@@ -45,11 +45,6 @@ const StyledButton = styled(TamaguiButton, {
       true: { borderRadius: 9999 },
     },
   } as const,
-
-  defaultVariants: {
-    variant: 'primary' as const,
-    size: 'md' as const,
-  },
 });
 
 type StyledButtonProps = GetProps<typeof StyledButton>;

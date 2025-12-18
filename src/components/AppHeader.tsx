@@ -9,12 +9,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Image, Pressable } from 'react-native';
 import type { EdgeInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { primaryScale, neutralScale, errorScale } from '@/src/design-system/tokens';
 import { useUserStore } from '@/src/store/userStore';
-import { supabaseForumService } from '@/src/lib/supabase';
+import { supabaseForumService, supabase } from '@/src/lib/supabase';
 
 export interface AppHeaderProps {
   /** 页面标题 */
@@ -44,22 +44,51 @@ export function AppHeader({
   const [unreadCount, setUnreadCount] = useState(0);
 
   // 获取未读通知数量
-  useEffect(() => {
-    const fetchUnreadCount = async () => {
-      try {
-        const result = await supabaseForumService.getNotifications(true);
-        if (result.data) {
-          setUnreadCount(result.data.length);
-        }
-      } catch (error) {
-        console.error('获取未读通知失败:', error);
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const result = await supabaseForumService.getNotifications(true);
+      if (result.data) {
+        setUnreadCount(result.data.length);
       }
-    };
-
-    if (showNotification) {
-      fetchUnreadCount();
+    } catch (error) {
+      console.error('获取未读通知失败:', error);
     }
-  }, [showNotification]);
+  }, []);
+
+  useEffect(() => {
+    if (!showNotification) return;
+
+    fetchUnreadCount();
+
+    // 订阅通知变化
+    const notificationsChannel = supabase
+      .channel('app_header_notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+        },
+        () => {
+          fetchUnreadCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(notificationsChannel);
+    };
+  }, [showNotification, fetchUnreadCount]);
+
+  // 当页面获得焦点时刷新未读数量
+  useFocusEffect(
+    useCallback(() => {
+      if (showNotification) {
+        fetchUnreadCount();
+      }
+    }, [showNotification, fetchUnreadCount])
+  );
 
   // 跳转到个人中心
   const handleAvatarPress = useCallback(() => {
@@ -68,15 +97,14 @@ export function AppHeader({
 
   // 跳转到通知页面
   const handleNotificationPress = useCallback(() => {
-    // TODO: 跳转到通知页面
-    // router.push('/notifications');
-  }, []);
+    router.push('/(tabs)/forum/notifications' as any);
+  }, [router]);
 
   // 统一头部高度常量
   const HEADER_HEIGHT = 56;
 
   return (
-    <YStack paddingTop={insets.top} paddingHorizontal={16} backgroundColor={backgroundColor}>
+    <YStack paddingTop={insets.top} paddingHorizontal={16} backgroundColor={backgroundColor as any}>
       <XStack alignItems="center" justifyContent="space-between" height={HEADER_HEIGHT}>
         {/* 左侧：头像 */}
         {showAvatar ? (

@@ -25,23 +25,25 @@ export function ProcessingScreen({ insets }: ProcessingScreenProps) {
       >
         {/* 加载动画 */}
         <YStack
+          width={280}
+          height={280}
           backgroundColor="white"
           borderRadius="$12"
-          padding="$6"
           alignItems="center"
+          justifyContent="center"
           borderWidth={2}
           borderColor={neutralScale.neutral2}
         >
           <LottieAnimation
-            source={require('@/assets/animations/cat_loader.json')}
-            width={220}
-            height={220}
+            source={require('@/assets/animations/rolling_cat_animation.json')}
+            width={180}
+            height={180}
           />
         </YStack>
 
         {/* 加载文本 */}
         <YStack alignItems="center" gap="$2.5" maxWidth={320}>
-          <Text fontSize={24} fontWeight="900" color="$foreground" letterSpacing={0.5}>
+          <Text fontSize={24} fontWeight="900" color={neutralScale.neutral12} letterSpacing={0.5}>
             正在识别文字...
           </Text>
           <Text

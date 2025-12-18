@@ -5,7 +5,7 @@ import { ThemedText } from '@/src/components/ThemedText';
 import { spacing } from '@/src/design-system/tokens';
 
 interface LottieAnimationProps {
-  source: NodeRequire;
+  source: any;
   width?: number;
   height?: number;
   autoPlay?: boolean;

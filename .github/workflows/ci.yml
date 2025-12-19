@@ -2,13 +2,19 @@ name: CI
 
 on:
   push:
-    branches: [main, master, develop]
+    branches: [main, master, develop, fix/bugs]
   pull_request:
     branches: [main, master, develop]
 
+# 防止同一分支的多个 workflow 同时运行
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  lint-and-typecheck:
-    name: Lint & Type Check
+  # ==================== 快速检查 ====================
+  quick-check:
+    name: Quick Check
     runs-on: ubuntu-latest
 
     steps:
@@ -36,10 +42,11 @@ jobs:
         run: npm run format:check || echo "Formatting issues found, continuing..."
         continue-on-error: true
 
+  # ==================== 完整测试 ====================
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    if: false # 暂时禁用，等有测试后再启用
+    needs: quick-check
 
     steps:
       - name: Checkout code
@@ -54,5 +61,15 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Run tests
-        run: npm test --if-present
+      - name: Run tests with coverage
+        run: npm test -- --coverage --ci --passWithNoTests
+        env:
+          CI: true
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7

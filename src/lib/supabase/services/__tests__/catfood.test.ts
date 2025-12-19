@@ -1,20 +1,11 @@
 /**
- * 测试 Supabase 猫粮服务
- * 集成测试方式 - 验证服务返回正确的数据结构
+ * Catfood Service 集成测试
+ *
+ * 测试猫粮服务的各项功能
  */
 
-import { resetAllMocks } from '../../__tests__/setup';
 import supabaseCatfoodService from '../catfood';
-
-// Mock supabase client module
-jest.mock('../../client', () => ({
-  supabase: {
-    from: jest.fn(),
-    auth: {
-      getUser: jest.fn(),
-    },
-  },
-}));
+import { resetAllMocks } from '../../__tests__/setup';
 
 describe('Supabase Catfood Service', () => {
   beforeEach(() => {
@@ -22,34 +13,162 @@ describe('Supabase Catfood Service', () => {
   });
 
   describe('Service API', () => {
-    it('should have required methods', () => {
-      // 验证服务有正确的API
+    it('should have listCatfoods method', () => {
       expect(typeof supabaseCatfoodService.listCatfoods).toBe('function');
+    });
+
+    it('should have getCatfoodDetail method', () => {
       expect(typeof supabaseCatfoodService.getCatfoodDetail).toBe('function');
+    });
+
+    it('should have toggleLike method', () => {
       expect(typeof supabaseCatfoodService.toggleLike).toBe('function');
+    });
+
+    it('should have toggleFavorite method', () => {
       expect(typeof supabaseCatfoodService.toggleFavorite).toBe('function');
+    });
+
+    it('should have createRating method', () => {
       expect(typeof supabaseCatfoodService.createRating).toBe('function');
     });
 
+    it('should have deleteRating method', () => {
+      expect(typeof supabaseCatfoodService.deleteRating).toBe('function');
+    });
+  });
+
+  describe('listCatfoods', () => {
     it('should return response with data and error properties', async () => {
-      // 测试返回值结构（会调用真实的supabase，但会失败并返回错误）
+      // Act
       const result = await supabaseCatfoodService.listCatfoods();
 
-      // 验证返回值包含必要的属性
+      // Assert
+      expect(result).toHaveProperty('data');
+      expect(result).toHaveProperty('error');
+    });
+
+    it('should accept pagination parameters', async () => {
+      // Act & Assert - should not throw
+      await expect(
+        supabaseCatfoodService.listCatfoods({ page: 1, pageSize: 20 })
+      ).resolves.toBeDefined();
+    });
+
+    it('should accept search parameter', async () => {
+      // Act & Assert
+      await expect(supabaseCatfoodService.listCatfoods({ search: 'test' })).resolves.toBeDefined();
+    });
+  });
+
+  describe('getCatfoodDetail', () => {
+    it('should accept catfood id', async () => {
+      // Act & Assert
+      await expect(supabaseCatfoodService.getCatfoodDetail('1')).resolves.toBeDefined();
+    });
+
+    it('should return response structure', async () => {
+      // Act
+      const result = await supabaseCatfoodService.getCatfoodDetail('1');
+
+      // Assert
       expect(result).toHaveProperty('data');
       expect(result).toHaveProperty('error');
     });
   });
 
-  describe('Error Handling', () => {
-    it('should handle errors gracefully', async () => {
-      // 没有正确的 mock，函数会返回错误，这是正常的
-      const result = await supabaseCatfoodService.getCatfoodDetail('invalid-id');
+  describe('toggleLike', () => {
+    it('should accept catfood id', async () => {
+      // Act & Assert
+      await expect(supabaseCatfoodService.toggleLike('1')).resolves.toBeDefined();
+    });
 
-      // 验证错误被正确处理
-      expect(result).toBeDefined();
+    it('should return response structure', async () => {
+      // Act
+      const result = await supabaseCatfoodService.toggleLike('1');
+
+      // Assert
       expect(result).toHaveProperty('data');
       expect(result).toHaveProperty('error');
+    });
+  });
+
+  describe('toggleFavorite', () => {
+    it('should accept catfood id', async () => {
+      // Act & Assert
+      await expect(supabaseCatfoodService.toggleFavorite('1')).resolves.toBeDefined();
+    });
+
+    it('should return response structure', async () => {
+      // Act
+      const result = await supabaseCatfoodService.toggleFavorite('1');
+
+      // Assert
+      expect(result).toHaveProperty('data');
+      expect(result).toHaveProperty('error');
+    });
+  });
+
+  describe('createRating', () => {
+    it('should accept rating parameters', async () => {
+      // Act & Assert
+      await expect(
+        supabaseCatfoodService.createRating('1', 5, 'Great food')
+      ).resolves.toBeDefined();
+    });
+
+    it('should accept rating without comment', async () => {
+      // Act & Assert
+      await expect(supabaseCatfoodService.createRating('1', 5)).resolves.toBeDefined();
+    });
+
+    it('should return response structure', async () => {
+      // Act
+      const result = await supabaseCatfoodService.createRating('1', 5);
+
+      // Assert
+      expect(result).toHaveProperty('data');
+      expect(result).toHaveProperty('error');
+    });
+  });
+
+  describe('deleteRating', () => {
+    it('should accept catfood id', async () => {
+      // Act & Assert
+      await expect(supabaseCatfoodService.deleteRating('1')).resolves.toBeDefined();
+    });
+
+    it('should return response structure', async () => {
+      // Act
+      const result = await supabaseCatfoodService.deleteRating('1');
+
+      // Assert
+      expect(result).toHaveProperty('data');
+      expect(result).toHaveProperty('error');
+    });
+  });
+
+  describe('error handling', () => {
+    it('should handle invalid id gracefully', async () => {
+      // Act & Assert - should not throw
+      await expect(supabaseCatfoodService.getCatfoodDetail('invalid')).resolves.toBeDefined();
+    });
+
+    it('should handle missing required parameters', async () => {
+      // Act & Assert
+      await expect(supabaseCatfoodService.listCatfoods({})).resolves.toBeDefined();
+    });
+  });
+
+  describe('defensive programming', () => {
+    it('should handle null values', async () => {
+      // Act & Assert
+      await expect(supabaseCatfoodService.createRating('1', 5, null as any)).resolves.toBeDefined();
+    });
+
+    it('should handle empty strings', async () => {
+      // Act & Assert
+      await expect(supabaseCatfoodService.createRating('1', 5, '')).resolves.toBeDefined();
     });
   });
 });

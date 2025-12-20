@@ -53,7 +53,7 @@ describe('CatFood Types', () => {
         safety: 'High',
         nutrient: 'Balanced',
         percentage: true,
-        // ... other properties can be partial if we were using Partial<CatFood>, 
+        // ... other properties can be partial if we were using Partial<CatFood>,
         // but here we test the full interface compliance in a mock object way
       } as unknown as CatFood; // Casting for brevity in test, or we provide full object
 

@@ -82,9 +82,9 @@ describe('LottieAnimation', () => {
     const { getByTestId } = render(
       <LottieAnimation source={source} containerStyle={containerStyle} testID="custom-container" />
     );
-    
+
     const container = getByTestId('custom-container');
-    
+
     // Assert
     expect(container.props.style).toEqual(expect.arrayContaining([expect.objectContaining({ alignItems: 'center' }), containerStyle]));
   });

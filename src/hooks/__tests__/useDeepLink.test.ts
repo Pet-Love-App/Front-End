@@ -67,7 +67,7 @@ describe('useDeepLink', () => {
     const mockSession = {
       user: { email_confirmed_at: '2024-01-01' },
     };
-    
+
     let authCallback: any;
     (supabase.auth.onAuthStateChange as jest.Mock).mockImplementation((cb) => {
       authCallback = cb;

@@ -37,7 +37,7 @@ describe('usePetAnim', () => {
     // Arrange
     const { result } = renderHook(() => usePetAnim());
     const playMock = jest.fn();
-    
+
     // 手动设置 ref.current 模拟 LottieView 已挂载
     // @ts-ignore
     result.current.lottieRef.current = {

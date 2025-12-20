@@ -27,7 +27,7 @@ describe('IconSymbol (iOS) Component', () => {
     expect(symbolView.props.name).toBe('heart.fill');
     expect(symbolView.props.tintColor).toBe('red');
     expect(symbolView.props.weight).toBe('regular');
-    
+
     // Check default size style
     const style = symbolView.props.style.find((s: any) => s.width === 24);
     expect(style).toBeDefined();

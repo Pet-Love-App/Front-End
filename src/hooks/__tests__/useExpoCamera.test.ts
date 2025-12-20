@@ -52,7 +52,7 @@ describe('useExpoCamera', () => {
 
     // Act
     const { result } = renderHook(() => useExpoCamera());
-    
+
     // Assert
     await waitFor(() => expect(result.current.state.hasPermission).toBe(true));
   });

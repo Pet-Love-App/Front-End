@@ -72,7 +72,7 @@ describe('AvatarImage Component', () => {
     // Assert
     const image = getByTestId('expo-image-mock');
     const flattenedStyle = StyleSheet.flatten(image.props.style);
-    
+
     expect(flattenedStyle.width).toBe(50);
     expect(flattenedStyle.height).toBe(50);
     expect(flattenedStyle.borderRadius).toBe(25);
@@ -91,7 +91,7 @@ describe('AvatarImage Component', () => {
     // Assert
     const image = getByTestId('expo-image-mock');
     const flattenedStyle = StyleSheet.flatten(image.props.style);
-    
+
     expect(flattenedStyle.width).toBe(100);
     expect(flattenedStyle.height).toBe(100);
     expect(flattenedStyle.borderRadius).toBe(50);
@@ -111,7 +111,7 @@ describe('ProductImage Component', () => {
     // Assert
     const image = getByTestId('expo-image-mock');
     const flattenedStyle = StyleSheet.flatten(image.props.style);
-    
+
     expect(flattenedStyle.aspectRatio).toBe(1);
     expect(flattenedStyle.borderRadius).toBe(12);
   });
@@ -130,7 +130,7 @@ describe('ProductImage Component', () => {
     // Assert
     const image = getByTestId('expo-image-mock');
     const flattenedStyle = StyleSheet.flatten(image.props.style);
-    
+
     expect(flattenedStyle.aspectRatio).toBe(1.5);
     expect(flattenedStyle.borderRadius).toBe(8);
   });

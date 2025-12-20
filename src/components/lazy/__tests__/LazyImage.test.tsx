@@ -24,9 +24,9 @@ jest.mock('../Skeleton', () => {
 //   const { View } = require('react-native');
 //   const MockImage = (props: any) => {
 //     return (
-//       <View 
-//         testID="rn-image-mock" 
-//         {...props} 
+//       <View
+//         testID="rn-image-mock"
+//         {...props}
 //       />
 //     );
 //   };
@@ -64,7 +64,7 @@ describe('LazyImage Component', () => {
     // Act
     const { getByTestId, queryByTestId } = render(<LazyImage {...props} />);
     const image = getByTestId('lazy-image');
-    
+
     // Simulate onLoad
     fireEvent(image, 'load');
 
@@ -95,7 +95,7 @@ describe('LazyImage Component', () => {
     // But wait, the error container also has the same testID.
     // Let's check if the image is gone or replaced.
     // In the code: if (hasError) { if (placeholder) ... else return <YStack ... testID={testID} ... /> }
-    
+
     // So getByTestId('lazy-image') should still return something (the error container).
     expect(getByTestId('lazy-image')).toBeTruthy();
   });

@@ -71,9 +71,9 @@ export function PageHeader({
       <XStack alignItems="center" gap="$2.5" paddingTop="$2.5">
         {/* 返回按钮 */}
         {showBackButton && (
-          <TouchableOpacity 
+          <TouchableOpacity
             testID="page-header-back-button"
-            onPress={handleBackPress} 
+            onPress={handleBackPress}
             activeOpacity={0.7}
           >
             <YStack
@@ -110,20 +110,20 @@ export function PageHeader({
 
         {/* 标题区域 */}
         <YStack flex={1} gap="$0.5">
-          <Text 
+          <Text
             testID="page-header-title"
-            fontSize={config.title} 
-            fontWeight="700" 
-            color="$foreground" 
+            fontSize={config.title}
+            fontWeight="700"
+            color="$foreground"
             numberOfLines={1}
           >
             {title}
           </Text>
           {subtitle && (
-            <Text 
+            <Text
               testID="page-header-subtitle"
-              fontSize={config.subtitle} 
-              color="$foregroundSubtle" 
+              fontSize={config.subtitle}
+              color="$foregroundSubtle"
               numberOfLines={1}
             >
               {subtitle}

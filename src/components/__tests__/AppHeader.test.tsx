@@ -80,7 +80,7 @@ describe('AppHeader', () => {
   it('should navigate to profile on avatar press', () => {
     // Arrange
     const { getByTestId } = render(<AppHeader title="Test" insets={mockInsets} showAvatar={true} />);
-    
+
     // Act
     fireEvent.press(getByTestId('avatar-button'));
 

@@ -119,7 +119,7 @@ describe('useCatfoodRealtime', () => {
 
     // Act
     renderHook(() => useCatfoodRealtime(options));
-    
+
     // Simulate UPDATE event
     updateCallback(payload);
 
@@ -133,7 +133,7 @@ describe('useCatfoodRealtime', () => {
   });
 
   // Note: The current implementation of useCatfoodRealtime doesn't seem to return a cleanup function that unsubscribes.
-  // If it does (or should), we would test it here. 
+  // If it does (or should), we would test it here.
   // Looking at the source code provided:
   // It creates a channel but doesn't seem to call .subscribe() explicitly (maybe it's implied or missing in the snippet I read?)
   // Also, useEffect usually returns a cleanup function.

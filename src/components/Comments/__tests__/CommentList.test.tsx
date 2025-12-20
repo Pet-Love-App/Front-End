@@ -50,9 +50,9 @@ jest.mock('@/src/hooks/useThemeAwareColorScheme', () => ({
 
 describe('CommentList', () => {
   const mockComments = [
-    { 
-      id: 1, 
-      content: 'Comment 1', 
+    {
+      id: 1,
+      content: 'Comment 1',
       author: { id: 'u1', username: 'User 1', avatarUrl: 'http://example.com/1.png' },
       authorId: 'u1',
       targetType: 'post' as const,
@@ -62,9 +62,9 @@ describe('CommentList', () => {
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-01T00:00:00Z'
     },
-    { 
-      id: 2, 
-      content: 'Comment 2', 
+    {
+      id: 2,
+      content: 'Comment 2',
       author: { id: 'u2', username: 'User 2', avatarUrl: 'http://example.com/2.png' },
       authorId: 'u2',
       targetType: 'post' as const,

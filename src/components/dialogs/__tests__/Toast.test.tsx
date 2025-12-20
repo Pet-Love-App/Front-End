@@ -86,7 +86,7 @@ describe('Toast', () => {
     act(() => {
       jest.advanceTimersByTime(duration);
     });
-    
+
     // Wait for exit animation
     act(() => {
       jest.advanceTimersByTime(200); // Animation duration
@@ -131,7 +131,7 @@ describe('Toast', () => {
 
     // Act
     const { getByTestId } = render(<Toast {...props} />);
-    
+
     // Assert
     expect(getByTestId('icon-symbol')).toBeTruthy();
   });

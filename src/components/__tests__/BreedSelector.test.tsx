@@ -142,14 +142,14 @@ describe('BreedSelector', () => {
 
     // Open modal
     fireEvent.press(getByTestId('breed-selector-trigger'));
-    
+
     // Act
     fireEvent.press(getByTestId('breed-selector-close'));
 
     // Assert
-    // Since modal visibility is internal state, we can check if onRequestClose was called 
-    // or if we can infer it closed. 
-    // However, since we are testing the component which manages state, 
+    // Since modal visibility is internal state, we can check if onRequestClose was called
+    // or if we can infer it closed.
+    // However, since we are testing the component which manages state,
     // we can't easily check internal state without exposing it or checking side effects.
     // But we can check if the modal prop visible becomes false if we re-render or check props.
     // Actually, since it's a functional component with useState, we can't check state directly.
@@ -158,12 +158,12 @@ describe('BreedSelector', () => {
     // Let's assume if the close button is pressed, the state updates.
     // We can check if the modal is NOT visible or visible prop is false.
     // But wait, the Modal component is always in the tree.
-    
+
     // Let's skip strict state check for now and assume if the handler is wired it works,
     // or check if the modal is closed by checking if we can find elements inside it that are only there when visible?
     // React Native Modal `visible` prop controls visibility.
     // We can check the prop on the Modal component.
-    
+
     // Note: RNTL might not update the prop on the node immediately in the same tick without waitFor.
   });
 });

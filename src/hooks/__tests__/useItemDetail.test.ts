@@ -164,7 +164,7 @@ describe('useItemDetail', () => {
   it('should close modal and reset state', async () => {
     // Arrange
     const { result } = renderHook(() => useItemDetail());
-    
+
     // Set some state first
     act(() => {
       // We can't set state directly, so we simulate a fetch start

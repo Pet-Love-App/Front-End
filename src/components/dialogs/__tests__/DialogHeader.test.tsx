@@ -52,10 +52,10 @@ describe('DialogHeader Component', () => {
 
     // Act
     const { getByTestId } = render(<DialogHeader {...props} />);
-    
+
     // Find the touchable mock
     const closeButton = getByTestId('close-button');
-    
+
     // Act
     fireEvent(closeButton, 'press');
 

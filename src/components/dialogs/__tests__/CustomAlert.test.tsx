@@ -7,18 +7,18 @@ import { View } from 'react-native';
 jest.mock('../ConfirmDialog', () => {
   const { View } = require('react-native');
   return {
-    ConfirmDialog: jest.fn(({ 
-      open, 
-      title, 
-      message, 
-      onConfirm, 
-      onCancel, 
-      confirmText, 
-      cancelText 
+    ConfirmDialog: jest.fn(({
+      open,
+      title,
+      message,
+      onConfirm,
+      onCancel,
+      confirmText,
+      cancelText
     }) => {
       if (!open) return null;
       return (
-        <View 
+        <View
           testID="confirm-dialog"
           // @ts-ignore - passing props for testing
           title={title}
@@ -150,7 +150,7 @@ describe('CustomAlert', () => {
       // Act
       act(() => {
         Alert.alert(
-          'Button Title', 
+          'Button Title',
           'Button Message',
           [
             { text: 'Custom OK', onPress: onPressMock }
@@ -161,11 +161,11 @@ describe('CustomAlert', () => {
       // Assert
       const dialog = screen.getByTestId('confirm-dialog');
       expect(dialog.props.confirmText).toBe('Custom OK');
-      
+
       await act(async () => {
         await dialog.props.onConfirm();
       });
-      
+
       expect(onPressMock).toHaveBeenCalled();
     });
   });

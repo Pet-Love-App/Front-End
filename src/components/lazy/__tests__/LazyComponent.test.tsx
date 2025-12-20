@@ -26,7 +26,7 @@ describe('LazyComponent', () => {
   it('renders loading state initially', async () => {
     // Arrange
     const factory = jest.fn(() => new Promise<{ default: React.ComponentType<any> }>(() => {})); // Never resolves
-    
+
     // Act
     const { getByTestId } = render(<LazyComponent factory={factory} />);
 
@@ -80,7 +80,7 @@ describe('LazyComponent', () => {
     // Find retry button (YStack with onPress)
     const stacks = getAllByTestId('ystack-mock');
     const retryButton = stacks.find((stack) => stack.props.onPress);
-    
+
     if (!retryButton) throw new Error('Retry button not found');
 
     // Act - Retry

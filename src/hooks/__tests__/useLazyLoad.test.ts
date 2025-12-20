@@ -4,6 +4,16 @@
 
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { useLazyLoad } from '../useLazyLoad';
+import { InteractionManager } from 'react-native';
+
+jest.mock('react-native', () => {
+  const RN = jest.requireActual('react-native');
+  RN.InteractionManager.runAfterInteractions = (callback: any) => {
+    callback();
+    return { cancel: jest.fn() };
+  };
+  return RN;
+});
 
 describe('useLazyLoad', () => {
   beforeEach(() => {

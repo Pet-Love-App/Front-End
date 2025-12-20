@@ -49,7 +49,7 @@ export const CommentItem = memo(function CommentItem({
             </XStack>
 
             {isOwner && (
-              <TouchableOpacity onPress={() => onDelete(comment.id)}>
+              <TouchableOpacity onPress={() => onDelete(comment.id)} testID="delete-button">
                 <IconSymbol name="trash" size={16} color="$foregroundSubtle" />
               </TouchableOpacity>
             )}
@@ -66,7 +66,7 @@ export const CommentItem = memo(function CommentItem({
               {formatTime(comment.createdAt)}
             </Text>
 
-            <TouchableOpacity onPress={() => onLike(comment.id)}>
+            <TouchableOpacity onPress={() => onLike(comment.id)} testID="like-button">
               <XStack gap="$1" alignItems="center">
                 <IconSymbol
                   name={comment.isLiked ? 'heart.fill' : 'heart'}

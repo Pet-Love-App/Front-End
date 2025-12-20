@@ -100,93 +100,84 @@ export function AppHeader({
     router.push('/(tabs)/forum/notifications' as any);
   }, [router]);
 
-  // 统一头部高度常量
-  const HEADER_HEIGHT = 56;
-
   return (
-    <YStack paddingTop={insets.top} paddingHorizontal={16} backgroundColor={backgroundColor as any}>
-      <XStack alignItems="center" justifyContent="space-between" height={HEADER_HEIGHT}>
-        {/* 左侧：头像 */}
-        {showAvatar ? (
-          <Pressable onPress={handleAvatarPress}>
-            <YStack
-              width={40}
-              height={40}
-              borderRadius={20}
-              backgroundColor={primaryScale.primary2}
-              alignItems="center"
-              justifyContent="center"
-              borderWidth={2}
-              borderColor={primaryScale.primary4}
-              overflow="hidden"
-            >
-              {user?.avatarUrl ? (
-                <Image
-                  source={{ uri: user.avatarUrl }}
-                  style={{ width: 40, height: 40 }}
-                  resizeMode="cover"
-                />
-              ) : (
-                <IconSymbol name="person.fill" size={20} color={primaryScale.primary7} />
-              )}
-            </YStack>
+    <XStack
+      paddingTop={insets.top}
+      paddingHorizontal="$4"
+      paddingBottom="$3"
+      backgroundColor={backgroundColor as any}
+      alignItems="center"
+      justifyContent="space-between"
+      borderBottomWidth={1}
+      borderBottomColor="$borderColor"
+    >
+      {/* 左侧：头像 */}
+      <XStack width={40} alignItems="center">
+        {showAvatar && user?.avatarUrl && (
+          <Pressable onPress={handleAvatarPress} testID="avatar-button">
+            <Image
+              source={{ uri: user.avatarUrl }}
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: neutralScale.neutral4,
+              }}
+            />
           </Pressable>
-        ) : (
-          <YStack width={40} />
         )}
+      </XStack>
 
-        {/* 中间：标题 */}
-        <Text
-          fontSize={18}
-          fontWeight="700"
-          color={neutralScale.neutral12}
-          flex={1}
-          textAlign="center"
-        >
-          {title}
-        </Text>
+      {/* 中间：标题 */}
+      <Text
+        fontSize="$6"
+        fontWeight="bold"
+        color="$color"
+        textAlign="center"
+        flex={1}
+      >
+        {title}
+      </Text>
 
-        {/* 右侧：通知图标或自定义元素 */}
+      {/* 右侧：通知或自定义元素 */}
+      <XStack width={40} alignItems="center" justifyContent="flex-end">
         {rightElement ? (
           rightElement
         ) : showNotification ? (
-          <Pressable onPress={handleNotificationPress}>
-            <YStack
-              width={40}
-              height={40}
-              borderRadius={20}
-              backgroundColor={neutralScale.neutral2}
-              alignItems="center"
-              justifyContent="center"
-              borderWidth={1}
-              borderColor={neutralScale.neutral3}
-            >
-              <IconSymbol name="bell.fill" size={20} color={neutralScale.neutral9} />
-              {/* 未读消息badge */}
+          <Pressable onPress={handleNotificationPress} testID="notification-button">
+            <YStack>
+              <IconSymbol
+                name="bell"
+                size={24}
+                color={neutralScale.neutral11}
+              />
               {unreadCount > 0 && (
                 <YStack
                   position="absolute"
-                  top={-2}
-                  right={-2}
-                  minWidth={18}
-                  height={18}
-                  borderRadius={9}
-                  backgroundColor={errorScale.error8}
+                  top={-4}
+                  right={-4}
+                  backgroundColor={errorScale.error9}
+                  borderRadius={10}
+                  minWidth={16}
+                  height={16}
                   alignItems="center"
                   justifyContent="center"
-                  paddingHorizontal="$1"
+                  paddingHorizontal={4}
                 >
-                  <Text fontSize={10} fontWeight="700" color="white">
+                  <Text
+                    color="white"
+                    fontSize={10}
+                    fontWeight="bold"
+                  >
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </Text>
                 </YStack>
               )}
             </YStack>
           </Pressable>
-        ) : (
-          <YStack width={40} />
-        )}
+        ) : null}
       </XStack>
-    </YStack>
+    </XStack>
   );
 }

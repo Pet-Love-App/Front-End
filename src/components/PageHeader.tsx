@@ -60,17 +60,22 @@ export function PageHeader({
 
   return (
     <YStack
+      testID="page-header-container"
       paddingTop={insets.top}
       paddingHorizontal="$4"
-      paddingBottom={config.pb}
-      backgroundColor={backgroundColor}
+      paddingBottom={config.pb as any}
+      backgroundColor={backgroundColor as any}
       borderBottomWidth={showBorder ? 1 : 0}
       borderBottomColor="$borderColor"
     >
       <XStack alignItems="center" gap="$2.5" paddingTop="$2.5">
         {/* 返回按钮 */}
         {showBackButton && (
-          <TouchableOpacity onPress={handleBackPress} activeOpacity={0.7}>
+          <TouchableOpacity 
+            testID="page-header-back-button"
+            onPress={handleBackPress} 
+            activeOpacity={0.7}
+          >
             <YStack
               padding="$2"
               borderRadius="$3"
@@ -89,38 +94,49 @@ export function PageHeader({
             width={config.iconSize}
             height={config.iconSize}
             borderRadius={9999}
-            backgroundColor={icon.backgroundColor || primaryScale.primary2}
+            backgroundColor={(icon.backgroundColor || primaryScale.primary2) as any}
             alignItems="center"
             justifyContent="center"
             borderWidth={1.5}
-            borderColor={icon.borderColor || primaryScale.primary4}
+            borderColor={(icon.borderColor || primaryScale.primary4) as any}
           >
             <IconSymbol
               name={icon.name}
               size={icon.size || config.iconInner}
-              color={icon.color || primaryScale.primary7}
+              color={icon.color || primaryScale.primary9}
             />
           </YStack>
         )}
 
-        {/* 标题 */}
-        <YStack flex={1}>
-          <Text fontSize={config.title} fontWeight="700" color="$foreground" letterSpacing={0.3}>
+        {/* 标题区域 */}
+        <YStack flex={1} gap="$0.5">
+          <Text 
+            testID="page-header-title"
+            fontSize={config.title} 
+            fontWeight="700" 
+            color="$foreground" 
+            numberOfLines={1}
+          >
             {title}
           </Text>
           {subtitle && (
-            <Text
-              fontSize={config.subtitle}
-              color="$foregroundMuted"
-              fontWeight="500"
-              marginTop="$0.5"
+            <Text 
+              testID="page-header-subtitle"
+              fontSize={config.subtitle} 
+              color="$foregroundSubtle" 
+              numberOfLines={1}
             >
               {subtitle}
             </Text>
           )}
         </YStack>
 
-        {rightElement && <YStack>{rightElement}</YStack>}
+        {/* 右侧元素 */}
+        {rightElement && (
+          <XStack testID="page-header-right-element">
+            {rightElement}
+          </XStack>
+        )}
       </XStack>
     </YStack>
   );

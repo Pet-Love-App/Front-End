@@ -19,6 +19,7 @@ interface DialogFooterProps {
   layout?: 'horizontal' | 'vertical';
   fullWidth?: boolean;
   children?: React.ReactNode;
+  testID?: string;
 }
 
 export function DialogFooter({
@@ -32,11 +33,13 @@ export function DialogFooter({
   layout = 'horizontal',
   fullWidth = true,
   children,
+  testID,
 }: DialogFooterProps) {
   // 如果提供了自定义内容，直接渲染
   if (children) {
     return (
       <YStack
+        testID={testID}
         paddingHorizontal={SPACING.lg}
         paddingVertical={SPACING.lg}
         borderTopWidth={1}
@@ -52,6 +55,7 @@ export function DialogFooter({
 
   return (
     <Container
+      testID={testID}
       gap={SPACING.md}
       paddingHorizontal={SPACING.lg}
       paddingVertical={SPACING.lg}
@@ -62,6 +66,7 @@ export function DialogFooter({
       {/* 取消按钮 */}
       {onCancel && (
         <Button
+          testID="footer-cancel"
           flex={fullWidth ? 1 : undefined}
           size="$4"
           height={48}
@@ -81,6 +86,7 @@ export function DialogFooter({
       {/* 确认按钮 */}
       {onConfirm && (
         <Button
+          testID="footer-confirm"
           flex={fullWidth ? 1 : undefined}
           size="$4"
           height={48}
@@ -101,7 +107,7 @@ export function DialogFooter({
             )
           }
         >
-          {confirmLoading ? '处理中...' : confirmText}
+          {confirmLoading ? 'Loading...' : confirmText}
         </Button>
       )}
     </Container>

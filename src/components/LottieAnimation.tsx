@@ -14,6 +14,7 @@ interface LottieAnimationProps {
   message?: string;
   containerStyle?: ViewStyle;
   animationStyle?: ViewStyle;
+  testID?: string;
 }
 
 export function LottieAnimation({
@@ -26,9 +27,10 @@ export function LottieAnimation({
   message,
   containerStyle,
   animationStyle,
+  testID = 'lottie-animation-container',
 }: LottieAnimationProps) {
   return (
-    <View style={[styles.container, containerStyle]}>
+    <View style={[styles.container, containerStyle]} testID={testID}>
       <LottieView
         source={source}
         autoPlay={autoPlay}

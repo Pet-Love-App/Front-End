@@ -4,10 +4,20 @@
 
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { useLazyLoad } from '../useLazyLoad';
+import { InteractionManager } from 'react-native';
 
 describe('useLazyLoad', () => {
   beforeEach(() => {
     jest.useFakeTimers();
+    jest.clearAllMocks();
+    jest.spyOn(InteractionManager, 'runAfterInteractions').mockImplementation((callback: any) => {
+       if (callback) callback();
+       return { 
+           cancel: jest.fn(),
+           then: jest.fn().mockImplementation((cb) => { if(cb) cb(); return Promise.resolve(); }),
+           done: jest.fn()
+       } as any;
+    });
   });
 
   afterEach(() => {
@@ -32,9 +42,7 @@ describe('useLazyLoad', () => {
         jest.advanceTimersByTime(100);
       });
 
-      await waitFor(() => {
-        expect(result.current.isReady).toBe(true);
-      });
+      expect(result.current.isReady).toBe(true);
     });
 
     it('should respect custom delay', async () => {
@@ -50,9 +58,7 @@ describe('useLazyLoad', () => {
         jest.advanceTimersByTime(100);
       });
 
-      await waitFor(() => {
-        expect(result.current.isReady).toBe(true);
-      });
+      expect(result.current.isReady).toBe(true);
     });
 
     it('should use default delay when not provided', async () => {
@@ -62,9 +68,7 @@ describe('useLazyLoad', () => {
         jest.advanceTimersByTime(300); // Default delay
       });
 
-      await waitFor(() => {
-        expect(result.current.isReady).toBe(true);
-      });
+      expect(result.current.isReady).toBe(true);
     });
   });
 
@@ -88,9 +92,7 @@ describe('useLazyLoad', () => {
         jest.advanceTimersByTime(0);
       });
 
-      await waitFor(() => {
-        expect(result.current.isReady).toBe(true);
-      });
+      expect(result.current.isReady).toBe(true);
     });
 
     it('should handle very large delay', () => {

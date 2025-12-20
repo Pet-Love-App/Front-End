@@ -122,20 +122,20 @@ describe('LoginScreen', () => {
     });
 
     const { getByPlaceholderText, getByText } = render(<LoginScreen />);
-    
+
     // Note: Tamagui Input disabled state might not be directly testable via 'disabled' prop on the native element in all test envs,
     // but we can check if the prop is passed.
     // However, checking if we can fire events is better, but fireEvent usually bypasses disabled checks in JSDOM/RN testing library unless specifically handled.
     // We will check if the elements have the disabled prop or accessibility state.
-    
+
     // For Tamagui Button with loading prop, it usually shows a spinner or disables interaction.
     // Let's check if the button text is still there or if it shows loading state.
     // The implementation uses `loading={isLoading}` on Button.
-    
+
     // We can check if the button is disabled.
     // Since we are mocking the hook, we assume the UI reacts to isLoading.
     // The Button component from design-system should handle loading prop.
-    
+
     // Let's just verify the hook values are passed correctly, which we did by rendering.
     // To be more specific, we can check if the button is disabled.
     // But since we are using a custom Button component, we might need to check its props if we were doing a shallow render,

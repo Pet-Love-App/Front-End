@@ -98,7 +98,7 @@ describe('AIReportSection', () => {
     const { getAllByTestId } = render(
       <AIReportSection showGenerateButton={true} onGeneratePress={mockOnGeneratePress} />
     );
-    
+
     const buttons = getAllByTestId('mock-button');
     expect(buttons.length).toBeGreaterThan(0);
   });

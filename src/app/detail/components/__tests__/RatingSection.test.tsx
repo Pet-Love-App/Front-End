@@ -68,7 +68,7 @@ describe('RatingSection', () => {
 
   it('should render correctly', async () => {
     const { getByText } = render(<RatingSection catfoodId={123} />);
-    
+
     // Wait for initial load
     await waitFor(() => {
       // Check for some text that should be present.
@@ -95,21 +95,21 @@ describe('RatingSection', () => {
     // Since we don't see the render part, let's assume there are Pressables for stars.
     // We might need to mock IconSymbol or check how stars are rendered.
     // If they are Pressables, we can find them.
-    
+
     // Let's skip interaction test for now as we can't see the render structure fully.
     // But we can test if it calls the service when handleRate is called (if we could trigger it).
-    
+
     // Let's try to find the submit button if there is one for comment.
     // The code shows `handleRate` is called on star press.
     // And there is `myComment` state, so there must be a text area and a submit button.
-    
+
     const { getByTestId } = render(<RatingSection catfoodId={123} />);
-    
+
     // Assuming there is a submit button for comment.
     // But wait, handleRate seems to be for stars.
     // Is there a separate submit for comment?
     // The code is cut off.
-    
+
     // Let's just verify it renders without crashing for now.
     expect(render(<RatingSection catfoodId={123} />).toJSON()).not.toBeNull();
   });

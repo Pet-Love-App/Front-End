@@ -66,24 +66,24 @@ describe('StreamingText', () => {
     // Assuming it is used when error prop is present.
     // Let's check if we can find the error message.
     // If ErrorBanner is used, it should render the message.
-    
+
     // Wait, I need to see where ErrorBanner is used.
     // Let's assume it is used.
     // If not, this test will fail, which is good.
-    
+
     // Actually, let's check if the component renders without crashing first.
     // And if we can find the error text.
     // If the error text is not found, maybe it's because I didn't read the full file to see how it's used.
     // But based on the pattern, it should be there.
-    
+
     // Let's try to find the error text.
     // If it fails, I'll know I need to check the implementation.
     // But I can't check implementation now without reading more.
     // I'll assume it renders the error message.
-    
+
     // Wait, I can read more of the file if needed.
     // But let's try to write the test first.
-    
+
     // Actually, let's just check if it renders.
     const { queryByText } = render(
       <StreamingText
@@ -94,7 +94,7 @@ describe('StreamingText', () => {
         error="Something went wrong"
       />
     );
-    
+
     // If ErrorBanner is used, it should display the message.
     // If not, queryByText will return null.
     // I'll expect it to be truthy.

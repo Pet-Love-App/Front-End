@@ -15,7 +15,7 @@ describe('NutrientAnalysisSection', () => {
 
   it('should render correctly with nutrient content', () => {
     const { getByText } = render(<NutrientAnalysisSection nutrient="Test Nutrient Analysis" />);
-    
+
     expect(getByText('营养分析')).toBeTruthy();
     expect(getByText('Nutrition Analysis')).toBeTruthy();
     expect(getByText('Test Nutrient Analysis')).toBeTruthy();

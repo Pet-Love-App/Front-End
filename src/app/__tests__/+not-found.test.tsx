@@ -46,7 +46,7 @@ describe('NotFoundScreen (src/app/+not-found.tsx)', () => {
 
   it('renders correctly', () => {
     render(<NotFoundScreen />);
-    
+
     expect(screen.getByText('页面走丢了')).toBeTruthy();
     expect(screen.getByText('找不到这个页面')).toBeTruthy();
     expect(screen.getByTestId('icon-symbol')).toBeTruthy();
@@ -55,7 +55,7 @@ describe('NotFoundScreen (src/app/+not-found.tsx)', () => {
 
   it('navigates to home when button is pressed', () => {
     render(<NotFoundScreen />);
-    
+
     fireEvent(screen.getByTestId('go-home-button'), 'touchEnd');
     expect(mockRouter.push).toHaveBeenCalledWith('/(tabs)/collect');
   });

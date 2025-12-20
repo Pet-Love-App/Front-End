@@ -25,7 +25,7 @@ describe('useCatFoodDetail', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(Alert, 'alert');
-    
+
     // Default mock implementations
     mockFetchCatFoodById.mockResolvedValue({});
     mockGetCatFoodById.mockReturnValue(null);
@@ -42,7 +42,7 @@ describe('useCatFoodDetail', () => {
       }
       return selector; // Should not happen with current usage
     });
-    
+
     // Mock store properties access (for isLoading and fetchCatFoodById)
     // Actually the mock implementation above handles the selector pattern used in the hook:
     // useCatFoodStore((state) => state.fetchCatFoodById)
@@ -50,16 +50,16 @@ describe('useCatFoodDetail', () => {
 
   it('should return null catfoodId if no id in params', () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({});
-    
+
     const { result } = renderHook(() => useCatFoodDetail());
 
     expect(result.current.catfoodId).toBeNull();
-    expect(result.current.catFood).toBeNull(); 
+    expect(result.current.catFood).toBeNull();
   });
 
   it('should parse catfoodId from params', () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ id: '123' });
-    
+
     const { result } = renderHook(() => useCatFoodDetail());
 
     expect(result.current.catfoodId).toBe(123);
@@ -100,7 +100,7 @@ describe('useCatFoodDetail', () => {
 
   it('should enable realtime updates when catfoodId is present', () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ id: '123' });
-    
+
     renderHook(() => useCatFoodDetail());
 
     expect(useCatfoodRealtime).toHaveBeenCalledWith(expect.objectContaining({

@@ -73,21 +73,21 @@ describe('AdditiveDetailModal', () => {
     // Wait, the inner TouchableOpacity doesn't have onPress, so it won't stop propagation of press event unless it handles it?
     // Actually, the inner TouchableOpacity has activeOpacity={1} but no onPress handler, so press events might bubble up?
     // No, TouchableOpacity captures touches.
-    
+
     // Let's just try to find the close button if there is one.
     // The file content shows a Button component might be used at the bottom (not visible in first 100 lines).
     // Let's assume there is a close button.
-    
+
     // Also, we can test the modal onRequestClose prop.
     const { getByTestId, toJSON } = render(
       <AdditiveDetailModal visible={true} additive={mockAdditive as any} baikeInfo={null} onClose={mockOnClose} />
     );
-    
+
     // Since we can't easily simulate the modal onRequestClose or the background press without testIDs,
     // let's check if we can find the close button if it exists.
     // If not, we might need to add testID to the component.
     // But we are not supposed to modify the component unless necessary.
-    
+
     // Let's check if we can fire event on the modal itself for onRequestClose
     const modal = toJSON();
     // fireEvent(modal, 'requestClose'); // This might work if we find the modal instance.

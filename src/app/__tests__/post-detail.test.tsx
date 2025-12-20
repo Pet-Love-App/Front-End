@@ -96,7 +96,7 @@ describe('PostDetailPage (src/app/post-detail.tsx)', () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({});
 
     render(<PostDetailPage />);
-    
+
     await waitFor(() => {
       expect(screen.getByText('无效的帖子ID')).toBeTruthy();
     });
@@ -104,13 +104,13 @@ describe('PostDetailPage (src/app/post-detail.tsx)', () => {
 
   it('renders error state when fetch fails', async () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ postId: '123' });
-    (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({ 
-      data: null, 
-      error: new Error('Network error') 
+    (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({
+      data: null,
+      error: new Error('Network error')
     });
 
     render(<PostDetailPage />);
-    
+
     await waitFor(() => {
       expect(screen.getByText('加载帖子失败')).toBeTruthy();
     });
@@ -118,13 +118,13 @@ describe('PostDetailPage (src/app/post-detail.tsx)', () => {
 
   it('renders post detail when fetch succeeds', async () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ postId: '123' });
-    (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({ 
-      data: { id: 123, title: 'Test Post' }, 
-      error: null 
+    (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({
+      data: { id: 123, title: 'Test Post' },
+      error: null
     });
 
     render(<PostDetailPage />);
-    
+
     await waitFor(() => {
       expect(screen.getByTestId('post-detail-screen')).toBeTruthy();
     });
@@ -132,13 +132,13 @@ describe('PostDetailPage (src/app/post-detail.tsx)', () => {
 
   it('handles back navigation', async () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ postId: '123' });
-    (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({ 
-      data: { id: 123, title: 'Test Post' }, 
-      error: null 
+    (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({
+      data: { id: 123, title: 'Test Post' },
+      error: null
     });
 
     render(<PostDetailPage />);
-    
+
     await waitFor(() => {
       expect(screen.getByTestId('post-detail-screen')).toBeTruthy();
     });
@@ -149,13 +149,13 @@ describe('PostDetailPage (src/app/post-detail.tsx)', () => {
 
   it('handles edit post navigation', async () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ postId: '123' });
-    (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({ 
-      data: { id: 123, title: 'Test Post' }, 
-      error: null 
+    (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({
+      data: { id: 123, title: 'Test Post' },
+      error: null
     });
 
     render(<PostDetailPage />);
-    
+
     await waitFor(() => {
       expect(screen.getByTestId('post-detail-screen')).toBeTruthy();
     });
@@ -169,13 +169,13 @@ describe('PostDetailPage (src/app/post-detail.tsx)', () => {
 
   it('handles post deleted', async () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ postId: '123' });
-    (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({ 
-      data: { id: 123, title: 'Test Post' }, 
-      error: null 
+    (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({
+      data: { id: 123, title: 'Test Post' },
+      error: null
     });
 
     render(<PostDetailPage />);
-    
+
     await waitFor(() => {
       expect(screen.getByTestId('post-detail-screen')).toBeTruthy();
     });

@@ -98,7 +98,7 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
   // Setup default mocks
   const mockUseUserStore = useUserStore as unknown as jest.Mock;
   const mockUseLazyLoad = Hooks.useLazyLoad as jest.Mock;
-  
+
   // Detail hooks mocks
   const mockUseCatFoodDetail = DetailHooks.useCatFoodDetail as jest.Mock;
   const mockUseAdditiveModal = DetailHooks.useAdditiveModal as jest.Mock;
@@ -115,11 +115,11 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
     });
 
     mockUseLazyLoad.mockReturnValue({ isReady: true, isLoading: false, startLoading: jest.fn(), reset: jest.fn() });
-    
+
     mockUseCatFoodDetail.mockReturnValue({
       catfoodId: '123',
-      catFood: { 
-        id: '123', 
+      catFood: {
+        id: '123',
         name: 'Test Food',
         ingredient: [{ name: 'Chicken' }],
         additive: [{ name: 'Taurine' }]
@@ -173,7 +173,7 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
 
   it('renders main content when cat food is loaded', () => {
     render(<DetailScreen />);
-    
+
     expect(screen.getByTestId('report-header')).toBeTruthy();
     expect(screen.getByTestId('basic-info-section')).toBeTruthy();
     expect(screen.getByTestId('rating-section')).toBeTruthy();
@@ -191,10 +191,10 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
     } as any);
 
     render(<DetailScreen />);
-    
+
     // When report exists, AIReportSection is shown
     expect(screen.getByTestId('ai-report-section')).toBeTruthy();
-    
+
     // When report exists, other sections like NutritionChartSection are NOT shown based on the code logic:
     // {!hasReport && ( ... )} wraps SafetyAnalysisSection, NutrientAnalysisSection, AdditiveSection, NutritionChartSection, NutritionListSection
     // So we should expect them NOT to be there if hasReport is true
@@ -210,12 +210,12 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
       isLoading: false,
       refetch: jest.fn(),
     } as any);
-    
+
     // Ensure catFood has no data to trigger NutritionInputPrompt
     mockUseCatFoodDetail.mockReturnValue({
       catfoodId: '123',
-      catFood: { 
-        id: '123', 
+      catFood: {
+        id: '123',
         name: 'Test Food',
         ingredient: [],
         additive: [],
@@ -227,7 +227,7 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
     } as any);
 
     render(<DetailScreen />);
-    
+
     expect(screen.getByTestId('nutrition-input-prompt')).toBeTruthy();
   });
 
@@ -241,7 +241,7 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
     });
 
     render(<DetailScreen />);
-    
+
     fireEvent(screen.getByTestId('additive-section'), 'touchEnd'); // Use touchEnd as defined in mock
     expect(handleAdditivePress).toHaveBeenCalledWith({ name: 'Test Additive' });
   });
@@ -249,33 +249,33 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
   it('shows admin update prompt for admin users', () => {
     // Mock useUserStore to return a user object with isAdmin: true
     mockUseUserStore.mockImplementation((selector: any) => {
-       const mockState = { 
+       const mockState = {
          user: { isAdmin: true },
        };
-       
+
        if (selector) {
          return selector(mockState);
        }
        return mockState;
     });
-    
+
     // Reset mock to ensure no previous state leaks
     mockUseCatFoodDetail.mockReset();
     mockUseCatFoodDetail.mockReturnValue({
       catfoodId: '123',
-      catFood: { 
-        id: '123', 
+      catFood: {
+        id: '123',
         name: 'Test Food',
         ingredient: [{ name: 'Chicken' }],
         additive: [{ name: 'Taurine' }],
-        percentage: true, 
+        percentage: true,
         percentData: {},
       },
       isLoading: false,
     });
-    
+
     render(<DetailScreen />);
-    
+
     expect(screen.getByTestId('admin-update-prompt')).toBeTruthy();
   });
 
@@ -287,7 +287,7 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
       stopStreaming: jest.fn(),
       reset: jest.fn(),
     });
-    
+
     mockUseAIReport.mockReturnValue({
       report: null,
       hasReport: false,
@@ -299,8 +299,8 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
     mockUseCatFoodDetail.mockReset();
     mockUseCatFoodDetail.mockReturnValue({
       catfoodId: '123',
-      catFood: { 
-        id: '123', 
+      catFood: {
+        id: '123',
         name: 'Test Food',
         ingredient: [{ name: 'Chicken' }], // Needs ingredients to generate report
         additive: [],
@@ -314,7 +314,7 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
     render(<DetailScreen />);
 
     fireEvent(screen.getByTestId('ai-report-section'), 'touchEnd');
-    
+
     await waitFor(() => {
       expect(startStreaming).toHaveBeenCalled();
     });

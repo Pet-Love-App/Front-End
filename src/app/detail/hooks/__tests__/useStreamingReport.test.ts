@@ -27,7 +27,7 @@ describe('useStreamingReport', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useUserStore.getState as jest.Mock).mockReturnValue({ accessToken: mockToken });
-    
+
     // Reset fetch mock
     global.fetch = jest.fn();
   });
@@ -145,7 +145,7 @@ describe('useStreamingReport', () => {
     // The catch block checks `if (data && data !== '[DONE]' && !data.startsWith('{'))`.
     // Since it starts with `{`, it won't append it.
     // So content should remain empty.
-    
+
     expect(result.current.state.content).toBe('');
   });
 
@@ -177,17 +177,17 @@ describe('useStreamingReport', () => {
 
   it('should stop streaming when stopStreaming is called', async () => {
     const abortSpy = jest.spyOn(AbortController.prototype, 'abort');
-    
+
     const { result } = renderHook(() => useStreamingReport());
 
     // Start streaming (mock a never-ending stream or just start it)
     // We need to make sure startStreaming is "in progress" when we call stop.
     // However, startStreaming is async. We can just call stopStreaming and check if abort is called.
     // But to be more realistic, we should start it.
-    
+
     // Mock fetch to return a pending promise or a stream that we can control?
     // Actually, we can just call stopStreaming directly.
-    
+
     // First, we need to trigger startStreaming to create the AbortController
     (global.fetch as jest.Mock).mockImplementation(() => new Promise(() => {})); // Never resolves
 
@@ -213,7 +213,7 @@ describe('useStreamingReport', () => {
       // We can't easily set state directly, so we rely on startStreaming or just assume it works if we test the reset logic.
       // But let's try to simulate a state change via startStreaming mock if possible, or just trust the logic.
       // Better: Mock startStreaming to change state? No, we are testing the hook.
-      
+
       // Let's just call reset and check if it goes back to initial.
       // To verify it actually does something, we should ideally have non-initial state.
     });
@@ -229,7 +229,7 @@ describe('useStreamingReport', () => {
 
     // We can't await inside act easily for the whole flow if we want to interrupt.
     // But reset() is synchronous.
-    
+
     act(() => {
       result.current.reset();
     });

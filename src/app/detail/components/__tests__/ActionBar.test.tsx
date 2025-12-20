@@ -58,7 +58,7 @@ describe('ActionBar', () => {
     const favoriteButton = buttons[0]; // Assuming first button is favorite based on code order
 
     fireEvent.press(favoriteButton);
-    
+
     await waitFor(() => {
       expect(mockToggleFavorite).toHaveBeenCalled();
     });
@@ -70,7 +70,7 @@ describe('ActionBar', () => {
     const likeButton = buttons[1]; // Assuming second button is like based on code order
 
     fireEvent.press(likeButton);
-    
+
     await waitFor(() => {
       expect(mockToggleLike).toHaveBeenCalled();
     });
@@ -83,7 +83,7 @@ describe('ActionBar', () => {
     const favoriteButton = buttons[0];
 
     fireEvent.press(favoriteButton);
-    
+
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('收藏操作失败，请稍后重试');
     });
@@ -96,7 +96,7 @@ describe('ActionBar', () => {
     const likeButton = buttons[1];
 
     fireEvent.press(likeButton);
-    
+
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('点赞操作失败，请稍后重试');
     });

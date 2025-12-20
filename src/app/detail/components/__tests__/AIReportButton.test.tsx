@@ -50,7 +50,7 @@ describe('AIReportButton', () => {
     );
 
     expect(getByText('查看 AI 分析报告')).toBeTruthy();
-    
+
     const button = getByTestId('ai-report-button');
     fireEvent.press(button);
     expect(mockOnPress).toHaveBeenCalledTimes(1);

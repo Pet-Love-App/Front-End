@@ -86,14 +86,14 @@ describe('AIReportModal', () => {
     // We need to find the favorite button. It's likely in the ModalHeader.
     // Since we don't have the full file content, we assume ModalHeader renders a button that calls onToggleFavorite.
     // Let's try to find a button with a specific icon or text if possible, or just look for the mock button.
-    
+
     // Actually, let's read the rest of the file to see ModalHeader implementation or if it's imported.
     // But for now, let's assume standard behavior.
-    
+
     const { getAllByTestId } = render(
       <AIReportModal visible={true} report={mockReport as any} onClose={mockOnClose} />
     );
-    
+
     // This is a bit risky without seeing the full file. Let's try to find by type if we mocked Button.
     // However, 'mock-Button' is not a real component.
     // Let's just check if the modal renders content for now.

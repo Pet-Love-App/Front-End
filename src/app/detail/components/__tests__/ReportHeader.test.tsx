@@ -34,7 +34,7 @@ describe('ReportHeader', () => {
     // Let's check if the image is rendered.
     // Since Image is a native component, we can check if it exists.
     // But we can't easily query by source.
-    
+
     // Let's check if the component renders without crashing.
     expect(render(
       <ReportHeader

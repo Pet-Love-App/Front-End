@@ -15,7 +15,7 @@ describe('SafetyAnalysisSection', () => {
 
   it('should render correctly with safety content', () => {
     const { getByText } = render(<SafetyAnalysisSection safety="Test Safety Analysis" />);
-    
+
     expect(getByText('安全性分析')).toBeTruthy();
     expect(getByText('Safety Analysis')).toBeTruthy();
     expect(getByText('安全')).toBeTruthy();

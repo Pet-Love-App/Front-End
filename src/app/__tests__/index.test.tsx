@@ -36,18 +36,18 @@ describe('Index Screen (src/app/index.tsx)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
-    
+
     // Default store mock: hydrated but not authenticated
     mockUseUserStore.mockImplementation((selector: any) => {
-      const state = { 
-        isAuthenticated: false, 
+      const state = {
+        isAuthenticated: false,
         _hasHydrated: true,
         fetchCurrentUser: mockFetchCurrentUser,
         logout: mockLogout
       };
       return selector ? selector(state) : state;
     });
-    
+
     // Mock getState for direct access
     (mockUseUserStore as any).getState = jest.fn().mockReturnValue({
       fetchCurrentUser: mockFetchCurrentUser,
@@ -67,7 +67,7 @@ describe('Index Screen (src/app/index.tsx)', () => {
 
   it('redirects to login if not authenticated', async () => {
     render(<Index />);
-    
+
     await waitFor(() => {
       expect(mockRouter.replace).toHaveBeenCalledWith('/login');
     });
@@ -75,19 +75,19 @@ describe('Index Screen (src/app/index.tsx)', () => {
 
   it('redirects to home if authenticated and token is valid', async () => {
     mockUseUserStore.mockImplementation((selector: any) => {
-      const state = { 
-        isAuthenticated: true, 
+      const state = {
+        isAuthenticated: true,
         _hasHydrated: true,
         fetchCurrentUser: mockFetchCurrentUser,
         logout: mockLogout
       };
       return selector ? selector(state) : state;
     });
-    
+
     mockFetchCurrentUser.mockResolvedValue({});
 
     render(<Index />);
-    
+
     await waitFor(() => {
       expect(mockFetchCurrentUser).toHaveBeenCalled();
       expect(mockRouter.replace).toHaveBeenCalledWith('/(tabs)/collect');
@@ -96,19 +96,19 @@ describe('Index Screen (src/app/index.tsx)', () => {
 
   it('redirects to login if authenticated but token is invalid', async () => {
     mockUseUserStore.mockImplementation((selector: any) => {
-      const state = { 
-        isAuthenticated: true, 
+      const state = {
+        isAuthenticated: true,
         _hasHydrated: true,
         fetchCurrentUser: mockFetchCurrentUser,
         logout: mockLogout
       };
       return selector ? selector(state) : state;
     });
-    
+
     mockFetchCurrentUser.mockRejectedValue(new Error('Invalid token'));
 
     render(<Index />);
-    
+
     await waitFor(() => {
       expect(mockFetchCurrentUser).toHaveBeenCalled();
       expect(mockLogout).toHaveBeenCalled();

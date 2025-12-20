@@ -41,7 +41,7 @@ describe('AdditiveSection', () => {
 
     expect(getByText('添加剂成分')).toBeTruthy();
     expect(getByText('点击气泡查看详情')).toBeTruthy();
-    
+
     expect(getByText('Additive 1')).toBeTruthy();
     expect(getByText('Additive 2')).toBeTruthy();
 

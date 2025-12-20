@@ -226,7 +226,14 @@ export default function ChatScreen() {
       >
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={() => {
+            // 返回到消息列表
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/(tabs)/profile/messages');
+            }
+          }}
           activeOpacity={0.8}
         >
           <ChevronLeft size={28} color="#FFFFFF" strokeWidth={2.5} />

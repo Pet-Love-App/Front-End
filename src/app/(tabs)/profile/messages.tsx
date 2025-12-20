@@ -213,7 +213,10 @@ export default function MessagesScreen() {
       >
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={() => {
+            // 返回到个人中心主页
+            router.push('/(tabs)/profile');
+          }}
           activeOpacity={0.8}
         >
           <ChevronLeft size={28} color="#FFFFFF" strokeWidth={2.5} />

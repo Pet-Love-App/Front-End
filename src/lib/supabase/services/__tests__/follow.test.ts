@@ -108,15 +108,126 @@ describe('SupabaseFollowService', () => {
         error: null,
       });
 
-      (mockSupabaseClient.from as jest.Mock).mockImplementation(() => ({
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({ count: 0, error: null }),
-      }));
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockMaybeSingle = jest.fn().mockResolvedValue({ data: { id: 1 }, error: null });
+
+      (mockSupabaseClient.from as jest.Mock).mockReturnValue({
+        select: mockSelect,
+        eq: mockEq,
+        maybeSingle: mockMaybeSingle,
+      });
 
       const result = await supabaseFollowService.isFollowing('target-user');
 
-      expect(result).toHaveProperty('data');
-      expect(result).toHaveProperty('error');
+      expect(result.success).toBe(true);
+      expect(result.data).toBe(true);
+    });
+
+    it('should return false if not following', async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'user-123' } },
+        error: null,
+      });
+
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockMaybeSingle = jest.fn().mockResolvedValue({ data: null, error: null });
+
+      (mockSupabaseClient.from as jest.Mock).mockReturnValue({
+        select: mockSelect,
+        eq: mockEq,
+        maybeSingle: mockMaybeSingle,
+      });
+
+      const result = await supabaseFollowService.isFollowing('target-user');
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBe(false);
+    });
+  });
+
+  describe('getFollowStats', () => {
+    it('should return follow stats', async () => {
+      const mockFollowers = { count: 10, error: null };
+      const mockFollowing = { count: 5, error: null };
+
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn()
+        .mockResolvedValueOnce(mockFollowers)
+        .mockResolvedValueOnce(mockFollowing);
+
+      (mockSupabaseClient.from as jest.Mock).mockReturnValue({
+        select: mockSelect,
+        eq: mockEq,
+      });
+
+      const result = await supabaseFollowService.getFollowStats('user-123');
+
+      expect(result.success).toBe(true);
+      expect(result.data?.followersCount).toBe(10);
+      expect(result.data?.followingCount).toBe(5);
+    });
+
+    it('should handle database errors', async () => {
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockResolvedValue({ count: null, error: { message: 'DB Error' } });
+
+      (mockSupabaseClient.from as jest.Mock).mockReturnValue({
+        select: mockSelect,
+        eq: mockEq,
+      });
+
+      const result = await supabaseFollowService.getFollowStats('user-123');
+
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toBe('DB Error');
+    });
+  });
+
+  describe('toggleFollow', () => {
+    it('should follow if not following', async () => {
+      // Mock isFollowing to return false
+      jest.spyOn(supabaseFollowService, 'isFollowing').mockResolvedValue({
+        data: false,
+        error: null,
+        success: true,
+      });
+
+      // Mock followUser
+      jest.spyOn(supabaseFollowService, 'followUser').mockResolvedValue({
+        data: true,
+        error: null,
+        success: true,
+      });
+
+      const result = await supabaseFollowService.toggleFollow('target-user');
+
+      expect(result.success).toBe(true);
+      expect(result.data?.isFollowing).toBe(true);
+      expect(supabaseFollowService.followUser).toHaveBeenCalledWith('target-user');
+    });
+
+    it('should unfollow if already following', async () => {
+      // Mock isFollowing to return true
+      jest.spyOn(supabaseFollowService, 'isFollowing').mockResolvedValue({
+        data: true,
+        error: null,
+        success: true,
+      });
+
+      // Mock unfollowUser
+      jest.spyOn(supabaseFollowService, 'unfollowUser').mockResolvedValue({
+        data: true,
+        error: null,
+        success: true,
+      });
+
+      const result = await supabaseFollowService.toggleFollow('target-user');
+
+      expect(result.success).toBe(true);
+      expect(result.data?.isFollowing).toBe(false);
+      expect(supabaseFollowService.unfollowUser).toHaveBeenCalledWith('target-user');
     });
   });
 });

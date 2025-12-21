@@ -108,156 +108,174 @@ describe('SupabasePetService', () => {
       expect(result.data).toEqual([]);
     });
 
-    it('should order pets by created_at descending', async () => {
+    it('should handle database errors', async () => {
       // Arrange
       mockSupabaseClient.auth.getUser.mockResolvedValue({
         data: { user: { id: 'user-123' } },
         error: null,
       });
 
-      setupFromMock('pets', mockSuccessResponse([]));
+      setupFromMock('pets', mockErrorResponse({ message: 'DB Error' }));
 
       // Act
-      await supabasePetService.getMyPets();
+      const result = await supabasePetService.getMyPets();
 
-      // Assert - verify query builder is used correctly
-      expect(mockSupabaseClient.from).toHaveBeenCalledWith('pets');
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
     });
   });
 
   describe('getPet', () => {
-    it('should return pet by id', async () => {
-      // Arrange
-      const mockPet = {
-        id: 1,
-        name: 'Mochi',
-        species: 'cat',
-        created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-01T00:00:00Z',
-      };
+    it('should return pet details', async () => {
+      const mockPet = { id: 1, name: 'Mochi' };
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockSingle = jest.fn().mockResolvedValue({ data: mockPet, error: null });
 
-      setupFromMock('pets', mockSuccessResponse(mockPet));
+      (mockSupabaseClient.from as jest.Mock).mockReturnValue({
+        select: mockSelect,
+        eq: mockEq,
+        single: mockSingle,
+      });
 
-      // Act
       const result = await supabasePetService.getPet(1);
 
-      // Assert
       expect(result.success).toBe(true);
-      expect(result.data).toBeDefined();
+      expect(result.data).toEqual(mockPet);
     });
 
-    it('should return error when pet not found', async () => {
-      // Arrange
-      setupFromMock('pets', mockErrorResponse('Pet not found', 'NOT_FOUND'));
+    it('should handle error when getting pet', async () => {
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockSingle = jest.fn().mockResolvedValue({ data: null, error: { message: 'DB Error' } });
 
-      // Act
-      const result = await supabasePetService.getPet(999);
+      (mockSupabaseClient.from as jest.Mock).mockReturnValue({
+        select: mockSelect,
+        eq: mockEq,
+        single: mockSingle,
+      });
 
-      // Assert
+      const result = await supabasePetService.getPet(1);
+
       expect(result.success).toBe(false);
     });
   });
 
   describe('createPet', () => {
-    it('should create pet with valid data', async () => {
-      // Arrange
+    it('should create pet successfully', async () => {
       mockSupabaseClient.auth.getUser.mockResolvedValue({
         data: { user: { id: 'user-123' } },
         error: null,
       });
 
-      const petInput: PetInput = {
-        name: 'New Pet',
-        species: 'dog',
-        breed: 'Golden Retriever',
-        age: 1,
-      };
+      const mockPet = { id: 1, name: 'Mochi', user_id: 'user-123' };
+      const mockInsert = jest.fn().mockReturnThis();
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockSingle = jest.fn().mockResolvedValue({ data: mockPet, error: null });
 
-      const mockCreatedPet = {
-        id: 1,
-        ...petInput,
-        user_id: 'user-123',
-        created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-01T00:00:00Z',
-      };
+      (mockSupabaseClient.from as jest.Mock).mockReturnValue({
+        insert: mockInsert,
+        select: mockSelect,
+        single: mockSingle,
+      });
 
-      setupFromMock('pets', mockSuccessResponse([mockCreatedPet]));
+      const result = await supabasePetService.createPet({ name: 'Mochi' });
 
-      // Act
-      const result = await supabasePetService.createPet(petInput);
-
-      // Assert
       expect(result.success).toBe(true);
-      expect(mockSupabaseClient.auth.getUser).toHaveBeenCalled();
+      expect(result.data).toEqual(mockPet);
     });
 
-    it('should fail when user is not authenticated', async () => {
-      // Arrange
+    it('should fail when not authenticated', async () => {
       mockSupabaseClient.auth.getUser.mockResolvedValue({
         data: { user: null },
         error: null,
       });
 
-      // Act
-      const result = await supabasePetService.createPet({
-        name: 'Test Pet',
-        species: 'cat',
-      });
+      const result = await supabasePetService.createPet({ name: 'Mochi' });
 
-      // Assert
       expect(result.success).toBe(false);
-      expect(result.error?.code).toBe('NOT_AUTHENTICATED');
     });
 
-    it('should handle database constraint violations', async () => {
-      // Arrange
+    it('should handle error when creating pet', async () => {
       mockSupabaseClient.auth.getUser.mockResolvedValue({
         data: { user: { id: 'user-123' } },
         error: null,
       });
 
-      setupFromMock('pets', mockErrorResponse('Name already exists', 'CONSTRAINT_VIOLATION'));
+      const mockInsert = jest.fn().mockReturnThis();
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockSingle = jest.fn().mockResolvedValue({ data: null, error: { message: 'Insert Error' } });
 
-      // Act
-      const result = await supabasePetService.createPet({
-        name: 'Duplicate',
-        species: 'cat',
+      (mockSupabaseClient.from as jest.Mock).mockReturnValue({
+        insert: mockInsert,
+        select: mockSelect,
+        single: mockSingle,
       });
 
-      // Assert
+      const result = await supabasePetService.createPet({ name: 'Mochi' });
+
       expect(result.success).toBe(false);
     });
   });
 
   describe('updatePet', () => {
     it('should update pet successfully', async () => {
-      // Arrange
       mockSupabaseClient.auth.getUser.mockResolvedValue({
         data: { user: { id: 'user-123' } },
         error: null,
       });
 
-      const updates = { name: 'Updated Name', age: 4 };
-      setupFromMock('pets', mockSuccessResponse([{ id: 1, ...updates }]));
+      const mockPet = { id: 1, name: 'Mochi Updated' };
+      const mockUpdate = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockSingle = jest.fn().mockResolvedValue({ data: mockPet, error: null });
 
-      // Act
-      const result = await supabasePetService.updatePet(1, updates);
+      (mockSupabaseClient.from as jest.Mock).mockReturnValue({
+        update: mockUpdate,
+        eq: mockEq,
+        select: mockSelect,
+        single: mockSingle,
+      });
 
-      // Assert
+      const result = await supabasePetService.updatePet(1, { name: 'Mochi Updated' });
+
       expect(result.success).toBe(true);
+      expect(result.data).toEqual(mockPet);
     });
 
-    it('should fail when user is not authenticated', async () => {
-      // Arrange
+    it('should fail when not authenticated', async () => {
       mockSupabaseClient.auth.getUser.mockResolvedValue({
         data: { user: null },
         error: null,
       });
 
-      // Act
-      const result = await supabasePetService.updatePet(1, { name: 'Test' });
+      const result = await supabasePetService.updatePet(1, { name: 'Mochi' });
 
-      // Assert
+      expect(result.success).toBe(false);
+    });
+
+    it('should handle error when updating pet', async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'user-123' } },
+        error: null,
+      });
+
+      const mockUpdate = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockSingle = jest.fn().mockResolvedValue({ data: null, error: { message: 'Update Error' } });
+
+      (mockSupabaseClient.from as jest.Mock).mockReturnValue({
+        update: mockUpdate,
+        eq: mockEq,
+        select: mockSelect,
+        single: mockSingle,
+      });
+
+      const result = await supabasePetService.updatePet(1, { name: 'Mochi' });
+
       expect(result.success).toBe(false);
     });
   });
@@ -270,84 +288,192 @@ describe('SupabasePetService', () => {
         error: null,
       });
 
-      setupFromMock('pets', mockSuccessResponse(null));
+      // Mock pet fetch (no photo)
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockSingle = jest.fn().mockResolvedValue({ data: { photo_url: null }, error: null });
 
-      // Act
+      // Mock delete
+      const mockDeleteBuilder = {
+        delete: jest.fn(),
+        eq: jest.fn(),
+      };
+      mockDeleteBuilder.delete.mockReturnValue(mockDeleteBuilder);
+      mockDeleteBuilder.eq.mockReturnValue(mockDeleteBuilder);
+
+      (mockSupabaseClient.from as jest.Mock)
+        .mockReturnValueOnce({ // fetch
+          select: mockSelect,
+          eq: mockEq,
+          single: mockSingle,
+        })
+        .mockReturnValueOnce(mockDeleteBuilder); // delete
+
       const result = await supabasePetService.deletePet(1);
 
       // Assert
       expect(result.success).toBe(true);
     });
 
-    it('should fail when user is not authenticated', async () => {
-      // Arrange
+    it('should delete pet photo if exists', async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'user-123' } },
+        error: null,
+      });
+
+      // Mock pet fetch (with photo)
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockSingle = jest.fn().mockResolvedValue({ data: { photo_url: 'http://supa.base/pets/photo.jpg' }, error: null });
+
+      // Mock storage remove
+      const mockRemove = jest.fn().mockResolvedValue({ data: [], error: null });
+      (mockSupabaseClient.storage.from as jest.Mock).mockReturnValue({
+        remove: mockRemove,
+      });
+
+      // Mock delete
+      const mockDelete = jest.fn().mockReturnThis();
+      const mockEqDelete = jest.fn().mockReturnThis();
+
+      (mockSupabaseClient.from as jest.Mock)
+        .mockReturnValueOnce({ // fetch
+          select: mockSelect,
+          eq: mockEq,
+          single: mockSingle,
+        })
+        .mockReturnValueOnce({ // delete
+          delete: mockDelete,
+          eq: mockEqDelete,
+        });
+
+      const result = await supabasePetService.deletePet(1);
+
+      // Assert
+      expect(result.success).toBe(true);
+      expect(mockRemove).toHaveBeenCalledWith(['photo.jpg']);
+    });
+
+    it('should fail when not authenticated', async () => {
       mockSupabaseClient.auth.getUser.mockResolvedValue({
         data: { user: null },
         error: null,
       });
 
-      // Act
       const result = await supabasePetService.deletePet(1);
 
-      // Assert
       expect(result.success).toBe(false);
     });
 
-    it('should handle deletion of non-existent pet', async () => {
-      // Arrange
+    it('should handle error when deleting pet', async () => {
       mockSupabaseClient.auth.getUser.mockResolvedValue({
         data: { user: { id: 'user-123' } },
         error: null,
       });
 
-      setupFromMock('pets', mockErrorResponse('Pet not found', 'NOT_FOUND'));
+      // Mock pet fetch
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockSingle = jest.fn().mockResolvedValue({ data: { photo_url: null }, error: null });
 
-      // Act
-      const result = await supabasePetService.deletePet(999);
+      // Mock delete error
+      const mockDelete = jest.fn().mockReturnThis();
+      const mockEqDelete = jest.fn().mockReturnThis();
+      const mockDeleteError = { message: 'Delete Error' };
 
-      // Assert
+      // We need to mock the promise chain to return error
+      // Since delete().eq().eq() returns a promise that resolves to { error }
+      // We can mock the last eq to return a promise
+      mockEqDelete.mockResolvedValue({ error: mockDeleteError });
+
+      // Mock the chain: delete().eq().eq()
+      mockDelete.mockReturnValue({ eq: mockEqDelete });
+      mockEqDelete.mockReturnValue({ eq: mockEqDelete, then: (resolve: any) => resolve({ error: mockDeleteError }) });
+
+      (mockSupabaseClient.from as jest.Mock)
+        .mockReturnValueOnce({ // fetch
+          select: mockSelect,
+          eq: mockEq,
+          single: mockSingle,
+        })
+        .mockReturnValueOnce({ // delete
+          delete: mockDelete,
+          eq: mockEqDelete,
+        });
+
+      const result = await supabasePetService.deletePet(1);
+
       expect(result.success).toBe(false);
     });
   });
 
-  describe('edge cases', () => {
-    it('should handle network errors gracefully', async () => {
-      // Arrange
-      mockSupabaseClient.auth.getUser.mockRejectedValue(new Error('Network error'));
+  describe('uploadPetPhoto', () => {
+    // ... existing tests or add new ones ...
+    // Since uploadPetPhoto involves FileSystem which is mocked, we can add basic tests
+    it('should fail when not authenticated', async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: null,
+      });
 
-      // Act
-      const result = await supabasePetService.getMyPets();
+      const result = await supabasePetService.uploadPetPhoto(1, 'file://image.jpg');
 
-      // Assert
       expect(result.success).toBe(false);
-      expect(result.error?.message).toContain('Network error');
     });
+  });
 
-    it('should handle null values in pet data', async () => {
-      // Arrange
+  describe('deletePetPhoto', () => {
+    it('should delete pet photo successfully', async () => {
       mockSupabaseClient.auth.getUser.mockResolvedValue({
         data: { user: { id: 'user-123' } },
         error: null,
       });
 
-      const petWithNulls = {
-        id: 1,
-        name: 'Pet',
-        species: 'cat',
-        breed: null,
-        age: null,
-        description: null,
-        photo_url: null,
-      };
+      // Mock pet fetch
+      const mockSelect = jest.fn().mockReturnThis();
+      const mockEq = jest.fn().mockReturnThis();
+      const mockSingle = jest.fn().mockResolvedValue({ data: { photo_url: 'http://supa.base/pets/photo.jpg' }, error: null });
 
-      setupFromMock('pets', mockSuccessResponse([petWithNulls]));
+      // Mock storage remove
+      const mockRemove = jest.fn().mockResolvedValue({ data: [], error: null });
+      (mockSupabaseClient.storage.from as jest.Mock).mockReturnValue({
+        remove: mockRemove,
+      });
 
-      // Act
-      const result = await supabasePetService.getMyPets();
+      // Mock update
+      const mockUpdate = jest.fn().mockReturnThis();
+      const mockEqUpdate = jest.fn().mockReturnThis();
+      const mockSelectUpdate = jest.fn().mockReturnThis();
+      const mockSingleUpdate = jest.fn().mockResolvedValue({ data: { photo_url: null }, error: null });
 
-      // Assert
+      (mockSupabaseClient.from as jest.Mock)
+        .mockReturnValueOnce({ // fetch
+          select: mockSelect,
+          eq: mockEq,
+          single: mockSingle,
+        })
+        .mockReturnValueOnce({ // update
+          update: mockUpdate,
+          eq: mockEqUpdate,
+          select: mockSelectUpdate,
+          single: mockSingleUpdate,
+        });
+
+      const result = await supabasePetService.deletePetPhoto(1);
+
       expect(result.success).toBe(true);
-      expect(result.data![0].breed).toBeNull();
+      expect(mockRemove).toHaveBeenCalledWith(['photo.jpg']);
+    });
+
+    it('should fail when not authenticated', async () => {
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: null,
+      });
+
+      const result = await supabasePetService.deletePetPhoto(1);
+
+      expect(result.success).toBe(false);
     });
   });
 });

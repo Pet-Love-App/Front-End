@@ -109,8 +109,9 @@ export function parseApiError(error: any): AppError {
   }
 
   // API 响应错误
-  if (error.response) {
-    const { status, data } = error.response;
+  if (error.response || (error.status && typeof error.status === 'number')) {
+    const status = error.response ? error.response.status : error.status;
+    const data = error.response ? error.response.data : error;
     const errorCode = getErrorCodeFromStatus(status);
 
     // 提取错误消息
@@ -250,7 +251,7 @@ export function logError(error: any, context?: string) {
     // }
 
     // 对于严重错误（5xx），可以考虑发送到后端日志系统
-    if (appError.status >= 500) {
+    if (appError.status && appError.status >= 500) {
       // 可以调用后端日志接口记录严重错误
       // logErrorToBackend(errorLog).catch(console.error);
     }
@@ -262,7 +263,7 @@ export function logError(error: any, context?: string) {
  */
 export function isAuthError(error: any): boolean {
   const appError = parseApiError(error);
-  return [ErrorCodes.AUTH_REQUIRED, ErrorCodes.AUTH_EXPIRED, ErrorCodes.AUTH_INVALID].includes(
+  return ([ErrorCodes.AUTH_REQUIRED, ErrorCodes.AUTH_EXPIRED, ErrorCodes.AUTH_INVALID] as string[]).includes(
     appError.code
   );
 }
@@ -272,7 +273,7 @@ export function isAuthError(error: any): boolean {
  */
 export function isNetworkError(error: any): boolean {
   const appError = parseApiError(error);
-  return [ErrorCodes.NETWORK_ERROR, ErrorCodes.TIMEOUT_ERROR].includes(appError.code);
+  return ([ErrorCodes.NETWORK_ERROR, ErrorCodes.TIMEOUT_ERROR] as string[]).includes(appError.code);
 }
 
 /**
@@ -280,5 +281,5 @@ export function isNetworkError(error: any): boolean {
  */
 export function isServerError(error: any): boolean {
   const appError = parseApiError(error);
-  return [ErrorCodes.SERVER_ERROR, ErrorCodes.SERVICE_UNAVAILABLE].includes(appError.code);
+  return ([ErrorCodes.SERVER_ERROR, ErrorCodes.SERVICE_UNAVAILABLE] as string[]).includes(appError.code);
 }

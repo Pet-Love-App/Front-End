@@ -112,8 +112,33 @@ describe('EventEmitter', () => {
     });
   });
 
+  describe('off (unsubscribe)', () => {
+    it('should remove specific listener', () => {
+      // Arrange
+      const callback = jest.fn();
+      const unsubscribe = appEvents.on('test_event', callback);
+
+      // Act
+      unsubscribe();
+      appEvents.emit('test_event');
+
+      // Assert
+      expect(callback).not.toHaveBeenCalled();
+    });
+
+    it('should handle unsubscribe when event map is empty', () => {
+      // Arrange
+      const callback = jest.fn();
+      const unsubscribe = appEvents.on('test_event', callback);
+      appEvents.clear(); // Manually clear events
+
+      // Act & Assert
+      expect(() => unsubscribe()).not.toThrow();
+    });
+  });
+
   describe('clear', () => {
-    it('should remove all event listeners', () => {
+    it('should remove all listeners', () => {
       // Arrange
       const callback1 = jest.fn();
       const callback2 = jest.fn();

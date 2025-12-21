@@ -84,5 +84,17 @@ describe('videoThumbnail', () => {
       expect(thumbnailMap.get('success')).toBe('thumb-success');
       expect(thumbnailMap.get('fail')).toBeUndefined();
     });
+
+    it('should handle empty input array', async () => {
+      jest.doMock('expo-video-thumbnails', () => ({
+        getThumbnailAsync: jest.fn(),
+      }), { virtual: true });
+
+      const { generateVideoThumbnails } = require('../videoThumbnail');
+      const uris: string[] = [];
+      const thumbnailMap = await generateVideoThumbnails(uris);
+
+      expect(thumbnailMap.size).toBe(0);
+    });
   });
 });

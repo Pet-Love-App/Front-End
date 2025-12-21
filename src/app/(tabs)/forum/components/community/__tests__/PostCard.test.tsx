@@ -60,10 +60,10 @@ jest.mock('../../VideoPreview', () => ({
 
 // Mock Lucide icons
 jest.mock('@tamagui/lucide-icons', () => ({
-  Heart: 'Heart',
-  Play: 'Play',
-  Award: 'Award',
-  Eye: 'Eye',
+  Heart: () => 'Heart',
+  Play: () => 'Play',
+  Award: () => 'Award',
+  Eye: () => 'Eye',
 }));
 
 const mockData = {

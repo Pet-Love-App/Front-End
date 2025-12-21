@@ -1,0 +1,3 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RootLayout should render correctly when fonts are loaded 1`] = `null`;

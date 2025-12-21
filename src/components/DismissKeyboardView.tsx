@@ -43,7 +43,7 @@ export function DismissKeyboardView({ children }: DismissKeyboardViewProps) {
   }, []);
 
   return (
-    <View style={styles.container} onTouchStart={handleTouchStart}>
+    <View style={styles.container} onTouchStart={handleTouchStart} testID="dismiss-keyboard-view">
       {children}
     </View>
   );

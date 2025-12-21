@@ -50,7 +50,9 @@ export const createMockQueryBuilder = (
 
 export const mockSupabaseClient = {
   auth: {
-    getUser: jest.fn(),
+    getUser: jest
+      .fn()
+      .mockResolvedValue({ data: { user: { id: 'user-123' } }, error: null }),
     signInWithPassword: jest.fn(),
     signUp: jest.fn(),
     signOut: jest.fn(),
@@ -89,6 +91,9 @@ export const mockSupabaseClient = {
 jest.mock('@/src/lib/supabase/client', () => ({
   supabase: mockSupabaseClient,
   isSupabaseConfigured: jest.fn(() => true),
+  getCurrentUserId: jest.fn().mockResolvedValue('user-123'),
+  getSession: jest.fn().mockResolvedValue({ user: { id: 'user-123' } }),
+  isAuthenticated: jest.fn().mockResolvedValue(true),
 }));
 
 // Mock AsyncStorage
@@ -225,6 +230,12 @@ export const resetAllMocks = () => {
     }
   });
 
+  // 重新设置 getUser 的默认实现
+  mockSupabaseClient.auth.getUser.mockResolvedValue({
+    data: { user: { id: 'user-123' } },
+    error: null,
+  });
+
   // 重新设置 onAuthStateChange 的默认实现
   mockSupabaseClient.auth.onAuthStateChange.mockReturnValue({
     data: { subscription: { unsubscribe: jest.fn() } },
@@ -263,16 +274,19 @@ export const mockSuccessResponse = <T>(data: T) => ({
 /**
  * 创建错误响应
  */
-export const mockErrorResponse = (message: string, code = 'ERROR') => ({
-  data: null,
-  error: {
-    message,
-    code,
-    details: '',
-    hint: '',
-    name: 'PostgrestError',
-  },
-});
+export const mockErrorResponse = (message: string | { message: string }, code = 'ERROR') => {
+  const msg = typeof message === 'string' ? message : message.message;
+  return {
+    data: null,
+    error: {
+      message: msg,
+      code,
+      details: '',
+      hint: '',
+      name: 'PostgrestError',
+    },
+  };
+};
 
 // ==================== Setup Mock Implementations ====================
 

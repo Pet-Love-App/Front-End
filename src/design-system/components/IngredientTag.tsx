@@ -30,6 +30,7 @@ export interface IngredientTagProps {
   size?: 'sm' | 'md' | 'lg';
   /** 是否显示图标 */
   showIcon?: boolean;
+  testID?: string;
 }
 
 // ============================================================================
@@ -198,17 +199,24 @@ function AnimatedTagWrapper({
 export function IngredientTag({
   name,
   type = 'neutral',
-  // description - reserved for future tooltip functionality
-  pressable = false,
+  description,
+  pressable,
   onPress,
   size = 'md',
   showIcon = true,
+  testID,
 }: IngredientTagProps) {
   const icon = typeIcons[type];
 
   return (
     <AnimatedTagWrapper pressable={pressable} onPress={onPress}>
-      <TagContainer type={type} size={size} pressable={pressable}>
+      <TagContainer
+        type={type}
+        size={size}
+        pressable={pressable}
+        onPress={pressable ? onPress : undefined}
+        testID={testID}
+      >
         {showIcon && (
           <TagIcon type={type} size={size}>
             {icon}

@@ -16,7 +16,7 @@ interface SearchBoxProps {
 
 export default function SearchBox({
   size = '$4',
-  value = '',
+  value,
   placeholder = '搜索...',
   onChangeText,
   onSearch,
@@ -26,7 +26,7 @@ export default function SearchBox({
   showSearchButton = true,
 }: SearchBoxProps) {
   // 内部状态管理输入值（如果没有外部控制）
-  const [internalValue, setInternalValue] = useState(value);
+  const [internalValue, setInternalValue] = useState(value || '');
   const currentValue = value !== undefined ? value : internalValue;
 
   const handleTextChange = useCallback(
@@ -79,6 +79,7 @@ export default function SearchBox({
         disabled={disabled}
         backgroundColor="transparent"
         borderWidth={0}
+        // @ts-ignore
         color="$foreground"
         focusStyle={{ borderWidth: 0, outlineWidth: 0 }}
         paddingHorizontal="$2"
@@ -95,12 +96,13 @@ export default function SearchBox({
         <XStack
           onPress={handleClear}
           padding="$1"
+          // @ts-ignore
           borderRadius="$full"
           backgroundColor="$backgroundMuted"
           pressStyle={{ backgroundColor: '$backgroundPress', scale: 0.95 }}
-          cursor="pointer"
+          testID="clear-button"
         >
-          <IconSymbol name="xmark.circle.fill" size={18} color="$foregroundMuted" />
+          <IconSymbol name="xmark" size={12} color="$foregroundSubtle" />
         </XStack>
       )}
 

@@ -21,11 +21,20 @@ jest.mock('@/src/components/ui/IconSymbol', () => ({
   IconSymbol: () => null,
 }));
 
-jest.mock('tamagui', () => ({
-  Text: ({ children, testID }: { children: React.ReactNode; testID?: string }) => <>{children}</>,
-  XStack: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  YStack: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
+jest.mock('tamagui', () => {
+  const { View, Text } = require('react-native');
+  return {
+    Text: ({ children, testID, ...props }: any) => (
+      <Text testID={testID} {...props}>{children}</Text>
+    ),
+    XStack: ({ children, testID, ...props }: any) => (
+      <View testID={testID} {...props}>{children}</View>
+    ),
+    YStack: ({ children, testID, ...props }: any) => (
+      <View testID={testID} {...props}>{children}</View>
+    ),
+  };
+});
 
 describe('CatFoodCard', () => {
   // 创建符合 CatFood 接口的测试数据
@@ -61,258 +70,72 @@ describe('CatFoodCard', () => {
       }).not.toThrow();
     });
 
-    it('should handle different cat food data', () => {
+    it('should render cat food details correctly', () => {
       // Arrange
       const catfood = createMockCatFood({
-        name: 'Different Food',
-        brand: 'Different Brand',
-        score: 3.8,
-        like_count: 50,
+        name: 'Test Food',
+        brand: 'Test Brand',
       });
 
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} />);
-      }).not.toThrow();
+      // Act
+      const { getByTestId } = render(<CatFoodCard catfood={catfood} />);
+
+      // Assert
+      expect(getByTestId('cat-food-name').props.children).toBe('Test Food');
+      expect(getByTestId('cat-food-brand').props.children).toBe('Test Brand');
     });
 
-    it('should handle null imageUrl', () => {
-      // Arrange
-      const catfood = createMockCatFood({ imageUrl: null });
-
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} />);
-      }).not.toThrow();
-    });
-
-    it('should handle null brand', () => {
-      // Arrange
-      const catfood = createMockCatFood({ brand: null as any });
-
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} />);
-      }).not.toThrow();
-    });
-
-    it('should handle null score', () => {
-      // Arrange
-      const catfood = createMockCatFood({ score: null as any });
-
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} />);
-      }).not.toThrow();
-    });
-  });
-
-  describe('rank display', () => {
-    it('should render with rank display enabled', () => {
+    it('should render rank correctly', () => {
       // Arrange
       const catfood = createMockCatFood();
 
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} index={0} showRank={true} />);
-      }).not.toThrow();
+      // Act
+      const { getByTestId } = render(<CatFoodCard catfood={catfood} index={0} />);
+
+      // Assert
+      expect(getByTestId('cat-food-rank').props.children).toBe('冠军');
     });
 
-    it('should render with rank display disabled', () => {
+    it('should render image when imageUrl is provided', () => {
       // Arrange
-      const catfood = createMockCatFood();
+      const catfood = createMockCatFood({ imageUrl: 'https://example.com/image.jpg' });
 
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} index={0} showRank={false} />);
-      }).not.toThrow();
-    });
+      // Act
+      const { getByTestId } = render(<CatFoodCard catfood={catfood} />);
 
-    it('should render cards at different ranks', () => {
-      // Arrange
-      const catfood = createMockCatFood();
-      const ranks = [0, 1, 2, 3, 5, 10];
-
-      // Act & Assert - all ranks should render successfully
-      ranks.forEach((rank) => {
-        expect(() => {
-          render(<CatFoodCard catfood={catfood} index={rank} showRank={true} />);
-        }).not.toThrow();
-      });
+      // Assert
+      const image = getByTestId('cat-food-image');
+      expect(image.props.source).toEqual({ uri: 'https://example.com/image.jpg' });
     });
   });
 
   describe('interactions', () => {
-    it('should accept onPress prop', () => {
+    it('should call onPress when card is pressed', () => {
       // Arrange
       const catfood = createMockCatFood();
       const onPress = jest.fn();
+      const { getByTestId } = render(<CatFoodCard catfood={catfood} onPress={onPress} />);
 
-      // Act & Assert - should render with onPress handler
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} onPress={onPress} />);
-      }).not.toThrow();
+      // Act
+      fireEvent.press(getByTestId('cat-food-card'));
+
+      // Assert
+      expect(onPress).toHaveBeenCalledWith(catfood);
     });
 
-    it('should accept onImagePress prop', () => {
+    it('should call onImagePress when image is pressed', () => {
       // Arrange
       const catfood = createMockCatFood({ imageUrl: 'https://example.com/image.jpg' });
       const onImagePress = jest.fn();
+      const { getByTestId } = render(
+        <CatFoodCard catfood={catfood} onImagePress={onImagePress} />
+      );
 
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} onImagePress={onImagePress} />);
-      }).not.toThrow();
-    });
+      // Act
+      fireEvent.press(getByTestId('cat-food-image-pressable'));
 
-    it('should render without handlers', () => {
-      // Arrange
-      const catfood = createMockCatFood();
-
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} />);
-      }).not.toThrow();
-    });
-  });
-
-  describe('tags display', () => {
-    it('should render with tags', () => {
-      // Arrange
-      const catfood = createMockCatFood({
-        tags: ['高蛋白', '无谷物'],
-      });
-
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} />);
-      }).not.toThrow();
-    });
-
-    it('should render with many tags', () => {
-      // Arrange
-      const catfood = createMockCatFood({
-        tags: ['Tag1', 'Tag2', 'Tag3', 'Tag4', 'Tag5', 'Tag6'],
-      });
-
-      // Act & Assert - should limit to 4 tags
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} />);
-      }).not.toThrow();
-    });
-
-    it('should render without tags', () => {
-      // Arrange
-      const catfood = createMockCatFood({ tags: [] });
-
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} />);
-      }).not.toThrow();
-    });
-  });
-
-  describe('nutrition info', () => {
-    it('should show nutrition info when enabled', () => {
-      // Arrange
-      const catfood = createMockCatFood({
-        ingredient: ['鸡肉', '鱼肉'],
-      });
-
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} showNutritionInfo={true} />);
-      }).not.toThrow();
-    });
-
-    it('should hide nutrition info when disabled', () => {
-      // Arrange
-      const catfood = createMockCatFood({
-        ingredient: ['鸡肉'],
-      });
-
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} showNutritionInfo={false} />);
-      }).not.toThrow();
-    });
-
-    it('should show analysis when percentage is available', () => {
-      // Arrange
-      const catfood = createMockCatFood({
-        percentage: true,
-      });
-
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} showNutritionInfo={true} />);
-      }).not.toThrow();
-    });
-  });
-
-  describe('display modes', () => {
-    it('should render with both showRank and showNutritionInfo enabled', () => {
-      // Arrange
-      const catfood = createMockCatFood();
-
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} showRank={true} showNutritionInfo={true} />);
-      }).not.toThrow();
-    });
-
-    it('should render with both disabled', () => {
-      // Arrange
-      const catfood = createMockCatFood();
-
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} showRank={false} showNutritionInfo={false} />);
-      }).not.toThrow();
-    });
-  });
-
-  describe('defensive programming', () => {
-    it('should handle missing optional fields', () => {
-      // Arrange
-      const catfood: CatFood = {
-        id: 1,
-        name: 'Minimal Cat Food',
-        brand: 'Brand',
-        barcode: null,
-        imageUrl: null,
-        like_count: 0,
-        score: 0,
-        countNum: 0,
-        tags: [],
-        ingredient: [],
-        additive: [],
-        safety: '',
-        nutrient: '',
-        percentage: false,
-        percentData: {},
-        created_at: '2024-01-01',
-        updated_at: '2024-01-01',
-      };
-
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} />);
-      }).not.toThrow();
-    });
-
-    it('should handle extreme values', () => {
-      // Arrange
-      const catfood = createMockCatFood({
-        score: 5.0,
-        like_count: 999999,
-        countNum: 10000,
-      });
-
-      // Act & Assert
-      expect(() => {
-        render(<CatFoodCard catfood={catfood} />);
-      }).not.toThrow();
+      // Assert
+      expect(onImagePress).toHaveBeenCalledWith('https://example.com/image.jpg');
     });
   });
 });

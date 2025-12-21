@@ -91,6 +91,24 @@ describe('SupabaseAuthService', () => {
       expect(result.success).toBe(false);
       expect(result.error?.message).toContain('Network error');
     });
+
+    it('should return error when user or session is missing in response', async () => {
+      // Arrange
+      mockSupabaseClient.auth.signInWithPassword.mockResolvedValue({
+        data: { user: null, session: null },
+        error: null,
+      });
+
+      // Act
+      const result = await supabaseAuthService.login({
+        email: 'test@example.com',
+        password: 'password123',
+      });
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toBe('登录失败，请重试');
+    });
   });
 
   describe('register', () => {
@@ -183,6 +201,41 @@ describe('SupabaseAuthService', () => {
         })
       );
     });
+
+    it('should return error when user is missing in response', async () => {
+      // Arrange
+      mockSupabaseClient.auth.signUp.mockResolvedValue({
+        data: { user: null, session: null },
+        error: null,
+      });
+
+      // Act
+      const result = await supabaseAuthService.register({
+        email: 'new@example.com',
+        password: 'password123',
+        username: 'newuser',
+      });
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toBe('注册失败，请重试');
+    });
+
+    it('should handle unexpected errors during registration', async () => {
+      // Arrange
+      mockSupabaseClient.auth.signUp.mockRejectedValue(new Error('Unexpected error'));
+
+      // Act
+      const result = await supabaseAuthService.register({
+        email: 'new@example.com',
+        password: 'password123',
+        username: 'newuser',
+      });
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toContain('Unexpected error');
+    });
   });
 
   describe('logout', () => {
@@ -208,6 +261,18 @@ describe('SupabaseAuthService', () => {
 
       // Assert
       expect(result.success).toBe(false);
+    });
+
+    it('should handle unexpected errors during logout', async () => {
+      // Arrange
+      mockSupabaseClient.auth.signOut.mockRejectedValue(new Error('Unexpected error'));
+
+      // Act
+      const result = await supabaseAuthService.logout();
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toContain('Unexpected error');
     });
   });
 
@@ -246,6 +311,33 @@ describe('SupabaseAuthService', () => {
       expect(result.success).toBe(true);
       expect(result.data).toBeNull();
     });
+
+    it('should handle error when getting session', async () => {
+      // Arrange
+      mockSupabaseClient.auth.getSession.mockResolvedValue({
+        data: { session: null },
+        error: { message: 'Session error', code: 'error', status: 500 },
+      });
+
+      // Act
+      const result = await supabaseAuthService.getSession();
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toBe('Session error');
+    });
+
+    it('should handle unexpected errors during getSession', async () => {
+      // Arrange
+      mockSupabaseClient.auth.getSession.mockRejectedValue(new Error('Unexpected error'));
+
+      // Act
+      const result = await supabaseAuthService.getSession();
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toContain('Unexpected error');
+    });
   });
 
   describe('getCurrentUser', () => {
@@ -263,6 +355,33 @@ describe('SupabaseAuthService', () => {
       // Assert
       expect(result.success).toBe(true);
       expect(result.data?.id).toBe('user-123');
+    });
+
+    it('should handle error when getting current user', async () => {
+      // Arrange
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: { message: 'User error', code: 'error', status: 500 },
+      });
+
+      // Act
+      const result = await supabaseAuthService.getCurrentUser();
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toBe('User error');
+    });
+
+    it('should handle unexpected errors during getCurrentUser', async () => {
+      // Arrange
+      mockSupabaseClient.auth.getUser.mockRejectedValue(new Error('Unexpected error'));
+
+      // Act
+      const result = await supabaseAuthService.getCurrentUser();
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toContain('Unexpected error');
     });
   });
 
@@ -299,6 +418,33 @@ describe('SupabaseAuthService', () => {
       // Assert
       expect(result.success).toBe(false);
       expect(result.error?.message).toBe('登录已过期，请重新登录');
+    });
+
+    it('should return error when session is missing in response', async () => {
+      // Arrange
+      mockSupabaseClient.auth.refreshSession.mockResolvedValue({
+        data: { session: null },
+        error: null,
+      });
+
+      // Act
+      const result = await supabaseAuthService.refreshSession();
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toBe('刷新失败，请重新登录');
+    });
+
+    it('should handle unexpected errors during refreshSession', async () => {
+      // Arrange
+      mockSupabaseClient.auth.refreshSession.mockRejectedValue(new Error('Unexpected error'));
+
+      // Act
+      const result = await supabaseAuthService.refreshSession();
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toContain('Unexpected error');
     });
   });
 
@@ -338,6 +484,20 @@ describe('SupabaseAuthService', () => {
       // Assert
       expect(result.success).toBe(false);
       expect(result.error?.message).toBe('出于安全考虑，每60秒只能请求一次');
+    });
+
+    it('should handle unexpected errors during resetPassword', async () => {
+      // Arrange
+      mockSupabaseClient.auth.resetPasswordForEmail.mockRejectedValue(new Error('Unexpected error'));
+
+      // Act
+      const result = await supabaseAuthService.resetPassword({
+        email: 'test@example.com',
+      });
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toContain('Unexpected error');
     });
   });
 
@@ -379,6 +539,20 @@ describe('SupabaseAuthService', () => {
       // Assert
       expect(result.success).toBe(false);
       expect(result.error?.message).toBe('新密码不能与旧密码相同');
+    });
+
+    it('should handle unexpected errors during updatePassword', async () => {
+      // Arrange
+      mockSupabaseClient.auth.updateUser.mockRejectedValue(new Error('Unexpected error'));
+
+      // Act
+      const result = await supabaseAuthService.updatePassword({
+        newPassword: 'newpassword123',
+      });
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toContain('Unexpected error');
     });
   });
 

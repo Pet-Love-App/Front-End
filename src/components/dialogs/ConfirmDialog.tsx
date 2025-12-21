@@ -57,6 +57,7 @@ export function ConfirmDialog({
       <Dialog.Portal>
         {/* 遮罩层 */}
         <Dialog.Overlay
+          testID="dialog-overlay"
           key="overlay"
           animation="quick"
           opacity={0.5}
@@ -68,6 +69,7 @@ export function ConfirmDialog({
 
         {/* 对话框内容 */}
         <Dialog.Content
+          testID="dialog-root"
           key="content"
           animateOnly={['transform', 'opacity']}
           animation={['quick', { opacity: { overshootClamping: true } }]}

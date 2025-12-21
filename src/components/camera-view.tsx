@@ -51,15 +51,16 @@ export function CameraViewComponent({
             // left button should open photo library when provided
             onPress={onPickFromLibrary ?? onToggleFacing}
             activeOpacity={0.7}
+            testID="library-button"
           >
             <IconSymbol name="photo.fill.on.rectangle.fill" size={32} color="#fff" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.captureButton} onPress={onCapture} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.captureButton} onPress={onCapture} activeOpacity={0.8} testID="capture-button">
             <View style={styles.captureButtonInner} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.iconButton} onPress={onToggleFacing} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.iconButton} onPress={onToggleFacing} activeOpacity={0.7} testID="flip-button">
             <IconSymbol name="arrow.triangle.2.circlepath.camera" size={32} color="#fff" />
           </TouchableOpacity>
         </View>

@@ -18,13 +18,19 @@ jest.mock('expo-router', () => ({
   }),
 }));
 
-jest.mock('@/src/store/userStore', () => ({
-  useUserStore: jest.fn(() => ({
+jest.mock('@/src/store/userStore', () => {
+  const mockGetState = jest.fn(() => ({ isAuthenticated: false }));
+  const mockUseUserStore = jest.fn(() => ({
     register: jest.fn(),
     isLoading: false,
-    getState: () => ({ isAuthenticated: false }),
-  })),
-}));
+  }));
+  // Attach getState to the mock function
+  (mockUseUserStore as any).getState = mockGetState;
+
+  return {
+    useUserStore: mockUseUserStore,
+  };
+});
 
 jest.mock('@/src/components/dialogs', () => ({
   toast: {

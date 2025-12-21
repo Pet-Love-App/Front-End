@@ -341,4 +341,75 @@ describe('SupabaseCommentService', () => {
       expect(result.error?.code).toBe('NOT_AUTHENTICATED');
     });
   });
+
+  describe('getMyComments', () => {
+    it('should return my comments', async () => {
+      // Arrange
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'user-123' } },
+        error: null,
+      });
+
+      const mockComments = [
+        {
+          id: 1,
+          content: 'My comment',
+          author_id: 'user-123',
+          target_type: 'catfood',
+          target_id: 123,
+          parent_id: null,
+          likes: 5,
+          created_at: '2024-01-01T00:00:00Z',
+          updated_at: '2024-01-01T00:00:00Z',
+          author: {
+            id: 'user-123',
+            username: 'testuser',
+            avatar_url: null,
+          },
+        },
+      ];
+
+      setupFromMock('comments', mockSuccessResponse(mockComments));
+
+      // Act
+      const result = await supabaseCommentService.getMyComments();
+
+      // Assert
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveLength(1);
+      expect(result.data![0].content).toBe('My comment');
+    });
+
+    it('should fail when user is not authenticated', async () => {
+      // Arrange
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: null,
+      });
+
+      // Act
+      const result = await supabaseCommentService.getMyComments();
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.code).toBe('NOT_AUTHENTICATED');
+    });
+
+    it('should handle database errors', async () => {
+      // Arrange
+      mockSupabaseClient.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'user-123' } },
+        error: null,
+      });
+
+      setupFromMock('comments', mockErrorResponse('DB Error', 'DB_ERROR'));
+
+      // Act
+      const result = await supabaseCommentService.getMyComments();
+
+      // Assert
+      expect(result.success).toBe(false);
+      expect(result.error?.message).toBe('DB Error');
+    });
+  });
 });

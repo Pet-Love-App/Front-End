@@ -28,9 +28,11 @@ export const ScreenHelper = {
     insets: EdgeInsets
   ) => {
     const minX = insets.left;
-    const maxX = SCREEN_WIDTH - itemWidth - insets.right;
+    // Ensure maxX is at least minX if item is wider than screen
+    const maxX = Math.max(minX, SCREEN_WIDTH - itemWidth - insets.right);
     const minY = insets.top;
-    const maxY = SCREEN_HEIGHT - itemHeight - insets.bottom;
+    // Ensure maxY is at least minY if item is taller than screen
+    const maxY = Math.max(minY, SCREEN_HEIGHT - itemHeight - insets.bottom);
 
     return {
       x: Math.min(Math.max(x, minX), maxX),

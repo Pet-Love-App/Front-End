@@ -51,6 +51,7 @@ export interface IngredientAnalysisCardProps {
   onViewDetails?: () => void;
   /** 是否紧凑模式 */
   compact?: boolean;
+  testID?: string;
 }
 
 // ============================================================================
@@ -292,7 +293,8 @@ export function IngredientAnalysisCard({
   summary,
   onIngredientPress,
   onViewDetails,
-  compact = false,
+  compact,
+  testID,
 }: IngredientAnalysisCardProps) {
   const { safe, caution, risk } = groupIngredients(ingredients);
 
@@ -306,7 +308,7 @@ export function IngredientAnalysisCard({
   };
 
   return (
-    <CardContainer compact={compact}>
+    <CardContainer compact={compact} testID={testID}>
       {/* 头部图片区域 */}
       <HeaderImageContainer compact={compact}>
         {imageUrl ? (

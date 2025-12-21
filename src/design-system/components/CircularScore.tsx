@@ -109,7 +109,8 @@ const RatingText = styled(Text, {
 // 组件 Props 类型
 export interface CircularScoreProps {
   score: number;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: keyof typeof sizeConfig;
+  testID?: string;
   animated?: boolean;
   animationDelay?: number;
   label?: string;
@@ -119,7 +120,8 @@ export interface CircularScoreProps {
 // 主组件
 export function CircularScore({
   score,
-  size = 'lg',
+  size = 'md',
+  testID,
   animated = true,
   animationDelay = 0,
   label,
@@ -160,7 +162,7 @@ export function CircularScore({
   const gradientId = `scoreGradient-${size}-${score}`;
 
   return (
-    <ScoreContainer>
+    <ScoreContainer testID={testID}>
       <Stack width={config.diameter} height={config.diameter}>
         <Svg
           width={config.diameter}

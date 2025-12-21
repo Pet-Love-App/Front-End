@@ -53,10 +53,9 @@ describe('SupabaseFollowService', () => {
     });
 
     it('should fail when not authenticated', async () => {
-      mockSupabaseClient.auth.getUser.mockResolvedValue({
-        data: { user: null },
-        error: null,
-      });
+      // Mock getCurrentUserId to return null
+      const { getCurrentUserId } = require('../../client');
+      getCurrentUserId.mockResolvedValueOnce(null);
 
       const result = await supabaseFollowService.followUser('target-user');
 

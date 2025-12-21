@@ -89,6 +89,9 @@ export const mockSupabaseClient = {
 jest.mock('@/src/lib/supabase/client', () => ({
   supabase: mockSupabaseClient,
   isSupabaseConfigured: jest.fn(() => true),
+  getCurrentUserId: jest.fn().mockResolvedValue('user-123'),
+  getSession: jest.fn().mockResolvedValue({ user: { id: 'user-123' } }),
+  isAuthenticated: jest.fn().mockResolvedValue(true),
 }));
 
 // Mock AsyncStorage

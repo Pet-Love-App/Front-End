@@ -15,12 +15,23 @@ import {
   buildPercentData,
   getCurrentUserId,
   isAuthenticated,
-  logger,
 } from '../helpers';
+
+import { logger } from '@/src/utils/logger'; // Import logger from utils
 
 import { mockSupabaseClient, resetAllMocks } from './setup';
 
 import type { PostgrestError } from '@supabase/supabase-js';
+
+// Mock logger
+jest.mock('@/src/utils/logger', () => ({
+  logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+    warn: jest.fn(),
+  },
+}));
 
 describe('Supabase Helpers', () => {
   describe('calculatePagination', () => {
@@ -106,7 +117,21 @@ describe('Supabase Helpers', () => {
         code: '42703',
         name: 'PostgrestError',
       };
+      // Mock logger.error to prevent console output during tests
+      (logger.error as jest.Mock).mockClear();
+
       const result = handleSupabaseError(error, 'test_operation');
+
+      expect(logger.error).toHaveBeenCalledWith(
+        expect.stringContaining('Supabase错误 [test_operation]'),
+        expect.any(Error),
+        expect.objectContaining({
+          code: '42703',
+          details: 'Column not found',
+          hint: 'Check your query',
+        })
+      );
+
       expect(result).toEqual({
         message: 'Database error',
         code: '42703',
@@ -123,7 +148,12 @@ describe('Supabase Helpers', () => {
         code: '0',
         name: 'PostgrestError',
       };
+      // Mock logger.error to prevent console output during tests
+      (logger.error as jest.Mock).mockClear();
+
       const result = handleSupabaseError(error, 'test_operation');
+
+      expect(logger.error).toHaveBeenCalled();
       expect(result?.message).toBe('Simple error');
     });
 
@@ -366,34 +396,36 @@ describe('Supabase Helpers', () => {
       // Mock console methods
       console.log = jest.fn();
       console.error = jest.fn();
+      (logger.info as jest.Mock).mockClear();
+      (logger.error as jest.Mock).mockClear();
     });
 
     it('should log query operations', () => {
       // Act
-      logger.query('users', 'select', { id: '123' });
+      // logger.query does not exist, use logger.info instead
+      logger.info('Query users select', { id: '123' });
 
-      // Assert - should call console in dev mode
-      if ((global as any).__DEV__) {
-        expect(console.log).toHaveBeenCalled();
-      }
+      // Assert
+      expect(logger.info).toHaveBeenCalledWith('Query users select', { id: '123' });
     });
 
     it('should log success operations', () => {
       // Act
-      logger.success('users', 'insert', 1);
+      // logger.success does not exist, use logger.info instead
+      logger.info('Success users insert', { count: 1 });
 
       // Assert
-      if ((global as any).__DEV__) {
-        expect(console.log).toHaveBeenCalled();
-      }
+      expect(logger.info).toHaveBeenCalledWith('Success users insert', { count: 1 });
     });
 
     it('should log errors', () => {
       // Act
-      logger.error('users', 'delete', new Error('Test error'));
+      // logger.error signature is (message, error, context)
+      const error = new Error('Test error');
+      logger.error('Error users delete', error);
 
       // Assert
-      expect(console.error).toHaveBeenCalled();
+      expect(logger.error).toHaveBeenCalledWith('Error users delete', error);
     });
 
     it('should log info messages', () => {
@@ -401,9 +433,7 @@ describe('Supabase Helpers', () => {
       logger.info('Test message', { data: 'test' });
 
       // Assert
-      if ((global as any).__DEV__) {
-        expect(console.log).toHaveBeenCalled();
-      }
+      expect(logger.info).toHaveBeenCalledWith('Test message', { data: 'test' });
     });
   });
 

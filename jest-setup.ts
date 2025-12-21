@@ -14,7 +14,19 @@ jest.mock('tamagui', () => {
     XStack: View,
     ZStack: View,
     Stack: View,
-    Button: View,
+    Button: jest.fn(({ onPress, disabled, children, ...props }) => {
+      const React = require('react');
+      const { TouchableOpacity } = require('react-native');
+      return React.createElement(
+        TouchableOpacity,
+        {
+          onPress: disabled ? undefined : onPress,
+          disabled: disabled,
+          ...props,
+        },
+        children
+      );
+    }),
     Card: Object.assign(View, {
       Header: View,
       Footer: View,

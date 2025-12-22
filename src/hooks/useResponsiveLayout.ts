@@ -135,18 +135,5 @@ export function useResponsiveLayout() {
   };
 }
 
-/**
- * 响应式值选择器
- * @param values 不同尺寸下的值
- */
-export function useResponsiveValue<T>(values: {
-  xs?: T;
-  sm?: T;
-  md?: T;
-  lg?: T;
-  xl?: T;
-  default: T;
-}): T {
-  const { deviceSize } = useResponsiveLayout();
-  return values[deviceSize] ?? values.default;
-}
+// 注意：useResponsiveValue 已迁移到 useResponsive.ts
+// 请使用 import { useResponsiveValue } from '@/src/hooks/useResponsive';

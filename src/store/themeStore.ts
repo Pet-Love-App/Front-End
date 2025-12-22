@@ -16,8 +16,8 @@ interface ThemeState {
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
-      // 默认跟随系统
-      themeMode: 'system',
+      // 默认亮色主题
+      themeMode: 'light',
 
       // 设置主题模式
       setThemeMode: (mode: ThemeMode) => {
@@ -32,7 +32,7 @@ export const useThemeStore = create<ThemeState>()(
       },
     }),
     {
-      name: 'themeStorage',
+      name: 'themeStorage_v2', // 修改版本号强制重置
       storage: createJSONStorage(() => AsyncStorage),
       // 只持久化主题模式
       partialize: (state) => ({

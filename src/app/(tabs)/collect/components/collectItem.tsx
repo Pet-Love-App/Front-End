@@ -5,15 +5,10 @@ import { Image } from 'react-native';
 import { Card, Separator, Text, XStack, YStack } from 'tamagui';
 import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { useResponsive } from '@/src/hooks/useResponsive';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 import type { CatfoodFavorite } from '@/src/types/collect';
-import {
-  primaryScale,
-  successScale,
-  infoScale,
-  warningScale,
-  errorScale,
-  neutralScale,
-} from '@/src/design-system/tokens';
+import { successScale, infoScale, warningScale, errorScale } from '@/src/design-system/tokens';
 
 interface CollectListItemProps {
   favorite: CatfoodFavorite;
@@ -45,56 +40,73 @@ function getScoreColor(score: number) {
 
 export default function CollectListItem({ favorite, onDelete }: CollectListItemProps) {
   const { catfood } = favorite;
+  const { sf, sw, isSmall, spacing, fontSize: fs, iconSize } = useResponsive();
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
+
   if (!catfood) return null;
 
   const scoreColor = catfood.score != null ? getScoreColor(catfood.score) : null;
 
+  // 响应式图片尺寸
+  const imageSize = isSmall ? sw(70) : sw(80);
+
   return (
-    <Card size="$4" bordered borderColor={neutralScale.neutral3} backgroundColor="white">
-      <Card.Header padding="$4">
-        <XStack gap="$3" alignItems="center">
+    <Card
+      size="$4"
+      bordered
+      borderColor={colors.border as any}
+      backgroundColor={colors.cardBackground as any}
+    >
+      <Card.Header padding={spacing.lg as any}>
+        <XStack gap={spacing.md as any} alignItems="center">
           {/* 猫粮图片 */}
           <YStack
             borderRadius="$3"
             overflow="hidden"
             borderWidth={1}
-            borderColor={neutralScale.neutral3}
+            borderColor={colors.border as any}
           >
             {catfood.imageUrl ? (
               <Image
                 source={{ uri: catfood.imageUrl }}
-                style={{ width: 80, height: 80, borderRadius: 8 }}
+                style={{ width: imageSize, height: imageSize, borderRadius: 8 }}
                 resizeMode="cover"
               />
             ) : (
               <YStack
-                width={80}
-                height={80}
-                backgroundColor={neutralScale.neutral2}
+                width={imageSize}
+                height={imageSize}
+                backgroundColor={colors.backgroundMuted as any}
                 alignItems="center"
                 justifyContent="center"
               >
-                <IconSymbol name="photo" size={32} color={neutralScale.neutral7} />
+                <IconSymbol name="photo" size={iconSize.xl} color={colors.textTertiary} />
               </YStack>
             )}
           </YStack>
 
           {/* 猫粮信息 */}
           <YStack flex={1} gap="$1">
-            <Text fontSize={18} fontWeight="700" color="$foreground" numberOfLines={2}>
+            <Text
+              fontSize={isSmall ? fs.lg : fs.xl}
+              fontWeight="700"
+              color={colors.text as any}
+              numberOfLines={2}
+            >
               {catfood.name}
             </Text>
             {catfood.brand && (
               <XStack alignItems="center" gap="$1">
-                <IconSymbol name="building.2" size={14} color={neutralScale.neutral8} />
-                <Text fontSize={14} color={neutralScale.neutral8} numberOfLines={1}>
+                <IconSymbol name="building.2" size={iconSize.sm} color={colors.textSecondary} />
+                <Text fontSize={fs.md} color={colors.textSecondary as any} numberOfLines={1}>
                   {catfood.brand}
                 </Text>
               </XStack>
             )}
             <XStack alignItems="center" gap="$1" marginTop="$1">
-              <IconSymbol name="clock" size={14} color={neutralScale.neutral7} />
-              <Text fontSize={12} color={neutralScale.neutral7}>
+              <IconSymbol name="clock" size={iconSize.sm} color={colors.textTertiary} />
+              <Text fontSize={fs.sm} color={colors.textTertiary as any}>
                 收藏于 {formatDate(favorite.createdAt)}
               </Text>
             </XStack>
@@ -102,20 +114,20 @@ export default function CollectListItem({ favorite, onDelete }: CollectListItemP
 
           {/* 评分显示 */}
           {catfood.score != null && scoreColor && (
-            <YStack alignItems="center" gap="$1" minWidth={60}>
+            <YStack alignItems="center" gap="$1" minWidth={sw(60)}>
               <YStack
-                backgroundColor={scoreColor + '15'}
+                backgroundColor={(scoreColor + '15') as any}
                 paddingHorizontal="$3"
                 paddingVertical="$2"
                 borderRadius="$4"
                 borderWidth={2}
-                borderColor={scoreColor}
+                borderColor={scoreColor as any}
               >
-                <Text fontSize={24} fontWeight="800" color={scoreColor}>
+                <Text fontSize={isSmall ? fs.xxl : fs.xxxl} fontWeight="800" color={scoreColor}>
                   {catfood.score}
                 </Text>
               </YStack>
-              <Text fontSize={12} color={neutralScale.neutral8} fontWeight="500">
+              <Text fontSize={fs.sm} color={colors.textSecondary as any} fontWeight="500">
                 综合评分
               </Text>
             </YStack>
@@ -125,26 +137,26 @@ export default function CollectListItem({ favorite, onDelete }: CollectListItemP
 
       {onDelete && (
         <>
-          <Separator borderColor={neutralScale.neutral2} />
+          <Separator borderColor={colors.borderMuted as any} />
           <Card.Footer padding="$3" paddingTop="$2">
             <XStack justifyContent="flex-end" width="100%" alignItems="center">
               <Button
                 size="$3"
-                backgroundColor={neutralScale.neutral2}
+                backgroundColor={colors.backgroundMuted as any}
                 borderWidth={1}
-                borderColor={neutralScale.neutral3}
-                color={neutralScale.neutral9}
+                borderColor={colors.border as any}
+                color={colors.textSecondary as any}
                 paddingHorizontal="$4"
-                height={36}
-                icon={<IconSymbol name="heart.slash" size={18} color={errorScale.error9} />}
+                height={sw(36)}
+                icon={<IconSymbol name="heart.slash" size={iconSize.md} color={colors.error} />}
                 onPress={() => onDelete(favorite.id, catfood.id)}
                 pressStyle={{
                   scale: 0.97,
                   opacity: 0.8,
-                  backgroundColor: errorScale.error2,
+                  backgroundColor: colors.errorMuted as any,
                 }}
               >
-                <Text fontSize={14} fontWeight="600" color={errorScale.error9}>
+                <Text fontSize={fs.md} fontWeight="600" color={colors.error as any}>
                   取消收藏
                 </Text>
               </Button>

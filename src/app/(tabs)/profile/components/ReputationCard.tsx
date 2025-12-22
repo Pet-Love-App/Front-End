@@ -9,7 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Card, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { BADGE_CONFIGS } from '@/src/constants/badges';
-import { neutralScale } from '@/src/design-system/tokens';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 import type { ReputationSummary } from '@/src/lib/supabase/services/reputation';
 
 interface ReputationCardProps {
@@ -17,6 +17,8 @@ interface ReputationCardProps {
 }
 
 export const ReputationCard = memo(function ReputationCard({ reputation }: ReputationCardProps) {
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
   const badgeConfig = useMemo(() => {
     return BADGE_CONFIGS[reputation.level];
   }, [reputation.level]);
@@ -56,11 +58,11 @@ export const ReputationCard = memo(function ReputationCard({ reputation }: Reput
   return (
     <View testID="reputation-card">
       <Card
-        backgroundColor="white"
+        backgroundColor={colors.cardBackground as any}
         borderRadius={20}
         padding="$4"
         bordered
-        borderColor={neutralScale.neutral3}
+        borderColor={colors.borderMuted as any}
       >
         <YStack gap="$4">
           {/* 头部：等级徽章和分数 */}
@@ -106,11 +108,11 @@ export const ReputationCard = memo(function ReputationCard({ reputation }: Reput
               {/* 等级信息 */}
               <YStack>
                 <View testID="reputation-level">
-                  <Text fontSize={18} fontWeight="700" color={neutralScale.neutral12}>
+                  <Text fontSize={18} fontWeight="700" color={colors.text as any}>
                     {badgeConfig.name}
                   </Text>
                 </View>
-                <Text fontSize={13} color={neutralScale.neutral9}>
+                <Text fontSize={13} color={colors.textSecondary as any}>
                   {badgeConfig.description}
                 </Text>
               </YStack>
@@ -123,7 +125,7 @@ export const ReputationCard = memo(function ReputationCard({ reputation }: Reput
                   {reputation.score}
                 </Text>
               </View>
-              <Text fontSize={12} color={neutralScale.neutral9} fontWeight="600">
+              <Text fontSize={12} color={colors.textSecondary as any} fontWeight="600">
                 信誉分
               </Text>
             </YStack>
@@ -136,14 +138,14 @@ export const ReputationCard = memo(function ReputationCard({ reputation }: Reput
                 <XStack alignItems="center" justifyContent="space-between">
                   <XStack alignItems="center" gap="$2">
                     <IconSymbol name={item.icon as any} size={14} color={item.color} />
-                    <Text fontSize={13} color={neutralScale.neutral10} fontWeight="500">
+                    <Text fontSize={13} color={colors.text as any} fontWeight="500">
                       {item.label}
                     </Text>
-                    <Text fontSize={11} color={neutralScale.neutral8}>
+                    <Text fontSize={11} color={colors.textTertiary as any}>
                       (权重 {Math.round(item.weight * 100)}%)
                     </Text>
                   </XStack>
-                  <Text fontSize={13} color={neutralScale.neutral11} fontWeight="600">
+                  <Text fontSize={13} color={colors.textSecondary as any} fontWeight="600">
                     {item.value}分
                   </Text>
                 </XStack>
@@ -151,7 +153,7 @@ export const ReputationCard = memo(function ReputationCard({ reputation }: Reput
                 <View testID="progress-bar">
                   <YStack
                     height={6}
-                    backgroundColor={neutralScale.neutral2}
+                    backgroundColor={colors.backgroundMuted as any}
                     borderRadius={3}
                     overflow="hidden"
                   >

@@ -44,7 +44,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider testID="app-root">
-      <TamaguiProvider config={tamaguiConfig}>
+      <TamaguiProvider config={tamaguiConfig} defaultTheme={colorScheme}>
         <PortalProvider>
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <DismissKeyboardView>

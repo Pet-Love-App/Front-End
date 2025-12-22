@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Avatar, Spinner, Text, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { useUserStore } from '@/src/store/userStore';
-import { primaryScale, neutralScale, errorScale } from '@/src/design-system/tokens';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 
 interface ProfileHeaderProps {
   username?: string;
@@ -24,6 +24,8 @@ export function ProfileHeader({
   equippedBadge,
 }: ProfileHeaderProps) {
   const { user, uploadAvatar, deleteAvatar } = useUserStore();
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
   const [uploading, setUploading] = useState(false);
   const [cacheBuster, setCacheBuster] = useState(0);
 
@@ -130,79 +132,227 @@ export function ProfileHeader({
 
   return (
     <YStack width="100%" alignItems="center" position="relative" paddingBottom="$4">
-      {/* 顶部渐变背景 */}
-      <YStack width="100%" height={160} position="relative" overflow="hidden">
+      {/* 顶部渐变背景 - 美化版本 */}
+      <YStack width="100%" height={200} position="relative" overflow="hidden">
+        {/* 主渐变层 */}
         <LinearGradient
-          colors={[primaryScale.primary7, primaryScale.primary6, primaryScale.primary5]}
+          colors={
+            isDark
+              ? (['#2D1F1A', '#3D2A1F', '#1F1714', colors.background] as const)
+              : (['#FEBE98', '#FFD5C4', '#FFE4D9', '#FFF8F5'] as const)
+          }
           start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: 0, y: 1 }}
           style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
         />
-        {/* 装饰性图案 */}
+
+        {/* 次级渐变层 - 增加深度 */}
+        <LinearGradient
+          colors={
+            isDark
+              ? (['rgba(254, 190, 152, 0.05)', 'transparent', 'transparent'] as const)
+              : (['rgba(255, 255, 255, 0.3)', 'transparent', 'transparent'] as const)
+          }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        />
+
+        {/* 装饰性图案 - 圆形 1 (大) */}
         <YStack
           position="absolute"
-          top={-30}
-          right={-30}
+          top={-50}
+          right={-50}
+          width={180}
+          height={180}
+          borderRadius={90}
+          backgroundColor={isDark ? 'rgba(254, 190, 152, 0.04)' : 'rgba(255, 255, 255, 0.15)'}
+          style={{
+            shadowColor: isDark ? '#FEBE98' : '#FFFFFF',
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: isDark ? 0.1 : 0.3,
+            shadowRadius: 30,
+          }}
+        />
+
+        {/* 装饰性图案 - 圆形 2 (中) */}
+        <YStack
+          position="absolute"
+          bottom={-30}
+          left={-30}
           width={120}
           height={120}
-          borderRadius="$12"
-          backgroundColor="rgba(255, 255, 255, 0.1)"
-          transform={[{ rotate: '45deg' }]}
+          borderRadius={60}
+          backgroundColor={isDark ? 'rgba(254, 190, 152, 0.06)' : 'rgba(255, 255, 255, 0.2)'}
         />
+
+        {/* 装饰性图案 - 小方形 (左上) */}
         <YStack
           position="absolute"
-          bottom={-20}
-          left={-20}
-          width={80}
-          height={80}
-          borderRadius="$10"
-          backgroundColor="rgba(255, 255, 255, 0.08)"
-          transform={[{ rotate: '30deg' }]}
+          top={20}
+          left={20}
+          width={50}
+          height={50}
+          borderRadius="$6"
+          backgroundColor={isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.12)'}
+          transform={[{ rotate: '15deg' }]}
+        />
+
+        {/* 装饰性图案 - 小圆形 (右下) */}
+        <YStack
+          position="absolute"
+          bottom={40}
+          right={40}
+          width={30}
+          height={30}
+          borderRadius={15}
+          backgroundColor={isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.18)'}
+        />
+
+        {/* 波浪纹理效果 */}
+        <YStack
+          position="absolute"
+          top={60}
+          left={-100}
+          width={300}
+          height={100}
+          borderRadius={150}
+          backgroundColor={isDark ? 'rgba(254, 190, 152, 0.02)' : 'rgba(255, 255, 255, 0.08)'}
+          transform={[{ scaleX: 2 }]}
         />
       </YStack>
 
-      {/* 头像区域 */}
-      <YStack position="absolute" top={70} alignItems="center" zIndex={10}>
+      {/* 头像区域 - 美化版本 */}
+      <YStack position="absolute" top={90} alignItems="center" zIndex={10}>
         <TouchableOpacity testID="user-avatar" onPress={onPressAvatar} activeOpacity={0.85}>
           <YStack position="relative" alignItems="center">
-            <Avatar circular size={128} borderWidth={0} elevation={0}>
-              {uploading ? (
-                <Avatar.Fallback
-                  backgroundColor={neutralScale.neutral2}
-                  justifyContent="center"
-                  alignItems="center"
-                >
-                  <Spinner size="large" color={errorScale.error8} />
-                </Avatar.Fallback>
-              ) : avatarSrc ? (
-                <Avatar.Image src={avatarSrc} />
-              ) : (
-                <Avatar.Fallback
-                  backgroundColor={primaryScale.primary7}
-                  justifyContent="center"
-                  alignItems="center"
-                >
-                  <IconSymbol name="person.fill" size={50} color="white" />
-                </Avatar.Fallback>
-              )}
-            </Avatar>
+            {/* 外层光晕 */}
+            <YStack
+              position="absolute"
+              width={148}
+              height={148}
+              borderRadius={74}
+              backgroundColor={isDark ? 'rgba(254, 190, 152, 0.15)' : 'rgba(254, 190, 152, 0.25)'}
+              style={{
+                shadowColor: colors.primary,
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: isDark ? 0.3 : 0.5,
+                shadowRadius: 20,
+              }}
+            />
 
-            {/* 相机按钮 */}
+            {/* 中层装饰环 */}
+            <YStack
+              position="absolute"
+              width={138}
+              height={138}
+              borderRadius={69}
+              borderWidth={3}
+              borderColor={isDark ? 'rgba(254, 190, 152, 0.2)' : 'rgba(255, 255, 255, 0.6)'}
+              style={{
+                shadowColor: isDark ? colors.primary : '#FFFFFF',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+              }}
+            />
+
+            {/* 头像主体 */}
+            <YStack
+              borderRadius={64}
+              overflow="hidden"
+              borderWidth={4}
+              borderColor={colors.cardBackground as any}
+              style={{
+                shadowColor: isDark ? '#000000' : colors.primary,
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: isDark ? 0.4 : 0.25,
+                shadowRadius: 16,
+                elevation: 12,
+              }}
+            >
+              <Avatar circular size={128} borderWidth={0} elevation={0}>
+                {uploading ? (
+                  <Avatar.Fallback
+                    backgroundColor={colors.backgroundMuted as any}
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <Spinner size="large" color={colors.error as any} />
+                  </Avatar.Fallback>
+                ) : avatarSrc ? (
+                  <Avatar.Image src={avatarSrc} />
+                ) : (
+                  <Avatar.Fallback
+                    backgroundColor={colors.primary as any}
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    {/* 渐变背景 */}
+                    <LinearGradient
+                      colors={
+                        isDark
+                          ? ([colors.primary, colors.primaryDark] as const)
+                          : ([colors.primaryLight, colors.primary] as const)
+                      }
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        width: 128,
+                        height: 128,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    />
+                    <IconSymbol name="person.fill" size={50} color="white" />
+                  </Avatar.Fallback>
+                )}
+              </Avatar>
+            </YStack>
+
+            {/* 相机按钮 - 增强版 */}
             {!uploading && (
               <YStack
                 position="absolute"
                 bottom={4}
                 right={4}
-                width={36}
-                height={36}
-                borderRadius="$8"
-                backgroundColor={primaryScale.primary7}
-                alignItems="center"
-                justifyContent="center"
-                borderWidth={2}
-                borderColor="white"
+                width={40}
+                height={40}
+                borderRadius={20}
+                overflow="hidden"
+                style={{
+                  shadowColor: colors.primary,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 8,
+                }}
               >
-                <IconSymbol name="camera.fill" size={16} color="white" />
+                <LinearGradient
+                  colors={
+                    isDark
+                      ? ([colors.primary, colors.primaryDark] as const)
+                      : ([colors.primary, colors.primaryDark] as const)
+                  }
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderWidth: 3,
+                    borderColor: colors.cardBackground as any,
+                    borderRadius: 20,
+                  }}
+                >
+                  <IconSymbol name="camera.fill" size={18} color="white" />
+                </LinearGradient>
               </YStack>
             )}
           </YStack>
@@ -217,7 +367,7 @@ export function ProfileHeader({
             <Text
               fontSize={24}
               fontWeight="700"
-              color={neutralScale.neutral12}
+              color={colors.text as any}
               textAlign="center"
               numberOfLines={1}
             >
@@ -264,7 +414,7 @@ export function ProfileHeader({
 
         <Text
           fontSize={12}
-          color={neutralScale.neutral8}
+          color={colors.textSecondary as any}
           textAlign="center"
           numberOfLines={2}
           paddingHorizontal="$6"

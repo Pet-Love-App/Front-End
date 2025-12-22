@@ -12,7 +12,8 @@ import type { EdgeInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { primaryScale, neutralScale, errorScale } from '@/src/design-system/tokens';
+import { primaryScale, errorScale } from '@/src/design-system/tokens';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 import { useUserStore } from '@/src/store/userStore';
 import { supabaseForumService, supabase } from '@/src/lib/supabase';
 
@@ -42,6 +43,8 @@ export function AppHeader({
   const router = useRouter();
   const { user } = useUserStore();
   const [unreadCount, setUnreadCount] = useState(0);
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
 
   // 获取未读通知数量
   const fetchUnreadCount = useCallback(async () => {
@@ -113,11 +116,11 @@ export function AppHeader({
               width={40}
               height={40}
               borderRadius={20}
-              backgroundColor={primaryScale.primary2}
+              backgroundColor={(isDark ? '#3D2A1F' : primaryScale.primary2) as any}
               alignItems="center"
               justifyContent="center"
               borderWidth={2}
-              borderColor={primaryScale.primary4}
+              borderColor={(isDark ? '#4D3A2F' : primaryScale.primary4) as any}
               overflow="hidden"
             >
               {user?.avatarUrl ? (
@@ -127,7 +130,7 @@ export function AppHeader({
                   resizeMode="cover"
                 />
               ) : (
-                <IconSymbol name="person.fill" size={20} color={primaryScale.primary7} />
+                <IconSymbol name="person.fill" size={20} color={colors.primary} />
               )}
             </YStack>
           </Pressable>
@@ -136,13 +139,7 @@ export function AppHeader({
         )}
 
         {/* 中间：标题 */}
-        <Text
-          fontSize={18}
-          fontWeight="700"
-          color={neutralScale.neutral12}
-          flex={1}
-          textAlign="center"
-        >
+        <Text fontSize={18} fontWeight="700" color={colors.text as any} flex={1} textAlign="center">
           {title}
         </Text>
 
@@ -155,13 +152,13 @@ export function AppHeader({
               width={40}
               height={40}
               borderRadius={20}
-              backgroundColor={neutralScale.neutral2}
+              backgroundColor={colors.backgroundMuted as any}
               alignItems="center"
               justifyContent="center"
               borderWidth={1}
-              borderColor={neutralScale.neutral3}
+              borderColor={colors.border as any}
             >
-              <IconSymbol name="bell.fill" size={20} color={neutralScale.neutral9} />
+              <IconSymbol name="bell.fill" size={20} color={colors.icon} />
               {/* 未读消息badge */}
               {unreadCount > 0 && (
                 <YStack
@@ -171,7 +168,7 @@ export function AppHeader({
                   minWidth={18}
                   height={18}
                   borderRadius={9}
-                  backgroundColor={errorScale.error8}
+                  backgroundColor={colors.error as any}
                   alignItems="center"
                   justifyContent="center"
                   paddingHorizontal="$1"

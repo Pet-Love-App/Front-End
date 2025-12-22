@@ -6,7 +6,8 @@ import { Card, Text, XStack, YStack } from 'tamagui';
 import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import type { Post } from '@/src/lib/supabase';
-import { errorScale, neutralScale, primaryScale } from '@/src/design-system/tokens';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
+import { useResponsive } from '@/src/hooks/useResponsive';
 
 interface PostCollectItemProps {
   post: Post;
@@ -45,6 +46,10 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export default function PostCollectItem({ post, onDelete, onPress }: PostCollectItemProps) {
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
+  const { sw, sf, spacing, fontSize: fs, iconSize } = useResponsive();
+
   // 获取第一张图片作为封面
   const coverImage = post.media?.find((m) => m.mediaType === 'image')?.fileUrl;
 
@@ -52,36 +57,36 @@ export default function PostCollectItem({ post, onDelete, onPress }: PostCollect
     <Card
       size="$4"
       bordered
-      borderColor={neutralScale.neutral3}
-      backgroundColor="white"
+      borderColor={colors.borderMuted as any}
+      backgroundColor={colors.cardBackground as any}
       pressStyle={{ scale: 0.98, opacity: 0.95 }}
       animation="quick"
       onPress={onPress}
     >
-      <Card.Header padding="$4">
-        <XStack gap="$3" alignItems="flex-start">
+      <Card.Header padding={spacing.md as any}>
+        <XStack gap={spacing.md as any} alignItems="flex-start">
           {/* 帖子封面图 */}
           <YStack
             borderRadius="$3"
             overflow="hidden"
             borderWidth={1}
-            borderColor={neutralScale.neutral3}
+            borderColor={colors.borderMuted as any}
           >
             {coverImage ? (
               <Image
                 source={{ uri: coverImage }}
-                style={{ width: 80, height: 80, borderRadius: 8 }}
+                style={{ width: sw(80), height: sw(80), borderRadius: 8 }}
                 resizeMode="cover"
               />
             ) : (
               <YStack
-                width={80}
-                height={80}
-                backgroundColor={neutralScale.neutral2}
+                width={sw(80)}
+                height={sw(80)}
+                backgroundColor={colors.backgroundMuted as any}
                 alignItems="center"
                 justifyContent="center"
               >
-                <IconSymbol name="doc.text" size={32} color={neutralScale.neutral7} />
+                <IconSymbol name="doc.text" size={iconSize.xl} color={colors.textTertiary} />
               </YStack>
             )}
           </YStack>
@@ -92,12 +97,12 @@ export default function PostCollectItem({ post, onDelete, onPress }: PostCollect
             {post.category && (
               <XStack>
                 <YStack
-                  backgroundColor={CATEGORY_COLORS[post.category] + '20'}
+                  backgroundColor={(CATEGORY_COLORS[post.category] + '20') as any}
                   paddingHorizontal="$2"
                   paddingVertical="$1"
                   borderRadius="$2"
                 >
-                  <Text fontSize={11} fontWeight="600" color={CATEGORY_COLORS[post.category]}>
+                  <Text fontSize={fs.xs} fontWeight="600" color={CATEGORY_COLORS[post.category]}>
                     {CATEGORY_LABELS[post.category] || post.category}
                   </Text>
                 </YStack>
@@ -106,9 +111,9 @@ export default function PostCollectItem({ post, onDelete, onPress }: PostCollect
 
             {/* 帖子内容预览 */}
             <Text
-              fontSize={15}
+              fontSize={fs.md}
               fontWeight="500"
-              color="$foreground"
+              color={colors.text as any}
               numberOfLines={2}
               lineHeight={22}
             >
@@ -127,20 +132,20 @@ export default function PostCollectItem({ post, onDelete, onPress }: PostCollect
                   width={18}
                   height={18}
                   borderRadius={9}
-                  backgroundColor={neutralScale.neutral3}
+                  backgroundColor={colors.borderMuted as any}
                   alignItems="center"
                   justifyContent="center"
                 >
-                  <IconSymbol name="person.fill" size={10} color={neutralScale.neutral6} />
+                  <IconSymbol name="person.fill" size={10} color={colors.textTertiary} />
                 </YStack>
               )}
-              <Text fontSize={12} color={neutralScale.neutral8}>
+              <Text fontSize={fs.xs} color={colors.textSecondary as any}>
                 {post.author?.username || '匿名用户'}
               </Text>
-              <Text fontSize={12} color={neutralScale.neutral6}>
+              <Text fontSize={fs.xs} color={colors.textTertiary as any}>
                 ·
               </Text>
-              <Text fontSize={12} color={neutralScale.neutral6}>
+              <Text fontSize={fs.xs} color={colors.textTertiary as any}>
                 {formatDate(post.createdAt)}
               </Text>
             </XStack>
@@ -148,14 +153,14 @@ export default function PostCollectItem({ post, onDelete, onPress }: PostCollect
             {/* 互动数据 */}
             <XStack alignItems="center" gap="$4">
               <XStack alignItems="center" gap="$1">
-                <IconSymbol name="heart.fill" size={14} color={primaryScale.primary9} />
-                <Text fontSize={12} color={neutralScale.neutral7}>
+                <IconSymbol name="heart.fill" size={14} color={colors.primary} />
+                <Text fontSize={fs.xs} color={colors.textTertiary as any}>
                   {post.favoritesCount || 0}
                 </Text>
               </XStack>
               <XStack alignItems="center" gap="$1">
-                <IconSymbol name="bubble.left" size={14} color={neutralScale.neutral7} />
-                <Text fontSize={12} color={neutralScale.neutral7}>
+                <IconSymbol name="bubble.left" size={14} color={colors.textTertiary} />
+                <Text fontSize={fs.xs} color={colors.textTertiary as any}>
                   {post.commentsCount || 0}
                 </Text>
               </XStack>
@@ -167,13 +172,13 @@ export default function PostCollectItem({ post, onDelete, onPress }: PostCollect
             size="$2"
             circular
             backgroundColor="transparent"
-            pressStyle={{ backgroundColor: errorScale.error2 }}
+            pressStyle={{ backgroundColor: colors.errorMuted as any }}
             onPress={(e) => {
               e.stopPropagation();
               onDelete?.();
             }}
           >
-            <IconSymbol name="trash" size={18} color={errorScale.error9} />
+            <IconSymbol name="trash" size={18} color={colors.error} />
           </Button>
         </XStack>
       </Card.Header>

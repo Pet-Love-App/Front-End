@@ -1,7 +1,7 @@
 import { Text, styled, GetProps } from 'tamagui';
 
 const StyledText = styled(Text, {
-  color: '$foreground',
+  color: '$color',
 
   variants: {
     type: {
@@ -9,20 +9,16 @@ const StyledText = styled(Text, {
       title: { fontSize: '$12', fontWeight: 'bold', lineHeight: 32 },
       subtitle: { fontSize: '$9', fontWeight: 'bold' },
       semibold: { fontSize: '$6', fontWeight: '600', lineHeight: 24 },
-      caption: { fontSize: '$4', color: '$foregroundMuted' },
-      link: { fontSize: '$6', lineHeight: 30, color: '$info7' },
+      caption: { fontSize: '$4', color: '$color8' },
+      link: { fontSize: '$6', lineHeight: 30, color: '$blue' },
     },
     muted: {
-      true: { color: '$foregroundMuted' },
+      true: { color: '$color9' },
     },
     subtle: {
-      true: { color: '$foregroundSubtle' },
+      true: { color: '$color7' },
     },
   } as const,
-
-  defaultVariants: {
-    type: 'default',
-  },
 });
 
 export type ThemedTextProps = GetProps<typeof StyledText>;

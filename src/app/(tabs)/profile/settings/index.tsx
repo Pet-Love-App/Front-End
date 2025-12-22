@@ -2,18 +2,18 @@
  * 设置页面 - 现代购物App风格
  */
 import { useState } from 'react';
-import { View } from 'react-native';
+import { View, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { ScrollView, Text, XStack, YStack } from 'tamagui';
 import { PageHeader } from '@/src/components/PageHeader';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { primaryScale, neutralScale, infoScale } from '@/src/design-system/tokens';
+import { primaryScale } from '@/src/design-system/tokens';
 import { useThemeStore } from '@/src/store/themeStore';
 import { useUserStore } from '@/src/store/userStore';
 import { usePetStore } from '@/src/hooks/usePetStore';
-import { Switch } from 'react-native';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 
 import { EditProfileModal } from '../components/EditProfileModal';
 import { LogoutButton } from '../components/LogoutButton';
@@ -28,6 +28,8 @@ interface SettingItemNewProps {
   value?: string;
   onPress?: () => void;
   showArrow?: boolean;
+  rightElement?: React.ReactNode;
+  colors: ReturnType<typeof useThemeColors>;
 }
 
 function SettingItemNew({
@@ -39,15 +41,16 @@ function SettingItemNew({
   onPress,
   showArrow = true,
   rightElement,
-}: SettingItemNewProps & { rightElement?: React.ReactNode }) {
+  colors,
+}: SettingItemNewProps) {
   return (
     <XStack
       paddingVertical="$3.5"
       paddingHorizontal="$4"
       alignItems="center"
       gap="$3"
-      backgroundColor="white"
-      pressStyle={onPress ? { backgroundColor: neutralScale.neutral2 } : undefined}
+      backgroundColor={colors.cardBackground as any}
+      pressStyle={onPress ? { backgroundColor: colors.hover as any } : undefined}
       onPress={onPress}
     >
       <YStack
@@ -61,7 +64,7 @@ function SettingItemNew({
         <IconSymbol name={icon as any} size={20} color={iconColor} />
       </YStack>
       <YStack flex={1}>
-        <Text fontSize={15} fontWeight="500" color={neutralScale.neutral12}>
+        <Text fontSize={15} fontWeight="500" color={colors.text as any}>
           {label}
         </Text>
       </YStack>
@@ -70,12 +73,12 @@ function SettingItemNew({
       ) : (
         <>
           {value && (
-            <Text fontSize={14} color={neutralScale.neutral8} marginRight="$2">
+            <Text fontSize={14} color={colors.textSecondary as any} marginRight="$2">
               {value}
             </Text>
           )}
           {showArrow && onPress && (
-            <IconSymbol name="chevron.right" size={16} color={neutralScale.neutral6} />
+            <IconSymbol name="chevron.right" size={16} color={colors.textTertiary} />
           )}
         </>
       )}
@@ -88,9 +91,10 @@ interface InfoRowProps {
   label: string;
   value: string;
   isLast?: boolean;
+  colors: ReturnType<typeof useThemeColors>;
 }
 
-function InfoRow({ label, value, isLast = false }: InfoRowProps) {
+function InfoRow({ label, value, isLast = false, colors }: InfoRowProps) {
   return (
     <XStack
       paddingVertical="$3"
@@ -98,12 +102,12 @@ function InfoRow({ label, value, isLast = false }: InfoRowProps) {
       alignItems="center"
       justifyContent="space-between"
       borderBottomWidth={isLast ? 0 : 1}
-      borderBottomColor={neutralScale.neutral2}
+      borderBottomColor={colors.borderMuted as any}
     >
-      <Text fontSize={14} color={neutralScale.neutral8}>
+      <Text fontSize={14} color={colors.textSecondary as any}>
         {label}
       </Text>
-      <Text fontSize={14} fontWeight="500" color={neutralScale.neutral11}>
+      <Text fontSize={14} fontWeight="500" color={colors.text as any}>
         {value}
       </Text>
     </XStack>
@@ -113,14 +117,15 @@ function InfoRow({ label, value, isLast = false }: InfoRowProps) {
 // 分组标题组件
 interface SectionTitleProps {
   title: string;
+  colors: ReturnType<typeof useThemeColors>;
 }
 
-function SectionTitle({ title }: SectionTitleProps) {
+function SectionTitle({ title, colors }: SectionTitleProps) {
   return (
     <Text
       fontSize={13}
       fontWeight="600"
-      color={neutralScale.neutral8}
+      color={colors.textSecondary as any}
       paddingHorizontal="$4"
       paddingTop="$5"
       paddingBottom="$2"
@@ -135,17 +140,18 @@ function SectionTitle({ title }: SectionTitleProps) {
 // 卡片容器组件
 interface CardContainerProps {
   children: React.ReactNode;
+  colors: ReturnType<typeof useThemeColors>;
 }
 
-function CardContainer({ children }: CardContainerProps) {
+function CardContainer({ children, colors }: CardContainerProps) {
   return (
     <YStack
       marginHorizontal="$4"
       borderRadius={16}
-      backgroundColor="white"
+      backgroundColor={colors.cardBackground as any}
       overflow="hidden"
       borderWidth={1}
-      borderColor={neutralScale.neutral3}
+      borderColor={colors.borderMuted as any}
     >
       {children}
     </YStack>
@@ -158,6 +164,8 @@ export default function SettingsScreen() {
   const { themeMode, setThemeMode } = useThemeStore();
   const { user } = useUserStore();
   const { isVisible, setVisible } = usePetStore();
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
 
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
@@ -173,13 +181,18 @@ export default function SettingsScreen() {
     }
   };
 
+  // 渐变背景颜色
+  const gradientColors = isDark
+    ? (['#1F1714', colors.background] as const)
+    : ([primaryScale.primary2, colors.background] as const);
+
   return (
     <View testID="settings-screen" style={{ flex: 1 }}>
-      <YStack flex={1} backgroundColor={neutralScale.neutral1}>
+      <YStack flex={1} backgroundColor={colors.background as any}>
         {/* 背景渐变 */}
         <YStack position="absolute" width="100%" height={200}>
           <LinearGradient
-            colors={[primaryScale.primary2, neutralScale.neutral1]}
+            colors={gradientColors}
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
             style={{ width: '100%', height: '100%' }}
@@ -198,62 +211,78 @@ export default function SettingsScreen() {
           }}
         >
           {/* 用户信息卡片 */}
-          <SectionTitle title="个人信息" />
-          <CardContainer>
-            <InfoRow label="用户名" value={user?.username ?? '未登录'} />
-            <InfoRow label="用户ID" value={user?.id ? `${user.id.slice(0, 8)}...` : '-'} isLast />
+          <SectionTitle title="个人信息" colors={colors} />
+          <CardContainer colors={colors}>
+            <InfoRow label="用户名" value={user?.username ?? '未登录'} colors={colors} />
+            <InfoRow
+              label="用户ID"
+              value={user?.id ? `${user.id.slice(0, 8)}...` : '-'}
+              isLast
+              colors={colors}
+            />
           </CardContainer>
 
           {/* 账号设置 */}
-          <SectionTitle title="账号设置" />
-          <CardContainer>
+          <SectionTitle title="账号设置" colors={colors} />
+          <CardContainer colors={colors}>
             <SettingItemNew
               icon="person.fill"
-              iconBgColor={primaryScale.primary2}
+              iconBgColor={isDark ? '#3D2A1F' : primaryScale.primary2}
               iconColor={primaryScale.primary8}
               label="编辑个人资料"
               value="用户名 / 密码 / 简介"
               onPress={() => setIsEditProfileOpen(true)}
+              colors={colors}
             />
           </CardContainer>
 
           {/* 外观设置 */}
-          <SectionTitle title="外观设置" />
-          <YStack marginTop="$4" backgroundColor="white" borderRadius={16} overflow="hidden">
+          <SectionTitle title="外观设置" colors={colors} />
+          <YStack
+            marginHorizontal="$4"
+            marginTop="$2"
+            backgroundColor={colors.cardBackground as any}
+            borderRadius={16}
+            overflow="hidden"
+            borderWidth={1}
+            borderColor={colors.borderMuted as any}
+          >
             <View testID="theme-setting">
               <SettingItemNew
                 icon="moon.fill"
-                iconBgColor="#F3E8FF"
+                iconBgColor={isDark ? '#2D1F3D' : '#F3E8FF'}
                 iconColor="#9333EA"
                 label="深色模式"
                 value={
                   themeMode === 'system' ? '跟随系统' : themeMode === 'dark' ? '已开启' : '已关闭'
                 }
                 onPress={() => setIsThemeSelectorOpen(true)}
+                colors={colors}
               />
             </View>
             <SettingItemNew
               icon="pawprint.fill"
-              iconBgColor="#FFF4E6"
+              iconBgColor={isDark ? '#2D1F0A' : '#FFF4E6'}
               iconColor="#FF9500"
               label="桌面宠物"
               showArrow={false}
+              colors={colors}
               rightElement={
                 <Switch
                   value={isVisible}
                   onValueChange={setVisible}
-                  trackColor={{ false: neutralScale.neutral4, true: '#FF9500' }}
-                  thumbColor={'white'}
+                  trackColor={{ false: colors.border, true: '#FF9500' }}
+                  thumbColor={isDark ? '#FAFAFA' : '#FFFFFF'}
                 />
               }
             />
           </YStack>
 
           {/* 关于与帮助 */}
-          <SectionTitle title="关于与帮助" />
-          <CardContainer>
-            <InfoRow label="应用版本" value="1.0.0" />
-            <InfoRow label="开发团队" value="Pet Love Team" isLast />
+          <SectionTitle title="关于与帮助" colors={colors} />
+          <CardContainer colors={colors}>
+            <InfoRow label="应用版本" value="1.0.0" colors={colors} />
+            <InfoRow label="开发团队" value="Pet Love Team" isLast colors={colors} />
           </CardContainer>
 
           {/* 退出登录 */}
@@ -263,10 +292,10 @@ export default function SettingsScreen() {
 
           {/* 底部说明 */}
           <YStack alignItems="center" marginTop="$6" gap="$1">
-            <Text fontSize={12} color={neutralScale.neutral6}>
+            <Text fontSize={12} color={colors.textTertiary as any}>
               Made with ❤️ by Pet Love Team
             </Text>
-            <Text fontSize={11} color={neutralScale.neutral5}>
+            <Text fontSize={11} color={colors.textMuted as any}>
               © 2024 Pet Love. All rights reserved.
             </Text>
           </YStack>

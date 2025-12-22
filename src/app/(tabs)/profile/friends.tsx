@@ -30,15 +30,17 @@ import {
   type FriendRequest,
 } from '@/src/lib/supabase';
 import { UserProfileModal } from '@/src/components/UserProfileModal';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const BRAND_COLOR = '#FEBE98'; // 应用主题色 - 温暖的桃色
 
 type TabType = 'friends' | 'requests';
 
 export default function MyFriendsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
   const [activeTab, setActiveTab] = useState<TabType>('friends');
   const [friends, setFriends] = useState<Friend[]>([]);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
@@ -118,7 +120,7 @@ export default function MyFriendsScreen() {
   };
 
   const renderFriendItem = ({ item }: { item: Friend }) => (
-    <View style={styles.friendCard}>
+    <View style={[styles.friendCard, { backgroundColor: colors.cardBackground }]}>
       <TouchableOpacity
         style={styles.friendTouchable}
         onPress={() => handleViewProfile(item.friendId)}
@@ -128,19 +130,19 @@ export default function MyFriendsScreen() {
           {item.friendAvatar ? (
             <Image source={{ uri: item.friendAvatar }} style={styles.avatar} />
           ) : (
-            <View style={styles.avatarPlaceholder}>
+            <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}>
               <Text style={styles.avatarText}>{item.friendUsername.charAt(0).toUpperCase()}</Text>
             </View>
           )}
         </View>
         <View style={styles.friendInfo}>
-          <Text style={styles.friendName}>{item.friendUsername}</Text>
+          <Text style={[styles.friendName, { color: colors.text }]}>{item.friendUsername}</Text>
           {item.friendBio && (
-            <Text style={styles.friendBio} numberOfLines={1}>
+            <Text style={[styles.friendBio, { color: colors.textSecondary }]} numberOfLines={1}>
               {item.friendBio}
             </Text>
           )}
-          <Text style={styles.friendDate}>
+          <Text style={[styles.friendDate, { color: colors.textTertiary }]}>
             {new Date(item.createdAt).toLocaleDateString('zh-CN', {
               year: 'numeric',
               month: 'short',
@@ -151,17 +153,17 @@ export default function MyFriendsScreen() {
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={styles.chatButton}
+        style={[styles.chatButton, { backgroundColor: colors.selected }]}
         onPress={() => handleStartChat(item.friendId)}
         activeOpacity={0.8}
       >
-        <MessageCircle size={20} color={BRAND_COLOR} strokeWidth={2} />
+        <MessageCircle size={20} color={colors.primary as any} strokeWidth={2} />
       </TouchableOpacity>
     </View>
   );
 
   const renderRequestItem = ({ item }: { item: FriendRequest }) => (
-    <View style={styles.requestCard}>
+    <View style={[styles.requestCard, { backgroundColor: colors.cardBackground }]}>
       <TouchableOpacity
         style={styles.requestInfo}
         onPress={() => handleViewProfile(item.senderId)}
@@ -171,19 +173,22 @@ export default function MyFriendsScreen() {
           {item.senderAvatar ? (
             <Image source={{ uri: item.senderAvatar }} style={styles.avatar} />
           ) : (
-            <View style={styles.avatarPlaceholder}>
+            <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}>
               <Text style={styles.avatarText}>{item.senderUsername.charAt(0).toUpperCase()}</Text>
             </View>
           )}
         </View>
         <View style={styles.requestTextInfo}>
-          <Text style={styles.requestName}>{item.senderUsername}</Text>
+          <Text style={[styles.requestName, { color: colors.text }]}>{item.senderUsername}</Text>
           {item.message && (
-            <Text style={styles.requestMessage} numberOfLines={2}>
+            <Text
+              style={[styles.requestMessage, { color: colors.textSecondary }]}
+              numberOfLines={2}
+            >
               {item.message}
             </Text>
           )}
-          <Text style={styles.requestDate}>
+          <Text style={[styles.requestDate, { color: colors.textTertiary }]}>
             {new Date(item.createdAt).toLocaleDateString('zh-CN', {
               year: 'numeric',
               month: 'short',
@@ -194,18 +199,18 @@ export default function MyFriendsScreen() {
       </TouchableOpacity>
       <View style={styles.requestActions}>
         <TouchableOpacity
-          style={[styles.actionButton, styles.acceptButton]}
+          style={[styles.actionButton, styles.acceptButton, { backgroundColor: colors.primary }]}
           onPress={() => handleAcceptRequest(item.id)}
           activeOpacity={0.8}
         >
           <Text style={styles.acceptButtonText}>接受</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.actionButton, styles.rejectButton]}
+          style={[styles.actionButton, styles.rejectButton, { backgroundColor: colors.hover }]}
           onPress={() => handleRejectRequest(item.id)}
           activeOpacity={0.8}
         >
-          <Text style={styles.rejectButtonText}>拒绝</Text>
+          <Text style={[styles.rejectButtonText, { color: colors.textSecondary }]}>拒绝</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -215,27 +220,32 @@ export default function MyFriendsScreen() {
     <View style={styles.emptyState}>
       {activeTab === 'friends' ? (
         <>
-          <Users size={64} color="#D1D5DB" strokeWidth={1.5} />
-          <Text style={styles.emptyTitle}>暂无好友</Text>
-          <Text style={styles.emptyText}>快去添加好友吧！</Text>
+          <Users size={64} color={colors.textTertiary as any} strokeWidth={1.5} />
+          <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>暂无好友</Text>
+          <Text style={[styles.emptyText, { color: colors.textTertiary }]}>快去添加好友吧！</Text>
         </>
       ) : (
         <>
-          <UserPlus size={64} color="#D1D5DB" strokeWidth={1.5} />
-          <Text style={styles.emptyTitle}>暂无好友请求</Text>
-          <Text style={styles.emptyText}>当有人向你发送好友请求时，会显示在这里</Text>
+          <UserPlus size={64} color={colors.textTertiary as any} strokeWidth={1.5} />
+          <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>暂无好友请求</Text>
+          <Text style={[styles.emptyText, { color: colors.textTertiary }]}>
+            当有人向你发送好友请求时，会显示在这里
+          </Text>
         </>
       )}
     </View>
   );
 
   return (
-    <View testID="friends-screen" style={[styles.container, { paddingTop: insets.top }]}>
+    <View
+      testID="friends-screen"
+      style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}
+    >
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* 自定义头部 */}
       <LinearGradient
-        colors={['#FEBE98', '#FFCCBC']}
+        colors={isDark ? ['#3D2A1F', '#2D1F1A'] : ['#FEBE98', '#FFCCBC']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.header}
@@ -254,36 +264,59 @@ export default function MyFriendsScreen() {
       </LinearGradient>
 
       {/* Tab 切换 */}
-      <View style={styles.tabContainer}>
+      <View
+        style={[
+          styles.tabContainer,
+          { backgroundColor: colors.cardBackground, borderBottomColor: colors.borderMuted },
+        ]}
+      >
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'friends' && styles.activeTab]}
+          style={[
+            styles.tab,
+            activeTab === 'friends' && [styles.activeTab, { borderBottomColor: colors.primary }],
+          ]}
           onPress={() => setActiveTab('friends')}
           activeOpacity={0.8}
         >
           <Users
             size={20}
-            color={activeTab === 'friends' ? BRAND_COLOR : '#6B7280'}
+            color={(activeTab === 'friends' ? colors.primary : colors.textTertiary) as any}
             strokeWidth={2}
           />
-          <Text style={[styles.tabText, activeTab === 'friends' && styles.activeTabText]}>
+          <Text
+            style={[
+              styles.tabText,
+              { color: colors.textSecondary },
+              activeTab === 'friends' && [styles.activeTabText, { color: colors.primary }],
+            ]}
+          >
             好友 ({friends.length})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'requests' && styles.activeTab]}
+          style={[
+            styles.tab,
+            activeTab === 'requests' && [styles.activeTab, { borderBottomColor: colors.primary }],
+          ]}
           onPress={() => setActiveTab('requests')}
           activeOpacity={0.8}
         >
           <UserPlus
             size={20}
-            color={activeTab === 'requests' ? BRAND_COLOR : '#6B7280'}
+            color={(activeTab === 'requests' ? colors.primary : colors.textTertiary) as any}
             strokeWidth={2}
           />
-          <Text style={[styles.tabText, activeTab === 'requests' && styles.activeTabText]}>
+          <Text
+            style={[
+              styles.tabText,
+              { color: colors.textSecondary },
+              activeTab === 'requests' && [styles.activeTabText, { color: colors.primary }],
+            ]}
+          >
             请求 ({requests.length})
           </Text>
           {requests.length > 0 && (
-            <View style={styles.badge}>
+            <View style={[styles.badge, { backgroundColor: colors.error }]}>
               <Text style={styles.badgeText}>{requests.length}</Text>
             </View>
           )}
@@ -293,7 +326,7 @@ export default function MyFriendsScreen() {
       {/* 列表内容 */}
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={BRAND_COLOR} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : activeTab === 'friends' ? (
         <FlatList
@@ -307,8 +340,8 @@ export default function MyFriendsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor={BRAND_COLOR}
-              colors={[BRAND_COLOR]}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
             />
           }
         />
@@ -324,8 +357,8 @@ export default function MyFriendsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor={BRAND_COLOR}
-              colors={[BRAND_COLOR]}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
             />
           }
         />
@@ -395,16 +428,12 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: BRAND_COLOR,
   },
   tabText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#6B7280',
   },
-  activeTabText: {
-    color: BRAND_COLOR,
-  },
+  activeTabText: {},
   badge: {
     position: 'absolute',
     top: 10,
@@ -457,7 +486,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: BRAND_COLOR,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -536,9 +564,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  acceptButton: {
-    backgroundColor: BRAND_COLOR,
-  },
+  acceptButton: {},
   acceptButtonText: {
     fontSize: 15,
     fontWeight: '600',

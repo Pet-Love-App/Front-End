@@ -1,7 +1,8 @@
 import { Dialog, Text, XStack, YStack } from 'tamagui';
 import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { primaryScale, neutralScale, warningScale, infoScale } from '@/src/design-system/tokens';
+import { primaryScale, warningScale, infoScale } from '@/src/design-system/tokens';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 import type { ThemeMode } from '@/src/store/themeStore';
 
 interface ThemeSelectorModalProps {
@@ -51,6 +52,9 @@ export function ThemeSelectorModal({
   currentTheme,
   onThemeChange,
 }: ThemeSelectorModalProps) {
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
+
   const handleThemeSelect = (mode: ThemeMode) => {
     onThemeChange(mode);
     onOpenChange(false);
@@ -81,7 +85,7 @@ export function ThemeSelectorModal({
           ]}
           enterStyle={{ y: -20, opacity: 0, scale: 0.95 }}
           exitStyle={{ y: 10, opacity: 0, scale: 0.95 }}
-          backgroundColor="white"
+          backgroundColor={colors.cardBackground as any}
           borderRadius={24}
           padding="$5"
           width="90%"
@@ -90,10 +94,10 @@ export function ThemeSelectorModal({
           <YStack gap="$4">
             {/* 标题 */}
             <YStack alignItems="center" gap="$2">
-              <Text fontSize={20} fontWeight="700" color={neutralScale.neutral12}>
+              <Text fontSize={20} fontWeight="700" color={colors.text as any}>
                 选择主题
               </Text>
-              <Text fontSize={13} color={neutralScale.neutral8}>
+              <Text fontSize={13} color={colors.textSecondary as any}>
                 选择您喜欢的显示模式
               </Text>
             </YStack>
@@ -108,9 +112,9 @@ export function ThemeSelectorModal({
                     padding="$4"
                     borderRadius={16}
                     borderWidth={2}
-                    borderColor={isSelected ? primaryScale.primary7 : neutralScale.neutral3}
-                    backgroundColor={isSelected ? primaryScale.primary1 : 'white'}
-                    pressStyle={{ scale: 0.98, backgroundColor: neutralScale.neutral2 }}
+                    borderColor={(isSelected ? colors.primary : colors.border) as any}
+                    backgroundColor={(isSelected ? colors.selected : colors.cardBackground) as any}
+                    pressStyle={{ scale: 0.98, backgroundColor: colors.hover as any }}
                     onPress={() => handleThemeSelect(option.mode)}
                     alignItems="center"
                     gap="$3"
@@ -119,7 +123,9 @@ export function ThemeSelectorModal({
                       width={48}
                       height={48}
                       borderRadius={14}
-                      backgroundColor={option.bgColor}
+                      backgroundColor={
+                        (isDark ? option.bgColor.replace(/^#/, '#1a') : option.bgColor) as any
+                      }
                       alignItems="center"
                       justifyContent="center"
                     >
@@ -130,11 +136,11 @@ export function ThemeSelectorModal({
                       <Text
                         fontSize={16}
                         fontWeight="600"
-                        color={isSelected ? primaryScale.primary9 : neutralScale.neutral12}
+                        color={(isSelected ? colors.primary : colors.text) as any}
                       >
                         {option.label}
                       </Text>
-                      <Text fontSize={13} color={neutralScale.neutral8} marginTop={2}>
+                      <Text fontSize={13} color={colors.textSecondary as any} marginTop={2}>
                         {option.description}
                       </Text>
                     </YStack>
@@ -144,11 +150,15 @@ export function ThemeSelectorModal({
                         width={24}
                         height={24}
                         borderRadius={12}
-                        backgroundColor={primaryScale.primary7}
+                        backgroundColor={colors.primary as any}
                         alignItems="center"
                         justifyContent="center"
                       >
-                        <IconSymbol name="checkmark" size={14} color="white" />
+                        <IconSymbol
+                          name="checkmark"
+                          size={14}
+                          color={isDark ? '#0A0A0A' : '#FFFFFF'}
+                        />
                       </YStack>
                     )}
                   </XStack>
@@ -161,12 +171,12 @@ export function ThemeSelectorModal({
               <Button
                 marginTop="$2"
                 height={48}
-                backgroundColor={neutralScale.neutral2}
+                backgroundColor={colors.hover as any}
                 borderRadius={12}
-                pressStyle={{ backgroundColor: neutralScale.neutral3 }}
+                pressStyle={{ backgroundColor: colors.active as any }}
                 onPress={() => onOpenChange(false)}
               >
-                <Text fontSize={15} fontWeight="600" color={neutralScale.neutral11}>
+                <Text fontSize={15} fontWeight="600" color={colors.text as any}>
                   完成
                 </Text>
               </Button>

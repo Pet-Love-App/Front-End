@@ -83,7 +83,7 @@ export default function SearchBox({
         disabled={disabled}
         backgroundColor="transparent"
         borderWidth={0}
-        color="$foreground"
+        color="$color"
         focusStyle={{ borderWidth: 0, outlineWidth: 0 }}
         paddingHorizontal="$2"
         paddingVertical={0}
@@ -99,7 +99,7 @@ export default function SearchBox({
         <XStack
           onPress={handleClear}
           padding="$1"
-          borderRadius="$full"
+          borderRadius={9999}
           backgroundColor="$backgroundMuted"
           pressStyle={{ backgroundColor: '$backgroundPress', scale: 0.95 }}
           cursor="pointer"

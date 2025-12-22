@@ -1,6 +1,7 @@
 import { Pressable, ScrollView } from 'react-native';
 import { Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 
 interface BrandFilterMenuProps {
   visible: boolean;
@@ -23,15 +24,18 @@ export function BrandFilterMenu({
   onSelectBrand,
   onClose,
 }: BrandFilterMenuProps) {
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
+
   if (!visible) return null;
 
   return (
     <YStack
       paddingHorizontal="$4"
       paddingVertical="$4"
-      backgroundColor="#FFFBEB"
+      backgroundColor={colors.backgroundMuted as any}
       borderBottomWidth={2}
-      borderBottomColor="#FEF3C7"
+      borderBottomColor={colors.border as any}
     >
       <XStack alignItems="center" justifyContent="space-between" marginBottom="$3.5">
         <XStack alignItems="center" gap="$2.5">
@@ -39,17 +43,17 @@ export function BrandFilterMenu({
             width={40}
             height={40}
             borderRadius="$10"
-            backgroundColor="#FBBF24"
+            backgroundColor={colors.warning as any}
             alignItems="center"
             justifyContent="center"
           >
             <IconSymbol name="building.2.fill" size={20} color="white" />
           </YStack>
           <YStack>
-            <Text fontSize={18} fontWeight="800" color="#78350F" letterSpacing={0.3}>
+            <Text fontSize={18} fontWeight="800" color={colors.text as any} letterSpacing={0.3}>
               选择品牌
             </Text>
-            <Text fontSize={12} color="#92400E" fontWeight="600">
+            <Text fontSize={12} color={colors.textSecondary as any} fontWeight="600">
               共 {brandList.length - 1} 个品牌
             </Text>
           </YStack>
@@ -58,15 +62,15 @@ export function BrandFilterMenu({
           <XStack
             paddingHorizontal="$3"
             paddingVertical="$2"
-            backgroundColor="white"
+            backgroundColor={colors.cardBackground as any}
             borderRadius="$8"
             alignItems="center"
             gap="$2"
             borderWidth={1.5}
-            borderColor="#FDE68A"
+            borderColor={colors.border as any}
           >
-            <IconSymbol name="xmark" size={14} color="#D97706" />
-            <Text fontSize={13} color="#D97706" fontWeight="700">
+            <IconSymbol name="xmark" size={14} color={colors.warning as any} />
+            <Text fontSize={13} color={colors.warning as any} fontWeight="700">
               收起
             </Text>
           </XStack>
@@ -84,16 +88,18 @@ export function BrandFilterMenu({
               paddingHorizontal="$4"
               paddingVertical="$3"
               borderRadius="$10"
-              backgroundColor={selectedBrand === brand ? '#F97316' : 'white'}
+              backgroundColor={
+                (selectedBrand === brand ? colors.primary : colors.cardBackground) as any
+              }
               borderWidth={2}
-              borderColor={selectedBrand === brand ? '#EA580C' : '#FED7AA'}
+              borderColor={(selectedBrand === brand ? colors.primaryDark : colors.border) as any}
               minWidth={90}
               alignItems="center"
               gap="$1.5"
             >
               <Text
                 fontSize={15}
-                color={selectedBrand === brand ? 'white' : '#78350F'}
+                color={(selectedBrand === brand ? 'white' : colors.text) as any}
                 fontWeight="800"
                 numberOfLines={1}
                 letterSpacing={0.3}
@@ -103,12 +109,16 @@ export function BrandFilterMenu({
               <YStack
                 paddingHorizontal="$2"
                 paddingVertical="$0.5"
-                backgroundColor={selectedBrand === brand ? 'rgba(255,255,255,0.2)' : '#FEF3C7'}
+                backgroundColor={
+                  (selectedBrand === brand
+                    ? 'rgba(255,255,255,0.2)'
+                    : colors.backgroundMuted) as any
+                }
                 borderRadius="$6"
               >
                 <Text
                   fontSize={12}
-                  color={selectedBrand === brand ? 'white' : '#92400E'}
+                  color={(selectedBrand === brand ? 'white' : colors.textSecondary) as any}
                   fontWeight="700"
                 >
                   {brandCounts[brand] || 0} 个

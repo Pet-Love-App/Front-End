@@ -98,7 +98,7 @@ export function CatFoodCard({
           marginBottom="$3"
           borderRadius={16}
           borderWidth={isTopThree ? 1.5 : 1}
-          borderColor={isTopThree ? rankConfig.borderColor : neutralScale.neutral3}
+          borderColor={(isTopThree ? rankConfig.borderColor : neutralScale.neutral3) as any}
           overflow="hidden"
           opacity={pressed ? 0.96 : 1}
           scale={pressed ? 0.985 : 1}
@@ -126,13 +126,13 @@ export function CatFoodCard({
                   {isTopThree ? (
                     <IconSymbol name={rankConfig.icon} size={22} color={rankConfig.textColor} />
                   ) : (
-                    <Text fontSize="$5" fontWeight="900" color={rankConfig.textColor}>
+                    <Text fontSize="$5" fontWeight="900" color={rankConfig.textColor as any}>
                       {index + 1}
                     </Text>
                   )}
                 </YStack>
                 {isTopThree && (
-                  <Text fontSize={10} fontWeight="800" color={rankConfig.borderColor}>
+                  <Text fontSize={10} fontWeight="800" color={rankConfig.borderColor as any}>
                     {rankConfig.label}
                   </Text>
                 )}
@@ -167,13 +167,7 @@ export function CatFoodCard({
             {/* 右侧：产品信息 */}
             <YStack flex={1} gap="$2" justifyContent="space-between">
               {/* 名称 */}
-              <Text
-                fontSize="$4"
-                fontWeight="700"
-                color="$foreground"
-                numberOfLines={2}
-                lineHeight={22}
-              >
+              <Text fontSize="$4" fontWeight="700" color="$color" numberOfLines={2} lineHeight={22}>
                 {catfood.name}
               </Text>
 

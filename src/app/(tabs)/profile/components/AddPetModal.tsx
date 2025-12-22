@@ -13,8 +13,7 @@ import { Dialog, Text, XStack, YStack } from 'tamagui';
 import { Button } from '@/src/design-system/components';
 import { BreedSelector } from '@/src/components/BreedSelector';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { Colors } from '@/src/constants/theme';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 import type { PetInput } from '@/src/schemas/pet.schema';
 
 interface AddPetModalProps {
@@ -31,8 +30,8 @@ const SPECIES_OPTIONS = [
 ];
 
 export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) {
-  const colorScheme = useThemeAwareColorScheme();
-  const colors = Colors[colorScheme];
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
 
   // 使用非受控组件，避免实时状态更新导致重渲染
   const nameRef = useRef<TextInput>(null);
@@ -146,7 +145,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
           animation="quick"
           enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
           exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-          backgroundColor={colors.background}
+          backgroundColor={colors.background as any}
           width={dialogWidth}
           maxHeight="85%"
           padding="$0"
@@ -159,7 +158,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
             paddingHorizontal="$5"
             paddingTop="$5"
             paddingBottom="$6"
-            backgroundColor="#FEBE98"
+            backgroundColor={colors.primary as any}
             position="relative"
           >
             <XStack alignItems="center" gap="$3" marginBottom="$1">
@@ -219,7 +218,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                         borderRadius="$12"
                         overflow="hidden"
                         borderWidth={3}
-                        borderColor="#FEBE98"
+                        borderColor={colors.primary as any}
                       >
                         <Image
                           source={{ uri: photoUri }}
@@ -233,12 +232,12 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                         fontSize={14}
                         icon={<IconSymbol name="camera.fill" size={16} color="white" />}
                         onPress={pickPetImage}
-                        backgroundColor="#FEBE98"
+                        backgroundColor={colors.primary as any}
                         color="white"
                         borderRadius="$10"
                         fontWeight="600"
                         paddingHorizontal="$5"
-                        pressStyle={{ scale: 0.95, backgroundColor: '#FDB97A' }}
+                        pressStyle={{ scale: 0.95, backgroundColor: colors.primaryDark as any }}
                       >
                         更换图片
                       </Button>
@@ -250,12 +249,12 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                       borderRadius="$5"
                       borderWidth={2}
                       borderStyle="dashed"
-                      borderColor="#FEBE98"
-                      backgroundColor="#FEF8F3"
+                      borderColor={colors.primary as any}
+                      backgroundColor={colors.backgroundMuted as any}
                       alignItems="center"
                       justifyContent="center"
                       gap="$3"
-                      pressStyle={{ scale: 0.98, backgroundColor: '#FEF3E8' }}
+                      pressStyle={{ scale: 0.98, backgroundColor: colors.hover as any }}
                       onPress={pickPetImage}
                       cursor="pointer"
                     >
@@ -263,16 +262,21 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                         width={72}
                         height={72}
                         borderRadius="$12"
-                        backgroundColor="#FEBE98"
+                        backgroundColor={colors.primary as any}
                         alignItems="center"
                         justifyContent="center"
                       >
                         <IconSymbol name="photo.fill" size={36} color="white" />
                       </YStack>
-                      <Text fontSize={16} fontWeight="700" color="#D97706" letterSpacing={0.3}>
+                      <Text
+                        fontSize={16}
+                        fontWeight="700"
+                        color={colors.primary as any}
+                        letterSpacing={0.3}
+                      >
                         添加宠物照片
                       </Text>
-                      <Text fontSize={13} color="$gray10" opacity={0.8}>
+                      <Text fontSize={13} color={colors.textTertiary as any} opacity={0.8}>
                         点击上传图片（可选）
                       </Text>
                     </YStack>
@@ -282,17 +286,17 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                 {/* Pet Name */}
                 <YStack gap="$2.5">
                   <XStack alignItems="center" gap="$2">
-                    <IconSymbol name="textformat" size={18} color="#FEBE98" />
-                    <Text fontSize={15} fontWeight="700" color={colors.text}>
+                    <IconSymbol name="textformat" size={18} color={colors.primary} />
+                    <Text fontSize={15} fontWeight="700" color={colors.text as any}>
                       宠物名称
                     </Text>
                     <YStack
                       paddingHorizontal="$2"
                       paddingVertical="$0.5"
-                      backgroundColor="$red3"
+                      backgroundColor={colors.errorMuted as any}
                       borderRadius="$2"
                     >
-                      <Text fontSize={11} color="$red11" fontWeight="700">
+                      <Text fontSize={11} color={colors.error as any} fontWeight="700">
                         必填
                       </Text>
                     </YStack>
@@ -300,8 +304,16 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                   <XStack
                     borderRadius="$5"
                     borderWidth={2}
-                    borderColor={nameFocused ? '#FEBE98' : nameValue ? '#FDB97A' : '$gray5'}
-                    backgroundColor={nameFocused ? '#FEF8F3' : colors.background}
+                    borderColor={
+                      (nameFocused
+                        ? colors.primary
+                        : nameValue
+                          ? colors.primaryLight
+                          : colors.border) as any
+                    }
+                    backgroundColor={
+                      (nameFocused ? colors.backgroundMuted : colors.background) as any
+                    }
                     paddingHorizontal="$4"
                     paddingVertical="$1"
                     pointerEvents="auto"
@@ -320,7 +332,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                     <TextInput
                       ref={nameRef}
                       placeholder="给爱宠取个名字吧"
-                      placeholderTextColor={colors.icon + '70'}
+                      placeholderTextColor={colors.textMuted}
                       value={nameValue}
                       onChangeText={setNameValue}
                       onFocus={() => setNameFocused(true)}
@@ -338,7 +350,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                       }}
                     />
                     {nameValue.length > 0 && (
-                      <Text fontSize={12} color="$gray10" fontWeight="500">
+                      <Text fontSize={12} color={colors.textTertiary as any} fontWeight="500">
                         {nameValue.length}/20
                       </Text>
                     )}
@@ -348,17 +360,17 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                 {/* Species Selection */}
                 <YStack gap="$3">
                   <XStack alignItems="center" gap="$2">
-                    <IconSymbol name="pawprint.fill" size={18} color="#FEBE98" />
-                    <Text fontSize={15} fontWeight="700" color={colors.text}>
+                    <IconSymbol name="pawprint.fill" size={18} color={colors.primary} />
+                    <Text fontSize={15} fontWeight="700" color={colors.text as any}>
                       宠物类型
                     </Text>
                     <YStack
                       paddingHorizontal="$2"
                       paddingVertical="$0.5"
-                      backgroundColor="$red3"
+                      backgroundColor={colors.errorMuted as any}
                       borderRadius="$2"
                     >
-                      <Text fontSize={11} color="$red11" fontWeight="700">
+                      <Text fontSize={11} color={colors.error as any} fontWeight="700">
                         必选
                       </Text>
                     </YStack>
@@ -375,12 +387,18 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                         paddingVertical="$4"
                         paddingHorizontal="$2"
                         borderRadius="$5"
-                        backgroundColor={species === opt.key ? '#FEBE98' : '$gray2'}
+                        backgroundColor={
+                          (species === opt.key ? colors.primary : colors.backgroundMuted) as any
+                        }
                         borderWidth={2.5}
-                        borderColor={species === opt.key ? '#FEBE98' : '$gray4'}
+                        borderColor={
+                          (species === opt.key ? colors.primary : colors.borderMuted) as any
+                        }
                         pressStyle={{
                           scale: 0.96,
-                          backgroundColor: species === opt.key ? '#FDB97A' : '$gray3',
+                          backgroundColor: (species === opt.key
+                            ? colors.primaryDark
+                            : colors.hover) as any,
                         }}
                         onPress={() => setSpecies(opt.key)}
                         cursor="pointer"
@@ -389,7 +407,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                         <Text
                           fontSize={13}
                           fontWeight="700"
-                          color={species === opt.key ? 'white' : colors.text}
+                          color={(species === opt.key ? 'white' : colors.text) as any}
                           letterSpacing={0.3}
                         >
                           {opt.label}
@@ -403,7 +421,11 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                             borderRadius="$10"
                             padding="$1"
                           >
-                            <IconSymbol name="checkmark.circle.fill" size={16} color="#FEBE98" />
+                            <IconSymbol
+                              name="checkmark.circle.fill"
+                              size={16}
+                              color={colors.primary}
+                            />
                           </YStack>
                         )}
                       </YStack>
@@ -414,11 +436,16 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                 {/* Breed */}
                 <YStack gap="$2.5">
                   <XStack alignItems="center" gap="$2">
-                    <IconSymbol name="list.bullet.clipboard" size={18} color="#FEBE98" />
-                    <Text fontSize={15} fontWeight="700" color={colors.text}>
+                    <IconSymbol name="list.bullet.clipboard" size={18} color={colors.primary} />
+                    <Text fontSize={15} fontWeight="700" color={colors.text as any}>
                       品种
                     </Text>
-                    <Text fontSize={12} color="$gray10" fontWeight="500" opacity={0.7}>
+                    <Text
+                      fontSize={12}
+                      color={colors.textTertiary as any}
+                      fontWeight="500"
+                      opacity={0.7}
+                    >
                       （选填）
                     </Text>
                   </XStack>
@@ -433,19 +460,32 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                 {/* Age */}
                 <YStack gap="$2.5">
                   <XStack alignItems="center" gap="$2">
-                    <IconSymbol name="calendar" size={18} color="#FEBE98" />
-                    <Text fontSize={15} fontWeight="700" color={colors.text}>
+                    <IconSymbol name="calendar" size={18} color={colors.primary} />
+                    <Text fontSize={15} fontWeight="700" color={colors.text as any}>
                       年龄
                     </Text>
-                    <Text fontSize={12} color="$gray10" fontWeight="500" opacity={0.7}>
+                    <Text
+                      fontSize={12}
+                      color={colors.textTertiary as any}
+                      fontWeight="500"
+                      opacity={0.7}
+                    >
                       （选填）
                     </Text>
                   </XStack>
                   <XStack
                     borderRadius="$5"
                     borderWidth={2}
-                    borderColor={ageFocused ? '#FEBE98' : ageValue ? '#FDB97A' : '$gray5'}
-                    backgroundColor={ageFocused ? '#FEF8F3' : colors.background}
+                    borderColor={
+                      (ageFocused
+                        ? colors.primary
+                        : ageValue
+                          ? colors.primaryLight
+                          : colors.border) as any
+                    }
+                    backgroundColor={
+                      (ageFocused ? colors.backgroundMuted : colors.background) as any
+                    }
                     paddingHorizontal="$4"
                     pointerEvents="auto"
                     alignItems="center"
@@ -455,7 +495,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                     <TextInput
                       ref={ageRef}
                       placeholder="例如: 2"
-                      placeholderTextColor={colors.icon + '70'}
+                      placeholderTextColor={colors.textMuted}
                       keyboardType="numeric"
                       value={ageValue}
                       onChangeText={setAgeValue}
@@ -472,7 +512,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                       }}
                     />
                     {ageValue && (
-                      <Text fontSize={15} color="$gray10" fontWeight="500">
+                      <Text fontSize={15} color={colors.textTertiary as any} fontWeight="500">
                         岁
                       </Text>
                     )}
@@ -482,19 +522,24 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                 {/* Description */}
                 <YStack gap="$2.5" marginBottom="$2">
                   <XStack alignItems="center" gap="$2">
-                    <IconSymbol name="text.bubble" size={18} color="#FEBE98" />
-                    <Text fontSize={15} fontWeight="700" color={colors.text}>
+                    <IconSymbol name="text.bubble" size={18} color={colors.primary} />
+                    <Text fontSize={15} fontWeight="700" color={colors.text as any}>
                       描述
                     </Text>
-                    <Text fontSize={12} color="$gray10" fontWeight="500" opacity={0.7}>
+                    <Text
+                      fontSize={12}
+                      color={colors.textTertiary as any}
+                      fontWeight="500"
+                      opacity={0.7}
+                    >
                       （选填）
                     </Text>
                   </XStack>
                   <YStack
                     borderRadius="$5"
                     borderWidth={2}
-                    borderColor={descriptionValue ? '#FDB97A' : '$gray5'}
-                    backgroundColor={colors.background}
+                    borderColor={(descriptionValue ? colors.primaryLight : colors.border) as any}
+                    backgroundColor={colors.background as any}
                     paddingHorizontal="$4"
                     paddingVertical="$3"
                     pointerEvents="auto"
@@ -502,7 +547,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                     <TextInput
                       ref={descriptionRef}
                       placeholder="介绍一下你的爱宠吧～性格、习惯、特点等"
-                      placeholderTextColor={colors.icon + '70'}
+                      placeholderTextColor={colors.textMuted}
                       value={descriptionValue}
                       onChangeText={setDescriptionValue}
                       multiline
@@ -522,7 +567,7 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                     {descriptionValue.length > 0 && (
                       <Text
                         fontSize={11}
-                        color="$gray10"
+                        color={colors.textTertiary as any}
                         fontWeight="500"
                         textAlign="right"
                         marginTop="$2"
@@ -542,8 +587,8 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
             paddingHorizontal="$5"
             paddingVertical="$5"
             borderTopWidth={1}
-            borderTopColor="$gray4"
-            backgroundColor={colors.background}
+            borderTopColor={colors.border as any}
+            backgroundColor={colors.background as any}
           >
             <Dialog.Close displayWhenAdapted asChild flex={1}>
               <Button
@@ -551,8 +596,8 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
                 height={52}
                 fontSize={16}
                 onPress={() => onOpenChange(false)}
-                backgroundColor="$gray4"
-                color={colors.text}
+                backgroundColor={colors.border as any}
+                color={colors.text as any}
                 borderRadius="$5"
                 fontWeight="600"
                 pressStyle={{ scale: 0.97, opacity: 0.8 }}
@@ -566,14 +611,14 @@ export function AddPetModal({ open, onOpenChange, onSubmit }: AddPetModalProps) 
               size="$4"
               height={52}
               fontSize={16}
-              backgroundColor="#FEBE98"
+              backgroundColor={colors.primary as any}
               color="white"
               borderRadius="$5"
               fontWeight="700"
               onPress={handleSubmit}
               disabled={submitting || !nameValue.trim()}
               opacity={submitting || !nameValue.trim() ? 0.6 : 1}
-              pressStyle={{ scale: 0.97, opacity: 0.9 }}
+              pressStyle={{ scale: 0.97, opacity: 0.9, backgroundColor: colors.primaryDark as any }}
               icon={
                 submitting ? undefined : (
                   <IconSymbol name="checkmark.circle.fill" size={20} color="white" />

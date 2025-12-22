@@ -1,6 +1,7 @@
 import { Pressable, ScrollView } from 'react-native';
 import { Text, XStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 
 interface FilterChipsProps {
   sortBy: 'score' | 'likes';
@@ -23,6 +24,9 @@ export function FilterChips({
   onToggleBrandMenu,
   brandMenuExpanded,
 }: FilterChipsProps) {
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
+
   return (
     <ScrollView
       horizontal
@@ -39,15 +43,25 @@ export function FilterChips({
           paddingHorizontal="$4"
           paddingVertical="$2.5"
           borderRadius="$12"
-          backgroundColor={sortBy === 'score' && selectedBrand === 'all' ? '#FFF5ED' : 'white'}
+          backgroundColor={
+            (sortBy === 'score' && selectedBrand === 'all'
+              ? colors.selected
+              : colors.cardBackground) as any
+          }
           borderWidth={2}
-          borderColor={sortBy === 'score' && selectedBrand === 'all' ? '#FEBE98' : '#E5E7EB'}
+          borderColor={
+            (sortBy === 'score' && selectedBrand === 'all' ? colors.primary : colors.border) as any
+          }
           alignItems="center"
         >
           <Text
             fontSize={14}
             fontWeight="700"
-            color={sortBy === 'score' && selectedBrand === 'all' ? '#1E40AF' : '#4B5563'}
+            color={
+              (sortBy === 'score' && selectedBrand === 'all'
+                ? colors.primary
+                : colors.textSecondary) as any
+            }
             letterSpacing={0.3}
           >
             综合推荐
@@ -61,15 +75,17 @@ export function FilterChips({
           paddingHorizontal="$4"
           paddingVertical="$2.5"
           borderRadius="$12"
-          backgroundColor={sortBy === 'score' ? '#FEF3C7' : 'white'}
+          backgroundColor={
+            (sortBy === 'score' ? colors.warningMuted : colors.cardBackground) as any
+          }
           borderWidth={2}
-          borderColor={sortBy === 'score' ? '#F59E0B' : '#E5E7EB'}
+          borderColor={(sortBy === 'score' ? colors.warning : colors.border) as any}
           alignItems="center"
         >
           <Text
             fontSize={14}
             fontWeight="700"
-            color={sortBy === 'score' ? '#D97706' : '#4B5563'}
+            color={(sortBy === 'score' ? colors.warning : colors.textSecondary) as any}
             letterSpacing={0.3}
           >
             高评分
@@ -83,15 +99,15 @@ export function FilterChips({
           paddingHorizontal="$4"
           paddingVertical="$2.5"
           borderRadius="$12"
-          backgroundColor={sortBy === 'likes' ? '#FEE2E2' : 'white'}
+          backgroundColor={(sortBy === 'likes' ? colors.errorMuted : colors.cardBackground) as any}
           borderWidth={2}
-          borderColor={sortBy === 'likes' ? '#EF4444' : '#E5E7EB'}
+          borderColor={(sortBy === 'likes' ? colors.error : colors.border) as any}
           alignItems="center"
         >
           <Text
             fontSize={14}
             fontWeight="700"
-            color={sortBy === 'likes' ? '#DC2626' : '#4B5563'}
+            color={(sortBy === 'likes' ? colors.error : colors.textSecondary) as any}
             letterSpacing={0.3}
           >
             最受欢迎
@@ -105,16 +121,18 @@ export function FilterChips({
           paddingHorizontal="$4"
           paddingVertical="$2.5"
           borderRadius="$12"
-          backgroundColor={selectedBrand !== 'all' ? '#FFEDD5' : 'white'}
+          backgroundColor={
+            (selectedBrand !== 'all' ? colors.selected : colors.cardBackground) as any
+          }
           borderWidth={2}
-          borderColor={selectedBrand !== 'all' ? '#F97316' : '#E5E7EB'}
+          borderColor={(selectedBrand !== 'all' ? colors.primary : colors.border) as any}
           gap="$2"
           alignItems="center"
         >
           <Text
             fontSize={14}
             fontWeight="700"
-            color={selectedBrand !== 'all' ? '#EA580C' : '#4B5563'}
+            color={(selectedBrand !== 'all' ? colors.primary : colors.textSecondary) as any}
             letterSpacing={0.3}
             numberOfLines={1}
             maxWidth={120}
@@ -124,7 +142,7 @@ export function FilterChips({
           <IconSymbol
             name={brandMenuExpanded ? 'chevron.up' : 'chevron.down'}
             size={14}
-            color={selectedBrand !== 'all' ? '#F97316' : '#6B7280'}
+            color={(selectedBrand !== 'all' ? colors.primary : colors.textTertiary) as any}
           />
         </XStack>
       </Pressable>

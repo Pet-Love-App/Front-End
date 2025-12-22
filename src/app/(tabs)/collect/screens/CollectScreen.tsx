@@ -7,7 +7,8 @@ import PostCollectItem from '@/src/app/(tabs)/collect/components/PostCollectItem
 import { PostDetailScreen } from '@/src/app/(tabs)/forum/components/post-detail';
 import { AppHeader } from '@/src/components/AppHeader';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { primaryScale, neutralScale } from '@/src/design-system/tokens';
+import { primaryScale } from '@/src/design-system/tokens';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 import type { CatfoodFavorite } from '@/src/types/collect';
 
 import { useCollectData, useCollectFilter, usePostCollectData } from '../hooks';
@@ -18,6 +19,8 @@ import { useCollectData, useCollectFilter, usePostCollectData } from '../hooks';
  */
 export function CollectScreen() {
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
 
   // 使用自定义 hooks
   const { favorites, isLoading, error, refreshing, handleRefresh, handleDelete, handlePress } =
@@ -53,15 +56,15 @@ export function CollectScreen() {
         width={100}
         height={100}
         borderRadius={50}
-        backgroundColor={neutralScale.neutral2}
+        backgroundColor={colors.backgroundMuted as any}
         alignItems="center"
         justifyContent="center"
         borderWidth={2}
-        borderColor={neutralScale.neutral3}
+        borderColor={colors.border as any}
       >
-        <IconSymbol name={icon as any} size={48} color={neutralScale.neutral6} />
+        <IconSymbol name={icon as any} size={48} color={colors.textTertiary} />
       </YStack>
-      <Text fontSize={15} color={neutralScale.neutral7} textAlign="center" lineHeight={24}>
+      <Text fontSize={15} color={colors.textSecondary as any} textAlign="center" lineHeight={24}>
         {message}
       </Text>
     </YStack>
@@ -72,8 +75,8 @@ export function CollectScreen() {
     if (isLoading && !refreshing) {
       return (
         <YStack flex={1} alignItems="center" justifyContent="center" paddingVertical="$10">
-          <Spinner size="large" color={primaryScale.primary7} />
-          <Text fontSize={15} color={neutralScale.neutral7} marginTop="$4">
+          <Spinner size="large" color={colors.primary} />
+          <Text fontSize={15} color={colors.textSecondary as any} marginTop="$4">
             加载中...
           </Text>
         </YStack>
@@ -149,8 +152,8 @@ export function CollectScreen() {
     if (isLoadingPosts && !refreshingPosts) {
       return (
         <YStack flex={1} alignItems="center" justifyContent="center" paddingVertical="$10">
-          <Spinner size="large" color={primaryScale.primary7} />
-          <Text fontSize={15} color={neutralScale.neutral7} marginTop="$4">
+          <Spinner size="large" color={colors.primary} />
+          <Text fontSize={15} color={colors.textSecondary as any} marginTop="$4">
             加载中...
           </Text>
         </YStack>
@@ -197,23 +200,23 @@ export function CollectScreen() {
 
   return (
     <View testID="home-screen" style={{ flex: 1 }}>
-      <YStack flex={1} backgroundColor={neutralScale.neutral1}>
+      <YStack flex={1} backgroundColor={colors.background as any}>
         {/* 整合的顶部区域 */}
-        <YStack backgroundColor="white">
+        <YStack backgroundColor={colors.cardBackground as any}>
           {/* 标题栏 */}
           <AppHeader
             title="我的收藏"
             insets={insets}
             rightElement={
               <YStack
-                backgroundColor={primaryScale.primary2}
+                backgroundColor={(isDark ? '#3D2A1F' : primaryScale.primary2) as any}
                 paddingHorizontal={12}
                 paddingVertical={6}
                 borderRadius={16}
                 borderWidth={1.5}
-                borderColor={primaryScale.primary3}
+                borderColor={(isDark ? '#4D3A2F' : primaryScale.primary3) as any}
               >
-                <Text fontSize={13} fontWeight="700" color={primaryScale.primary8}>
+                <Text fontSize={13} fontWeight="700" color={colors.primary as any}>
                   {currentTab === 'catfood' ? favoritesCount : favoritePosts.length}
                 </Text>
               </YStack>
@@ -223,20 +226,20 @@ export function CollectScreen() {
           {/* 搜索框 */}
           <YStack paddingHorizontal={16} paddingBottom={12}>
             <XStack
-              backgroundColor={neutralScale.neutral2}
+              backgroundColor={colors.backgroundMuted as any}
               borderRadius={12}
               paddingHorizontal={14}
               paddingVertical={10}
               alignItems="center"
               gap={10}
               borderWidth={1.5}
-              borderColor={neutralScale.neutral3}
+              borderColor={colors.border as any}
             >
-              <IconSymbol name="magnifyingglass" size={18} color={neutralScale.neutral6} />
+              <IconSymbol name="magnifyingglass" size={18} color={colors.textTertiary} />
               <Input
                 flex={1}
                 placeholder="搜索收藏的内容..."
-                placeholderTextColor={neutralScale.neutral6}
+                placeholderTextColor={colors.textTertiary}
                 value={searchText}
                 onChangeText={setSearchText}
                 backgroundColor="transparent"
@@ -244,7 +247,7 @@ export function CollectScreen() {
                 padding={0}
                 height={24}
                 fontSize={15}
-                color={neutralScale.neutral12}
+                color={colors.text as any}
                 focusStyle={{ borderWidth: 0 }}
               />
             </XStack>
@@ -258,11 +261,11 @@ export function CollectScreen() {
               paddingVertical={12}
               alignItems="center"
               backgroundColor={
-                currentTab === 'catfood' ? primaryScale.primary7 : neutralScale.neutral2
+                (currentTab === 'catfood' ? colors.primary : colors.backgroundMuted) as any
               }
               borderRadius={12}
               borderWidth={1.5}
-              borderColor={currentTab === 'catfood' ? primaryScale.primary6 : neutralScale.neutral3}
+              borderColor={(currentTab === 'catfood' ? colors.primaryDark : colors.border) as any}
               pressStyle={{ scale: 0.97, opacity: 0.9 }}
               animation="quick"
               onPress={() => setCurrentTab('catfood')}
@@ -271,12 +274,24 @@ export function CollectScreen() {
                 <IconSymbol
                   name="pawprint.fill"
                   size={18}
-                  color={currentTab === 'catfood' ? 'white' : neutralScale.neutral7}
+                  color={
+                    currentTab === 'catfood'
+                      ? isDark
+                        ? '#0A0A0A'
+                        : '#FFFFFF'
+                      : colors.textSecondary
+                  }
                 />
                 <Text
                   fontSize={14}
                   fontWeight="600"
-                  color={currentTab === 'catfood' ? 'white' : neutralScale.neutral7}
+                  color={
+                    (currentTab === 'catfood'
+                      ? isDark
+                        ? '#0A0A0A'
+                        : '#FFFFFF'
+                      : colors.textSecondary) as any
+                  }
                 >
                   猫粮收藏
                 </Text>
@@ -289,11 +304,11 @@ export function CollectScreen() {
               paddingVertical={12}
               alignItems="center"
               backgroundColor={
-                currentTab === 'post' ? primaryScale.primary7 : neutralScale.neutral2
+                (currentTab === 'post' ? colors.primary : colors.backgroundMuted) as any
               }
               borderRadius={12}
               borderWidth={1.5}
-              borderColor={currentTab === 'post' ? primaryScale.primary6 : neutralScale.neutral3}
+              borderColor={(currentTab === 'post' ? colors.primaryDark : colors.border) as any}
               pressStyle={{ scale: 0.97, opacity: 0.9 }}
               animation="quick"
               onPress={() => setCurrentTab('post')}
@@ -302,12 +317,20 @@ export function CollectScreen() {
                 <IconSymbol
                   name="doc.text.fill"
                   size={18}
-                  color={currentTab === 'post' ? 'white' : neutralScale.neutral7}
+                  color={
+                    currentTab === 'post' ? (isDark ? '#0A0A0A' : '#FFFFFF') : colors.textSecondary
+                  }
                 />
                 <Text
                   fontSize={14}
                   fontWeight="600"
-                  color={currentTab === 'post' ? 'white' : neutralScale.neutral7}
+                  color={
+                    (currentTab === 'post'
+                      ? isDark
+                        ? '#0A0A0A'
+                        : '#FFFFFF'
+                      : colors.textSecondary) as any
+                  }
                 >
                   帖子收藏
                 </Text>
@@ -317,7 +340,7 @@ export function CollectScreen() {
         </YStack>
 
         {/* Tab 内容区域 */}
-        <YStack flex={1} backgroundColor={neutralScale.neutral1}>
+        <YStack flex={1} backgroundColor={colors.background as any}>
           {currentTab === 'catfood' ? (
             <ScrollView
               flex={1}
@@ -326,7 +349,7 @@ export function CollectScreen() {
                 <RefreshControl
                   refreshing={refreshing}
                   onRefresh={handleRefresh}
-                  tintColor={primaryScale.primary7}
+                  tintColor={colors.primary}
                 />
               }
             >
@@ -340,7 +363,7 @@ export function CollectScreen() {
                 <RefreshControl
                   refreshing={refreshingPosts}
                   onRefresh={handleRefreshPosts}
-                  tintColor={primaryScale.primary7}
+                  tintColor={colors.primary}
                 />
               }
             >

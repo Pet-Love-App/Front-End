@@ -9,7 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { BADGE_CONFIGS, RARITY_CONFIGS } from '@/src/constants/badges';
-import { neutralScale } from '@/src/design-system/tokens';
+import { useThemeColors } from '@/src/hooks/useThemeColors';
 import type { DbUserBadge } from '@/src/lib/supabase/types/database';
 
 interface BadgeGridProps {
@@ -23,6 +23,7 @@ export const BadgeGrid = memo(function BadgeGrid({
   onBadgePress,
   maxDisplay,
 }: BadgeGridProps) {
+  const colors = useThemeColors();
   const displayBadges = maxDisplay ? badges.slice(0, maxDisplay) : badges;
   const remainingCount = maxDisplay && badges.length > maxDisplay ? badges.length - maxDisplay : 0;
 
@@ -32,17 +33,17 @@ export const BadgeGrid = memo(function BadgeGrid({
         padding="$6"
         alignItems="center"
         justifyContent="center"
-        backgroundColor={neutralScale.neutral1}
+        backgroundColor={colors.backgroundMuted as any}
         borderRadius={16}
         borderWidth={2}
         borderStyle="dashed"
-        borderColor={neutralScale.neutral3}
+        borderColor={colors.border as any}
       >
-        <IconSymbol name="trophy" size={48} color={neutralScale.neutral5} />
-        <Text fontSize={15} color={neutralScale.neutral9} marginTop="$3" textAlign="center">
+        <IconSymbol name="trophy" size={48} color={colors.textTertiary} />
+        <Text fontSize={15} color={colors.textSecondary as any} marginTop="$3" textAlign="center">
           还没有获得任何勋章
         </Text>
-        <Text fontSize={13} color={neutralScale.neutral7} marginTop="$1" textAlign="center">
+        <Text fontSize={13} color={colors.textTertiary as any} marginTop="$1" textAlign="center">
           完善资料、发表评论即可获得
         </Text>
       </YStack>
@@ -94,7 +95,7 @@ export const BadgeGrid = memo(function BadgeGrid({
                     alignItems="center"
                     justifyContent="center"
                     borderWidth={3}
-                    borderColor="white"
+                    borderColor={colors.cardBackground as any}
                     style={{
                       backgroundColor: badgeConfig.gradient
                         ? 'transparent'
@@ -136,7 +137,7 @@ export const BadgeGrid = memo(function BadgeGrid({
                       alignItems="center"
                       justifyContent="center"
                       borderWidth={2}
-                      borderColor="white"
+                      borderColor={colors.cardBackground as any}
                     >
                       <IconSymbol name="checkmark" size={10} color="white" />
                     </YStack>
@@ -147,7 +148,7 @@ export const BadgeGrid = memo(function BadgeGrid({
                 <Text
                   fontSize={12}
                   fontWeight="600"
-                  color={neutralScale.neutral11}
+                  color={colors.text as any}
                   textAlign="center"
                   numberOfLines={1}
                   style={{ maxWidth: 72 }}
@@ -173,16 +174,21 @@ export const BadgeGrid = memo(function BadgeGrid({
                 borderRadius={32}
                 alignItems="center"
                 justifyContent="center"
-                backgroundColor={neutralScale.neutral2}
+                backgroundColor={colors.backgroundMuted as any}
                 borderWidth={2}
                 borderStyle="dashed"
-                borderColor={neutralScale.neutral4}
+                borderColor={colors.border as any}
               >
-                <Text fontSize={20} fontWeight="700" color={neutralScale.neutral8}>
+                <Text fontSize={20} fontWeight="700" color={colors.textSecondary as any}>
                   +{remainingCount}
                 </Text>
               </YStack>
-              <Text fontSize={12} fontWeight="600" color={neutralScale.neutral9} textAlign="center">
+              <Text
+                fontSize={12}
+                fontWeight="600"
+                color={colors.textSecondary as any}
+                textAlign="center"
+              >
                 更多
               </Text>
             </YStack>

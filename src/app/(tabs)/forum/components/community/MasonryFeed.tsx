@@ -66,7 +66,6 @@ const EmptyContainer = styled(YStack, {
 const EmptyText = styled(Text, {
   name: 'EmptyText',
   fontSize: '$4',
-  color: '$colorMuted',
   textAlign: 'center',
 });
 

@@ -4,7 +4,8 @@ import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text, XStack, YStack } from 'tamagui';
 
-import { primaryScale, neutralScale } from '@/src/design-system/tokens';
+import { primaryScale } from '@/src/design-system/tokens';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 
 import { IconSymbol } from './ui/IconSymbol';
 
@@ -49,6 +50,8 @@ export function PageHeader({
 }: PageHeaderProps) {
   const router = useRouter();
   const config = variantConfig[variant];
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
 
   const handleBackPress = () => {
     if (onBackPress) {
@@ -62,8 +65,8 @@ export function PageHeader({
     <YStack
       paddingTop={insets.top}
       paddingHorizontal="$4"
-      paddingBottom={config.pb}
-      backgroundColor={backgroundColor}
+      paddingBottom={config.pb as any}
+      backgroundColor={backgroundColor as any}
       borderBottomWidth={showBorder ? 1 : 0}
       borderBottomColor="$borderColor"
     >
@@ -78,7 +81,7 @@ export function PageHeader({
               borderWidth={1}
               borderColor="$borderColor"
             >
-              <Ionicons name="chevron-back" size={24} color={neutralScale.neutral8} />
+              <Ionicons name="chevron-back" size={24} color={colors.icon} />
             </YStack>
           </TouchableOpacity>
         )}
@@ -89,29 +92,36 @@ export function PageHeader({
             width={config.iconSize}
             height={config.iconSize}
             borderRadius={9999}
-            backgroundColor={icon.backgroundColor || primaryScale.primary2}
+            backgroundColor={
+              (icon.backgroundColor || (isDark ? '#3D2A1F' : primaryScale.primary2)) as any
+            }
             alignItems="center"
             justifyContent="center"
             borderWidth={1.5}
-            borderColor={icon.borderColor || primaryScale.primary4}
+            borderColor={(icon.borderColor || (isDark ? '#4D3A2F' : primaryScale.primary4)) as any}
           >
             <IconSymbol
               name={icon.name}
               size={icon.size || config.iconInner}
-              color={icon.color || primaryScale.primary7}
+              color={icon.color || colors.primary}
             />
           </YStack>
         )}
 
         {/* 标题 */}
         <YStack flex={1}>
-          <Text fontSize={config.title} fontWeight="700" color="$foreground" letterSpacing={0.3}>
+          <Text
+            fontSize={config.title}
+            fontWeight="700"
+            color={colors.text as any}
+            letterSpacing={0.3}
+          >
             {title}
           </Text>
           {subtitle && (
             <Text
               fontSize={config.subtitle}
-              color="$foregroundMuted"
+              color={colors.textSecondary as any}
               fontWeight="500"
               marginTop="$0.5"
             >

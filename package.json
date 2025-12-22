@@ -149,7 +149,6 @@
     "@types/detox": "^17.14.3",
     "@types/jest": "^29.5.14",
     "@types/react": "~19.1.0",
-    "@types/react-native": "^0.72.8",
     "detox": "^20.46.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",

@@ -12,8 +12,13 @@ import { useColorScheme as useRNColorScheme } from 'react-native';
 import { useThemeStore } from '@/src/store/themeStore';
 
 export function useThemeAwareColorScheme() {
-  const { themeMode } = useThemeStore();
+  const { themeMode, _hasHydrated } = useThemeStore();
   const systemColorScheme = useRNColorScheme();
+
+  // 在水化完成前，默认使用亮色主题
+  if (!_hasHydrated) {
+    return 'light';
+  }
 
   // 如果用户选择跟随系统，返回系统主题；否则返回用户选择的主题
   if (themeMode === 'system') {

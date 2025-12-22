@@ -4,7 +4,7 @@
 import { Pressable } from 'react-native';
 import { Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { primaryScale, successScale, neutralScale } from '@/src/design-system/tokens';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 
 interface EmptyStateProps {
   type: 'search' | 'complete' | 'default';
@@ -14,6 +14,9 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ type, onReset, onRefresh }: EmptyStateProps) {
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
+
   // 搜索结果为空
   if (type === 'search') {
     return (
@@ -23,25 +26,25 @@ export function EmptyState({ type, onReset, onRefresh }: EmptyStateProps) {
         justifyContent="center"
         padding="$8"
         minHeight={400}
-        backgroundColor="white"
+        backgroundColor={colors.background as any}
       >
         <YStack
           width={140}
           height={140}
           borderRadius="$12"
-          backgroundColor={primaryScale.primary2}
+          backgroundColor={(isDark ? '#3D2A1F' : colors.primaryLight) as any}
           alignItems="center"
           justifyContent="center"
           marginBottom="$5"
           borderWidth={3}
-          borderColor={primaryScale.primary3}
+          borderColor={(isDark ? '#4D3A2F' : colors.primaryLight) as any}
         >
-          <IconSymbol name="magnifyingglass" size={64} color={primaryScale.primary7} />
+          <IconSymbol name="magnifyingglass" size={64} color={colors.primary} />
         </YStack>
         <Text
           fontSize={24}
           fontWeight="900"
-          color="$foreground"
+          color={colors.text as any}
           marginBottom="$2.5"
           letterSpacing={0.5}
         >
@@ -49,7 +52,7 @@ export function EmptyState({ type, onReset, onRefresh }: EmptyStateProps) {
         </Text>
         <Text
           fontSize={15}
-          color={neutralScale.neutral8}
+          color={colors.textSecondary as any}
           textAlign="center"
           lineHeight={24}
           marginBottom="$5"
@@ -62,11 +65,11 @@ export function EmptyState({ type, onReset, onRefresh }: EmptyStateProps) {
             paddingHorizontal="$5"
             paddingVertical="$3.5"
             borderRadius="$12"
-            backgroundColor={primaryScale.primary7}
+            backgroundColor={colors.primary as any}
             gap="$2.5"
             alignItems="center"
             borderWidth={2}
-            borderColor={primaryScale.primary6}
+            borderColor={colors.primaryDark as any}
           >
             <IconSymbol name="arrow.counterclockwise" size={18} color="white" />
             <Text fontSize={16} color="white" fontWeight="800" letterSpacing={0.3}>
@@ -87,25 +90,25 @@ export function EmptyState({ type, onReset, onRefresh }: EmptyStateProps) {
         justifyContent="center"
         padding="$8"
         minHeight={300}
-        backgroundColor="white"
+        backgroundColor={colors.background as any}
       >
         <YStack
           width={120}
           height={120}
           borderRadius="$12"
-          backgroundColor={successScale.success2}
+          backgroundColor={(isDark ? '#0D2818' : colors.successMuted) as any}
           alignItems="center"
           justifyContent="center"
           marginBottom="$4"
           borderWidth={3}
-          borderColor={successScale.success3}
+          borderColor={(isDark ? '#143D20' : colors.successMuted) as any}
         >
-          <IconSymbol name="checkmark.circle.fill" size={64} color={successScale.success8} />
+          <IconSymbol name="checkmark.circle.fill" size={64} color={colors.success} />
         </YStack>
         <Text
           fontSize={22}
           fontWeight="900"
-          color="$foreground"
+          color={colors.text as any}
           marginBottom="$2.5"
           letterSpacing={0.5}
         >
@@ -113,7 +116,7 @@ export function EmptyState({ type, onReset, onRefresh }: EmptyStateProps) {
         </Text>
         <Text
           fontSize={15}
-          color={neutralScale.neutral8}
+          color={colors.textSecondary as any}
           textAlign="center"
           lineHeight={24}
           fontWeight="500"
@@ -132,25 +135,25 @@ export function EmptyState({ type, onReset, onRefresh }: EmptyStateProps) {
       justifyContent="center"
       padding="$8"
       minHeight={400}
-      backgroundColor="white"
+      backgroundColor={colors.background as any}
     >
       <YStack
         width={140}
         height={140}
         borderRadius="$12"
-        backgroundColor={neutralScale.neutral2}
+        backgroundColor={colors.backgroundMuted as any}
         alignItems="center"
         justifyContent="center"
         marginBottom="$5"
         borderWidth={3}
-        borderColor={neutralScale.neutral3}
+        borderColor={colors.border as any}
       >
-        <IconSymbol name="tray.fill" size={64} color={neutralScale.neutral7} />
+        <IconSymbol name="tray.fill" size={64} color={colors.textTertiary} />
       </YStack>
       <Text
         fontSize={24}
         fontWeight="900"
-        color="$foreground"
+        color={colors.text as any}
         marginBottom="$2.5"
         letterSpacing={0.5}
       >
@@ -158,7 +161,7 @@ export function EmptyState({ type, onReset, onRefresh }: EmptyStateProps) {
       </Text>
       <Text
         fontSize={15}
-        color={neutralScale.neutral8}
+        color={colors.textSecondary as any}
         textAlign="center"
         lineHeight={24}
         marginBottom="$5"
@@ -171,11 +174,11 @@ export function EmptyState({ type, onReset, onRefresh }: EmptyStateProps) {
           paddingHorizontal="$5"
           paddingVertical="$3.5"
           borderRadius="$12"
-          backgroundColor={primaryScale.primary7}
+          backgroundColor={colors.primary as any}
           gap="$2.5"
           alignItems="center"
           borderWidth={2}
-          borderColor={primaryScale.primary6}
+          borderColor={colors.primaryDark as any}
         >
           <IconSymbol name="arrow.clockwise" size={18} color="white" />
           <Text fontSize={16} color="white" fontWeight="800" letterSpacing={0.3}>

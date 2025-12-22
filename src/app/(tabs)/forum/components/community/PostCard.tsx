@@ -11,6 +11,7 @@ import { Pressable } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { Heart, Play, Award, Eye } from '@tamagui/lucide-icons';
 import { styled, YStack, XStack, Text, Stack, Image, Avatar, useTheme } from 'tamagui';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 import { PostImage } from './PostImage';
 import { VideoPreview } from '../VideoPreview';
 
@@ -157,7 +158,7 @@ function LikeButton({
   count: number;
   onPress: () => void;
 }) {
-  const theme = useTheme();
+  const colors = useThemeColors();
   const scale = useSharedValue(1);
   const likeProgress = useSharedValue(isLiked ? 1 : 0);
 
@@ -184,10 +185,10 @@ function LikeButton({
         <LikeContainer>
           <Heart
             size={16}
-            color={isLiked ? '#F43F5E' : theme.colorMuted?.val}
+            color={isLiked ? '#F43F5E' : (colors.textTertiary as any)}
             fill={isLiked ? '#F43F5E' : 'transparent'}
           />
-          {count > 0 && <StatText>{count}</StatText>}
+          {count > 0 && <StatText color={colors.textSecondary as any}>{count}</StatText>}
         </LikeContainer>
       </Animated.View>
     </Pressable>
@@ -201,6 +202,8 @@ function PostCardComponent({
   onAuthorPress,
   columnWidth,
 }: PostCardProps) {
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
   const imageHeight = data.imageHeight || columnWidth * 1.2;
   const cardScale = useSharedValue(1);
 
@@ -240,8 +243,13 @@ function PostCardComponent({
 
   return (
     <Pressable onPress={handlePress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
-      <AnimatedCardContainer width={columnWidth} style={cardAnimatedStyle}>
-        <ImageContainer height={imageHeight}>
+      <AnimatedCardContainer
+        width={columnWidth}
+        style={cardAnimatedStyle}
+        backgroundColor={colors.cardBackground as any}
+        borderColor={colors.borderMuted as any}
+      >
+        <ImageContainer height={imageHeight} backgroundColor={colors.backgroundMuted as any}>
           {shouldShowVideoThumbnail ? (
             // 使用 VideoPreview 组件显示视频缩略图
             <VideoPreview
@@ -263,7 +271,7 @@ function PostCardComponent({
         </ImageContainer>
 
         <ContentContainer>
-          <TitleText>{data.title}</TitleText>
+          <TitleText color={colors.text as any}>{data.title}</TitleText>
 
           <FooterContainer>
             <Pressable onPress={handleAuthorPress}>
@@ -272,7 +280,7 @@ function PostCardComponent({
                   width={24}
                   height={24}
                   borderRadius={12}
-                  backgroundColor="$color5"
+                  backgroundColor={colors.backgroundMuted as any}
                   alignItems="center"
                   justifyContent="center"
                   overflow="hidden"
@@ -285,15 +293,15 @@ function PostCardComponent({
                       borderRadius={12}
                     />
                   ) : (
-                    <Text fontSize={10} fontWeight="600" color="white">
+                    <Text fontSize={10} fontWeight="600" color={colors.textSecondary as any}>
                       {data.author.name?.charAt(0)?.toUpperCase() || '?'}
                     </Text>
                   )}
                 </Stack>
-                <AuthorName>{data.author.name}</AuthorName>
+                <AuthorName color={colors.textSecondary as any}>{data.author.name}</AuthorName>
                 {data.author.hasReputationBadge && (
-                  <BadgeIcon>
-                    <Award size={10} color="#FFFFFF" />
+                  <BadgeIcon backgroundColor={colors.primary as any}>
+                    <Award size={10} color={(isDark ? colors.background : '#FFFFFF') as any} />
                   </BadgeIcon>
                 )}
               </AuthorContainer>
@@ -302,8 +310,10 @@ function PostCardComponent({
             <StatsContainer>
               {data.viewCount !== undefined && data.viewCount > 0 && (
                 <StatItem>
-                  <Eye size={14} color="#ADABA6" />
-                  <StatText>{formatCount(data.viewCount)}</StatText>
+                  <Eye size={14} color={colors.textTertiary as any} />
+                  <StatText color={colors.textTertiary as any}>
+                    {formatCount(data.viewCount)}
+                  </StatText>
                 </StatItem>
               )}
               <LikeButton isLiked={data.isLiked} count={data.likeCount} onPress={handleLikePress} />

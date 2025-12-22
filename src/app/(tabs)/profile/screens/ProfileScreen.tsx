@@ -7,8 +7,7 @@ import { ScrollView, Text, YStack } from 'tamagui';
 import { supabaseChatService, supabase } from '@/src/lib/supabase';
 import { Button } from '@/src/design-system/components';
 
-import { Colors } from '@/src/constants/theme';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 
 import {
   AddPetModal,
@@ -28,8 +27,8 @@ import { BADGE_CONFIGS } from '@/src/constants/badges';
 export function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const colorScheme = useThemeAwareColorScheme();
-  const colors = Colors[colorScheme];
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
 
   // 使用自定义 hooks
   const {
@@ -123,16 +122,16 @@ export function ProfileScreen() {
     return (
       <YStack
         flex={1}
-        backgroundColor={colors.background}
+        backgroundColor={colors.background as any}
         alignItems="center"
         justifyContent="center"
         padding="$6"
       >
         <YStack alignItems="center" gap="$4" maxWidth={400}>
-          <Text fontSize={24} fontWeight="700" color={colors.text}>
+          <Text fontSize={24} fontWeight="700" color={colors.text as any}>
             会话已过期
           </Text>
-          <Text fontSize={16} color={colors.icon} textAlign="center">
+          <Text fontSize={16} color={colors.icon as any} textAlign="center">
             您的登录状态已失效，请重新登录以继续查看个人资料与宠物信息。
           </Text>
           <Button
@@ -153,7 +152,7 @@ export function ProfileScreen() {
     <View testID="profile-screen" style={{ flex: 1 }}>
       <ScrollView
         flex={1}
-        backgroundColor={colors.background}
+        backgroundColor={colors.background as any}
         contentContainerStyle={{
           paddingTop: insets.top,
           paddingBottom: insets.bottom + 30,
@@ -170,12 +169,12 @@ export function ProfileScreen() {
                 width={44}
                 height={44}
                 borderRadius="$10"
-                backgroundColor="rgba(255, 255, 255, 0.95)"
+                backgroundColor={isDark ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)'}
                 alignItems="center"
                 justifyContent="center"
-                shadowColor="#000"
+                shadowColor={isDark ? '#000' : '#000'}
                 shadowOffset={{ width: 0, height: 2 }}
-                shadowOpacity={0.15}
+                shadowOpacity={isDark ? 0.3 : 0.15}
                 shadowRadius={4}
                 elevation={4}
               >
@@ -186,7 +185,7 @@ export function ProfileScreen() {
                       position: 'absolute',
                       top: -4,
                       right: -4,
-                      backgroundColor: '#EF4444',
+                      backgroundColor: colors.error,
                       borderRadius: 10,
                       minWidth: 20,
                       height: 20,
@@ -215,12 +214,12 @@ export function ProfileScreen() {
                 width={44}
                 height={44}
                 borderRadius="$10"
-                backgroundColor="rgba(255, 255, 255, 0.95)"
+                backgroundColor={isDark ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)'}
                 alignItems="center"
                 justifyContent="center"
                 shadowColor="#000"
                 shadowOffset={{ width: 0, height: 2 }}
-                shadowOpacity={0.15}
+                shadowOpacity={isDark ? 0.3 : 0.15}
                 shadowRadius={4}
                 elevation={4}
               >
@@ -271,10 +270,10 @@ export function ProfileScreen() {
                   <Ionicons name="people-outline" size={22} color="#FEBE98" />
                 </YStack>
                 <YStack>
-                  <Text fontSize={16} fontWeight="600" color={colors.text}>
+                  <Text fontSize={16} fontWeight="600" color={colors.text as any}>
                     我的好友
                   </Text>
-                  <Text fontSize={13} color={colors.icon}>
+                  <Text fontSize={13} color={colors.icon as any}>
                     管理你的好友和请求
                   </Text>
                 </YStack>

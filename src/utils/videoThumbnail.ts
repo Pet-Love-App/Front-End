@@ -12,7 +12,13 @@
 export async function generateVideoThumbnail(videoUri: string): Promise<string | null> {
   try {
     // 动态导入 expo-video-thumbnails，如果未安装则返回 null
-    const VideoThumbnails = await import('expo-video-thumbnails').catch(() => null);
+    // Use require instead of import() for better testability with Jest
+    let VideoThumbnails;
+    try {
+      VideoThumbnails = require('expo-video-thumbnails');
+    } catch (e) {
+      VideoThumbnails = null;
+    }
 
     if (!VideoThumbnails) {
       console.warn('expo-video-thumbnails 未安装，无法生成缩略图');

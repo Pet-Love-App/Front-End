@@ -64,18 +64,24 @@ describe('SupabaseProfileService', () => {
       // Mock profile query - return single result for .single() call
       (mockSupabaseClient.from as jest.Mock).mockImplementation((table: string) => {
         if (table === 'profiles') {
-          return {
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
+          const builder = {
+            select: jest.fn(),
+            eq: jest.fn(),
             single: jest.fn().mockResolvedValue({ data: mockProfile, error: null }),
           };
+          builder.select.mockReturnValue(builder);
+          builder.eq.mockReturnValue(builder);
+          return builder;
         }
         if (table === 'pets') {
-          return {
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
+          const builder = {
+            select: jest.fn(),
+            eq: jest.fn(),
             order: jest.fn().mockResolvedValue({ data: mockPets, error: null }),
           };
+          builder.select.mockReturnValue(builder);
+          builder.eq.mockReturnValue(builder);
+          return builder;
         }
         return {};
       });

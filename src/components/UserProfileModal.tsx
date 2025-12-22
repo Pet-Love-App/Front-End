@@ -241,6 +241,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         onPress={handleToggleFollow}
         disabled={followLoading}
         activeOpacity={0.8}
+        testID="user-profile-follow-button"
       >
         {followLoading ? (
           <ActivityIndicator size="small" color={isFollowing ? '#6B7280' : '#FFFFFF'} />
@@ -282,6 +283,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             style={[styles.friendButton, styles.friendButtonSuccess]}
             onPress={handleSendMessage}
             activeOpacity={0.8}
+            testID="user-profile-friend-button"
           >
             <MessageCircle size={16} color="#FFFFFF" strokeWidth={2} />
             <Text style={styles.friendButtonText}>发送消息</Text>
@@ -289,7 +291,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         );
       case 'sent':
         return (
-          <View style={[styles.friendButton, styles.friendButtonDisabled]}>
+          <View
+            style={[styles.friendButton, styles.friendButtonDisabled]}
+            testID="user-profile-friend-button"
+          >
             <Text style={styles.friendButtonTextDisabled}>已发送请求</Text>
           </View>
         );
@@ -299,6 +304,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             style={[styles.friendButton, styles.friendButtonPrimary]}
             onPress={handleAcceptRequest}
             activeOpacity={0.8}
+            testID="user-profile-friend-button"
           >
             <UserCheck size={16} color="#FFFFFF" strokeWidth={2} />
             <Text style={styles.friendButtonText}>接受请求</Text>
@@ -310,6 +316,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             style={[styles.friendButton, styles.friendButtonPrimary]}
             onPress={handleSendFriendRequest}
             activeOpacity={0.8}
+            testID="user-profile-friend-button"
           >
             <UserPlus size={16} color="#FFFFFF" strokeWidth={2} />
             <Text style={styles.friendButtonText}>添加好友</Text>
@@ -346,7 +353,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         />
 
         {/* 关闭按钮 */}
-        <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={onClose}
+          activeOpacity={0.8}
+          testID="user-profile-close-button"
+        >
           <BlurView intensity={40} tint="light" style={styles.closeButtonBlur}>
             <X size={20} color="#262626" strokeWidth={2.5} />
           </BlurView>
@@ -375,9 +387,15 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   )}
                 </View>
 
-                <Text style={styles.username}>{profile.username || '未知用户'}</Text>
+                <Text style={styles.username} testID="user-profile-username">
+                  {profile.username || '未知用户'}
+                </Text>
 
-                {profile.bio && <Text style={styles.bio}>{profile.bio}</Text>}
+                {profile.bio && (
+                  <Text style={styles.bio} testID="user-profile-bio">
+                    {profile.bio}
+                  </Text>
+                )}
 
                 {/* 统计信息 */}
                 <View style={styles.statsContainer}>

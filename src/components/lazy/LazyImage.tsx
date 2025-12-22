@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Image, ImageSourcePropType, ImageStyle, StyleProp } from 'react-native';
+import { Image, ImageSourcePropType, ImageStyle, StyleProp, DimensionValue } from 'react-native';
 import { YStack } from 'tamagui';
 
 import { neutralScale } from '@/src/design-system/tokens';
@@ -8,8 +8,8 @@ import { Skeleton } from './Skeleton';
 
 interface LazyImageProps {
   source: ImageSourcePropType;
-  width: number | string;
-  height: number | string;
+  width: DimensionValue;
+  height: DimensionValue;
   borderRadius?: number;
   resizeMode?: 'cover' | 'contain' | 'stretch' | 'center';
   placeholder?: ImageSourcePropType;
@@ -17,6 +17,7 @@ interface LazyImageProps {
   showSkeleton?: boolean;
   onLoad?: () => void;
   onError?: () => void;
+  testID?: string;
 }
 
 export function LazyImage({
@@ -30,6 +31,7 @@ export function LazyImage({
   showSkeleton = true,
   onLoad,
   onError,
+  testID,
 }: LazyImageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -50,46 +52,49 @@ export function LazyImage({
       return (
         <Image
           source={placeholder}
-          style={[{ width: width as number, height: height as number, borderRadius }, style]}
+          style={[{ width, height, borderRadius }, style]}
           resizeMode={resizeMode}
+          testID={testID}
         />
       );
     }
-
     return (
       <YStack
         width={width}
         height={height}
+        backgroundColor={neutralScale.neutral2}
         borderRadius={borderRadius}
-        backgroundColor={neutralScale.neutral3}
         alignItems="center"
         justifyContent="center"
-      />
+        testID={testID}
+      >
+        {/* Optionally, you can add an error icon or text here */}
+      </YStack>
     );
   }
 
   return (
-    <YStack width={width} height={height} borderRadius={borderRadius} overflow="hidden">
-      {isLoading && showSkeleton && (
-        <YStack position="absolute" top={0} left={0} right={0} bottom={0} zIndex={1}>
-          <Skeleton width="100%" height="100%" borderRadius={borderRadius} />
-        </YStack>
+    <YStack
+      width={width as any}
+      height={height as any}
+      borderRadius={borderRadius}
+      overflow="hidden"
+      testID="lazy-image-container"
+    >
+      {showSkeleton && isLoading && (
+        <Skeleton width={width as any} height={height as any} borderRadius={borderRadius} />
       )}
-
       <Image
         source={source}
         style={[
-          {
-            width: '100%',
-            height: '100%',
-            borderRadius,
-            opacity: isLoading ? 0 : 1,
-          },
+          { width, height, borderRadius },
+          isLoading ? { opacity: 0 } : { opacity: 1 },
           style,
         ]}
         resizeMode={resizeMode}
         onLoad={handleLoad}
         onError={handleError}
+        testID={testID}
       />
     </YStack>
   );

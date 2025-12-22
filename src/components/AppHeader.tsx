@@ -46,6 +46,9 @@ export function AppHeader({
   const colors = useThemeColors();
   const isDark = useIsDarkMode();
 
+  // 统一头部高度常量
+  const HEADER_HEIGHT = 56;
+
   // 获取未读通知数量
   const fetchUnreadCount = useCallback(async () => {
     try {
@@ -103,9 +106,6 @@ export function AppHeader({
     router.push('/(tabs)/forum/notifications' as any);
   }, [router]);
 
-  // 统一头部高度常量
-  const HEADER_HEIGHT = 56;
-
   return (
     <YStack paddingTop={insets.top} paddingHorizontal={16} backgroundColor={backgroundColor as any}>
       <XStack alignItems="center" justifyContent="space-between" height={HEADER_HEIGHT}>
@@ -155,7 +155,7 @@ export function AppHeader({
               backgroundColor={colors.backgroundMuted as any}
               alignItems="center"
               justifyContent="center"
-              borderWidth={1}
+              borderWidth={1.5}
               borderColor={colors.border as any}
             >
               <IconSymbol name="bell.fill" size={20} color={colors.icon} />

@@ -24,6 +24,7 @@ const MAPPING = {
   'viewfinder.circle.fill': 'scan-circle',
   'cart.fill': 'cart',
   'person.fill': 'person',
+  'heart.fill': 'heart',
 
   // ==================== 相机相关 ====================
   'camera.fill': 'camera',
@@ -76,7 +77,6 @@ const MAPPING = {
 
   // ==================== 社交和互动 ====================
   'star.fill': 'star',
-  'heart.fill': 'heart',
   'heart.slash': 'heart-dislike',
   'trophy.fill': 'trophy',
 

@@ -67,7 +67,7 @@ export function VideoPlayer({ visible, videoUrl, onClose }: VideoPlayerProps) {
       <YStack flex={1} backgroundColor="rgba(0, 0, 0, 0.95)">
         {/* 关闭按钮 */}
         <Stack position="absolute" top={insets.top + 16} right={16} zIndex={10}>
-          <Pressable onPress={handleClose}>
+          <Pressable onPress={handleClose} testID="close-button">
             <Stack
               width={40}
               height={40}

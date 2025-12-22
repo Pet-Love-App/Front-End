@@ -9,23 +9,19 @@
     "skipLibCheck": true,
 
     // ==================== 更严格的类型检查 ====================
-    "noImplicitReturns": true,           // 确保所有代码路径都有返回值
-    "noFallthroughCasesInSwitch": true,  // 防止 switch 语句中的 fallthrough 错误
-    "noUncheckedIndexedAccess": false,   // 暂时关闭（会导致大量现有代码需要修改）
+    "noImplicitReturns": true, // 确保所有代码路径都有返回值
+    "noFallthroughCasesInSwitch": true, // 防止 switch 语句中的 fallthrough 错误
+    "noUncheckedIndexedAccess": false, // 暂时关闭（会导致大量现有代码需要修改）
     "forceConsistentCasingInFileNames": true, // 强制文件名大小写一致
-    "resolveJsonModule": true,           // 允许导入 .json 文件
-    "isolatedModules": true,             // 确保每个文件都可以独立编译
+    "resolveJsonModule": true, // 允许导入 .json 文件
+    "isolatedModules": true, // 确保每个文件都可以独立编译
 
     // ==================== 额外的严格检查 ====================
-    "noUnusedLocals": false,             // 不强制检查未使用的局部变量（由 ESLint 处理）
-    "noUnusedParameters": false,         // 不强制检查未使用的参数（由 ESLint 处理）
+    "noUnusedLocals": false, // 不强制检查未使用的局部变量（由 ESLint 处理）
+    "noUnusedParameters": false, // 不强制检查未使用的参数（由 ESLint 处理）
     "exactOptionalPropertyTypes": false, // 保持可选属性的灵活性
     "noPropertyAccessFromIndexSignature": false // 允许索引签名的属性访问
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
+  "exclude": ["node_modules", "e2e/**/*.test.ts", "**/*.e2e.ts"]
 }

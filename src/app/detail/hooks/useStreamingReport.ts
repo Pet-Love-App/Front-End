@@ -165,9 +165,39 @@ export function useStreamingReport(): UseStreamingReportReturn {
               }
 
               if (parsed.error) {
+                // If we throw here, it is caught by the inner catch (parseError)
+                // We need to rethrow or handle it.
+                // But wait, the inner catch is for JSON.parse errors or logic errors inside try block.
+                // If we throw here, it goes to catch (parseError).
                 throw new Error(parsed.error);
               }
             } catch (parseError) {
+              // If it was our thrown error, we should probably rethrow it to the outer catch?
+              // Or handle it here.
+              // The current code swallows it if it's an Error object, unless we check.
+
+              if (
+                parseError instanceof Error &&
+                parseError.message &&
+                !parseError.message.includes('JSON')
+              ) {
+                // It might be the error we threw above.
+                // But wait, if JSON.parse fails, it throws SyntaxError.
+                // If we throw Error(parsed.error), it is an Error.
+
+                // The issue is that the catch block below:
+                // if (data && data !== '[DONE]' && !data.startsWith('{'))
+                // This logic is for when JSON.parse fails (non-JSON data).
+
+                // If we throw an error inside the try block, it is caught here.
+                // And then ignored because of the if condition (data starts with '{' for json).
+
+                // So the error is swallowed.
+
+                // We should rethrow if it is a "real" error we want to propagate.
+                throw parseError;
+              }
+
               // 忽略非 JSON 数据
               if (data && data !== '[DONE]' && !data.startsWith('{')) {
                 contentRef.current += data;

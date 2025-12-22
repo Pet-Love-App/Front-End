@@ -92,7 +92,7 @@ export function DialogHeader({
 
           {/* 关闭按钮 */}
           {onClose && (
-            <TouchableOpacity onPress={onClose} activeOpacity={0.7}>
+            <TouchableOpacity onPress={onClose} activeOpacity={0.7} testID="close-button">
               <YStack
                 width={36}
                 height={36}
@@ -128,6 +128,7 @@ export function DialogHeader({
         <TouchableOpacity
           onPress={onClose}
           activeOpacity={0.7}
+          testID="close-button"
           style={{
             position: 'absolute',
             top: SPACING.md,
@@ -153,11 +154,11 @@ export function DialogHeader({
         width={64}
         height={64}
         borderRadius={BORDER_RADIUS.full}
-        backgroundColor={colors.bg}
+        backgroundColor={colors.bg as any}
         alignItems="center"
         justifyContent="center"
         borderWidth={3}
-        borderColor={colors.border}
+        borderColor={colors.border as any}
       >
         {icon ? (
           <Text fontSize={32}>{icon}</Text>

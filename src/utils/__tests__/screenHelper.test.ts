@@ -104,5 +104,16 @@ describe('ScreenHelper', () => {
 
       expect(result.y).toBe(maxY);
     });
+
+    it('should handle item larger than screen', () => {
+      const insets = { top: 0, bottom: 0, left: 0, right: 0 };
+      const itemSize = 1000; // Larger than screen
+
+      const result = ScreenHelper.clampPosition(0, 0, itemSize, itemSize, insets);
+
+      // Should be clamped to min (left/top) because max is smaller than min
+      expect(result.x).toBe(0);
+      expect(result.y).toBe(0);
+    });
   });
 });

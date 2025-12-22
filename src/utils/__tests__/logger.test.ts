@@ -110,14 +110,15 @@ describe('Logger', () => {
   });
 
   describe('error', () => {
-    it('should always call console.error for errors', () => {
+    it('should call console.error for error level', () => {
       // Arrange
       const message = 'Error message';
+      const error = new Error('Something went wrong');
 
       // Act
-      logger.error(message);
+      logger.error(message, error);
 
-      // Assert - 错误在所有环境都应该记录
+      // Assert
       expect(console.error).toHaveBeenCalled();
     });
 
@@ -136,8 +137,8 @@ describe('Logger', () => {
     it('should include context with error', () => {
       // Arrange
       const message = 'Error with context';
-      const error = new Error('Test error');
-      const context = { component: 'TestComponent', userId: 123 };
+      const error = new Error('Failed');
+      const context = { component: 'TestComponent' };
 
       // Act
       logger.error(message, error, context);
@@ -225,6 +226,42 @@ describe('Logger', () => {
       if ((global as any).__DEV__) {
         expect(() => logger.group(label, fn)).toThrow('Group error');
         expect(console.groupEnd).toHaveBeenCalled();
+      }
+    });
+  });
+
+  describe('formatContext', () => {
+    it('should handle circular references gracefully', () => {
+      // Arrange
+      const circular: any = { a: 1 };
+      circular.self = circular;
+      const message = 'Circular context';
+
+      // Act
+      logger.info(message, circular);
+
+      // Assert
+      if ((global as any).__DEV__) {
+        expect(console.log).toHaveBeenCalled();
+        // Verify that it didn't crash and logged something
+        const logArgs = (console.log as jest.Mock).mock.calls[0];
+        expect(logArgs).toBeDefined();
+      }
+    });
+
+    it('should handle empty context', () => {
+      // Arrange
+      const message = 'Empty context';
+
+      // Act
+      logger.info(message, {});
+
+      // Assert
+      if ((global as any).__DEV__) {
+        expect(console.log).toHaveBeenCalled();
+        const logArgs = (console.log as jest.Mock).mock.calls[0];
+        // Should not include empty object string
+        expect(logArgs.some((arg: any) => arg === '{}')).toBeFalsy();
       }
     });
   });

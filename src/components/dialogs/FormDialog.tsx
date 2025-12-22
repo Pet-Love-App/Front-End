@@ -61,6 +61,7 @@ export function FormDialog({
       <Dialog.Portal>
         {/* 遮罩层 */}
         <Dialog.Overlay
+          testID="dialog-overlay"
           key="overlay"
           animation="quick"
           opacity={0.5}
@@ -73,6 +74,7 @@ export function FormDialog({
 
         {/* 对话框内容 */}
         <Dialog.Content
+          testID="dialog-root"
           bordered
           key="content"
           animateOnly={['transform', 'opacity']}

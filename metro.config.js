@@ -35,6 +35,22 @@ config.resolver = {
   sourceExts: [...config.resolver.sourceExts, 'mjs', 'cjs'],
   // 资源文件扩展名
   assetExts: [...config.resolver.assetExts.filter((ext) => ext !== 'svg'), 'lottie'],
+  // 排除测试文件和不必要的文件
+  blockList: [
+    // 排除所有测试文件
+    /\/__tests__\/.*/,
+    /\.test\.(ts|tsx|js|jsx)$/,
+    /\.spec\.(ts|tsx|js|jsx)$/,
+    /\.e2e\.(ts|tsx|js|jsx)$/,
+    // 排除 Jest 配置和设置文件
+    /jest\.config\.js$/,
+    /jest-setup\.(ts|js)$/,
+    // 排除文档和笔记本
+    /\.md$/,
+    /\.ipynb$/,
+    // 排除 E2E 测试目录
+    /^.*\/e2e\/.*$/,
+  ],
 };
 
 module.exports = config;

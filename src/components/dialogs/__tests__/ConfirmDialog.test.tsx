@@ -11,16 +11,32 @@ jest.mock('tamagui', () => {
       ({ children, open }: any) => (open ? <View testID="dialog-wrapper">{children}</View> : null),
       {
         Portal: ({ children }: any) => <View testID="dialog-portal">{children}</View>,
-        Overlay: ({ onPress, testID }: any) => <TouchableOpacity testID={testID || "dialog-overlay"} onPress={onPress} />,
-        Content: ({ children, testID }: any) => <View testID={testID || "dialog-content"}>{children}</View>,
+        Overlay: ({ onPress, testID }: any) => (
+          <TouchableOpacity testID={testID || 'dialog-overlay'} onPress={onPress} />
+        ),
+        Content: ({ children, testID }: any) => (
+          <View testID={testID || 'dialog-content'}>{children}</View>
+        ),
         Title: ({ children }: any) => <Text testID="dialog-title">{children}</Text>,
         Description: ({ children }: any) => <Text testID="dialog-description">{children}</Text>,
         Close: ({ children }: any) => <View testID="dialog-close">{children}</View>,
       }
     ),
-    Text: ({ children, ...props }: any) => <Text testID="text-mock" {...props}>{children}</Text>,
-    YStack: ({ children, ...props }: any) => <View testID="ystack-mock" {...props}>{children}</View>,
-    XStack: ({ children, ...props }: any) => <View testID="xstack-mock" {...props}>{children}</View>,
+    Text: ({ children, ...props }: any) => (
+      <Text testID="text-mock" {...props}>
+        {children}
+      </Text>
+    ),
+    YStack: ({ children, ...props }: any) => (
+      <View testID="ystack-mock" {...props}>
+        {children}
+      </View>
+    ),
+    XStack: ({ children, ...props }: any) => (
+      <View testID="xstack-mock" {...props}>
+        {children}
+      </View>
+    ),
   };
 });
 

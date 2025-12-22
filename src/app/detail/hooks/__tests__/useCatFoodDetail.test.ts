@@ -103,9 +103,11 @@ describe('useCatFoodDetail', () => {
 
     renderHook(() => useCatFoodDetail());
 
-    expect(useCatfoodRealtime).toHaveBeenCalledWith(expect.objectContaining({
-      enabled: true,
-      catfoodId: 123,
-    }));
+    expect(useCatfoodRealtime).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enabled: true,
+        catfoodId: 123,
+      })
+    );
   });
 });

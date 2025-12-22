@@ -20,13 +20,19 @@ jest.mock('tamagui', () => {
   const { View, Text } = require('react-native');
   return {
     Text: ({ children, testID, ...props }: any) => (
-      <Text testID={testID} {...props}>{children}</Text>
+      <Text testID={testID} {...props}>
+        {children}
+      </Text>
     ),
     XStack: ({ children, testID, ...props }: any) => (
-      <View testID={testID} {...props}>{children}</View>
+      <View testID={testID} {...props}>
+        {children}
+      </View>
     ),
     YStack: ({ children, testID, ...props }: any) => (
-      <View testID={testID} {...props}>{children}</View>
+      <View testID={testID} {...props}>
+        {children}
+      </View>
     ),
   };
 });
@@ -43,11 +49,7 @@ describe('PageHeader', () => {
   it('should render title and subtitle', () => {
     // Arrange & Act
     const { getByTestId } = render(
-      <PageHeader
-        title="Test Title"
-        subtitle="Test Subtitle"
-        insets={mockInsets}
-      />
+      <PageHeader title="Test Title" subtitle="Test Subtitle" insets={mockInsets} />
     );
 
     // Assert
@@ -58,11 +60,7 @@ describe('PageHeader', () => {
   it('should render back button when showBackButton is true', () => {
     // Arrange & Act
     const { getByTestId } = render(
-      <PageHeader
-        title="Test"
-        showBackButton={true}
-        insets={mockInsets}
-      />
+      <PageHeader title="Test" showBackButton={true} insets={mockInsets} />
     );
 
     // Assert
@@ -72,11 +70,7 @@ describe('PageHeader', () => {
   it('should navigate back on back button press', () => {
     // Arrange
     const { getByTestId } = render(
-      <PageHeader
-        title="Test"
-        showBackButton={true}
-        insets={mockInsets}
-      />
+      <PageHeader title="Test" showBackButton={true} insets={mockInsets} />
     );
 
     // Act
@@ -110,11 +104,7 @@ describe('PageHeader', () => {
     // Arrange
     const RightElement = () => <TouchableOpacity testID="right-element" />;
     const { getByTestId } = render(
-      <PageHeader
-        title="Test"
-        insets={mockInsets}
-        rightElement={<RightElement />}
-      />
+      <PageHeader title="Test" insets={mockInsets} rightElement={<RightElement />} />
     );
 
     // Assert

@@ -73,31 +73,37 @@ describe('Supabase Additive Service', () => {
       const mockSelectExact = jest.fn().mockReturnThis();
       const mockIlikeExact = jest.fn().mockReturnThis();
       const mockLimitExact = jest.fn().mockReturnThis();
-      const mockSingleExact = jest.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } });
+      const mockSingleExact = jest
+        .fn()
+        .mockResolvedValue({ data: null, error: { code: 'PGRST116' } });
 
       // Mock fuzzy match success
-      const mockDataFuzzy = [{
-        id: 1,
-        name: 'Taurine',
-        en_name: 'Taurine',
-        type: 'Amino Acid',
-        applicable_range: 'Cats',
-        created_at: '2023-01-01',
-        updated_at: '2023-01-01',
-      }];
+      const mockDataFuzzy = [
+        {
+          id: 1,
+          name: 'Taurine',
+          en_name: 'Taurine',
+          type: 'Amino Acid',
+          applicable_range: 'Cats',
+          created_at: '2023-01-01',
+          updated_at: '2023-01-01',
+        },
+      ];
 
       const mockSelectFuzzy = jest.fn().mockReturnThis();
       const mockIlikeFuzzy = jest.fn().mockReturnThis();
       const mockLimitFuzzy = jest.fn().mockResolvedValue({ data: mockDataFuzzy, error: null });
 
       (supabase.from as jest.Mock)
-        .mockReturnValueOnce({ // Exact match call
+        .mockReturnValueOnce({
+          // Exact match call
           select: mockSelectExact,
           ilike: mockIlikeExact,
           limit: mockLimitExact,
           single: mockSingleExact,
         })
-        .mockReturnValueOnce({ // Fuzzy match call
+        .mockReturnValueOnce({
+          // Fuzzy match call
           select: mockSelectFuzzy,
           ilike: mockIlikeFuzzy,
           limit: mockLimitFuzzy,
@@ -118,7 +124,9 @@ describe('Supabase Additive Service', () => {
       const mockSelectExact = jest.fn().mockReturnThis();
       const mockIlikeExact = jest.fn().mockReturnThis();
       const mockLimitExact = jest.fn().mockReturnThis();
-      const mockSingleExact = jest.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } });
+      const mockSingleExact = jest
+        .fn()
+        .mockResolvedValue({ data: null, error: { code: 'PGRST116' } });
 
       // Mock fuzzy match failure
       const mockSelectFuzzy = jest.fn().mockReturnThis();
@@ -126,13 +134,15 @@ describe('Supabase Additive Service', () => {
       const mockLimitFuzzy = jest.fn().mockResolvedValue({ data: [], error: null });
 
       (supabase.from as jest.Mock)
-        .mockReturnValueOnce({ // Exact match call
+        .mockReturnValueOnce({
+          // Exact match call
           select: mockSelectExact,
           ilike: mockIlikeExact,
           limit: mockLimitExact,
           single: mockSingleExact,
         })
-        .mockReturnValueOnce({ // Fuzzy match call
+        .mockReturnValueOnce({
+          // Fuzzy match call
           select: mockSelectFuzzy,
           ilike: mockIlikeFuzzy,
           limit: mockLimitFuzzy,
@@ -152,12 +162,16 @@ describe('Supabase Additive Service', () => {
       const mockSelectExact = jest.fn().mockReturnThis();
       const mockIlikeExact = jest.fn().mockReturnThis();
       const mockLimitExact = jest.fn().mockReturnThis();
-      const mockSingleExact = jest.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } });
+      const mockSingleExact = jest
+        .fn()
+        .mockResolvedValue({ data: null, error: { code: 'PGRST116' } });
 
       // Mock fuzzy match error
       const mockSelectFuzzy = jest.fn().mockReturnThis();
       const mockIlikeFuzzy = jest.fn().mockReturnThis();
-      const mockLimitFuzzy = jest.fn().mockResolvedValue({ data: null, error: { message: 'DB Error' } });
+      const mockLimitFuzzy = jest
+        .fn()
+        .mockResolvedValue({ data: null, error: { message: 'DB Error' } });
 
       (supabase.from as jest.Mock)
         .mockReturnValueOnce({
@@ -281,7 +295,12 @@ describe('Supabase Additive Service', () => {
         single: mockSingle,
       });
 
-      const params = { name: 'New Additive', enName: 'New Additive', type: 'Type', applicableRange: 'All' };
+      const params = {
+        name: 'New Additive',
+        enName: 'New Additive',
+        type: 'Type',
+        applicableRange: 'All',
+      };
       const result = await supabaseAdditiveService.addAdditive(params);
 
       expect(result.success).toBe(true);
@@ -297,7 +316,9 @@ describe('Supabase Additive Service', () => {
     it('should handle error when adding additive', async () => {
       const mockInsert = jest.fn().mockReturnThis();
       const mockSelect = jest.fn().mockReturnThis();
-      const mockSingle = jest.fn().mockResolvedValue({ data: null, error: { message: 'Insert Error' } });
+      const mockSingle = jest
+        .fn()
+        .mockResolvedValue({ data: null, error: { message: 'Insert Error' } });
 
       (supabase.from as jest.Mock).mockReturnValue({
         insert: mockInsert,
@@ -351,7 +372,9 @@ describe('Supabase Additive Service', () => {
     it('should handle error when adding ingredient', async () => {
       const mockInsert = jest.fn().mockReturnThis();
       const mockSelect = jest.fn().mockReturnThis();
-      const mockSingle = jest.fn().mockResolvedValue({ data: null, error: { message: 'Insert Error' } });
+      const mockSingle = jest
+        .fn()
+        .mockResolvedValue({ data: null, error: { message: 'Insert Error' } });
 
       (supabase.from as jest.Mock).mockReturnValue({
         insert: mockInsert,

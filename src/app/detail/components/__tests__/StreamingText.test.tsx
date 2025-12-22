@@ -23,12 +23,7 @@ jest.mock('react-native-reanimated', () => {
 describe('StreamingText', () => {
   it('should render progress bar when streaming', () => {
     const { getByText } = render(
-      <StreamingText
-        content="Analyzing..."
-        isStreaming={true}
-        isComplete={false}
-        progress={50}
-      />
+      <StreamingText content="Analyzing..." isStreaming={true} isComplete={false} progress={50} />
     );
 
     expect(getByText('AI 正在分析中...')).toBeTruthy();

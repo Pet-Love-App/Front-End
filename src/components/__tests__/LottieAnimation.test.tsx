@@ -55,7 +55,9 @@ describe('LottieAnimation', () => {
     const lottieView = getByTestId('lottie-view');
 
     // Assert
-    expect(lottieView.props.style).toEqual(expect.arrayContaining([{ width: 100, height: 100 }, undefined]));
+    expect(lottieView.props.style).toEqual(
+      expect.arrayContaining([{ width: 100, height: 100 }, undefined])
+    );
     expect(lottieView.props.autoPlay).toBe(false);
     expect(lottieView.props.loop).toBe(false);
     expect(lottieView.props.speed).toBe(0.5);
@@ -86,6 +88,8 @@ describe('LottieAnimation', () => {
     const container = getByTestId('custom-container');
 
     // Assert
-    expect(container.props.style).toEqual(expect.arrayContaining([expect.objectContaining({ alignItems: 'center' }), containerStyle]));
+    expect(container.props.style).toEqual(
+      expect.arrayContaining([expect.objectContaining({ alignItems: 'center' }), containerStyle])
+    );
   });
 });

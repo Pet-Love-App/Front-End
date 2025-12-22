@@ -34,13 +34,19 @@ jest.mock('tamagui', () => {
   const { View, Text } = require('react-native');
   return {
     Text: ({ children, testID, ...props }: any) => (
-      <Text testID={testID} {...props}>{children}</Text>
+      <Text testID={testID} {...props}>
+        {children}
+      </Text>
     ),
     XStack: ({ children, testID, ...props }: any) => (
-      <View testID={testID} {...props}>{children}</View>
+      <View testID={testID} {...props}>
+        {children}
+      </View>
     ),
     YStack: ({ children, testID, ...props }: any) => (
-      <View testID={testID} {...props}>{children}</View>
+      <View testID={testID} {...props}>
+        {children}
+      </View>
     ),
   };
 });
@@ -56,7 +62,9 @@ describe('AppHeader', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
-    (useUserStore as unknown as jest.Mock).mockReturnValue({ user: { id: '123', avatarUrl: 'test.jpg' } });
+    (useUserStore as unknown as jest.Mock).mockReturnValue({
+      user: { id: '123', avatarUrl: 'test.jpg' },
+    });
     (supabase.channel as jest.Mock).mockReturnValue(mockChannel);
     (supabaseForumService.getNotifications as jest.Mock).mockResolvedValue({ data: [] });
   });
@@ -71,7 +79,9 @@ describe('AppHeader', () => {
 
   it('should render avatar when showAvatar is true', () => {
     // Arrange & Act
-    const { getByTestId } = render(<AppHeader title="Test" insets={mockInsets} showAvatar={true} />);
+    const { getByTestId } = render(
+      <AppHeader title="Test" insets={mockInsets} showAvatar={true} />
+    );
 
     // Assert
     expect(getByTestId('avatar-button')).toBeTruthy();
@@ -79,7 +89,9 @@ describe('AppHeader', () => {
 
   it('should navigate to profile on avatar press', () => {
     // Arrange
-    const { getByTestId } = render(<AppHeader title="Test" insets={mockInsets} showAvatar={true} />);
+    const { getByTestId } = render(
+      <AppHeader title="Test" insets={mockInsets} showAvatar={true} />
+    );
 
     // Act
     fireEvent.press(getByTestId('avatar-button'));
@@ -113,7 +125,9 @@ describe('AppHeader', () => {
 
   it('should navigate to notifications on notification press', () => {
     // Arrange
-    const { getByTestId } = render(<AppHeader title="Test" insets={mockInsets} showNotification={true} />);
+    const { getByTestId } = render(
+      <AppHeader title="Test" insets={mockInsets} showNotification={true} />
+    );
 
     // Act
     fireEvent.press(getByTestId('notification-button'));

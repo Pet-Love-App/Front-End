@@ -15,7 +15,7 @@ jest.mock('expo-router', () => ({
   router: {
     back: jest.fn(),
     push: jest.fn(),
-  }
+  },
 }));
 
 jest.mock('tamagui', () => {
@@ -51,15 +51,14 @@ jest.mock('@/src/utils/logger', () => ({
 jest.mock('../(tabs)/forum/components/post-detail', () => {
   const { View } = require('react-native');
   return {
-    PostDetailScreen: ({ visible, onClose, onEditPost, onPostDeleted }: any) => (
+    PostDetailScreen: ({ visible, onClose, onEditPost, onPostDeleted }: any) =>
       visible ? (
         <View testID="post-detail-screen">
           <View testID="close-button" onTouchEnd={onClose} />
           <View testID="edit-button" onTouchEnd={() => onEditPost({ id: 123 })} />
           <View testID="delete-button" onTouchEnd={onPostDeleted} />
         </View>
-      ) : null
-    ),
+      ) : null,
   };
 });
 
@@ -106,7 +105,7 @@ describe('PostDetailPage (src/app/post-detail.tsx)', () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ postId: '123' });
     (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({
       data: null,
-      error: new Error('Network error')
+      error: new Error('Network error'),
     });
 
     render(<PostDetailPage />);
@@ -120,7 +119,7 @@ describe('PostDetailPage (src/app/post-detail.tsx)', () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ postId: '123' });
     (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({
       data: { id: 123, title: 'Test Post' },
-      error: null
+      error: null,
     });
 
     render(<PostDetailPage />);
@@ -134,7 +133,7 @@ describe('PostDetailPage (src/app/post-detail.tsx)', () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ postId: '123' });
     (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({
       data: { id: 123, title: 'Test Post' },
-      error: null
+      error: null,
     });
 
     render(<PostDetailPage />);
@@ -151,7 +150,7 @@ describe('PostDetailPage (src/app/post-detail.tsx)', () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ postId: '123' });
     (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({
       data: { id: 123, title: 'Test Post' },
-      error: null
+      error: null,
     });
 
     render(<PostDetailPage />);
@@ -171,7 +170,7 @@ describe('PostDetailPage (src/app/post-detail.tsx)', () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ postId: '123' });
     (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({
       data: { id: 123, title: 'Test Post' },
-      error: null
+      error: null,
     });
 
     render(<PostDetailPage />);

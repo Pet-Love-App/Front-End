@@ -1,7 +1,11 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { UserProfileModal } from '../UserProfileModal';
-import { supabaseProfileService, supabaseFriendsService, supabaseFollowService } from '@/src/lib/supabase';
+import {
+  supabaseProfileService,
+  supabaseFriendsService,
+  supabaseFollowService,
+} from '@/src/lib/supabase';
 import { useUserStore } from '@/src/store/userStore';
 
 // Mock dependencies
@@ -63,10 +67,22 @@ describe('UserProfileModal', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useUserStore as unknown as jest.Mock).mockReturnValue(mockUser);
-    (supabaseProfileService.getProfileById as jest.Mock).mockResolvedValue({ success: true, data: mockProfile });
-    (supabaseFriendsService.getFriendRequestStatus as jest.Mock).mockResolvedValue({ success: true, data: 'none' });
-    (supabaseFollowService.isFollowing as jest.Mock).mockResolvedValue({ success: true, data: false });
-    (supabaseFollowService.getFollowStats as jest.Mock).mockResolvedValue({ success: true, data: { followersCount: 10, followingCount: 5 } });
+    (supabaseProfileService.getProfileById as jest.Mock).mockResolvedValue({
+      success: true,
+      data: mockProfile,
+    });
+    (supabaseFriendsService.getFriendRequestStatus as jest.Mock).mockResolvedValue({
+      success: true,
+      data: 'none',
+    });
+    (supabaseFollowService.isFollowing as jest.Mock).mockResolvedValue({
+      success: true,
+      data: false,
+    });
+    (supabaseFollowService.getFollowStats as jest.Mock).mockResolvedValue({
+      success: true,
+      data: { followersCount: 10, followingCount: 5 },
+    });
   });
 
   it('should render correctly when visible', async () => {
@@ -94,7 +110,10 @@ describe('UserProfileModal', () => {
       userId: 'target-user-id',
       onClose: jest.fn(),
     };
-    (supabaseFollowService.toggleFollow as jest.Mock).mockResolvedValue({ success: true, data: { isFollowing: true } });
+    (supabaseFollowService.toggleFollow as jest.Mock).mockResolvedValue({
+      success: true,
+      data: { isFollowing: true },
+    });
 
     const { getByTestId } = render(<UserProfileModal {...props} />);
     await waitFor(() => expect(getByTestId('user-profile-follow-button')).toBeTruthy());
@@ -125,7 +144,10 @@ describe('UserProfileModal', () => {
 
     // Assert
     await waitFor(() => {
-      expect(supabaseFriendsService.sendFriendRequest).toHaveBeenCalledWith('target-user-id', expect.any(String));
+      expect(supabaseFriendsService.sendFriendRequest).toHaveBeenCalledWith(
+        'target-user-id',
+        expect.any(String)
+      );
     });
   });
 });

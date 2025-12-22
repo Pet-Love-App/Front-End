@@ -59,7 +59,10 @@ describe('Onboarding', () => {
 
     // Assert
     await waitFor(() => {
-      expect(AsyncStorage.setItem).toHaveBeenCalledWith(expect.stringContaining('hasSeenOnboarding'), 'true');
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+        expect.stringContaining('hasSeenOnboarding'),
+        'true'
+      );
       expect(mockRouter.replace).toHaveBeenCalledWith('/(tabs)/collect');
     });
   });

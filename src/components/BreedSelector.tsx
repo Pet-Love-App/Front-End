@@ -55,7 +55,12 @@ export const BreedSelector = memo(function BreedSelector({
           paddingVertical="$3.5"
         >
           <XStack alignItems="center" justifyContent="space-between">
-            <Text fontSize={15} color={(value ? '$foreground' : '$foregroundSubtle') as any} flex={1} testID="breed-selector-value">
+            <Text
+              fontSize={15}
+              color={(value ? '$foreground' : '$foregroundSubtle') as any}
+              flex={1}
+              testID="breed-selector-value"
+            >
               {value || placeholder}
             </Text>
             <IconSymbol name="chevron.right" size={20} color="$foregroundMuted" />
@@ -63,7 +68,13 @@ export const BreedSelector = memo(function BreedSelector({
         </YStack>
       </TouchableOpacity>
 
-      <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={handleClose} testID="breed-selector-modal">
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={handleClose}
+        testID="breed-selector-modal"
+      >
         <YStack flex={1} backgroundColor="rgba(0, 0, 0, 0.5)" justifyContent="flex-end">
           <Card
             backgroundColor="$background"

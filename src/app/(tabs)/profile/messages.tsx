@@ -20,13 +20,17 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MessageCircle, ChevronLeft, User } from '@tamagui/lucide-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabaseChatService, supabase, type Conversation } from '@/src/lib/supabase';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const BRAND_COLOR = '#FEBE98'; // 应用主题色 - 温暖的桃色
+
+type TabType = 'friends' | 'requests';
 
 export default function MessagesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -151,7 +155,10 @@ export default function MessagesScreen() {
 
     return (
       <TouchableOpacity
-        style={styles.conversationCard}
+        style={[
+          styles.conversationCard,
+          { backgroundColor: colors.cardBackground, borderColor: colors.borderMuted },
+        ]}
         onPress={() => handleOpenConversation(item)}
         activeOpacity={0.8}
       >
@@ -159,30 +166,36 @@ export default function MessagesScreen() {
           {otherUser.avatar ? (
             <Image source={{ uri: otherUser.avatar }} style={styles.avatar} />
           ) : (
-            <View style={styles.avatarPlaceholder}>
+            <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}>
               <User size={24} color="#FFFFFF" strokeWidth={2} />
             </View>
           )}
-          {hasUnread && <View style={styles.onlineDot} />}
+          {hasUnread && <View style={[styles.onlineDot, { borderColor: colors.cardBackground }]} />}
         </View>
 
         <View style={styles.conversationInfo}>
           <View style={styles.conversationHeader}>
-            <Text style={styles.username} numberOfLines={1}>
+            <Text style={[styles.username, { color: colors.text }]} numberOfLines={1}>
               {otherUser.username}
             </Text>
-            <Text style={styles.time}>{formatTime(item.lastMessageAt)}</Text>
+            <Text style={[styles.time, { color: colors.textTertiary }]}>
+              {formatTime(item.lastMessageAt)}
+            </Text>
           </View>
 
           <View style={styles.messagePreview}>
             <Text
-              style={[styles.lastMessage, hasUnread && styles.lastMessageUnread]}
+              style={[
+                styles.lastMessage,
+                { color: colors.textSecondary },
+                hasUnread && [styles.lastMessageUnread, { color: colors.text }],
+              ]}
               numberOfLines={1}
             >
               {item.lastMessage || '开始聊天...'}
             </Text>
             {hasUnread && (
-              <View style={styles.unreadBadge}>
+              <View style={[styles.unreadBadge, { backgroundColor: colors.error }]}>
                 <Text style={styles.unreadText}>{item.unreadCount}</Text>
               </View>
             )}
@@ -194,19 +207,22 @@ export default function MessagesScreen() {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <MessageCircle size={64} color="#D1D5DB" strokeWidth={1.5} />
-      <Text style={styles.emptyTitle}>暂无消息</Text>
-      <Text style={styles.emptyText}>和好友开始聊天吧！</Text>
+      <MessageCircle size={64} color={colors.textTertiary as any} strokeWidth={1.5} />
+      <Text style={[styles.emptyTitle, { color: colors.textSecondary }]}>暂无消息</Text>
+      <Text style={[styles.emptyText, { color: colors.textTertiary }]}>和好友开始聊天吧！</Text>
     </View>
   );
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View
+      testID="messages-screen"
+      style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}
+    >
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* 自定义头部 */}
       <LinearGradient
-        colors={['#FEBE98', '#FFCCBC']}
+        colors={isDark ? ['#3D2A1F', '#2D1F1A'] : ['#FEBE98', '#FFCCBC']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.header}
@@ -228,7 +244,7 @@ export default function MessagesScreen() {
       {/* 会话列表 */}
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={BRAND_COLOR} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : (
         <FlatList
@@ -242,8 +258,8 @@ export default function MessagesScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor={BRAND_COLOR}
-              colors={[BRAND_COLOR]}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
             />
           }
         />
@@ -318,7 +334,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: BRAND_COLOR,
     alignItems: 'center',
     justifyContent: 'center',
   },

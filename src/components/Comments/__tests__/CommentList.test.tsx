@@ -7,7 +7,11 @@ import { View, TouchableOpacity, Text } from 'react-native';
 jest.mock('tamagui', () => {
   const { View, Text } = require('react-native');
   return {
-    YStack: ({ children, ...props }: any) => <View testID="ystack" {...props}>{children}</View>,
+    YStack: ({ children, ...props }: any) => (
+      <View testID="ystack" {...props}>
+        {children}
+      </View>
+    ),
     Text: ({ children, ...props }: any) => <Text {...props}>{children}</Text>,
     Spinner: () => <View testID="spinner" />,
   };
@@ -20,7 +24,10 @@ jest.mock('../CommentItem', () => {
     CommentItem: ({ comment, onDelete, onLike }: any) => (
       <View testID={`comment-item-${comment.id}`}>
         <TouchableOpacity testID={`like-btn-${comment.id}`} onPress={() => onLike(comment.id)} />
-        <TouchableOpacity testID={`delete-btn-${comment.id}`} onPress={() => onDelete(comment.id)} />
+        <TouchableOpacity
+          testID={`delete-btn-${comment.id}`}
+          onPress={() => onDelete(comment.id)}
+        />
       </View>
     ),
   };
@@ -60,7 +67,7 @@ describe('CommentList', () => {
       parentId: null,
       likes: 0,
       createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z'
+      updatedAt: '2024-01-01T00:00:00Z',
     },
     {
       id: 2,
@@ -72,7 +79,7 @@ describe('CommentList', () => {
       parentId: null,
       likes: 5,
       createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z'
+      updatedAt: '2024-01-01T00:00:00Z',
     },
   ];
 

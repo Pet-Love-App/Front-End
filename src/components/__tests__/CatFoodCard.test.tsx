@@ -25,13 +25,19 @@ jest.mock('tamagui', () => {
   const { View, Text } = require('react-native');
   return {
     Text: ({ children, testID, ...props }: any) => (
-      <Text testID={testID} {...props}>{children}</Text>
+      <Text testID={testID} {...props}>
+        {children}
+      </Text>
     ),
     XStack: ({ children, testID, ...props }: any) => (
-      <View testID={testID} {...props}>{children}</View>
+      <View testID={testID} {...props}>
+        {children}
+      </View>
     ),
     YStack: ({ children, testID, ...props }: any) => (
-      <View testID={testID} {...props}>{children}</View>
+      <View testID={testID} {...props}>
+        {children}
+      </View>
     ),
   };
 });
@@ -127,9 +133,7 @@ describe('CatFoodCard', () => {
       // Arrange
       const catfood = createMockCatFood({ imageUrl: 'https://example.com/image.jpg' });
       const onImagePress = jest.fn();
-      const { getByTestId } = render(
-        <CatFoodCard catfood={catfood} onImagePress={onImagePress} />
-      );
+      const { getByTestId } = render(<CatFoodCard catfood={catfood} onImagePress={onImagePress} />);
 
       // Act
       fireEvent.press(getByTestId('cat-food-image-pressable'));

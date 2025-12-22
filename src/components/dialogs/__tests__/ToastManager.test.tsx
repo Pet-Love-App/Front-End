@@ -19,7 +19,11 @@ jest.mock('../Toast', () => {
 jest.mock('tamagui', () => {
   const { View } = require('react-native');
   return {
-    YStack: ({ children, ...props }: any) => <View testID="toast-container" {...props}>{children}</View>,
+    YStack: ({ children, ...props }: any) => (
+      <View testID="toast-container" {...props}>
+        {children}
+      </View>
+    ),
   };
 });
 

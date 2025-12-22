@@ -20,7 +20,7 @@ jest.mock('expo-router', () => ({
   },
   router: {
     push: jest.fn(),
-  }
+  },
 }));
 jest.mock('tamagui', () => {
   const { View, Text } = require('react-native');
@@ -66,11 +66,13 @@ jest.mock('../../components', () => {
   const { View } = require('react-native');
   return {
     ActionBar: () => <View testID="action-bar" />,
-    AdditiveDetailModal: ({ visible, onClose }: any) => (
-      visible ? <View testID="additive-modal" onTouchEnd={onClose} /> : null
-    ),
+    AdditiveDetailModal: ({ visible, onClose }: any) =>
+      visible ? <View testID="additive-modal" onTouchEnd={onClose} /> : null,
     AdditiveSection: ({ onAdditivePress }: any) => (
-      <View testID="additive-section" onTouchEnd={() => onAdditivePress({ name: 'Test Additive' })} />
+      <View
+        testID="additive-section"
+        onTouchEnd={() => onAdditivePress({ name: 'Test Additive' })}
+      />
     ),
     AdminUpdatePrompt: () => <View testID="admin-update-prompt" />,
     AIReportSection: ({ onGeneratePress }: any) => (
@@ -114,7 +116,12 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
       return selector ? selector(state) : state;
     });
 
-    mockUseLazyLoad.mockReturnValue({ isReady: true, isLoading: false, startLoading: jest.fn(), reset: jest.fn() });
+    mockUseLazyLoad.mockReturnValue({
+      isReady: true,
+      isLoading: false,
+      startLoading: jest.fn(),
+      reset: jest.fn(),
+    });
 
     mockUseCatFoodDetail.mockReturnValue({
       catfoodId: '123',
@@ -122,7 +129,7 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
         id: '123',
         name: 'Test Food',
         ingredient: [{ name: 'Chicken' }],
-        additive: [{ name: 'Taurine' }]
+        additive: [{ name: 'Taurine' }],
       },
       isLoading: false,
     } as any);
@@ -221,7 +228,7 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
         additive: [],
         percentage: null,
         safety: null,
-        nutrient: null
+        nutrient: null,
       },
       isLoading: false,
     } as any);
@@ -249,14 +256,14 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
   it('shows admin update prompt for admin users', () => {
     // Mock useUserStore to return a user object with isAdmin: true
     mockUseUserStore.mockImplementation((selector: any) => {
-       const mockState = {
-         user: { isAdmin: true },
-       };
+      const mockState = {
+        user: { isAdmin: true },
+      };
 
-       if (selector) {
-         return selector(mockState);
-       }
-       return mockState;
+      if (selector) {
+        return selector(mockState);
+      }
+      return mockState;
     });
 
     // Reset mock to ensure no previous state leaks
@@ -306,7 +313,7 @@ describe('DetailScreen (src/app/detail/screens/DetailScreen.tsx)', () => {
         additive: [],
         percentage: null,
         safety: null,
-        nutrient: null
+        nutrient: null,
       },
       isLoading: false,
     });

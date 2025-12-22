@@ -56,7 +56,9 @@ describe('CameraPermissionModal', () => {
     const { getByText } = render(<CameraPermissionModal {...mockProps} />);
 
     expect(getByText('需要相机权限')).toBeTruthy();
-    expect(getByText('为了扫描猫粮成分表，需要访问您的相机。我们不会存储或上传您的照片。')).toBeTruthy();
+    expect(
+      getByText('为了扫描猫粮成分表，需要访问您的相机。我们不会存储或上传您的照片。')
+    ).toBeTruthy();
     expect(getByText('授予相机权限')).toBeTruthy();
     expect(getByText('稍后再说')).toBeTruthy();
   });

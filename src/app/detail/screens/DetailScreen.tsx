@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
@@ -149,6 +150,7 @@ export function DetailScreen() {
 
     return (
       <ScrollView
+        testID="detail-scroll-view"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingTop: 8,
@@ -263,29 +265,31 @@ export function DetailScreen() {
         }}
       />
 
-      <YStack flex={1} position="relative" backgroundColor="white">
-        {/* 背景渐变 */}
-        <YStack position="absolute" width="100%" height="100%">
-          <LinearGradient
-            colors={['#FFF5F0', '#FFF9F5', '#FFFFFF']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 0.5 }}
-            style={{ width: '100%', height: '100%' }}
+      <View testID="catfood-detail-screen" style={{ flex: 1 }}>
+        <YStack flex={1} position="relative" backgroundColor="white">
+          {/* 背景渐变 */}
+          <YStack position="absolute" width="100%" height="100%">
+            <LinearGradient
+              colors={['#FFF5F0', '#FFF9F5', '#FFFFFF']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 0.5 }}
+              style={{ width: '100%', height: '100%' }}
+            />
+          </YStack>
+
+          {renderContent()}
+
+          {/* 添加剂详情弹窗 */}
+          <AdditiveDetailModal
+            visible={modalVisible}
+            additive={selectedAdditive}
+            onClose={handleCloseModal}
           />
+
+          {/* 底部操作栏：收藏和点赞 */}
+          {catfoodId && <ActionBar catfoodId={catfoodId} />}
         </YStack>
-
-        {renderContent()}
-
-        {/* 添加剂详情弹窗 */}
-        <AdditiveDetailModal
-          visible={modalVisible}
-          additive={selectedAdditive}
-          onClose={handleCloseModal}
-        />
-
-        {/* 底部操作栏：收藏和点赞 */}
-        {catfoodId && <ActionBar catfoodId={catfoodId} />}
-      </YStack>
+      </View>
     </>
   );
 }

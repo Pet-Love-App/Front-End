@@ -8,7 +8,7 @@
  * - 反向地理编码
  */
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import {
   Modal,
   View,
@@ -21,9 +21,10 @@ import {
   Alert,
   Keyboard,
 } from 'react-native';
-import { X, Search, MapPin, Navigation, Loader } from '@tamagui/lucide-icons';
+import { X, Search, MapPin, Navigation } from '@tamagui/lucide-icons';
 import { BlurView } from 'expo-blur';
 import * as ExpoLocation from 'expo-location';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 
 interface Location {
   id: string;
@@ -50,7 +51,7 @@ interface NominatimResult {
     postcode?: string;
     neighbourhood?: string;
     village?: string;
-    town?: string;
+    suffix?: string;
     district?: string;
   };
 }
@@ -61,8 +62,6 @@ interface LocationSelectorModalProps {
   onConfirm: (location: Location) => void;
   initialLocation?: Location;
 }
-
-const BRAND_COLOR = '#FEBE98'; // 应用主题色 - 温暖的桃色
 
 // 计算两点之间的距离（米）
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -93,6 +92,8 @@ export function LocationSelectorModal({
   onConfirm,
   initialLocation,
 }: LocationSelectorModalProps) {
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(
     initialLocation || null
@@ -105,6 +106,225 @@ export function LocationSelectorModal({
   const [searchResults, setSearchResults] = useState<Location[]>([]);
 
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 样式定义
+  const dynamicStyles = useMemo(() => {
+    return StyleSheet.create({
+      backdrop: {
+        flex: 1,
+        backgroundColor: colors.overlay as any,
+        justifyContent: 'flex-end',
+      },
+      container: {
+        backgroundColor: colors.cardBackground as any,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        height: '80%',
+        paddingTop: 20,
+      },
+      header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 20,
+        paddingBottom: 16,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: colors.border as any,
+      },
+      headerTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: colors.text as any,
+      },
+      closeButton: {
+        position: 'absolute',
+        right: 20,
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.backgroundMuted as any,
+        marginHorizontal: 20,
+        marginTop: 16,
+        marginBottom: 12,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        borderRadius: 12,
+      },
+      searchInput: {
+        flex: 1,
+        fontSize: 15,
+        color: colors.text as any,
+        marginLeft: 10,
+        marginRight: 10,
+      },
+      locateButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginHorizontal: 20,
+        marginBottom: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        backgroundColor: (isDark ? '#3D2A1F' : colors.primaryLight) as any,
+        borderRadius: 10,
+      },
+      locateButtonText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: colors.primary as any,
+        marginLeft: 8,
+      },
+      content: {
+        flex: 1,
+      },
+      section: {
+        paddingHorizontal: 20,
+        paddingTop: 8,
+        paddingBottom: 8,
+      },
+      sectionTitle: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: colors.textSecondary as any,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+      },
+      currentLocationItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+        marginTop: 8,
+        backgroundColor: (isDark ? '#0D2818' : colors.successMuted) as any,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: 'transparent',
+      },
+      currentIcon: {
+        backgroundColor: colors.success as any,
+        borderRadius: 8,
+        padding: 6,
+        marginRight: 12,
+      },
+      currentTag: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: colors.success as any,
+        backgroundColor: (isDark ? '#0D2818' : colors.successMuted) as any,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+      },
+      list: {
+        flex: 1,
+      },
+      listContent: {
+        paddingHorizontal: 20,
+        paddingBottom: 16,
+      },
+      locationItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+        marginBottom: 8,
+        backgroundColor: colors.backgroundSubtle as any,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: 'transparent',
+      },
+      locationItemSelected: {
+        backgroundColor: (isDark ? '#3D2A1F' : colors.primaryLight) as any,
+        borderColor: colors.primary as any,
+      },
+      locationLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+      },
+      iconContainer: {
+        marginRight: 12,
+      },
+      locationInfo: {
+        flex: 1,
+      },
+      locationName: {
+        fontSize: 15,
+        fontWeight: '500',
+        color: colors.text as any,
+        marginBottom: 2,
+      },
+      locationNameSelected: {
+        color: colors.primary as any,
+        fontWeight: '600',
+      },
+      locationAddress: {
+        fontSize: 12,
+        color: colors.textTertiary as any,
+        lineHeight: 16,
+      },
+      distance: {
+        fontSize: 12,
+        color: colors.textSecondary as any,
+        fontWeight: '500',
+        marginLeft: 8,
+        backgroundColor: colors.borderMuted as any,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+      },
+      emptyState: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 40,
+      },
+      emptyText: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: colors.textSecondary as any,
+        marginTop: 16,
+        textAlign: 'center',
+      },
+      emptyHint: {
+        fontSize: 14,
+        color: colors.textTertiary as any,
+        marginTop: 8,
+        textAlign: 'center',
+      },
+      footer: {
+        paddingHorizontal: 20,
+        paddingTop: 16,
+        paddingBottom: 24,
+        borderTopWidth: StyleSheet.hairlineWidth,
+        borderTopColor: colors.border as any,
+      },
+      confirmButton: {
+        backgroundColor: colors.primary as any,
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: 'center',
+      },
+      confirmButtonDisabled: {
+        backgroundColor: colors.border as any,
+      },
+      confirmButtonText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#FFFFFF',
+      },
+      confirmButtonTextDisabled: {
+        color: colors.textTertiary as any,
+      },
+    });
+  }, [colors, isDark]);
 
   // 通过 Nominatim API 获取地址
   const fetchAddressFromNominatim = async (
@@ -130,13 +350,8 @@ export function LocationSelectorModal({
       if (data && data.address) {
         const addr = data.address;
         const locationName =
-          addr?.road || addr?.suburb || addr?.neighbourhood || data.name || '当前位置';
-        const fullAddress = [
-          addr?.city || addr?.town || addr?.county,
-          addr?.district || addr?.suburb,
-          addr?.road,
-          addr?.neighbourhood,
-        ]
+          addr?.road || addr?.suburb || addr?.district || data.name || '当前位置';
+        const fullAddress = [addr?.city || addr?.county, addr?.district || addr?.suburb, addr?.road]
           .filter(Boolean)
           .join(' ');
 
@@ -190,16 +405,15 @@ export function LocationSelectorModal({
 
         if (nativeAddresses && nativeAddresses.length > 0) {
           const addr = nativeAddresses[0];
-          const locationName =
-            addr.street || addr.district || addr.subregion || addr.city || '当前位置';
-          const fullAddress = [addr.city, addr.district, addr.subregion, addr.street, addr.name]
+          const locationName = addr.street || addr.district || addr.city || '当前位置';
+          const fullAddress = [addr.city, addr.district, addr.street, addr.name]
             .filter(Boolean)
             .join(' ');
 
           current = {
             id: 'current',
             name: locationName,
-            address: fullAddress || `${addr.city || ''} ${addr.region || ''}`.trim(),
+            address: fullAddress || `${addr.city || ''}`.trim(),
             lat: latitude,
             lon: longitude,
           };
@@ -258,9 +472,7 @@ export function LocationSelectorModal({
             return {
               id: item.place_id.toString(),
               name: item.name || addr?.road || addr?.suburb || '未知地点',
-              address: [addr?.city || addr?.town, addr?.district || addr?.suburb, addr?.road]
-                .filter(Boolean)
-                .join(' '),
+              address: [addr?.city, addr?.district, addr?.road].filter(Boolean).join(' '),
               distance: formatDistance(distance),
               lat: parseFloat(item.lat),
               lon: parseFloat(item.lon),
@@ -395,34 +607,41 @@ export function LocationSelectorModal({
 
       return (
         <TouchableOpacity
-          style={[styles.locationItem, isSelected && styles.locationItemSelected]}
+          style={[dynamicStyles.locationItem, isSelected && dynamicStyles.locationItemSelected]}
           onPress={() => handleLocationSelect(item)}
           activeOpacity={0.7}
         >
-          <View style={styles.locationLeft}>
-            <View style={styles.iconContainer}>
-              <MapPin size={20} color={isSelected ? BRAND_COLOR : '#6B7280'} strokeWidth={2} />
+          <View style={dynamicStyles.locationLeft}>
+            <View style={dynamicStyles.iconContainer}>
+              <MapPin
+                size={20}
+                color={(isSelected ? colors.primary : colors.textTertiary) as any}
+                strokeWidth={2}
+              />
             </View>
-            <View style={styles.locationInfo}>
+            <View style={dynamicStyles.locationInfo}>
               <Text
-                style={[styles.locationName, isSelected && styles.locationNameSelected]}
+                style={[
+                  dynamicStyles.locationName,
+                  isSelected && dynamicStyles.locationNameSelected,
+                ]}
                 numberOfLines={1}
               >
                 {item.name}
               </Text>
               {item.address && (
-                <Text style={styles.locationAddress} numberOfLines={2}>
+                <Text style={dynamicStyles.locationAddress} numberOfLines={2}>
                   {item.address}
                 </Text>
               )}
             </View>
           </View>
 
-          {item.distance && <Text style={styles.distance}>{item.distance}</Text>}
+          {item.distance && <Text style={dynamicStyles.distance}>{item.distance}</Text>}
         </TouchableOpacity>
       );
     },
-    [selectedLocation, handleLocationSelect]
+    [selectedLocation, handleLocationSelect, dynamicStyles, colors]
   );
 
   const renderCurrentLocation = () => {
@@ -432,24 +651,29 @@ export function LocationSelectorModal({
 
     return (
       <TouchableOpacity
-        style={[styles.currentLocationItem, isSelected && styles.locationItemSelected]}
+        style={[
+          dynamicStyles.currentLocationItem,
+          isSelected && dynamicStyles.locationItemSelected,
+        ]}
         onPress={() => handleLocationSelect(currentLocation)}
         activeOpacity={0.7}
       >
-        <View style={styles.locationLeft}>
-          <View style={[styles.iconContainer, styles.currentIcon]}>
+        <View style={dynamicStyles.locationLeft}>
+          <View style={[dynamicStyles.iconContainer, dynamicStyles.currentIcon]}>
             <Navigation size={18} color="#FFFFFF" strokeWidth={2} />
           </View>
-          <View style={styles.locationInfo}>
-            <Text style={[styles.locationName, isSelected && styles.locationNameSelected]}>
+          <View style={dynamicStyles.locationInfo}>
+            <Text
+              style={[dynamicStyles.locationName, isSelected && dynamicStyles.locationNameSelected]}
+            >
               {currentLocation.name}
             </Text>
-            <Text style={styles.locationAddress} numberOfLines={1}>
+            <Text style={dynamicStyles.locationAddress} numberOfLines={1}>
               {currentLocation.address}
             </Text>
           </View>
         </View>
-        <Text style={styles.currentTag}>当前</Text>
+        <Text style={dynamicStyles.currentTag}>当前</Text>
       </TouchableOpacity>
     );
   };
@@ -458,55 +682,61 @@ export function LocationSelectorModal({
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <BlurView intensity={20} style={styles.backdrop}>
-        <View style={styles.container}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>选择位置</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
-              <X size={24} color="#262626" strokeWidth={2} />
+      <BlurView intensity={20} style={dynamicStyles.backdrop}>
+        <View style={dynamicStyles.container}>
+          <View style={dynamicStyles.header}>
+            <Text style={dynamicStyles.headerTitle}>选择位置</Text>
+            <TouchableOpacity
+              style={dynamicStyles.closeButton}
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
+              <X size={24} color={colors.text as any} strokeWidth={2} />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.searchContainer}>
-            <Search size={20} color="#9CA3AF" strokeWidth={2} />
+          <View style={dynamicStyles.searchContainer}>
+            <Search size={20} color={colors.textTertiary as any} strokeWidth={2} />
             <TextInput
-              style={styles.searchInput}
+              style={dynamicStyles.searchInput}
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholder="搜索地址、街道、城市..."
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textTertiary as any}
               returnKeyType="search"
             />
-            {isSearching && <ActivityIndicator size="small" color={BRAND_COLOR} />}
+            {isSearching && <ActivityIndicator size="small" color={colors.primary} />}
           </View>
 
           {/* 定位按钮 */}
           <TouchableOpacity
-            style={styles.locateButton}
+            style={dynamicStyles.locateButton}
             onPress={getCurrentLocation}
             disabled={isLocating}
             activeOpacity={0.7}
           >
             {isLocating ? (
-              <ActivityIndicator size="small" color={BRAND_COLOR} />
+              <ActivityIndicator size="small" color={colors.primary} />
             ) : (
-              <Navigation size={20} color={BRAND_COLOR} strokeWidth={2} />
+              <Navigation size={20} color={colors.primary as any} strokeWidth={2} />
             )}
-            <Text style={styles.locateButtonText}>{isLocating ? '定位中...' : '重新定位'}</Text>
+            <Text style={dynamicStyles.locateButtonText}>
+              {isLocating ? '定位中...' : '重新定位'}
+            </Text>
           </TouchableOpacity>
 
-          <View style={styles.content}>
+          <View style={dynamicStyles.content}>
             {/* 当前位置 */}
             {currentLocation && !searchQuery && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>当前位置</Text>
+              <View style={dynamicStyles.section}>
+                <Text style={dynamicStyles.sectionTitle}>当前位置</Text>
                 {renderCurrentLocation()}
               </View>
             )}
 
             {/* 搜索结果或附近位置 */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>
+            <View style={dynamicStyles.section}>
+              <Text style={dynamicStyles.sectionTitle}>
                 {searchQuery ? '搜索结果' : '附近位置'}
                 {isSearching && ' (搜索中...)'}
               </Text>
@@ -517,22 +747,22 @@ export function LocationSelectorModal({
                 data={displayLocations}
                 renderItem={renderLocationItem}
                 keyExtractor={(item) => item.id}
-                style={styles.list}
-                contentContainerStyle={styles.listContent}
+                style={dynamicStyles.list}
+                contentContainerStyle={dynamicStyles.listContent}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
               />
             ) : (
-              <View style={styles.emptyState}>
+              <View style={dynamicStyles.emptyState}>
                 {isLocating || isSearching ? (
-                  <ActivityIndicator size="large" color={BRAND_COLOR} />
+                  <ActivityIndicator size="large" color={colors.primary} />
                 ) : (
                   <>
-                    <MapPin size={48} color="#D1D5DB" strokeWidth={1.5} />
-                    <Text style={styles.emptyText}>
+                    <MapPin size={48} color={colors.textTertiary as any} strokeWidth={1.5} />
+                    <Text style={dynamicStyles.emptyText}>
                       {searchQuery ? '未找到相关位置' : '正在获取附近位置...'}
                     </Text>
-                    <Text style={styles.emptyHint}>
+                    <Text style={dynamicStyles.emptyHint}>
                       {searchQuery ? '请尝试其他关键词' : '请确保已开启定位权限'}
                     </Text>
                   </>
@@ -541,17 +771,20 @@ export function LocationSelectorModal({
             )}
           </View>
 
-          <View style={styles.footer}>
+          <View style={dynamicStyles.footer}>
             <TouchableOpacity
-              style={[styles.confirmButton, !selectedLocation && styles.confirmButtonDisabled]}
+              style={[
+                dynamicStyles.confirmButton,
+                !selectedLocation && dynamicStyles.confirmButtonDisabled,
+              ]}
               onPress={handleConfirm}
               disabled={!selectedLocation}
               activeOpacity={0.8}
             >
               <Text
                 style={[
-                  styles.confirmButtonText,
-                  !selectedLocation && styles.confirmButtonTextDisabled,
+                  dynamicStyles.confirmButtonText,
+                  !selectedLocation && dynamicStyles.confirmButtonTextDisabled,
                 ]}
               >
                 确定
@@ -563,219 +796,3 @@ export function LocationSelectorModal({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  container: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    height: '80%',
-    paddingTop: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E7EB',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#262626',
-  },
-  closeButton: {
-    position: 'absolute',
-    right: 20,
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F3F4F6',
-    marginHorizontal: 20,
-    marginTop: 16,
-    marginBottom: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    color: '#262626',
-    marginLeft: 10,
-    marginRight: 10,
-  },
-  locateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 20,
-    marginBottom: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    backgroundColor: '#E8F5FE',
-    borderRadius: 10,
-  },
-  locateButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: BRAND_COLOR,
-    marginLeft: 8,
-  },
-  content: {
-    flex: 1,
-  },
-  section: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#6B7280',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  currentLocationItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginTop: 8,
-    backgroundColor: '#F0FDF4',
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  currentIcon: {
-    backgroundColor: '#22C55E',
-    borderRadius: 8,
-    padding: 6,
-    marginRight: 12,
-  },
-  currentTag: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#22C55E',
-    backgroundColor: '#DCFCE7',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  list: {
-    flex: 1,
-  },
-  listContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-  },
-  locationItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginBottom: 8,
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  locationItemSelected: {
-    backgroundColor: '#E8F5FE',
-    borderColor: BRAND_COLOR,
-  },
-  locationLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  iconContainer: {
-    marginRight: 12,
-  },
-  locationInfo: {
-    flex: 1,
-  },
-  locationName: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#262626',
-    marginBottom: 2,
-  },
-  locationNameSelected: {
-    color: BRAND_COLOR,
-    fontWeight: '600',
-  },
-  locationAddress: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    lineHeight: 16,
-  },
-  distance: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '500',
-    marginLeft: 8,
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
-  },
-  emptyText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#6B7280',
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  emptyHint: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  footer: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 24,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E5E7EB',
-  },
-  confirmButton: {
-    backgroundColor: BRAND_COLOR,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  confirmButtonDisabled: {
-    backgroundColor: '#E5E7EB',
-  },
-  confirmButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  confirmButtonTextDisabled: {
-    color: '#9CA3AF',
-  },
-});

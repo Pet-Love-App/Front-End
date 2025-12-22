@@ -12,7 +12,8 @@ import type { EdgeInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { primaryScale, neutralScale, errorScale } from '@/src/design-system/tokens';
+import { primaryScale, errorScale } from '@/src/design-system/tokens';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 import { useUserStore } from '@/src/store/userStore';
 import { supabaseForumService, supabase } from '@/src/lib/supabase';
 
@@ -42,6 +43,11 @@ export function AppHeader({
   const router = useRouter();
   const { user } = useUserStore();
   const [unreadCount, setUnreadCount] = useState(0);
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
+
+  // 统一头部高度常量
+  const HEADER_HEIGHT = 56;
 
   // 获取未读通知数量
   const fetchUnreadCount = useCallback(async () => {
@@ -101,83 +107,83 @@ export function AppHeader({
   }, [router]);
 
   return (
-    <XStack
-      paddingTop={insets.top}
-      paddingHorizontal="$4"
-      paddingBottom="$3"
-      backgroundColor={backgroundColor as any}
-      alignItems="center"
-      justifyContent="space-between"
-      borderBottomWidth={1}
-      borderBottomColor="$borderColor"
-    >
-      {/* 左侧：头像 */}
-      <XStack width={40} alignItems="center">
-        {showAvatar && user?.avatarUrl && (
-          <Pressable onPress={handleAvatarPress} testID="avatar-button">
-            <Image
-              source={{ uri: user.avatarUrl }}
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 16,
-                borderWidth: 1,
-                borderColor: neutralScale.neutral4,
-              }}
-            />
+    <YStack paddingTop={insets.top} paddingHorizontal={16} backgroundColor={backgroundColor as any}>
+      <XStack alignItems="center" justifyContent="space-between" height={HEADER_HEIGHT}>
+        {/* 左侧：头像 */}
+        {showAvatar ? (
+          <Pressable onPress={handleAvatarPress}>
+            <YStack
+              width={40}
+              height={40}
+              borderRadius={20}
+              backgroundColor={(isDark ? '#3D2A1F' : primaryScale.primary2) as any}
+              alignItems="center"
+              justifyContent="center"
+              borderWidth={2}
+              borderColor={(isDark ? '#4D3A2F' : primaryScale.primary4) as any}
+              overflow="hidden"
+            >
+              {user?.avatarUrl ? (
+                <Image
+                  source={{ uri: user.avatarUrl }}
+                  style={{ width: 40, height: 40 }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <IconSymbol name="person.fill" size={20} color={colors.primary} />
+              )}
+            </YStack>
           </Pressable>
+        ) : (
+          <YStack width={40} />
         )}
-      </XStack>
 
-      {/* 中间：标题 */}
-      <Text
-        fontSize="$6"
-        fontWeight="bold"
-        color="$color"
-        textAlign="center"
-        flex={1}
-      >
-        {title}
-      </Text>
+        {/* 中间：标题 */}
+        <Text fontSize={18} fontWeight="700" color={colors.text as any} flex={1} textAlign="center">
+          {title}
+        </Text>
 
-      {/* 右侧：通知或自定义元素 */}
-      <XStack width={40} alignItems="center" justifyContent="flex-end">
+        {/* 右侧：通知图标或自定义元素 */}
         {rightElement ? (
           rightElement
         ) : showNotification ? (
-          <Pressable onPress={handleNotificationPress} testID="notification-button">
-            <YStack>
-              <IconSymbol
-                name="bell"
-                size={24}
-                color={neutralScale.neutral11}
-              />
+          <Pressable onPress={handleNotificationPress}>
+            <YStack
+              width={40}
+              height={40}
+              borderRadius={20}
+              backgroundColor={colors.backgroundMuted as any}
+              alignItems="center"
+              justifyContent="center"
+              borderWidth={1.5}
+              borderColor={colors.border as any}
+            >
+              <IconSymbol name="bell.fill" size={20} color={colors.icon} />
+              {/* 未读消息badge */}
               {unreadCount > 0 && (
                 <YStack
                   position="absolute"
-                  top={-4}
-                  right={-4}
-                  backgroundColor={errorScale.error9}
-                  borderRadius={10}
-                  minWidth={16}
-                  height={16}
+                  top={-2}
+                  right={-2}
+                  minWidth={18}
+                  height={18}
+                  borderRadius={9}
+                  backgroundColor={colors.error as any}
                   alignItems="center"
                   justifyContent="center"
-                  paddingHorizontal={4}
+                  paddingHorizontal="$1"
                 >
-                  <Text
-                    color="white"
-                    fontSize={10}
-                    fontWeight="bold"
-                  >
+                  <Text fontSize={10} fontWeight="700" color="white">
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </Text>
                 </YStack>
               )}
             </YStack>
           </Pressable>
-        ) : null}
+        ) : (
+          <YStack width={40} />
+        )}
       </XStack>
-    </XStack>
+    </YStack>
   );
 }

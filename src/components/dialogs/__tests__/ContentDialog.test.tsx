@@ -12,13 +12,21 @@ jest.mock('tamagui', () => {
       {
         Portal: ({ children }: any) => <View testID="dialog-portal">{children}</View>,
         Overlay: ({ onPress }: any) => <View testID="dialog-overlay" onTouchEnd={onPress} />,
-        Content: ({ children, ...props }: any) => <View testID="dialog-content" {...props}>{children}</View>,
+        Content: ({ children, ...props }: any) => (
+          <View testID="dialog-content" {...props}>
+            {children}
+          </View>
+        ),
         Title: ({ children }: any) => <Text>{children}</Text>,
         Description: ({ children }: any) => <Text>{children}</Text>,
         Close: ({ children }: any) => <View>{children}</View>,
       }
     ),
-    YStack: ({ children, ...props }: any) => <View testID="ystack-mock" {...props}>{children}</View>,
+    YStack: ({ children, ...props }: any) => (
+      <View testID="ystack-mock" {...props}>
+        {children}
+      </View>
+    ),
     XStack: ({ children, ...props }: any) => <View {...props}>{children}</View>,
     Text: ({ children }: any) => <Text>{children}</Text>,
     ScrollView: ({ children }: any) => <View>{children}</View>,

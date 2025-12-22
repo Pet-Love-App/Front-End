@@ -43,7 +43,7 @@ describe('Index Screen (src/app/index.tsx)', () => {
         isAuthenticated: false,
         _hasHydrated: true,
         fetchCurrentUser: mockFetchCurrentUser,
-        logout: mockLogout
+        logout: mockLogout,
       };
       return selector ? selector(state) : state;
     });
@@ -51,7 +51,7 @@ describe('Index Screen (src/app/index.tsx)', () => {
     // Mock getState for direct access
     (mockUseUserStore as any).getState = jest.fn().mockReturnValue({
       fetchCurrentUser: mockFetchCurrentUser,
-      logout: mockLogout
+      logout: mockLogout,
     });
   });
 
@@ -79,7 +79,7 @@ describe('Index Screen (src/app/index.tsx)', () => {
         isAuthenticated: true,
         _hasHydrated: true,
         fetchCurrentUser: mockFetchCurrentUser,
-        logout: mockLogout
+        logout: mockLogout,
       };
       return selector ? selector(state) : state;
     });
@@ -100,7 +100,7 @@ describe('Index Screen (src/app/index.tsx)', () => {
         isAuthenticated: true,
         _hasHydrated: true,
         fetchCurrentUser: mockFetchCurrentUser,
-        logout: mockLogout
+        logout: mockLogout,
       };
       return selector ? selector(state) : state;
     });

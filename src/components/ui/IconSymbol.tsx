@@ -77,7 +77,6 @@ const MAPPING = {
 
   // ==================== 社交和互动 ====================
   'star.fill': 'star',
-  'heart.fill': 'heart',
   'heart.slash': 'heart-dislike',
   'trophy.fill': 'trophy',
 

@@ -56,11 +56,14 @@ interface InputProps extends StyledInputProps {
 }
 
 export const Input = forwardRef<React.ElementRef<typeof StyledInput>, InputProps>(
-  ({ label, errorMessage, leftIcon, rightIcon, error, ...props }, ref) => {
+  ({ label, errorMessage, leftIcon, rightIcon, error, testID, ...props }, ref) => {
     const hasError = !!errorMessage || error;
 
+    // 同时设置 testID 和 accessibilityLabel 以支持 Detox E2E 测试
+    const a11yProps = testID ? { testID, accessibilityLabel: testID, nativeID: testID } : {};
+
     if (!label && !errorMessage && !leftIcon && !rightIcon) {
-      return <StyledInput ref={ref} error={hasError} {...props} />;
+      return <StyledInput ref={ref} error={hasError} {...a11yProps} {...props} />;
     }
 
     return (
@@ -82,6 +85,7 @@ export const Input = forwardRef<React.ElementRef<typeof StyledInput>, InputProps
             paddingLeft={leftIcon ? '$9' : '$3'}
             paddingRight={rightIcon ? '$9' : '$3'}
             flex={1}
+            {...a11yProps}
             {...props}
           />
           {rightIcon && (

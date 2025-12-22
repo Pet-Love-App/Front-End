@@ -20,9 +20,7 @@ describe('NutritionInputPrompt', () => {
   });
 
   it('should render correctly', () => {
-    const { getByText } = render(
-      <NutritionInputPrompt catfoodId={123} catfoodName="Test Food" />
-    );
+    const { getByText } = render(<NutritionInputPrompt catfoodId={123} catfoodName="Test Food" />);
 
     expect(getByText('暂无营养成分信息，帮助完善数据')).toBeTruthy();
     expect(getByText('拍摄配料表')).toBeTruthy();
@@ -30,9 +28,7 @@ describe('NutritionInputPrompt', () => {
   });
 
   it('should navigate to scanner for ingredients on press', () => {
-    const { getByText } = render(
-      <NutritionInputPrompt catfoodId={123} catfoodName="Test Food" />
-    );
+    const { getByText } = render(<NutritionInputPrompt catfoodId={123} catfoodName="Test Food" />);
 
     fireEvent.press(getByText('拍摄配料表'));
 
@@ -47,9 +43,7 @@ describe('NutritionInputPrompt', () => {
   });
 
   it('should navigate to scanner for barcode on press', () => {
-    const { getByText } = render(
-      <NutritionInputPrompt catfoodId={123} catfoodName="Test Food" />
-    );
+    const { getByText } = render(<NutritionInputPrompt catfoodId={123} catfoodName="Test Food" />);
 
     fireEvent.press(getByText('扫描条形码'));
 

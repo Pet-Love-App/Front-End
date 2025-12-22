@@ -53,7 +53,7 @@ describe('useItemDetail', () => {
       data: {
         matchType: 'exact',
         additive: mockAdditive,
-      }
+      },
     });
     (searchService.searchBaike as jest.Mock).mockResolvedValue({ ok: true, data: mockBaike });
 
@@ -79,7 +79,7 @@ describe('useItemDetail', () => {
     (supabaseAdditiveService.searchAdditive as jest.Mock).mockResolvedValue({
       data: {
         matchType: 'not_found',
-      }
+      },
     });
     (searchService.searchBaike as jest.Mock).mockResolvedValue({ ok: true, data: mockBaike });
 
@@ -92,11 +92,13 @@ describe('useItemDetail', () => {
 
     // Assert
     await waitFor(() => {
-      expect(result.current.item).toEqual(expect.objectContaining({
-        name: 'Unknown Additive',
-        type: '未分类',
-        applicableRange: '暂无数据'
-      }));
+      expect(result.current.item).toEqual(
+        expect.objectContaining({
+          name: 'Unknown Additive',
+          type: '未分类',
+          applicableRange: '暂无数据',
+        })
+      );
     });
     expect(result.current.baikeInfo).toEqual(mockBaike);
   });
@@ -112,9 +114,9 @@ describe('useItemDetail', () => {
         ingredient: {
           name: 'Test Ingredient',
           type: 'Type B',
-          desc: 'Description'
-        }
-      }
+          desc: 'Description',
+        },
+      },
     });
     (searchService.searchBaike as jest.Mock).mockResolvedValue({ ok: true, data: mockBaike });
 
@@ -127,10 +129,12 @@ describe('useItemDetail', () => {
 
     // Assert
     await waitFor(() => {
-        expect(result.current.item).toEqual(expect.objectContaining({
-            name: 'Test Ingredient',
-            type: 'Type B'
-        }));
+      expect(result.current.item).toEqual(
+        expect.objectContaining({
+          name: 'Test Ingredient',
+          type: 'Type B',
+        })
+      );
     });
     expect(result.current.baikeInfo).toEqual(mockBaike);
   });
@@ -143,7 +147,7 @@ describe('useItemDetail', () => {
       data: {
         matchType: 'exact',
         additive: mockAdditive,
-      }
+      },
     });
     (searchService.searchBaike as jest.Mock).mockResolvedValue({ ok: false });
 
@@ -156,7 +160,7 @@ describe('useItemDetail', () => {
 
     // Assert
     await waitFor(() => {
-        expect(result.current.item).toEqual(mockAdditive);
+      expect(result.current.item).toEqual(mockAdditive);
     });
     expect(result.current.baikeInfo).toBeNull();
   });

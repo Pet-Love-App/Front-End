@@ -27,9 +27,7 @@ describe('useZoomGesture', () => {
   });
 
   it('should initialize correctly', () => {
-    const { result } = renderHook(() =>
-      useZoomGesture({ zoom: 0.5, setZoom: mockSetZoom })
-    );
+    const { result } = renderHook(() => useZoomGesture({ zoom: 0.5, setZoom: mockSetZoom }));
 
     expect(result.current.panResponder).toBeDefined();
     expect(PanResponder.create).toHaveBeenCalled();

@@ -20,9 +20,7 @@ describe('AdminUpdatePrompt', () => {
   });
 
   it('should render correctly', () => {
-    const { getByText } = render(
-      <AdminUpdatePrompt catfoodId={123} catfoodName="Test Food" />
-    );
+    const { getByText } = render(<AdminUpdatePrompt catfoodId={123} catfoodName="Test Food" />);
 
     expect(getByText('管理员权限')).toBeTruthy();
     expect(getByText('可以重新扫描并覆盖更新已有的营养成分数据')).toBeTruthy();
@@ -30,9 +28,7 @@ describe('AdminUpdatePrompt', () => {
   });
 
   it('should navigate to scanner on press', () => {
-    const { getByText } = render(
-      <AdminUpdatePrompt catfoodId={123} catfoodName="Test Food" />
-    );
+    const { getByText } = render(<AdminUpdatePrompt catfoodId={123} catfoodName="Test Food" />);
 
     fireEvent.press(getByText('重新扫描更新'));
 

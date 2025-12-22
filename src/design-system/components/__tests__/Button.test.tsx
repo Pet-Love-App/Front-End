@@ -49,10 +49,7 @@ describe('Button Component', () => {
 
   it('renders left and right icons', () => {
     render(
-      <Button
-        leftIcon={<Text>Left</Text>}
-        rightIcon={<Text>Right</Text>}
-      >
+      <Button leftIcon={<Text>Left</Text>} rightIcon={<Text>Right</Text>}>
         <Text>Content</Text>
       </Button>
     );

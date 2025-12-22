@@ -7,7 +7,11 @@ import { Image } from 'react-native';
 jest.mock('tamagui', () => {
   const { View } = require('react-native');
   return {
-    YStack: ({ children, ...props }: any) => <View testID="lazy-image-container" {...props}>{children}</View>,
+    YStack: ({ children, ...props }: any) => (
+      <View testID="lazy-image-container" {...props}>
+        {children}
+      </View>
+    ),
   };
 });
 
@@ -33,7 +37,6 @@ jest.mock('../Skeleton', () => {
 //   MockImage.displayName = 'Image';
 //   return MockImage;
 // });
-
 
 describe('LazyImage Component', () => {
   it('renders skeleton initially', () => {

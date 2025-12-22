@@ -10,14 +10,18 @@ jest.mock('react-native-chart-kit', () => {
     PieChart: ({ data }: any) => (
       <View testID="pie-chart">
         {data.map((item: any, index: number) => (
-          <Text key={index}>{item.name}: {item.value}</Text>
+          <Text key={index}>
+            {item.name}: {item.value}
+          </Text>
         ))}
       </View>
     ),
     BarChart: ({ data }: any) => (
       <View testID="bar-chart">
         {data.labels.map((label: string, index: number) => (
-          <Text key={index}>{label}: {data.datasets[0].data[index]}</Text>
+          <Text key={index}>
+            {label}: {data.datasets[0].data[index]}
+          </Text>
         ))}
       </View>
     ),
@@ -40,16 +44,8 @@ jest.mock('tamagui', () => {
   return {
     Card,
     Text: ({ children }: any) => <Text>{children}</Text>,
-    XStack: ({ children, onPress, ...props }: any) => (
-      <View {...props}>
-        {children}
-      </View>
-    ),
-    YStack: ({ children, onPress, ...props }: any) => (
-      <View {...props}>
-        {children}
-      </View>
-    ),
+    XStack: ({ children, onPress, ...props }: any) => <View {...props}>{children}</View>,
+    YStack: ({ children, onPress, ...props }: any) => <View {...props}>{children}</View>,
   };
 });
 
@@ -64,9 +60,7 @@ describe('NutritionAnalysisCharts', () => {
   };
 
   it('renders correctly with data', () => {
-    const { getByText, getByTestId } = render(
-      <NutritionAnalysisCharts data={mockData} />
-    );
+    const { getByText, getByTestId } = render(<NutritionAnalysisCharts data={mockData} />);
 
     expect(getByTestId('pie-chart')).toBeTruthy();
     expect(getByTestId('bar-chart')).toBeTruthy();
@@ -75,17 +69,13 @@ describe('NutritionAnalysisCharts', () => {
   });
 
   it('renders empty state when no data', () => {
-    const { getByText } = render(
-      <NutritionAnalysisCharts data={{}} />
-    );
+    const { getByText } = render(<NutritionAnalysisCharts data={{}} />);
 
     expect(getByText('暂无营养成分数据')).toBeTruthy();
   });
 
   it('renders empty state when data is null', () => {
-    const { getByText } = render(
-      <NutritionAnalysisCharts data={null as any} />
-    );
+    const { getByText } = render(<NutritionAnalysisCharts data={null as any} />);
 
     expect(getByText('暂无营养成分数据')).toBeTruthy();
   });
@@ -95,9 +85,7 @@ describe('NutritionAnalysisCharts', () => {
       unknown_nutrient: 10,
     };
 
-    const { getByText } = render(
-      <NutritionAnalysisCharts data={unknownData} />
-    );
+    const { getByText } = render(<NutritionAnalysisCharts data={unknownData} />);
 
     expect(getByText('unknown_nutrient: 10')).toBeTruthy();
   });

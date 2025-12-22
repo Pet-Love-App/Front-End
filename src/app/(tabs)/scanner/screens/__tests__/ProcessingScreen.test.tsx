@@ -16,16 +16,8 @@ jest.mock('tamagui', () => {
   const { View, Text } = require('react-native');
   return {
     Text: ({ children }: any) => <Text>{children}</Text>,
-    XStack: ({ children, onPress, ...props }: any) => (
-      <View {...props}>
-        {children}
-      </View>
-    ),
-    YStack: ({ children, onPress, ...props }: any) => (
-      <View {...props}>
-        {children}
-      </View>
-    ),
+    XStack: ({ children, onPress, ...props }: any) => <View {...props}>{children}</View>,
+    YStack: ({ children, onPress, ...props }: any) => <View {...props}>{children}</View>,
   };
 });
 
@@ -33,9 +25,7 @@ describe('ProcessingScreen', () => {
   const mockInsets = { top: 20, bottom: 20, left: 0, right: 0 };
 
   it('renders correctly', () => {
-    const { getByText } = render(
-      <ProcessingScreen insets={mockInsets} />
-    );
+    const { getByText } = render(<ProcessingScreen insets={mockInsets} />);
 
     expect(getByText('正在识别文字...')).toBeTruthy();
     expect(getByText('AI 正在分析图片中的成分信息')).toBeTruthy();

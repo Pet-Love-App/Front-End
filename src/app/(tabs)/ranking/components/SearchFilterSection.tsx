@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { YStack } from 'tamagui';
 import SearchBox from '@/src/components/searchBox';
+import { useThemeColors } from '@/src/hooks/useThemeColors';
 
 import { BrandFilterMenu } from './BrandFilterMenu';
 import { FilterChips } from './FilterChips';
@@ -50,11 +51,12 @@ export function SearchFilterSection({
   filteredCount,
   totalCount,
 }: SearchFilterSectionProps) {
+  const colors = useThemeColors();
   // 本地输入状态
   const [inputValue, setInputValue] = useState(searchQuery);
 
   return (
-    <YStack backgroundColor="#FAFAFA" paddingTop="$3">
+    <YStack backgroundColor={colors.backgroundSubtle as any} paddingTop="$3">
       {/* 搜索框 */}
       <YStack paddingHorizontal="$4" paddingBottom="$3">
         <SearchBox

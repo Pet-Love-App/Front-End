@@ -93,12 +93,14 @@ describe('Supabase Chat Service', () => {
       const mockSingle = jest.fn().mockResolvedValue({ data: newConversation, error: null });
 
       (supabase.from as jest.Mock)
-        .mockReturnValueOnce({ // Check existing
+        .mockReturnValueOnce({
+          // Check existing
           select: mockSelect,
           or: mockOr,
           maybeSingle: mockMaybeSingle,
         })
-        .mockReturnValueOnce({ // Create new
+        .mockReturnValueOnce({
+          // Create new
           insert: mockInsert,
           select: mockSelect,
           single: mockSingle,
@@ -153,12 +155,14 @@ describe('Supabase Chat Service', () => {
       const mockEq = jest.fn().mockResolvedValue({ data: mockUnreadCounts, error: null });
 
       (supabase.from as jest.Mock)
-        .mockReturnValueOnce({ // conversations_with_participants
+        .mockReturnValueOnce({
+          // conversations_with_participants
           select: mockSelect,
           or: mockOr,
           order: mockOrder,
         })
-        .mockReturnValueOnce({ // unread_counts
+        .mockReturnValueOnce({
+          // unread_counts
           select: mockSelect,
           eq: mockEq,
         });
@@ -287,11 +291,13 @@ describe('Supabase Chat Service', () => {
 
       expect(result.success).toBe(true);
       expect(result.data?.content).toBe('Hi');
-      expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({
-        conversation_id: 1,
-        sender_id: 'user1',
-        content: 'Hi',
-      }));
+      expect(mockInsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          conversation_id: 1,
+          sender_id: 'user1',
+          content: 'Hi',
+        })
+      );
     });
 
     it('should return error if not authenticated', async () => {
@@ -309,7 +315,9 @@ describe('Supabase Chat Service', () => {
 
       const mockInsert = jest.fn().mockReturnThis();
       const mockSelect = jest.fn().mockReturnThis();
-      const mockSingle = jest.fn().mockResolvedValue({ data: null, error: { message: 'DB Error' } });
+      const mockSingle = jest
+        .fn()
+        .mockResolvedValue({ data: null, error: { message: 'DB Error' } });
 
       (supabase.from as jest.Mock).mockReturnValue({
         insert: mockInsert,

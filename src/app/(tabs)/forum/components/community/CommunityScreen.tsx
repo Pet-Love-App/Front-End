@@ -11,10 +11,11 @@ import { StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { styled, YStack, Stack } from 'tamagui';
+import { YStack, Stack } from 'tamagui';
 
 import { supabaseForumService, type Post } from '@/src/lib/supabase';
 import { logger } from '@/src/utils/logger';
+import { useThemeColors } from '@/src/hooks/useThemeColors';
 
 import { PostDetailScreen } from '../post-detail';
 
@@ -27,23 +28,6 @@ import {
   type CategoryItem,
 } from './index';
 import { UserProfileModal } from '@/src/components/UserProfileModal';
-
-const ScreenContainer = styled(YStack, {
-  name: 'CommunityScreen',
-  flex: 1,
-  backgroundColor: '$background',
-});
-
-const TabsSection = styled(Stack, {
-  name: 'TabsSection',
-  backgroundColor: '$background',
-});
-
-const FeedContainer = styled(Stack, {
-  name: 'FeedContainer',
-  flex: 1,
-  backgroundColor: '$backgroundSubtle',
-});
 
 const CATEGORIES: CategoryItem[] = [
   { id: 'recommend', label: '推荐' },
@@ -102,6 +86,7 @@ function postToCardData(post: Post): PostCardData {
 
 export function CommunityScreen() {
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -348,25 +333,27 @@ export function CommunityScreen() {
   }, []);
 
   return (
-    <ScreenContainer>
+    <YStack flex={1} backgroundColor={colors.background as any} testID="forum-screen">
       <StatusBar barStyle="dark-content" />
 
-      <ForumHeader
-        title="社区"
-        unreadCount={unreadNotifications}
-        onSearch={handleSearch}
-        paddingTop={insets.top}
-      />
+      <Stack backgroundColor={colors.cardBackground as any}>
+        <ForumHeader
+          title="社区"
+          unreadCount={unreadNotifications}
+          onSearch={handleSearch}
+          paddingTop={insets.top}
+        />
+      </Stack>
 
-      <TabsSection>
+      <Stack backgroundColor={colors.cardBackground as any}>
         <CategoryTabs
           categories={CATEGORIES}
           activeId={activeCategory}
           onSelect={setActiveCategory}
         />
-      </TabsSection>
+      </Stack>
 
-      <FeedContainer>
+      <Stack flex={1} backgroundColor={colors.backgroundSubtle as any}>
         <MasonryFeed
           data={cardData}
           onPostPress={handlePostPress}
@@ -376,7 +363,7 @@ export function CommunityScreen() {
           isLoading={isLoading}
           isRefreshing={isRefreshing}
         />
-      </FeedContainer>
+      </Stack>
 
       <CreatePostFAB onPress={handleCreatePost} />
 
@@ -399,6 +386,6 @@ export function CommunityScreen() {
           onClose={() => setSelectedUserId(null)}
         />
       )}
-    </ScreenContainer>
+    </YStack>
   );
 }

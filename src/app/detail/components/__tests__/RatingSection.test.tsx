@@ -63,7 +63,10 @@ describe('RatingSection', () => {
         getCatFoodById: mockGetCatFoodById,
       });
     });
-    (supabaseCatfoodService.getUserRating as jest.Mock).mockResolvedValue({ data: null, error: null });
+    (supabaseCatfoodService.getUserRating as jest.Mock).mockResolvedValue({
+      data: null,
+      error: null,
+    });
   });
 
   it('should render correctly', async () => {
@@ -80,7 +83,7 @@ describe('RatingSection', () => {
   it('should load existing rating', async () => {
     (supabaseCatfoodService.getUserRating as jest.Mock).mockResolvedValue({
       data: { score: 4, comment: 'Good food', id: 1 },
-      error: null
+      error: null,
     });
 
     const { getByDisplayValue } = render(<RatingSection catfoodId={123} />);

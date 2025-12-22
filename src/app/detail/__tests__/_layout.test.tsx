@@ -22,16 +22,18 @@ describe('DetailLayout (src/app/detail/_layout.tsx)', () => {
 
     // Verify screen options are passed
     const options = JSON.parse(stack.props.accessibilityLabel);
-    expect(options).toEqual(expect.objectContaining({
-      headerShown: true,
-      presentation: 'card',
-      animation: 'slide_from_right',
-      headerStyle: {
-        backgroundColor: '#fff',
-      },
-      headerShadowVisible: false,
-      headerTintColor: '#333',
-      headerBackTitle: '返回',
-    }));
+    expect(options).toEqual(
+      expect.objectContaining({
+        headerShown: true,
+        presentation: 'card',
+        animation: 'slide_from_right',
+        headerStyle: {
+          backgroundColor: '#fff',
+        },
+        headerShadowVisible: false,
+        headerTintColor: '#333',
+        headerBackTitle: '返回',
+      })
+    );
   });
 });

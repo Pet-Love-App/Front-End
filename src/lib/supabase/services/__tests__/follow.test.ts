@@ -153,7 +153,8 @@ describe('SupabaseFollowService', () => {
       const mockFollowing = { count: 5, error: null };
 
       const mockSelect = jest.fn().mockReturnThis();
-      const mockEq = jest.fn()
+      const mockEq = jest
+        .fn()
         .mockResolvedValueOnce(mockFollowers)
         .mockResolvedValueOnce(mockFollowing);
 

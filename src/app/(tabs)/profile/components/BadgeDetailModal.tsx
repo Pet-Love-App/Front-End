@@ -11,7 +11,7 @@ import { Card, Text, XStack, YStack, Separator } from 'tamagui';
 import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { BADGE_CONFIGS, RARITY_CONFIGS } from '@/src/constants/badges';
-import { neutralScale } from '@/src/design-system/tokens';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 import type { DbUserBadge } from '@/src/lib/supabase/types/database';
 
 interface BadgeDetailModalProps {
@@ -30,6 +30,8 @@ export const BadgeDetailModal = memo(function BadgeDetailModal({
   onUnequip,
 }: BadgeDetailModalProps) {
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
 
   if (!badge || !badge.badge?.code) return null;
 
@@ -44,7 +46,7 @@ export const BadgeDetailModal = memo(function BadgeDetailModal({
       <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
         <TouchableOpacity activeOpacity={1} style={styles.contentContainer}>
           <Card
-            backgroundColor="white"
+            backgroundColor={colors.cardBackground as any}
             borderRadius={24}
             padding="$5"
             width="90%"
@@ -60,11 +62,11 @@ export const BadgeDetailModal = memo(function BadgeDetailModal({
                       width={32}
                       height={32}
                       borderRadius={16}
-                      backgroundColor={neutralScale.neutral2}
+                      backgroundColor={colors.backgroundMuted as any}
                       alignItems="center"
                       justifyContent="center"
                     >
-                      <IconSymbol name="xmark" size={16} color={neutralScale.neutral9} />
+                      <IconSymbol name="xmark" size={16} color={colors.textSecondary} />
                     </YStack>
                   </TouchableOpacity>
                 </XStack>
@@ -98,7 +100,7 @@ export const BadgeDetailModal = memo(function BadgeDetailModal({
                       alignItems="center"
                       justifyContent="center"
                       borderWidth={4}
-                      borderColor="white"
+                      borderColor={colors.cardBackground as any}
                       style={{
                         backgroundColor: badgeConfig.gradient
                           ? 'transparent'
@@ -136,9 +138,9 @@ export const BadgeDetailModal = memo(function BadgeDetailModal({
                         paddingHorizontal="$2"
                         paddingVertical="$1"
                         borderRadius={12}
-                        backgroundColor={badgeConfig.color}
+                        backgroundColor={badgeConfig.color as any}
                         borderWidth={2}
-                        borderColor="white"
+                        borderColor={colors.cardBackground as any}
                       >
                         <Text fontSize={10} fontWeight="700" color="white">
                           已装备
@@ -149,7 +151,7 @@ export const BadgeDetailModal = memo(function BadgeDetailModal({
 
                   {/* 勋章名称 */}
                   <YStack alignItems="center" gap="$1">
-                    <Text fontSize={24} fontWeight="800" color={neutralScale.neutral12}>
+                    <Text fontSize={24} fontWeight="800" color={colors.text as any}>
                       {badgeConfig.name}
                     </Text>
                     <XStack
@@ -157,25 +159,25 @@ export const BadgeDetailModal = memo(function BadgeDetailModal({
                       gap="$1.5"
                       paddingHorizontal="$2.5"
                       paddingVertical="$1"
-                      backgroundColor={rarityConfig.color + '20'}
+                      backgroundColor={(rarityConfig.color + '20') as any}
                       borderRadius={8}
                     >
                       <IconSymbol name="sparkles" size={12} color={rarityConfig.color} />
-                      <Text fontSize={12} fontWeight="700" color={rarityConfig.color}>
+                      <Text fontSize={12} fontWeight="700" color={rarityConfig.color as any}>
                         {rarityConfig.name}
                       </Text>
                     </XStack>
                   </YStack>
                 </YStack>
 
-                <Separator borderColor={neutralScale.neutral3} />
+                <Separator borderColor={colors.borderMuted as any} />
 
                 {/* 勋章描述 */}
                 <YStack gap="$2">
-                  <Text fontSize={14} fontWeight="600" color={neutralScale.neutral11}>
+                  <Text fontSize={14} fontWeight="600" color={colors.text as any}>
                     描述
                   </Text>
-                  <Text fontSize={14} color={neutralScale.neutral9} lineHeight={20}>
+                  <Text fontSize={14} color={colors.textSecondary as any} lineHeight={20}>
                     {badgeConfig.description}
                   </Text>
                 </YStack>
@@ -183,19 +185,24 @@ export const BadgeDetailModal = memo(function BadgeDetailModal({
                 {/* 获取条件 */}
                 {badgeConfig.requirement && (
                   <YStack gap="$2">
-                    <Text fontSize={14} fontWeight="600" color={neutralScale.neutral11}>
+                    <Text fontSize={14} fontWeight="600" color={colors.text as any}>
                       获取条件
                     </Text>
                     <YStack
-                      backgroundColor={badgeConfig.color + '10'}
+                      backgroundColor={(badgeConfig.color + '10') as any}
                       padding="$3"
                       borderRadius={12}
                       borderWidth={1}
-                      borderColor={badgeConfig.color + '30'}
+                      borderColor={(badgeConfig.color + '30') as any}
                     >
                       <XStack alignItems="center" gap="$2">
                         <IconSymbol name="info.circle.fill" size={16} color={badgeConfig.color} />
-                        <Text fontSize={13} color={neutralScale.neutral10} lineHeight={18} flex={1}>
+                        <Text
+                          fontSize={13}
+                          color={colors.textSecondary as any}
+                          lineHeight={18}
+                          flex={1}
+                        >
                           {badgeConfig.requirement}
                         </Text>
                       </XStack>
@@ -205,12 +212,12 @@ export const BadgeDetailModal = memo(function BadgeDetailModal({
 
                 {/* 获取时间 */}
                 <YStack gap="$2">
-                  <Text fontSize={14} fontWeight="600" color={neutralScale.neutral11}>
+                  <Text fontSize={14} fontWeight="600" color={colors.text as any}>
                     获得时间
                   </Text>
                   <XStack alignItems="center" gap="$2">
-                    <IconSymbol name="calendar" size={16} color={neutralScale.neutral8} />
-                    <Text fontSize={14} color={neutralScale.neutral9}>
+                    <IconSymbol name="calendar" size={16} color={colors.textTertiary} />
+                    <Text fontSize={14} color={colors.textSecondary as any}>
                       {acquiredDate}
                     </Text>
                   </XStack>
@@ -227,7 +234,7 @@ export const BadgeDetailModal = memo(function BadgeDetailModal({
                         <IconSymbol name="minus.circle" size={20} color={badgeConfig.color} />
                       }
                     >
-                      <Text fontSize={15} fontWeight="600" color={badgeConfig.color}>
+                      <Text fontSize={15} fontWeight="600" color={badgeConfig.color as any}>
                         取消装备
                       </Text>
                     </Button>
@@ -235,7 +242,7 @@ export const BadgeDetailModal = memo(function BadgeDetailModal({
                     <Button
                       size="lg"
                       variant="primary"
-                      backgroundColor={badgeConfig.color}
+                      backgroundColor={badgeConfig.color as any}
                       onPress={() => onEquip?.(badge.badge_id)}
                       leftIcon={<IconSymbol name="checkmark.circle" size={20} color="white" />}
                     >
@@ -245,7 +252,12 @@ export const BadgeDetailModal = memo(function BadgeDetailModal({
                     </Button>
                   )}
 
-                  <Button size="md" variant="ghost" onPress={onClose}>
+                  <Button
+                    size="md"
+                    variant="ghost"
+                    color={colors.textSecondary as any}
+                    onPress={onClose}
+                  >
                     关闭
                   </Button>
                 </YStack>

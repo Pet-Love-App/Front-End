@@ -12,11 +12,12 @@ interface SearchBoxProps {
   autoFocus?: boolean;
   disabled?: boolean;
   showSearchButton?: boolean; // 是否显示搜索按钮
+  testID?: string; // E2E 测试 ID
 }
 
 export default function SearchBox({
   size = '$4',
-  value,
+  value = '',
   placeholder = '搜索...',
   onChangeText,
   onSearch,
@@ -24,9 +25,10 @@ export default function SearchBox({
   autoFocus = false,
   disabled = false,
   showSearchButton = true,
+  testID,
 }: SearchBoxProps) {
   // 内部状态管理输入值（如果没有外部控制）
-  const [internalValue, setInternalValue] = useState(value || '');
+  const [internalValue, setInternalValue] = useState(value);
   const currentValue = value !== undefined ? value : internalValue;
 
   const handleTextChange = useCallback(
@@ -54,6 +56,7 @@ export default function SearchBox({
 
   return (
     <XStack
+      testID={testID || 'search-box'}
       alignItems="center"
       gap="$2"
       paddingLeft="$3"
@@ -68,6 +71,7 @@ export default function SearchBox({
       <IconSymbol name="magnifyingglass" size={20} color="$foregroundSubtle" />
 
       <Input
+        testID="search-input"
         flex={1}
         size={size}
         placeholder={placeholder}
@@ -79,8 +83,7 @@ export default function SearchBox({
         disabled={disabled}
         backgroundColor="transparent"
         borderWidth={0}
-        // @ts-ignore
-        color="$foreground"
+        color="$color"
         focusStyle={{ borderWidth: 0, outlineWidth: 0 }}
         paddingHorizontal="$2"
         paddingVertical={0}
@@ -96,19 +99,19 @@ export default function SearchBox({
         <XStack
           onPress={handleClear}
           padding="$1"
-          // @ts-ignore
-          borderRadius="$full"
+          borderRadius={9999}
           backgroundColor="$backgroundMuted"
           pressStyle={{ backgroundColor: '$backgroundPress', scale: 0.95 }}
-          testID="clear-button"
+          cursor="pointer"
         >
-          <IconSymbol name="xmark" size={12} color="$foregroundSubtle" />
+          <IconSymbol name="xmark.circle.fill" size={18} color="$foregroundMuted" />
         </XStack>
       )}
 
       {/* 搜索按钮 */}
       {showSearchButton && (
         <XStack
+          testID="search-submit"
           onPress={handleSearch}
           paddingHorizontal="$3"
           paddingVertical="$2"

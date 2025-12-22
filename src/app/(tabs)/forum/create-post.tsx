@@ -55,6 +55,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { supabaseForumService, type Post, type PostCategory } from '@/src/lib/supabase';
 import { showAlert } from '@/src/components/dialogs';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 
 import { POST_CATEGORIES, MESSAGES, UI_CONFIG } from './constants';
 import { usePostEditor } from './hooks/usePostEditor';
@@ -82,10 +83,165 @@ const AnimatedView = Animated.createAnimatedComponent(View);
 
 export default function CreatePostScreen() {
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
   const params = useLocalSearchParams<{ editPostId?: string }>();
   const contentInputRef = useRef<TextInput>(null);
   const mediaScrollRef = useRef<FlatList>(null);
   const errorHandler = useMemo(() => createErrorHandler('CreatePost'), []);
+
+  // 动态样式
+  const dynamicStyles = useMemo(() => {
+    return StyleSheet.create({
+      container: {
+        flex: 1,
+        backgroundColor: colors.background,
+      },
+      header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: colors.border,
+      },
+      headerTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: colors.text,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        letterSpacing: 0.3,
+      },
+      mediaSection: {
+        height: MEDIA_PREVIEW_HEIGHT,
+        backgroundColor: colors.backgroundSubtle,
+      },
+      mediaPlaceholderGradient: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      mediaPlaceholderIcon: {
+        width: 88,
+        height: 88,
+        borderRadius: 44,
+        backgroundColor: (isDark ? '#3D2A1F' : colors.primaryLight) as any,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+      },
+      mediaPlaceholderTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: colors.text,
+        marginBottom: 6,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+      },
+      mediaPlaceholderSubtitle: {
+        fontSize: 14,
+        color: colors.textSecondary,
+        letterSpacing: 0.2,
+      },
+      categoryChip: {
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 20,
+        backgroundColor: colors.backgroundMuted,
+        borderWidth: 1.5,
+        borderColor: colors.border,
+      },
+      categoryChipActive: {
+        backgroundColor: (isDark ? '#3D2A1F' : colors.primaryLight) as any,
+        borderColor: colors.primary,
+      },
+      categoryText: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: colors.textSecondary,
+      },
+      categoryTextActive: {
+        color: colors.primary,
+        fontWeight: '600',
+      },
+      contentInput: {
+        fontSize: 16,
+        color: colors.text,
+        lineHeight: 24,
+        minHeight: 120,
+        textAlignVertical: 'top',
+        fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+      },
+      charCount: {
+        fontSize: 12,
+        color: colors.textTertiary,
+      },
+      tagsInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.backgroundMuted,
+        borderRadius: 12,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        borderWidth: 1,
+        borderColor: colors.border,
+      },
+      tagsInput: {
+        flex: 1,
+        fontSize: 15,
+        color: colors.text,
+        marginLeft: 10,
+      },
+      attachmentItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: (isDark ? '#3D2A1F' : colors.primaryLight) as any,
+        paddingHorizontal: 14,
+        paddingVertical: 10,
+        borderRadius: 20,
+        alignSelf: 'flex-start',
+      },
+      attachmentText: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: colors.primary,
+        marginLeft: 6,
+        marginRight: 8,
+        flex: 1,
+      },
+      bottomToolbar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingTop: 12,
+        borderTopWidth: StyleSheet.hairlineWidth,
+        borderTopColor: colors.border,
+        backgroundColor: colors.cardBackground,
+      },
+      toolButtonLabel: {
+        fontSize: 11,
+        color: colors.textSecondary,
+        marginTop: 4,
+        fontWeight: '500',
+      },
+      toolButtonLabelActive: {
+        color: colors.primary,
+        fontWeight: '600',
+      },
+      mediaCount: {
+        backgroundColor: (isDark ? '#3D2A1F' : colors.primaryLight) as any,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 12,
+      },
+      mediaCountText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: colors.primary,
+      },
+    });
+  }, [colors, isDark]);
 
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [isLoadingPost, setIsLoadingPost] = useState(false);
@@ -273,23 +429,23 @@ export default function CreatePostScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View testID="create-post-screen" style={[dynamicStyles.container, { paddingTop: insets.top }]}>
       <KeyboardAvoidingView
         style={styles.flex1}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* 顶部导航栏 */}
-        <View style={styles.header}>
+        <View style={dynamicStyles.header}>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
             activeOpacity={0.7}
           >
-            <ChevronLeft size={28} color="#262626" strokeWidth={2} />
+            <ChevronLeft size={28} color={colors.text as any} strokeWidth={2} />
           </TouchableOpacity>
 
           <View style={styles.headerTitleContainer}>
-            <Animated.Text style={styles.headerTitle}>
+            <Animated.Text style={dynamicStyles.headerTitle}>
               {editingPost ? '编辑' : '创建新帖'}
             </Animated.Text>
           </View>
@@ -298,13 +454,18 @@ export default function CreatePostScreen() {
             style={[
               styles.submitButton,
               !canSubmit && styles.submitButtonDisabled,
+              { backgroundColor: canSubmit ? colors.primary : colors.border },
               submitButtonStyle,
             ]}
             onPress={handleSubmit}
             disabled={!canSubmit}
           >
             <Animated.Text
-              style={[styles.submitButtonText, !canSubmit && styles.submitButtonTextDisabled]}
+              style={[
+                styles.submitButtonText,
+                !canSubmit && styles.submitButtonTextDisabled,
+                { color: canSubmit ? 'white' : colors.textTertiary },
+              ]}
             >
               {editor.submitting ? '发布中...' : '发布'}
             </Animated.Text>
@@ -321,7 +482,7 @@ export default function CreatePostScreen() {
             automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
           >
             {/* 媒体预览区 - 占屏幕 1/3 */}
-            <View style={styles.mediaSection}>
+            <View style={dynamicStyles.mediaSection}>
               {editor.pickedFiles.length > 0 ? (
                 <>
                   <FlatList
@@ -344,14 +505,16 @@ export default function CreatePostScreen() {
                   activeOpacity={0.8}
                 >
                   <LinearGradient
-                    colors={['#F8FAFC', '#EEF2F7']}
-                    style={styles.mediaPlaceholderGradient}
+                    colors={isDark ? ['#1A1A1A', '#0A0A0A'] : ['#F8FAFC', '#EEF2F7']}
+                    style={dynamicStyles.mediaPlaceholderGradient}
                   >
-                    <View style={styles.mediaPlaceholderIcon}>
-                      <ImagePlus size={48} color={BRAND_COLOR} strokeWidth={1.5} />
+                    <View style={dynamicStyles.mediaPlaceholderIcon}>
+                      <ImagePlus size={48} color={colors.primary as any} strokeWidth={1.5} />
                     </View>
-                    <Text style={styles.mediaPlaceholderTitle}>添加照片或视频</Text>
-                    <Text style={styles.mediaPlaceholderSubtitle}>分享精彩瞬间，让内容更生动</Text>
+                    <Text style={dynamicStyles.mediaPlaceholderTitle}>添加照片或视频</Text>
+                    <Text style={dynamicStyles.mediaPlaceholderSubtitle}>
+                      分享精彩瞬间，让内容更生动
+                    </Text>
                   </LinearGradient>
                 </TouchableOpacity>
               )}
@@ -361,7 +524,7 @@ export default function CreatePostScreen() {
             <View style={styles.contentSection}>
               {/* 分类选择 */}
               <View style={styles.categorySection}>
-                <Text style={styles.sectionLabel}>选择分类</Text>
+                <Text style={dynamicStyles.mediaPlaceholderSubtitle}>选择分类</Text>
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -372,11 +535,19 @@ export default function CreatePostScreen() {
                     return (
                       <TouchableOpacity
                         key={cat.key}
-                        style={[styles.categoryChip, isActive && styles.categoryChipActive]}
+                        style={[
+                          dynamicStyles.categoryChip,
+                          isActive && dynamicStyles.categoryChipActive,
+                        ]}
                         onPress={() => handleCategorySelect(cat.key)}
                         activeOpacity={0.7}
                       >
-                        <Text style={[styles.categoryText, isActive && styles.categoryTextActive]}>
+                        <Text
+                          style={[
+                            dynamicStyles.categoryText,
+                            isActive && dynamicStyles.categoryTextActive,
+                          ]}
+                        >
                           {cat.label}
                         </Text>
                       </TouchableOpacity>
@@ -389,30 +560,30 @@ export default function CreatePostScreen() {
               <View style={styles.textInputSection}>
                 <TextInput
                   ref={contentInputRef}
-                  style={styles.contentInput}
+                  style={dynamicStyles.contentInput}
                   value={editor.content}
                   onChangeText={editor.setContent}
                   placeholder="分享你的想法..."
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={colors.textTertiary}
                   multiline
                   textAlignVertical="top"
                   maxLength={2000}
                 />
                 <View style={styles.charCountContainer}>
-                  <Text style={styles.charCount}>{editor.content.length}/2000</Text>
+                  <Text style={dynamicStyles.charCount}>{editor.content.length}/2000</Text>
                 </View>
               </View>
 
               {/* 标签输入 */}
               <View style={styles.tagsSection}>
-                <View style={styles.tagsInputContainer}>
-                  <Hash size={18} color="#9CA3AF" strokeWidth={2} />
+                <View style={dynamicStyles.tagsInputContainer}>
+                  <Hash size={18} color={colors.textTertiary as any} strokeWidth={2} />
                   <TextInput
-                    style={styles.tagsInput}
+                    style={dynamicStyles.tagsInput}
                     value={editor.tagsText}
                     onChangeText={editor.setTagsText}
                     placeholder="添加话题标签，用空格分隔"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={colors.textTertiary}
                     returnKeyType="done"
                     onSubmitEditing={Keyboard.dismiss}
                   />
@@ -423,42 +594,46 @@ export default function CreatePostScreen() {
               {(mentionedFriends.length > 0 || selectedTopics.length > 0 || selectedLocation) && (
                 <View style={styles.attachmentsSection}>
                   {mentionedFriends.length > 0 && (
-                    <View style={styles.attachmentItem}>
-                      <AtSign size={16} color={BRAND_COLOR} strokeWidth={2} />
-                      <Text style={styles.attachmentText}>{mentionedFriends.length} 位好友</Text>
+                    <View style={dynamicStyles.attachmentItem}>
+                      <AtSign size={16} color={colors.primary as any} strokeWidth={2} />
+                      <Text style={dynamicStyles.attachmentText}>
+                        {mentionedFriends.length} 位好友
+                      </Text>
                       <TouchableOpacity
                         onPress={() => setMentionedFriends([])}
                         style={styles.attachmentRemove}
                       >
-                        <X size={14} color="#9CA3AF" strokeWidth={2} />
+                        <X size={14} color={colors.textTertiary as any} strokeWidth={2} />
                       </TouchableOpacity>
                     </View>
                   )}
 
                   {selectedTopics.length > 0 && (
-                    <View style={styles.attachmentItem}>
-                      <Hash size={16} color={BRAND_COLOR} strokeWidth={2} />
-                      <Text style={styles.attachmentText}>{selectedTopics.length} 个话题</Text>
+                    <View style={dynamicStyles.attachmentItem}>
+                      <Hash size={16} color={colors.primary as any} strokeWidth={2} />
+                      <Text style={dynamicStyles.attachmentText}>
+                        {selectedTopics.length} 个话题
+                      </Text>
                       <TouchableOpacity
                         onPress={() => setSelectedTopics([])}
                         style={styles.attachmentRemove}
                       >
-                        <X size={14} color="#9CA3AF" strokeWidth={2} />
+                        <X size={14} color={colors.textTertiary as any} strokeWidth={2} />
                       </TouchableOpacity>
                     </View>
                   )}
 
                   {selectedLocation && (
-                    <View style={styles.attachmentItem}>
-                      <MapPin size={16} color={BRAND_COLOR} strokeWidth={2} />
-                      <Text style={styles.attachmentText} numberOfLines={1}>
+                    <View style={dynamicStyles.attachmentItem}>
+                      <MapPin size={16} color={colors.primary as any} strokeWidth={2} />
+                      <Text style={dynamicStyles.attachmentText} numberOfLines={1}>
                         {selectedLocation.name}
                       </Text>
                       <TouchableOpacity
                         onPress={() => setSelectedLocation(null)}
                         style={styles.attachmentRemove}
                       >
-                        <X size={14} color="#9CA3AF" strokeWidth={2} />
+                        <X size={14} color={colors.textTertiary as any} strokeWidth={2} />
                       </TouchableOpacity>
                     </View>
                   )}
@@ -470,15 +645,15 @@ export default function CreatePostScreen() {
 
         {/* 底部工具栏 - 键盘弹出时隐藏 */}
         {!isKeyboardVisible && (
-          <View style={[styles.bottomToolbar, { paddingBottom: insets.bottom + 8 }]}>
+          <View style={[dynamicStyles.bottomToolbar, { paddingBottom: insets.bottom + 8 }]}>
             <View style={styles.toolbarLeft}>
               <TouchableOpacity
                 style={styles.toolButton}
                 onPress={handlePickImages}
                 activeOpacity={0.7}
               >
-                <ImagePlus size={22} color="#262626" strokeWidth={1.8} />
-                <Text style={styles.toolButtonLabel}>图片</Text>
+                <ImagePlus size={22} color={colors.text as any} strokeWidth={1.8} />
+                <Text style={dynamicStyles.toolButtonLabel}>图片</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -486,8 +661,8 @@ export default function CreatePostScreen() {
                 onPress={handleTakePhoto}
                 activeOpacity={0.7}
               >
-                <Camera size={22} color="#262626" strokeWidth={1.8} />
-                <Text style={styles.toolButtonLabel}>拍摄</Text>
+                <Camera size={22} color={colors.text as any} strokeWidth={1.8} />
+                <Text style={dynamicStyles.toolButtonLabel}>拍摄</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -498,7 +673,7 @@ export default function CreatePostScreen() {
                 <View>
                   <AtSign
                     size={22}
-                    color={mentionedFriends.length > 0 ? BRAND_COLOR : '#262626'}
+                    color={(mentionedFriends.length > 0 ? colors.primary : colors.text) as any}
                     strokeWidth={1.8}
                   />
                   {mentionedFriends.length > 0 && (
@@ -509,8 +684,8 @@ export default function CreatePostScreen() {
                 </View>
                 <Text
                   style={[
-                    styles.toolButtonLabel,
-                    mentionedFriends.length > 0 && styles.toolButtonLabelActive,
+                    dynamicStyles.toolButtonLabel,
+                    mentionedFriends.length > 0 && dynamicStyles.toolButtonLabelActive,
                   ]}
                 >
                   @好友
@@ -522,8 +697,8 @@ export default function CreatePostScreen() {
                 onPress={() => setShowTopicModal(true)}
                 activeOpacity={0.7}
               >
-                <Hash size={22} color="#262626" strokeWidth={1.8} />
-                <Text style={styles.toolButtonLabel}>话题</Text>
+                <Hash size={22} color={colors.text as any} strokeWidth={1.8} />
+                <Text style={dynamicStyles.toolButtonLabel}>话题</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -533,11 +708,14 @@ export default function CreatePostScreen() {
               >
                 <MapPin
                   size={22}
-                  color={selectedLocation ? BRAND_COLOR : '#262626'}
+                  color={(selectedLocation ? colors.primary : colors.text) as any}
                   strokeWidth={1.8}
                 />
                 <Text
-                  style={[styles.toolButtonLabel, selectedLocation && styles.toolButtonLabelActive]}
+                  style={[
+                    dynamicStyles.toolButtonLabel,
+                    selectedLocation && dynamicStyles.toolButtonLabelActive,
+                  ]}
                 >
                   位置
                 </Text>
@@ -545,8 +723,8 @@ export default function CreatePostScreen() {
             </View>
 
             {editor.pickedFiles.length > 0 && (
-              <View style={styles.mediaCount}>
-                <Text style={styles.mediaCountText}>{editor.pickedFiles.length}/9</Text>
+              <View style={dynamicStyles.mediaCount}>
+                <Text style={dynamicStyles.mediaCountText}>{editor.pickedFiles.length}/9</Text>
               </View>
             )}
           </View>
@@ -581,27 +759,12 @@ export default function CreatePostScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
   flex1: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 20,
-  },
-
-  // 顶部导航栏
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E7EB',
   },
   backButton: {
     width: 40,
@@ -610,19 +773,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: -8,
   },
+  mediaPlaceholder: {
+    flex: 1,
+  },
   headerTitleContainer: {
     flex: 1,
     alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#262626',
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    letterSpacing: 0.3,
-  },
   submitButton: {
-    backgroundColor: BRAND_COLOR,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
@@ -631,52 +789,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E7EB',
   },
   submitButtonText: {
-    color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '600',
     letterSpacing: 0.2,
   },
   submitButtonTextDisabled: {
     color: '#9CA3AF',
-  },
-
-  // 媒体预览区
-  mediaSection: {
-    height: MEDIA_PREVIEW_HEIGHT,
-    backgroundColor: '#F9FAFB',
-  },
-  mediaSlide: {
-    width: SCREEN_WIDTH,
-    height: MEDIA_PREVIEW_HEIGHT,
-  },
-  mediaImage: {
-    width: '100%',
-    height: '100%',
-  },
-  videoOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  playButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  removeMediaButton: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   indicatorContainer: {
     position: 'absolute',
@@ -697,37 +815,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     width: 20,
   },
-  mediaPlaceholder: {
-    flex: 1,
+  mediaSlide: {
+    width: SCREEN_WIDTH,
+    height: MEDIA_PREVIEW_HEIGHT,
   },
-  mediaPlaceholderGradient: {
-    flex: 1,
+  mediaImage: {
+    width: '100%',
+    height: '100%',
+  },
+  removeMediaButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  mediaPlaceholderIcon: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: BRAND_LIGHT,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  mediaPlaceholderTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#262626',
-    marginBottom: 6,
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-  },
-  mediaPlaceholderSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    letterSpacing: 0.2,
-  },
-
-  // 内容区
   contentSection: {
     flex: 1,
     padding: 20,
@@ -735,114 +841,28 @@ const styles = StyleSheet.create({
   categorySection: {
     marginBottom: 20,
   },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#6B7280',
-    marginBottom: 12,
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-  },
   categoryList: {
     gap: 10,
   },
-  categoryChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: '#F3F4F6',
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
-  },
-  categoryChipActive: {
-    backgroundColor: BRAND_LIGHT,
-    borderColor: BRAND_COLOR,
-  },
-  categoryText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#6B7280',
-  },
-  categoryTextActive: {
-    color: BRAND_COLOR,
-    fontWeight: '600',
-  },
   textInputSection: {
     marginBottom: 20,
-  },
-  contentInput: {
-    fontSize: 16,
-    color: '#262626',
-    lineHeight: 24,
-    minHeight: 120,
-    textAlignVertical: 'top',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
   charCountContainer: {
     alignItems: 'flex-end',
     marginTop: 8,
   },
-  charCount: {
-    fontSize: 12,
-    color: '#9CA3AF',
-  },
   tagsSection: {
     marginBottom: 20,
-  },
-  tagsInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  tagsInput: {
-    flex: 1,
-    fontSize: 15,
-    color: '#262626',
-    marginLeft: 10,
   },
   attachmentsSection: {
     marginTop: 16,
     gap: 8,
-  },
-  attachmentItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: BRAND_LIGHT,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-  },
-  attachmentText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: BRAND_COLOR,
-    marginLeft: 6,
-    marginRight: 8,
-    flex: 1,
   },
   attachmentRemove: {
     width: 20,
     height: 20,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-
-  // 底部工具栏
-  bottomToolbar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
   },
   toolbarLeft: {
     flexDirection: 'row',
@@ -852,16 +872,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
-  },
-  toolButtonLabel: {
-    fontSize: 11,
-    color: '#6B7280',
-    marginTop: 4,
-    fontWeight: '500',
-  },
-  toolButtonLabelActive: {
-    color: BRAND_COLOR,
-    fontWeight: '600',
   },
   badgeIcon: {
     position: 'absolute',
@@ -880,16 +890,5 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     color: '#FFFFFF',
-  },
-  mediaCount: {
-    backgroundColor: BRAND_LIGHT,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  mediaCountText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: BRAND_COLOR,
   },
 });

@@ -24,13 +24,19 @@ jest.mock('tamagui', () => {
   return {
     Card: ({ children }: any) => <>{children}</>,
     Text: ({ children, testID, ...props }: any) => (
-      <Text testID={testID} {...props}>{children}</Text>
+      <Text testID={testID} {...props}>
+        {children}
+      </Text>
     ),
     XStack: ({ children, testID, ...props }: any) => (
-      <View testID={testID} {...props}>{children}</View>
+      <View testID={testID} {...props}>
+        {children}
+      </View>
     ),
     YStack: ({ children, testID, ...props }: any) => (
-      <View testID={testID} {...props}>{children}</View>
+      <View testID={testID} {...props}>
+        {children}
+      </View>
     ),
   };
 });
@@ -75,11 +81,7 @@ describe('BreedSelector', () => {
   it('should open modal on press', () => {
     // Arrange
     const { getByTestId } = render(
-      <BreedSelector
-        species={MockPetSpecies.Dog}
-        value=""
-        onChange={mockOnChange}
-      />
+      <BreedSelector species={MockPetSpecies.Dog} value="" onChange={mockOnChange} />
     );
 
     // Act
@@ -92,11 +94,7 @@ describe('BreedSelector', () => {
   it('should filter breeds by search text', () => {
     // Arrange
     const { getByTestId } = render(
-      <BreedSelector
-        species={MockPetSpecies.Dog}
-        value=""
-        onChange={mockOnChange}
-      />
+      <BreedSelector species={MockPetSpecies.Dog} value="" onChange={mockOnChange} />
     );
 
     // Open modal
@@ -113,11 +111,7 @@ describe('BreedSelector', () => {
   it('should call onChange when a breed is selected', () => {
     // Arrange
     const { getByTestId } = render(
-      <BreedSelector
-        species={MockPetSpecies.Dog}
-        value=""
-        onChange={mockOnChange}
-      />
+      <BreedSelector species={MockPetSpecies.Dog} value="" onChange={mockOnChange} />
     );
 
     // Open modal
@@ -133,11 +127,7 @@ describe('BreedSelector', () => {
   it('should close modal on close button press', () => {
     // Arrange
     const { getByTestId } = render(
-      <BreedSelector
-        species={MockPetSpecies.Dog}
-        value=""
-        onChange={mockOnChange}
-      />
+      <BreedSelector species={MockPetSpecies.Dog} value="" onChange={mockOnChange} />
     );
 
     // Open modal

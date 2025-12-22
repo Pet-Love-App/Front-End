@@ -88,19 +88,52 @@ export function CameraPermissionModal({
                 gap="$2.5"
               >
                 <XStack alignItems="center" gap="$2.5">
-                  <IconSymbol name="checkmark.circle.fill" size={20} color="#10B981" />
+                  <YStack
+                    width={20}
+                    height={20}
+                    borderRadius={10}
+                    backgroundColor="#10B981"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Text fontSize={14} color="white" fontWeight="900">
+                      ✓
+                    </Text>
+                  </YStack>
                   <Text fontSize={13} color="#4B5563" fontWeight="600" flex={1}>
                     拍摄猫粮成分表
                   </Text>
                 </XStack>
                 <XStack alignItems="center" gap="$2.5">
-                  <IconSymbol name="checkmark.circle.fill" size={20} color="#10B981" />
+                  <YStack
+                    width={20}
+                    height={20}
+                    borderRadius={10}
+                    backgroundColor="#10B981"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Text fontSize={14} color="white" fontWeight="900">
+                      ✓
+                    </Text>
+                  </YStack>
                   <Text fontSize={13} color="#4B5563" fontWeight="600" flex={1}>
                     扫描条形码快速识别
                   </Text>
                 </XStack>
                 <XStack alignItems="center" gap="$2.5">
-                  <IconSymbol name="checkmark.circle.fill" size={20} color="#10B981" />
+                  <YStack
+                    width={20}
+                    height={20}
+                    borderRadius={10}
+                    backgroundColor="#10B981"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Text fontSize={14} color="white" fontWeight="900">
+                      ✓
+                    </Text>
+                  </YStack>
                   <Text fontSize={13} color="#4B5563" fontWeight="600" flex={1}>
                     离线处理，保护隐私
                   </Text>

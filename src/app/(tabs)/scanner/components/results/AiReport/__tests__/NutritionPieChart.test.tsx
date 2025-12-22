@@ -35,12 +35,8 @@ jest.mock('tamagui', () => {
   return {
     Card,
     Text: ({ children }: any) => <Text>{children}</Text>,
-    XStack: ({ children, onPress, ...props }: any) => (
-      <View {...props}>{children}</View>
-    ),
-    YStack: ({ children, onPress, ...props }: any) => (
-      <View {...props}>{children}</View>
-    ),
+    XStack: ({ children, onPress, ...props }: any) => <View {...props}>{children}</View>,
+    YStack: ({ children, onPress, ...props }: any) => <View {...props}>{children}</View>,
   };
 });
 
@@ -58,9 +54,7 @@ describe('NutritionPieChart', () => {
   } as any;
 
   it('renders correctly with data', () => {
-    const { getByText, getByTestId } = render(
-      <NutritionPieChart report={mockReport} />
-    );
+    const { getByText, getByTestId } = render(<NutritionPieChart report={mockReport} />);
 
     expect(getByText('营养成分占比')).toBeTruthy();
     expect(getByTestId('pie-chart')).toBeTruthy();
@@ -74,9 +68,7 @@ describe('NutritionPieChart', () => {
       percent_data: null,
     } as any;
 
-    const { toJSON } = render(
-      <NutritionPieChart report={emptyReport} />
-    );
+    const { toJSON } = render(<NutritionPieChart report={emptyReport} />);
 
     expect(toJSON()).toBeNull();
   });
@@ -89,9 +81,7 @@ describe('NutritionPieChart', () => {
       },
     } as any;
 
-    const { getByText } = render(
-      <NutritionPieChart report={unknownReport} />
-    );
+    const { getByText } = render(<NutritionPieChart report={unknownReport} />);
 
     expect(getByText('unknown_nutrient: 10')).toBeTruthy();
   });

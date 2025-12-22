@@ -90,7 +90,7 @@ export function CatFoodCard({
   const isTopThree = index < 3;
 
   return (
-    <Pressable onPress={handlePress} testID="cat-food-card">
+    <Pressable onPress={handlePress}>
       {({ pressed }) => (
         <YStack
           backgroundColor="$background"
@@ -98,130 +98,123 @@ export function CatFoodCard({
           marginBottom="$3"
           borderRadius={16}
           borderWidth={isTopThree ? 1.5 : 1}
-          borderColor={(isTopThree ? rankConfig.borderColor : '$borderColor') as any}
+          borderColor={(isTopThree ? rankConfig.borderColor : neutralScale.neutral3) as any}
           overflow="hidden"
-          opacity={pressed ? 0.9 : 1}
-          scale={pressed ? 0.98 : 1}
+          opacity={pressed ? 0.96 : 1}
+          scale={pressed ? 0.985 : 1}
           animation="quick"
         >
-          {/* 排名徽章 */}
-          {showRank && (
-            <LinearGradient
-              colors={rankConfig.gradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                zIndex: 10,
-                paddingHorizontal: 8,
-                paddingVertical: 4,
-                borderBottomRightRadius: 12,
-              }}
-            >
-              <XStack alignItems="center" gap="$1">
-                <IconSymbol
-                  name={rankConfig.icon}
-                  size={12}
-                  color={rankConfig.textColor}
-                />
-                <Text
-                  testID="cat-food-rank"
-                  fontSize={12}
-                  fontWeight="700"
-                  color={rankConfig.textColor as any}
+          {/* 主内容区 */}
+          <XStack padding="$3.5" gap="$3">
+            {/* 左侧：排名徽章 */}
+            {showRank && (
+              <YStack alignItems="center" gap="$1.5" width={50}>
+                <YStack
+                  width={46}
+                  height={46}
+                  borderRadius={23}
+                  overflow="hidden"
+                  alignItems="center"
+                  justifyContent="center"
                 >
-                  {rankConfig.label || `#${index + 1}`}
-                </Text>
-              </XStack>
-            </LinearGradient>
-          )}
+                  <LinearGradient
+                    colors={rankConfig.gradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  {isTopThree ? (
+                    <IconSymbol name={rankConfig.icon} size={22} color={rankConfig.textColor} />
+                  ) : (
+                    <Text fontSize="$5" fontWeight="900" color={rankConfig.textColor as any}>
+                      {index + 1}
+                    </Text>
+                  )}
+                </YStack>
+                {isTopThree && (
+                  <Text fontSize={10} fontWeight="800" color={rankConfig.borderColor as any}>
+                    {rankConfig.label}
+                  </Text>
+                )}
+              </YStack>
+            )}
 
-          <XStack padding="$3" gap="$3">
-            {/* 左侧图片 */}
-            <Pressable onPress={handleImagePress} testID="cat-food-image-pressable">
+            {/* 中间：产品图片 */}
+            <Pressable onPress={handleImagePress}>
               <YStack
-                width={100}
-                height={100}
+                width={90}
+                height={90}
                 borderRadius={12}
                 overflow="hidden"
-                backgroundColor="$backgroundMuted"
+                backgroundColor={neutralScale.neutral2}
+                borderWidth={1}
+                borderColor={neutralScale.neutral3}
               >
                 {catfood.imageUrl ? (
                   <Image
-                    testID="cat-food-image"
                     source={{ uri: catfood.imageUrl }}
                     style={{ width: '100%', height: '100%' }}
                     resizeMode="cover"
                   />
                 ) : (
                   <YStack flex={1} alignItems="center" justifyContent="center">
-                    <IconSymbol
-                      name="pawprint.fill"
-                      size={32}
-                      color="$foregroundMuted"
-                    />
+                    <IconSymbol name="photo" size={32} color={neutralScale.neutral5} />
                   </YStack>
                 )}
               </YStack>
             </Pressable>
 
-            {/* 右侧信息 */}
-            <YStack flex={1} justifyContent="space-between">
-              <YStack gap="$1">
-                <XStack justifyContent="space-between" alignItems="flex-start">
-                  <YStack flex={1} marginRight="$2">
-                    <Text
-                      testID="cat-food-brand"
-                      fontSize={12}
-                      color="$foregroundSubtle"
-                      fontWeight="600"
-                    >
-                      {catfood.brand}
-                    </Text>
-                    <Text
-                      testID="cat-food-name"
-                      fontSize={16}
-                      fontWeight="700"
-                      color="$foreground"
-                      numberOfLines={2}
-                      lineHeight={22}
-                    >
-                      {catfood.name}
-                    </Text>
-                  </YStack>
+            {/* 右侧：产品信息 */}
+            <YStack flex={1} gap="$2" justifyContent="space-between">
+              {/* 名称 */}
+              <Text fontSize="$4" fontWeight="700" color="$color" numberOfLines={2} lineHeight={22}>
+                {catfood.name}
+              </Text>
 
-                  {/* 评分和点赞 */}
-                  <YStack alignItems="flex-end" gap="$1">
-                    {/* 评分 */}
-                    <XStack
-                      alignItems="center"
-                      gap="$1"
-                      backgroundColor={warningScale.warning1}
-                      paddingHorizontal="$2"
-                      paddingVertical={4}
-                      borderRadius={6}
-                    >
-                      <IconSymbol name="star.fill" size={13} color={warningScale.warning6} />
-                      <Text fontSize={13} fontWeight="800" color={warningScale.warning8}>
-                        {catfood.score?.toFixed(1) || '0.0'}
-                      </Text>
-                      <Text fontSize={10} color={neutralScale.neutral8}>
-                        ({catfood.countNum || 0})
-                      </Text>
-                    </XStack>
+              {/* 品牌标签 */}
+              <XStack alignItems="center">
+                <YStack
+                  backgroundColor={primaryScale.primary2}
+                  paddingHorizontal="$2"
+                  paddingVertical={4}
+                  borderRadius={6}
+                  borderWidth={1}
+                  borderColor={primaryScale.primary4}
+                >
+                  <Text fontSize={11} fontWeight="600" color={primaryScale.primary10}>
+                    {catfood.brand || '未知品牌'}
+                  </Text>
+                </YStack>
+              </XStack>
 
-                    {/* 点赞 */}
-                    <XStack alignItems="center" gap="$1">
-                      <IconSymbol name="heart.fill" size={13} color={errorScale.error5} />
-                      <Text fontSize={13} fontWeight="700" color={errorScale.error7}>
-                        {catfood.like_count || 0}
-                      </Text>
-                    </XStack>
-                  </YStack>
+              {/* 评分和点赞 */}
+              <XStack alignItems="center" gap="$3">
+                {/* 评分 */}
+                <XStack
+                  alignItems="center"
+                  gap="$1"
+                  backgroundColor={warningScale.warning1}
+                  paddingHorizontal="$2"
+                  paddingVertical={4}
+                  borderRadius={6}
+                >
+                  <IconSymbol name="star.fill" size={13} color={warningScale.warning6} />
+                  <Text fontSize={13} fontWeight="800" color={warningScale.warning8}>
+                    {catfood.score?.toFixed(1) || '0.0'}
+                  </Text>
+                  <Text fontSize={10} color={neutralScale.neutral8}>
+                    ({catfood.countNum || 0})
+                  </Text>
                 </XStack>
-              </YStack>
+
+                {/* 点赞 */}
+                <XStack alignItems="center" gap="$1">
+                  <IconSymbol name="heart.fill" size={13} color={errorScale.error5} />
+                  <Text fontSize={13} fontWeight="700" color={errorScale.error7}>
+                    {catfood.like_count || 0}
+                  </Text>
+                </XStack>
+              </XStack>
             </YStack>
           </XStack>
 

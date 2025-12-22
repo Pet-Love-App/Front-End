@@ -16,7 +16,7 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Plus } from '@tamagui/lucide-icons';
 import { styled, Stack } from 'tamagui';
-import { primaryScale } from '@/src/design-system/tokens/colors';
+import { useThemeColors } from '@/src/hooks/useThemeColors';
 
 export interface CreatePostFABProps {
   onPress: () => void;
@@ -37,6 +37,7 @@ const FABContainer = styled(Stack, {
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 function CreatePostFABComponent({ onPress }: CreatePostFABProps) {
+  const colors = useThemeColors();
   const scale = useSharedValue(1);
   const rotation = useSharedValue(0);
 
@@ -69,14 +70,15 @@ function CreatePostFABComponent({ onPress }: CreatePostFABProps) {
 
   return (
     <AnimatedPressable
+      testID="create-post-fab"
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       onPress={handlePress}
       style={[styles.pressable, animatedStyle]}
     >
-      <FABContainer>
+      <FABContainer shadowColor={colors.primary as any}>
         <LinearGradient
-          colors={[primaryScale.primary6, primaryScale.primary7, primaryScale.primary8]}
+          colors={[colors.primaryLight, colors.primary, colors.primaryDark]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.gradient}

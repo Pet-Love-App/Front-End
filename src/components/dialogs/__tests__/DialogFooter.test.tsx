@@ -7,8 +7,16 @@ import { View, Text, TouchableOpacity } from 'react-native';
 jest.mock('tamagui', () => {
   const { View } = require('react-native');
   return {
-    XStack: ({ children, ...props }: any) => <View testID="footer-xstack" {...props}>{children}</View>,
-    YStack: ({ children, ...props }: any) => <View testID="footer-ystack" {...props}>{children}</View>,
+    XStack: ({ children, ...props }: any) => (
+      <View testID="footer-xstack" {...props}>
+        {children}
+      </View>
+    ),
+    YStack: ({ children, ...props }: any) => (
+      <View testID="footer-ystack" {...props}>
+        {children}
+      </View>
+    ),
   };
 });
 
@@ -17,7 +25,7 @@ jest.mock('@/src/design-system/components', () => {
   const { TouchableOpacity, Text } = require('react-native');
   return {
     Button: ({ children, onPress, testID, ...props }: any) => (
-      <TouchableOpacity testID={testID || "button-mock"} onPress={onPress} {...props}>
+      <TouchableOpacity testID={testID || 'button-mock'} onPress={onPress} {...props}>
         <Text>{children}</Text>
       </TouchableOpacity>
     ),

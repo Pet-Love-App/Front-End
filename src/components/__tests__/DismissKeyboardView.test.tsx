@@ -6,7 +6,7 @@ import { Keyboard, Platform, View, Text } from 'react-native';
 describe('DismissKeyboardView', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(Keyboard, 'addListener').mockImplementation(() => ({ remove: jest.fn() } as any));
+    jest.spyOn(Keyboard, 'addListener').mockImplementation(() => ({ remove: jest.fn() }) as any);
     jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => {});
   });
 

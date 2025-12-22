@@ -11,12 +11,15 @@ describe('useLazyLoad', () => {
     jest.useFakeTimers();
     jest.clearAllMocks();
     jest.spyOn(InteractionManager, 'runAfterInteractions').mockImplementation((callback: any) => {
-       if (callback) callback();
-       return {
-           cancel: jest.fn(),
-           then: jest.fn().mockImplementation((cb) => { if(cb) cb(); return Promise.resolve(); }),
-           done: jest.fn()
-       } as any;
+      if (callback) callback();
+      return {
+        cancel: jest.fn(),
+        then: jest.fn().mockImplementation((cb) => {
+          if (cb) cb();
+          return Promise.resolve();
+        }),
+        done: jest.fn(),
+      } as any;
     });
   });
 

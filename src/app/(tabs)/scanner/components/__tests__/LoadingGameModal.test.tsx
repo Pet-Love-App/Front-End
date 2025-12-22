@@ -33,11 +33,7 @@ describe('LoadingGameModal', () => {
 
   it('renders correctly when visible', () => {
     const { getByText } = render(
-      <LoadingGameModal
-        visible={true}
-        onClose={mockOnClose}
-        isFinished={false}
-      />
+      <LoadingGameModal visible={true} onClose={mockOnClose} isFinished={false} />
     );
 
     expect(getByText('AI 正在分析中...')).toBeTruthy();
@@ -46,33 +42,19 @@ describe('LoadingGameModal', () => {
 
   it('resets game when becoming visible', () => {
     const { rerender } = render(
-      <LoadingGameModal
-        visible={false}
-        onClose={mockOnClose}
-        isFinished={false}
-      />
+      <LoadingGameModal visible={false} onClose={mockOnClose} isFinished={false} />
     );
 
     expect(mockResetGame).not.toHaveBeenCalled();
 
-    rerender(
-      <LoadingGameModal
-        visible={true}
-        onClose={mockOnClose}
-        isFinished={false}
-      />
-    );
+    rerender(<LoadingGameModal visible={true} onClose={mockOnClose} isFinished={false} />);
 
     expect(mockResetGame).toHaveBeenCalled();
   });
 
   it('handles jump interaction', () => {
     const { getByText } = render(
-      <LoadingGameModal
-        visible={true}
-        onClose={mockOnClose}
-        isFinished={false}
-      />
+      <LoadingGameModal visible={true} onClose={mockOnClose} isFinished={false} />
     );
 
     // Find the game area (TouchableOpacity)
@@ -121,11 +103,7 @@ describe('LoadingGameModal', () => {
     });
 
     const { getByText } = render(
-      <LoadingGameModal
-        visible={true}
-        onClose={mockOnClose}
-        isFinished={false}
-      />
+      <LoadingGameModal visible={true} onClose={mockOnClose} isFinished={false} />
     );
 
     expect(getByText('游戏失败')).toBeTruthy();
@@ -139,11 +117,7 @@ describe('LoadingGameModal', () => {
     });
 
     const { getByText } = render(
-      <LoadingGameModal
-        visible={true}
-        onClose={mockOnClose}
-        isFinished={false}
-      />
+      <LoadingGameModal visible={true} onClose={mockOnClose} isFinished={false} />
     );
 
     fireEvent.press(getByText('重来'));
@@ -152,11 +126,7 @@ describe('LoadingGameModal', () => {
 
   it('shows finished state', () => {
     const { getByText } = render(
-      <LoadingGameModal
-        visible={true}
-        onClose={mockOnClose}
-        isFinished={true}
-      />
+      <LoadingGameModal visible={true} onClose={mockOnClose} isFinished={true} />
     );
 
     expect(getByText('AI 分析完成！')).toBeTruthy();
@@ -166,11 +136,7 @@ describe('LoadingGameModal', () => {
 
   it('handles close action when finished', () => {
     const { getByText } = render(
-      <LoadingGameModal
-        visible={true}
-        onClose={mockOnClose}
-        isFinished={true}
-      />
+      <LoadingGameModal visible={true} onClose={mockOnClose} isFinished={true} />
     );
 
     fireEvent.press(getByText('查看报告'));

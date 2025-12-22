@@ -65,9 +65,7 @@ describe('AIReportModal', () => {
   });
 
   it('should return null if report is null', () => {
-    const { toJSON } = render(
-      <AIReportModal visible={true} report={null} onClose={mockOnClose} />
-    );
+    const { toJSON } = render(<AIReportModal visible={true} report={null} onClose={mockOnClose} />);
     expect(toJSON()).toBeNull();
   });
 

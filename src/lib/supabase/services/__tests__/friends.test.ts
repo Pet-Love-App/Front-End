@@ -172,17 +172,20 @@ describe('SupabaseFriendsService', () => {
 
       // Setup mocks in sequence
       (mockSupabaseClient.from as jest.Mock)
-        .mockReturnValueOnce({ // friends check
+        .mockReturnValueOnce({
+          // friends check
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),
           maybeSingle: mockMaybeSingleFriend,
         })
-        .mockReturnValueOnce({ // requests check
+        .mockReturnValueOnce({
+          // requests check
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),
           maybeSingle: mockMaybeSingleRequest,
         })
-        .mockReturnValueOnce({ // insert
+        .mockReturnValueOnce({
+          // insert
           insert: mockInsert,
           select: mockSelect,
           single: mockSingle,
@@ -265,7 +268,9 @@ describe('SupabaseFriendsService', () => {
       const mockUpdate = jest.fn().mockReturnThis();
       const mockEq = jest.fn().mockReturnThis();
       const mockSelect = jest.fn().mockReturnThis();
-      const mockSingle = jest.fn().mockResolvedValue({ data: { id: 1, status: 'accepted' }, error: null });
+      const mockSingle = jest
+        .fn()
+        .mockResolvedValue({ data: { id: 1, status: 'accepted' }, error: null });
 
       (mockSupabaseClient.from as jest.Mock).mockReturnValue({
         update: mockUpdate,
@@ -284,7 +289,9 @@ describe('SupabaseFriendsService', () => {
       const mockUpdate = jest.fn().mockReturnThis();
       const mockEq = jest.fn().mockReturnThis();
       const mockSelect = jest.fn().mockReturnThis();
-      const mockSingle = jest.fn().mockResolvedValue({ data: null, error: { message: 'Update Error' } });
+      const mockSingle = jest
+        .fn()
+        .mockResolvedValue({ data: null, error: { message: 'Update Error' } });
 
       (mockSupabaseClient.from as jest.Mock).mockReturnValue({
         update: mockUpdate,
@@ -304,7 +311,9 @@ describe('SupabaseFriendsService', () => {
       const mockUpdate = jest.fn().mockReturnThis();
       const mockEq = jest.fn().mockReturnThis();
       const mockSelect = jest.fn().mockReturnThis();
-      const mockSingle = jest.fn().mockResolvedValue({ data: { id: 1, status: 'rejected' }, error: null });
+      const mockSingle = jest
+        .fn()
+        .mockResolvedValue({ data: { id: 1, status: 'rejected' }, error: null });
 
       (mockSupabaseClient.from as jest.Mock).mockReturnValue({
         update: mockUpdate,
@@ -335,12 +344,14 @@ describe('SupabaseFriendsService', () => {
       const mockEqUpdate = jest.fn().mockReturnThis();
 
       (mockSupabaseClient.from as jest.Mock)
-        .mockReturnValueOnce({ // find
+        .mockReturnValueOnce({
+          // find
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),
           maybeSingle: mockMaybeSingle,
         })
-        .mockReturnValueOnce({ // update
+        .mockReturnValueOnce({
+          // update
           update: mockUpdate,
           eq: mockEqUpdate,
         });
@@ -499,12 +510,14 @@ describe('SupabaseFriendsService', () => {
       const mockMaybeSingleSent = jest.fn().mockResolvedValue({ data: { id: 1 }, error: null });
 
       (mockSupabaseClient.from as jest.Mock)
-        .mockReturnValueOnce({ // friends check
+        .mockReturnValueOnce({
+          // friends check
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),
           maybeSingle: mockMaybeSingleFriend,
         })
-        .mockReturnValueOnce({ // sent check
+        .mockReturnValueOnce({
+          // sent check
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),
           maybeSingle: mockMaybeSingleSent,
@@ -526,17 +539,20 @@ describe('SupabaseFriendsService', () => {
       const mockMaybeSingleReceived = jest.fn().mockResolvedValue({ data: { id: 1 }, error: null });
 
       (mockSupabaseClient.from as jest.Mock)
-        .mockReturnValueOnce({ // friends check
+        .mockReturnValueOnce({
+          // friends check
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),
           maybeSingle: mockMaybeSingleFriend,
         })
-        .mockReturnValueOnce({ // sent check
+        .mockReturnValueOnce({
+          // sent check
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),
           maybeSingle: mockMaybeSingleSent,
         })
-        .mockReturnValueOnce({ // received check
+        .mockReturnValueOnce({
+          // received check
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),
           maybeSingle: mockMaybeSingleReceived,
@@ -558,17 +574,20 @@ describe('SupabaseFriendsService', () => {
       const mockMaybeSingleReceived = jest.fn().mockResolvedValue({ data: null, error: null });
 
       (mockSupabaseClient.from as jest.Mock)
-        .mockReturnValueOnce({ // friends check
+        .mockReturnValueOnce({
+          // friends check
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),
           maybeSingle: mockMaybeSingleFriend,
         })
-        .mockReturnValueOnce({ // sent check
+        .mockReturnValueOnce({
+          // sent check
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),
           maybeSingle: mockMaybeSingleSent,
         })
-        .mockReturnValueOnce({ // received check
+        .mockReturnValueOnce({
+          // received check
           select: jest.fn().mockReturnThis(),
           eq: jest.fn().mockReturnThis(),
           maybeSingle: mockMaybeSingleReceived,

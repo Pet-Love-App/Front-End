@@ -50,9 +50,7 @@ export const createMockQueryBuilder = (
 
 export const mockSupabaseClient = {
   auth: {
-    getUser: jest
-      .fn()
-      .mockResolvedValue({ data: { user: { id: 'user-123' } }, error: null }),
+    getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'user-123' } }, error: null }),
     signInWithPassword: jest.fn(),
     signUp: jest.fn(),
     signOut: jest.fn(),

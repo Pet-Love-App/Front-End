@@ -1,4 +1,3 @@
-
 describe('Debug Require', () => {
   it('should require client module', () => {
     const client = require('../client');

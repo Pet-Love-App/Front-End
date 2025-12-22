@@ -7,8 +7,16 @@ import { tagColors } from '@/src/design-system/tokens';
 jest.mock('tamagui', () => {
   const { View, Text } = require('react-native');
   return {
-    Text: ({ children, ...props }: any) => <Text testID="tag-text" {...props}>{children}</Text>,
-    XStack: ({ children, ...props }: any) => <View testID="tag-container" {...props}>{children}</View>,
+    Text: ({ children, ...props }: any) => (
+      <Text testID="tag-text" {...props}>
+        {children}
+      </Text>
+    ),
+    XStack: ({ children, ...props }: any) => (
+      <View testID="tag-container" {...props}>
+        {children}
+      </View>
+    ),
   };
 });
 

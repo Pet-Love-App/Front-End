@@ -1,3 +1,5 @@
+import * as LazyComponents from '../index';
+
 jest.mock('tamagui', () => {
   const React = require('react');
   const Component = ({ children }: { children: any }) => children;
@@ -24,8 +26,6 @@ jest.mock('tamagui', () => {
     },
   };
 });
-
-import * as LazyComponents from '../index';
 
 describe('Lazy Components Index Export', () => {
   it('should export all lazy components', () => {

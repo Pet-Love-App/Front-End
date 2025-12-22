@@ -93,7 +93,7 @@ function GlassSearchBarComponent({
       borderWidth={isFocused ? 1 : 0}
       borderColor={isFocused ? '$primary' : 'transparent'}
     >
-      <Search size={18} color="$colorMuted" />
+      <Search size={18} color="$color6" />
       <SearchInput
         value={localValue}
         onChangeText={handleChangeText}

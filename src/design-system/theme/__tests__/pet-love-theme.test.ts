@@ -19,8 +19,8 @@ describe('Pet Love Theme', () => {
 
   it('should have consistent naming convention', () => {
     const keys = Object.keys(petLoveLightTheme);
-    const backgroundKeys = keys.filter(k => k.startsWith('background'));
-    const colorKeys = keys.filter(k => k.startsWith('color'));
+    const backgroundKeys = keys.filter((k) => k.startsWith('background'));
+    const colorKeys = keys.filter((k) => k.startsWith('color'));
 
     expect(backgroundKeys.length).toBeGreaterThan(0);
     expect(colorKeys.length).toBeGreaterThan(0);

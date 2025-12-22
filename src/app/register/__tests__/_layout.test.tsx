@@ -4,12 +4,9 @@ import RegisterLayout from '../_layout';
 
 // Mock Stack
 jest.mock('expo-router', () => ({
-  Stack: Object.assign(
-    ({ children }: { children: React.ReactNode }) => <>{children}</>,
-    {
-      Screen: () => <></>,
-    }
-  ),
+  Stack: Object.assign(({ children }: { children: React.ReactNode }) => <>{children}</>, {
+    Screen: () => <></>,
+  }),
 }));
 
 describe('RegisterLayout', () => {

@@ -27,6 +27,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronLeft, Send, User } from '@tamagui/lucide-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 import {
   supabaseChatService,
   supabaseProfileService,
@@ -35,11 +36,12 @@ import {
 } from '@/src/lib/supabase';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const BRAND_COLOR = '#FEBE98'; // 应用主题色 - 温暖的桃色
 
 export default function ChatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
   const params = useLocalSearchParams();
   const conversationId = Number(params.conversationId);
   const otherUserId = params.userId as string;
@@ -170,7 +172,14 @@ export default function ChatScreen() {
       >
         {showTimestamp && (
           <View style={styles.timestampContainer}>
-            <Text style={styles.timestampText}>{formatTime(item.createdAt)}</Text>
+            <Text
+              style={[
+                styles.timestampText,
+                { backgroundColor: colors.backgroundMuted, color: colors.textTertiary },
+              ]}
+            >
+              {formatTime(item.createdAt)}
+            </Text>
           </View>
         )}
 
@@ -180,7 +189,7 @@ export default function ChatScreen() {
               {otherUser?.avatarUrl ? (
                 <Image source={{ uri: otherUser.avatarUrl }} style={styles.avatar} />
               ) : (
-                <View style={styles.avatarPlaceholder}>
+                <View style={[styles.avatarPlaceholder, { backgroundColor: colors.border }]}>
                   <User size={16} color="#FFFFFF" strokeWidth={2} />
                 </View>
               )}
@@ -190,10 +199,15 @@ export default function ChatScreen() {
           <View
             style={[
               styles.messageBubble,
-              isMine ? styles.messageBubbleMine : styles.messageBubbleOther,
+              isMine
+                ? [styles.messageBubbleMine, { backgroundColor: colors.primary }]
+                : [
+                    styles.messageBubbleOther,
+                    { backgroundColor: colors.cardBackground, borderColor: colors.borderMuted },
+                  ],
             ]}
           >
-            <Text style={[styles.messageText, isMine && styles.messageTextMine]}>
+            <Text style={[styles.messageText, { color: isMine ? 'white' : colors.text }]}>
               {item.content}
             </Text>
           </View>
@@ -206,7 +220,7 @@ export default function ChatScreen() {
     if (loading && messages.length === 0) {
       return (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={BRAND_COLOR} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       );
     }
@@ -214,12 +228,15 @@ export default function ChatScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View
+      testID="chat-screen"
+      style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}
+    >
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* 自定义头部 */}
       <LinearGradient
-        colors={['#FEBE98', '#FFCCBC']}
+        colors={isDark ? ['#3D2A1F', '#2D1F1A'] : ['#FEBE98', '#FFCCBC']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.header}
@@ -272,15 +289,24 @@ export default function ChatScreen() {
         />
 
         {/* 输入框 */}
-        <View style={[styles.inputContainer, { paddingBottom: insets.bottom || 8 }]}>
-          <View style={styles.inputWrapper}>
+        <View
+          style={[
+            styles.inputContainer,
+            {
+              paddingBottom: insets.bottom || 8,
+              backgroundColor: colors.cardBackground,
+              borderTopColor: colors.borderMuted,
+            },
+          ]}
+        >
+          <View style={[styles.inputWrapper, { backgroundColor: colors.backgroundMuted }]}>
             <TextInput
               ref={inputRef}
-              style={styles.input}
+              style={[styles.input, { color: colors.text }]}
               value={inputText}
               onChangeText={setInputText}
               placeholder="输入消息..."
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textTertiary}
               multiline
               maxLength={1000}
               returnKeyType="send"
@@ -288,7 +314,14 @@ export default function ChatScreen() {
             />
 
             <TouchableOpacity
-              style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
+              style={[
+                styles.sendButton,
+                { backgroundColor: colors.primary },
+                !inputText.trim() && [
+                  styles.sendButtonDisabled,
+                  { backgroundColor: colors.border },
+                ],
+              ]}
               onPress={handleSend}
               disabled={!inputText.trim() || sending}
               activeOpacity={0.8}
@@ -428,7 +461,6 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   messageBubbleMine: {
-    backgroundColor: BRAND_COLOR,
     borderBottomRightRadius: 4,
   },
   messageText: {
@@ -467,7 +499,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: BRAND_COLOR,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 8,

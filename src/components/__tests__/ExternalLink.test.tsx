@@ -29,11 +29,7 @@ describe('ExternalLink', () => {
 
   it('should render correctly', () => {
     // Arrange & Act
-    const { getByText } = render(
-      <ExternalLink href="https://example.com">
-        Link Text
-      </ExternalLink>
-    );
+    const { getByText } = render(<ExternalLink href="https://example.com">Link Text</ExternalLink>);
 
     // Assert
     expect(getByText('Link Text')).toBeTruthy();
@@ -41,11 +37,7 @@ describe('ExternalLink', () => {
 
   it('should open browser on press in native', async () => {
     // Arrange
-    const { getByText } = render(
-      <ExternalLink href="https://example.com">
-        Link Text
-      </ExternalLink>
-    );
+    const { getByText } = render(<ExternalLink href="https://example.com">Link Text</ExternalLink>);
 
     // Act
     fireEvent.press(getByText('Link Text'), {
@@ -59,11 +51,7 @@ describe('ExternalLink', () => {
   it('should not open browser on press in web', async () => {
     // Arrange
     Platform.OS = 'web';
-    const { getByText } = render(
-      <ExternalLink href="https://example.com">
-        Link Text
-      </ExternalLink>
-    );
+    const { getByText } = render(<ExternalLink href="https://example.com">Link Text</ExternalLink>);
 
     // Act
     fireEvent.press(getByText('Link Text'), {

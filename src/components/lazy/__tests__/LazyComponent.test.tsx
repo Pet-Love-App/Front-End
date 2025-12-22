@@ -9,7 +9,11 @@ jest.mock('tamagui', () => {
   return {
     Spinner: () => <View testID="spinner-mock" />,
     Text: ({ children, ...props }: any) => <Text {...props}>{children}</Text>,
-    YStack: ({ children, ...props }: any) => <View testID="ystack-mock" {...props}>{children}</View>,
+    YStack: ({ children, ...props }: any) => (
+      <View testID="ystack-mock" {...props}>
+        {children}
+      </View>
+    ),
   };
 });
 
@@ -65,12 +69,15 @@ describe('LazyComponent', () => {
   it('retries on error when retry button is clicked', async () => {
     // Arrange
     const error = new Error('Load failed');
-    const factory = jest.fn()
+    const factory = jest
+      .fn()
       .mockRejectedValueOnce(error) // First fail
       .mockResolvedValueOnce({ default: MockComponent }); // Then succeed
 
     // Act
-    const { getByText, getAllByTestId, getByTestId } = render(<LazyComponent factory={factory} minLoadTime={0} />);
+    const { getByText, getAllByTestId, getByTestId } = render(
+      <LazyComponent factory={factory} minLoadTime={0} />
+    );
 
     // Wait for error
     await waitFor(() => {

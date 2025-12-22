@@ -52,10 +52,7 @@ export function LazyImage({
       return (
         <Image
           source={placeholder}
-          style={[
-            { width, height, borderRadius },
-            style,
-          ]}
+          style={[{ width, height, borderRadius }, style]}
           resizeMode={resizeMode}
           testID={testID}
         />
@@ -77,8 +74,16 @@ export function LazyImage({
   }
 
   return (
-    <YStack width={width as any} height={height as any} borderRadius={borderRadius} overflow="hidden" testID="lazy-image-container">
-      {showSkeleton && isLoading && <Skeleton width={width as any} height={height as any} borderRadius={borderRadius} />}
+    <YStack
+      width={width as any}
+      height={height as any}
+      borderRadius={borderRadius}
+      overflow="hidden"
+      testID="lazy-image-container"
+    >
+      {showSkeleton && isLoading && (
+        <Skeleton width={width as any} height={height as any} borderRadius={borderRadius} />
+      )}
       <Image
         source={source}
         style={[

@@ -59,10 +59,7 @@ jest.mock('../components/ScanFrame', () => {
   const { View } = require('react-native');
   return {
     ScanFrame: ({ onLayout }: any) => (
-      <View
-        testID="scan-frame"
-        onLayout={(e: any) => onLayout && onLayout(e)}
-      />
+      <View testID="scan-frame" onLayout={(e: any) => onLayout && onLayout(e)} />
     ),
   };
 });
@@ -114,13 +111,13 @@ describe('ExpoCameraView', () => {
   it('should handle barcode scanned', () => {
     const { getByTestId } = render(<ExpoCameraView {...mockProps} />);
     const camera = getByTestId('camera-view');
-    
+
     // First set camera ready
     fireEvent(camera, 'onCameraReady');
 
     const mockResult = { type: 'ean13', data: '1234567890123' };
     fireEvent(camera, 'onBarcodeScanned', mockResult);
-    
+
     expect(mockProps.onBarCodeScanned).toHaveBeenCalledWith(mockResult);
   });
 
@@ -130,7 +127,7 @@ describe('ExpoCameraView', () => {
     fireEvent(camera, 'onCameraReady');
 
     const mockResult = { type: 'ean13', data: '1234567890123' };
-    
+
     // First scan
     fireEvent(camera, 'onBarcodeScanned', mockResult);
     expect(mockProps.onBarCodeScanned).toHaveBeenCalledTimes(1);
@@ -165,10 +162,12 @@ describe('ExpoCameraView', () => {
 
   it('should handle take photo', () => {
     const { getByTestId } = render(<ExpoCameraView {...mockProps} />);
-    
+
     // Trigger layout on ScanFrame to set scanFrameLayout
     const scanFrame = getByTestId('scan-frame');
-    fireEvent(scanFrame, 'layout', { nativeEvent: { layout: { x: 10, y: 20, width: 300, height: 300 } } });
+    fireEvent(scanFrame, 'layout', {
+      nativeEvent: { layout: { x: 10, y: 20, width: 300, height: 300 } },
+    });
 
     const takePhotoBtn = getByTestId('take-photo-btn');
     fireEvent.press(takePhotoBtn);
@@ -183,7 +182,7 @@ describe('ExpoCameraView', () => {
 
   it('should handle zoom controls', () => {
     const { getByTestId } = render(<ExpoCameraView {...mockProps} />);
-    
+
     const zoomInBtn = getByTestId('zoom-in-btn');
     fireEvent.press(zoomInBtn);
     // Check if zoom state changed? We can't check internal state directly.

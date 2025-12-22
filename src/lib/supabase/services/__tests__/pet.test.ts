@@ -148,7 +148,9 @@ describe('SupabasePetService', () => {
     it('should handle error when getting pet', async () => {
       const mockSelect = jest.fn().mockReturnThis();
       const mockEq = jest.fn().mockReturnThis();
-      const mockSingle = jest.fn().mockResolvedValue({ data: null, error: { message: 'DB Error' } });
+      const mockSingle = jest
+        .fn()
+        .mockResolvedValue({ data: null, error: { message: 'DB Error' } });
 
       (mockSupabaseClient.from as jest.Mock).mockReturnValue({
         select: mockSelect,
@@ -205,7 +207,9 @@ describe('SupabasePetService', () => {
 
       const mockInsert = jest.fn().mockReturnThis();
       const mockSelect = jest.fn().mockReturnThis();
-      const mockSingle = jest.fn().mockResolvedValue({ data: null, error: { message: 'Insert Error' } });
+      const mockSingle = jest
+        .fn()
+        .mockResolvedValue({ data: null, error: { message: 'Insert Error' } });
 
       (mockSupabaseClient.from as jest.Mock).mockReturnValue({
         insert: mockInsert,
@@ -265,7 +269,9 @@ describe('SupabasePetService', () => {
       const mockUpdate = jest.fn().mockReturnThis();
       const mockEq = jest.fn().mockReturnThis();
       const mockSelect = jest.fn().mockReturnThis();
-      const mockSingle = jest.fn().mockResolvedValue({ data: null, error: { message: 'Update Error' } });
+      const mockSingle = jest
+        .fn()
+        .mockResolvedValue({ data: null, error: { message: 'Update Error' } });
 
       (mockSupabaseClient.from as jest.Mock).mockReturnValue({
         update: mockUpdate,
@@ -302,7 +308,8 @@ describe('SupabasePetService', () => {
       mockDeleteBuilder.eq.mockReturnValue(mockDeleteBuilder);
 
       (mockSupabaseClient.from as jest.Mock)
-        .mockReturnValueOnce({ // fetch
+        .mockReturnValueOnce({
+          // fetch
           select: mockSelect,
           eq: mockEq,
           single: mockSingle,
@@ -324,7 +331,9 @@ describe('SupabasePetService', () => {
       // Mock pet fetch (with photo)
       const mockSelect = jest.fn().mockReturnThis();
       const mockEq = jest.fn().mockReturnThis();
-      const mockSingle = jest.fn().mockResolvedValue({ data: { photo_url: 'http://supa.base/pets/photo.jpg' }, error: null });
+      const mockSingle = jest
+        .fn()
+        .mockResolvedValue({ data: { photo_url: 'http://supa.base/pets/photo.jpg' }, error: null });
 
       // Mock storage remove
       const mockRemove = jest.fn().mockResolvedValue({ data: [], error: null });
@@ -337,12 +346,14 @@ describe('SupabasePetService', () => {
       const mockEqDelete = jest.fn().mockReturnThis();
 
       (mockSupabaseClient.from as jest.Mock)
-        .mockReturnValueOnce({ // fetch
+        .mockReturnValueOnce({
+          // fetch
           select: mockSelect,
           eq: mockEq,
           single: mockSingle,
         })
-        .mockReturnValueOnce({ // delete
+        .mockReturnValueOnce({
+          // delete
           delete: mockDelete,
           eq: mockEqDelete,
         });
@@ -388,15 +399,20 @@ describe('SupabasePetService', () => {
 
       // Mock the chain: delete().eq().eq()
       mockDelete.mockReturnValue({ eq: mockEqDelete });
-      mockEqDelete.mockReturnValue({ eq: mockEqDelete, then: (resolve: any) => resolve({ error: mockDeleteError }) });
+      mockEqDelete.mockReturnValue({
+        eq: mockEqDelete,
+        then: (resolve: any) => resolve({ error: mockDeleteError }),
+      });
 
       (mockSupabaseClient.from as jest.Mock)
-        .mockReturnValueOnce({ // fetch
+        .mockReturnValueOnce({
+          // fetch
           select: mockSelect,
           eq: mockEq,
           single: mockSingle,
         })
-        .mockReturnValueOnce({ // delete
+        .mockReturnValueOnce({
+          // delete
           delete: mockDelete,
           eq: mockEqDelete,
         });
@@ -432,7 +448,9 @@ describe('SupabasePetService', () => {
       // Mock pet fetch
       const mockSelect = jest.fn().mockReturnThis();
       const mockEq = jest.fn().mockReturnThis();
-      const mockSingle = jest.fn().mockResolvedValue({ data: { photo_url: 'http://supa.base/pets/photo.jpg' }, error: null });
+      const mockSingle = jest
+        .fn()
+        .mockResolvedValue({ data: { photo_url: 'http://supa.base/pets/photo.jpg' }, error: null });
 
       // Mock storage remove
       const mockRemove = jest.fn().mockResolvedValue({ data: [], error: null });
@@ -444,15 +462,19 @@ describe('SupabasePetService', () => {
       const mockUpdate = jest.fn().mockReturnThis();
       const mockEqUpdate = jest.fn().mockReturnThis();
       const mockSelectUpdate = jest.fn().mockReturnThis();
-      const mockSingleUpdate = jest.fn().mockResolvedValue({ data: { photo_url: null }, error: null });
+      const mockSingleUpdate = jest
+        .fn()
+        .mockResolvedValue({ data: { photo_url: null }, error: null });
 
       (mockSupabaseClient.from as jest.Mock)
-        .mockReturnValueOnce({ // fetch
+        .mockReturnValueOnce({
+          // fetch
           select: mockSelect,
           eq: mockEq,
           single: mockSingle,
         })
-        .mockReturnValueOnce({ // update
+        .mockReturnValueOnce({
+          // update
           update: mockUpdate,
           eq: mockEqUpdate,
           select: mockSelectUpdate,

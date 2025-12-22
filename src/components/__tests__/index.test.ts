@@ -1,3 +1,5 @@
+import * as Components from '../index';
+
 jest.mock('tamagui', () => {
   const React = require('react');
   const Component = ({ children }: { children: any }) => children;
@@ -38,8 +40,6 @@ jest.mock('expo-av', () => ({
 jest.mock('@tamagui/lucide-icons', () => ({
   X: () => null,
 }));
-
-import * as Components from '../index';
 
 describe('Components Index Export', () => {
   it('should export all base components', () => {

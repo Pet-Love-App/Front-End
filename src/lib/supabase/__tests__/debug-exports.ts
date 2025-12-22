@@ -1,4 +1,3 @@
-
 import * as client from '../client';
 
 console.log('Keys in client:', Object.keys(client));

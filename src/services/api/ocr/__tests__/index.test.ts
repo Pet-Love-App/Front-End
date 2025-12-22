@@ -33,10 +33,7 @@ describe('OCR Service', () => {
       const result = await ocrService.recognize('file://image.jpg');
 
       // Assert
-      expect(apiClient.upload).toHaveBeenCalledWith(
-        '/api/ocr/recognize/',
-        expect.any(FormData)
-      );
+      expect(apiClient.upload).toHaveBeenCalledWith('/api/ocr/recognize/', expect.any(FormData));
       expect(result).toEqual({
         text: 'Detected Text',
         confidence: 0.98,

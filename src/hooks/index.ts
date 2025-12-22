@@ -12,3 +12,5 @@ export * from './usePetStore';
 export * from './useResponsiveLayout';
 export * from './useThemeAwareColorScheme';
 export * from './useThemeColor';
+export * from './useThemeColors';
+export * from './useResponsive';

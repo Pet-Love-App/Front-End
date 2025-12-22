@@ -44,7 +44,12 @@ describe('AdditiveDetailModal', () => {
 
   it('should render additive info correctly', () => {
     const { getByText } = render(
-      <AdditiveDetailModal visible={true} additive={mockAdditive as any} baikeInfo={null} onClose={mockOnClose} />
+      <AdditiveDetailModal
+        visible={true}
+        additive={mockAdditive as any}
+        baikeInfo={null}
+        onClose={mockOnClose}
+      />
     );
 
     expect(getByText('Additive 1')).toBeTruthy();
@@ -55,7 +60,12 @@ describe('AdditiveDetailModal', () => {
 
   it('should render baike info correctly', () => {
     const { getByText } = render(
-      <AdditiveDetailModal visible={true} additive={null} baikeInfo={mockBaikeInfo} onClose={mockOnClose} />
+      <AdditiveDetailModal
+        visible={true}
+        additive={null}
+        baikeInfo={mockBaikeInfo}
+        onClose={mockOnClose}
+      />
     );
 
     expect(getByText('Baike Title')).toBeTruthy();
@@ -80,7 +90,12 @@ describe('AdditiveDetailModal', () => {
 
     // Also, we can test the modal onRequestClose prop.
     const { getByTestId, toJSON } = render(
-      <AdditiveDetailModal visible={true} additive={mockAdditive as any} baikeInfo={null} onClose={mockOnClose} />
+      <AdditiveDetailModal
+        visible={true}
+        additive={mockAdditive as any}
+        baikeInfo={null}
+        onClose={mockOnClose}
+      />
     );
 
     // Since we can't easily simulate the modal onRequestClose or the background press without testIDs,

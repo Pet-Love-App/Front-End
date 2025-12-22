@@ -7,9 +7,21 @@ import { Animated } from 'react-native';
 jest.mock('tamagui', () => {
   const { View } = require('react-native');
   return {
-    YStack: ({ children, ...props }: any) => <View testID="skeleton-container" {...props}>{children}</View>,
-    XStack: ({ children, ...props }: any) => <View testID="skeleton-xstack" {...props}>{children}</View>,
-    Card: ({ children, ...props }: any) => <View testID="skeleton-card" {...props}>{children}</View>,
+    YStack: ({ children, ...props }: any) => (
+      <View testID="skeleton-container" {...props}>
+        {children}
+      </View>
+    ),
+    XStack: ({ children, ...props }: any) => (
+      <View testID="skeleton-xstack" {...props}>
+        {children}
+      </View>
+    ),
+    Card: ({ children, ...props }: any) => (
+      <View testID="skeleton-card" {...props}>
+        {children}
+      </View>
+    ),
   };
 });
 

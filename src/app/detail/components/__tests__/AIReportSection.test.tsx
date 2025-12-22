@@ -80,16 +80,12 @@ describe('AIReportSection', () => {
   });
 
   it('should render loading state', () => {
-    const { getByText } = render(
-      <AIReportSection isLoading={true} />
-    );
+    const { getByText } = render(<AIReportSection isLoading={true} />);
     expect(getByText('正在加载 AI 分析报告...')).toBeTruthy();
   });
 
   it('should render report content when report is provided', () => {
-    const { getByText } = render(
-      <AIReportSection report={mockReport as any} />
-    );
+    const { getByText } = render(<AIReportSection report={mockReport as any} />);
     expect(getByText('Safety analysis content')).toBeTruthy();
     expect(getByText('Nutrient analysis content')).toBeTruthy();
   });

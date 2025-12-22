@@ -11,7 +11,7 @@
  */
 
 import React from 'react';
-import { FlatList, RefreshControl } from 'react-native';
+import { FlatList, RefreshControl, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { YStack } from 'tamagui';
@@ -75,12 +75,14 @@ export function RankingScreen() {
     const displayIndex = topCatFoods.length > 0 ? index + 5 : index;
 
     return (
-      <CatFoodCard
-        catfood={item}
-        index={displayIndex}
-        onPress={handleCatFoodPress}
-        onImagePress={handleImagePress}
-      />
+      <View testID="catfood-item">
+        <CatFoodCard
+          catfood={item}
+          index={displayIndex}
+          onPress={handleCatFoodPress}
+          onImagePress={handleImagePress}
+        />
+      </View>
     );
   };
 
@@ -138,7 +140,7 @@ export function RankingScreen() {
   };
 
   return (
-    <YStack flex={1} backgroundColor="$background">
+    <YStack testID="ranking-screen" flex={1} backgroundColor="$background">
       {/* Header */}
       <AppHeader title="猫粮排行榜" insets={insets} />
 
@@ -151,12 +153,19 @@ export function RankingScreen() {
 
       {/* 猫粮列表 */}
       <FlatList
+        testID="catfood-list"
         data={listCatFoods}
         renderItem={renderCatFoodCard}
         keyExtractor={(item) => item.id.toString()}
         ListHeaderComponent={renderHeader}
         contentContainerStyle={{ paddingBottom: Math.max(10, insets.bottom) }}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
+        refreshControl={
+          <RefreshControl
+            testID="refresh-indicator"
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+          />
+        }
         onEndReached={searchQuery.trim() ? undefined : handleLoadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={

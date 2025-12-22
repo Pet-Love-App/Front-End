@@ -488,7 +488,9 @@ describe('SupabaseAuthService', () => {
 
     it('should handle unexpected errors during resetPassword', async () => {
       // Arrange
-      mockSupabaseClient.auth.resetPasswordForEmail.mockRejectedValue(new Error('Unexpected error'));
+      mockSupabaseClient.auth.resetPasswordForEmail.mockRejectedValue(
+        new Error('Unexpected error')
+      );
 
       // Act
       const result = await supabaseAuthService.resetPassword({

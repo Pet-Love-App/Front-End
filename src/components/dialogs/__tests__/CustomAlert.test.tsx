@@ -7,29 +7,23 @@ import { View } from 'react-native';
 jest.mock('../ConfirmDialog', () => {
   const { View } = require('react-native');
   return {
-    ConfirmDialog: jest.fn(({
-      open,
-      title,
-      message,
-      onConfirm,
-      onCancel,
-      confirmText,
-      cancelText
-    }) => {
-      if (!open) return null;
-      return (
-        <View
-          testID="confirm-dialog"
-          // @ts-ignore - passing props for testing
-          title={title}
-          message={message}
-          confirmText={confirmText}
-          cancelText={cancelText}
-          onConfirm={onConfirm}
-          onCancel={onCancel}
-        />
-      );
-    }),
+    ConfirmDialog: jest.fn(
+      ({ open, title, message, onConfirm, onCancel, confirmText, cancelText }) => {
+        if (!open) return null;
+        return (
+          <View
+            testID="confirm-dialog"
+            // @ts-ignore - passing props for testing
+            title={title}
+            message={message}
+            confirmText={confirmText}
+            cancelText={cancelText}
+            onConfirm={onConfirm}
+            onCancel={onCancel}
+          />
+        );
+      }
+    ),
   };
 });
 
@@ -77,9 +71,7 @@ describe('CustomAlert', () => {
         showAlert({
           title: 'Confirm Test',
           message: 'Confirm Message',
-          buttons: [
-            { text: 'OK', onPress: onConfirmMock, style: 'default' }
-          ]
+          buttons: [{ text: 'OK', onPress: onConfirmMock, style: 'default' }],
         });
       });
 
@@ -106,8 +98,8 @@ describe('CustomAlert', () => {
           message: 'Cancel Message',
           buttons: [
             { text: 'Cancel', onPress: onCancelMock, style: 'cancel' },
-            { text: 'OK', style: 'default' }
-          ]
+            { text: 'OK', style: 'default' },
+          ],
         });
       });
 
@@ -149,13 +141,9 @@ describe('CustomAlert', () => {
 
       // Act
       act(() => {
-        Alert.alert(
-          'Button Title',
-          'Button Message',
-          [
-            { text: 'Custom OK', onPress: onPressMock }
-          ]
-        );
+        Alert.alert('Button Title', 'Button Message', [
+          { text: 'Custom OK', onPress: onPressMock },
+        ]);
       });
 
       // Assert

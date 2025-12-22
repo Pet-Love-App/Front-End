@@ -83,10 +83,12 @@ describe('useScannerActions', () => {
       });
 
       // Assert
-      expect(mockTakePicture).toHaveBeenCalledWith(expect.objectContaining({
-        quality: 0.6,
-        cropToScanFrame: true,
-      }));
+      expect(mockTakePicture).toHaveBeenCalledWith(
+        expect.objectContaining({
+          quality: 0.6,
+          cropToScanFrame: true,
+        })
+      );
       expect(result.current.photoUri).toBe(mockUri);
       expect(mockTransitionTo).toHaveBeenCalledWith('photo-preview');
     });
@@ -167,7 +169,7 @@ describe('useScannerActions', () => {
       (recognizeImage as jest.Mock).mockResolvedValue(mockOcrResult);
       const mockUri = 'file://test.jpg';
       mockTakePicture.mockResolvedValue({ uri: mockUri });
-      
+
       const { result } = renderHook(() =>
         useScannerActions({
           takePicture: mockTakePicture,
@@ -198,7 +200,7 @@ describe('useScannerActions', () => {
       (recognizeImage as jest.Mock).mockRejectedValue(new Error('OCR failed'));
       const mockUri = 'file://test.jpg';
       mockTakePicture.mockResolvedValue({ uri: mockUri });
-      
+
       const { result } = renderHook(() =>
         useScannerActions({
           takePicture: mockTakePicture,
@@ -234,7 +236,7 @@ describe('useScannerActions', () => {
       (recognizeImage as jest.Mock).mockResolvedValue(mockOcrResult);
       const mockUri = 'file://test.jpg';
       mockTakePicture.mockResolvedValue({ uri: mockUri });
-      
+
       const { result } = renderHook(() =>
         useScannerActions({
           takePicture: mockTakePicture,
@@ -270,7 +272,7 @@ describe('useScannerActions', () => {
       (recognizeImage as jest.Mock).mockResolvedValue(mockOcrResult);
       const mockUri = 'file://test.jpg';
       mockTakePicture.mockResolvedValue({ uri: mockUri });
-      
+
       const { result } = renderHook(() =>
         useScannerActions({
           takePicture: mockTakePicture,

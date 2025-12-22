@@ -9,39 +9,42 @@ import { Text, XStack, YStack } from 'tamagui';
 import { AppHeader } from '@/src/components/AppHeader';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { LottieAnimation } from '@/src/components/LottieAnimation';
-import { primaryScale, warningScale, successScale, neutralScale } from '@/src/design-system/tokens';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 
 interface InitialScreenProps {
   insets: EdgeInsets;
   onStartScan: () => void;
 }
 
-// 功能步骤数据
-const SCAN_STEPS = [
-  {
-    icon: 'camera.fill' as const,
-    title: '拍摄成分表',
-    desc: '对准猫粮包装上的配料表',
-    bgColor: primaryScale.primary2,
-    iconColor: primaryScale.primary7,
-  },
-  {
-    icon: 'doc.text.viewfinder' as const,
-    title: '智能识别',
-    desc: 'AI 自动提取成分信息',
-    bgColor: warningScale.warning2,
-    iconColor: warningScale.warning8,
-  },
-  {
-    icon: 'chart.bar.doc.horizontal.fill' as const,
-    title: '生成报告',
-    desc: '获得专业的分析结果',
-    bgColor: successScale.success2,
-    iconColor: successScale.success8,
-  },
-];
-
 export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
+
+  // 功能步骤数据
+  const SCAN_STEPS = [
+    {
+      icon: 'camera.fill' as const,
+      title: '拍摄成分表',
+      desc: '对准猫粮包装上的配料表',
+      bgColor: isDark ? '#3D2A1F' : colors.primaryLight,
+      iconColor: colors.primary,
+    },
+    {
+      icon: 'doc.text.viewfinder' as const,
+      title: '智能识别',
+      desc: 'AI 自动提取成分信息',
+      bgColor: isDark ? '#2D1F0A' : colors.warningMuted,
+      iconColor: colors.warning,
+    },
+    {
+      icon: 'chart.bar.doc.horizontal.fill' as const,
+      title: '生成报告',
+      desc: '获得专业的分析结果',
+      bgColor: isDark ? '#0D2818' : colors.successMuted,
+      iconColor: colors.success,
+    },
+  ];
+
   // 动画值
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const stepAnims = useRef(SCAN_STEPS.map(() => new Animated.Value(0))).current;
@@ -83,7 +86,7 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
   }, [stepAnims]);
 
   return (
-    <YStack flex={1} backgroundColor={neutralScale.neutral1}>
+    <YStack flex={1} backgroundColor={colors.background as any}>
       {/* Header 区域 */}
       <AppHeader title="智能扫描" insets={insets} />
 
@@ -103,7 +106,7 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
           <Animated.View
             style={{
               transform: [{ scale: pulseAnim }],
-              shadowColor: primaryScale.primary7,
+              shadowColor: colors.primary,
               shadowOffset: { width: 0, height: 8 },
               shadowOpacity: 0.3,
               shadowRadius: 16,
@@ -119,7 +122,7 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
               justifyContent="center"
             >
               <LinearGradient
-                colors={[primaryScale.primary5, primaryScale.primary7, primaryScale.primary8]}
+                colors={isDark ? ['#3D2A1F', '#2D1F1A'] : [colors.primaryLight, colors.primary]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={{
@@ -146,14 +149,14 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
               fontSize={26}
               fontWeight="900"
               textAlign="center"
-              color={neutralScale.neutral12}
+              color={colors.text as any}
               letterSpacing={0.5}
             >
               猫粮成分智能分析
             </Text>
             <Text
               fontSize={14}
-              color={neutralScale.neutral8}
+              color={colors.textSecondary as any}
               textAlign="center"
               fontWeight="500"
               lineHeight={20}
@@ -178,24 +181,28 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
                   }}
                 >
                   <XStack
-                    backgroundColor="white"
+                    backgroundColor={colors.cardBackground as any}
                     borderRadius="$5"
                     padding="$3.5"
                     alignItems="center"
                     gap="$3"
                     borderWidth={1.5}
-                    borderColor={neutralScale.neutral3}
+                    borderColor={colors.borderMuted as any}
                   >
                     {/* 步骤序号 */}
                     <YStack
                       width={28}
                       height={28}
                       borderRadius={14}
-                      backgroundColor={primaryScale.primary7}
+                      backgroundColor={colors.primary as any}
                       alignItems="center"
                       justifyContent="center"
                     >
-                      <Text fontSize={14} fontWeight="800" color="white">
+                      <Text
+                        fontSize={14}
+                        fontWeight="800"
+                        color={(isDark ? colors.background : 'white') as any}
+                      >
                         {index + 1}
                       </Text>
                     </YStack>
@@ -205,7 +212,7 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
                       width={44}
                       height={44}
                       borderRadius={12}
-                      backgroundColor={step.bgColor}
+                      backgroundColor={step.bgColor as any}
                       alignItems="center"
                       justifyContent="center"
                     >
@@ -214,10 +221,10 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
 
                     {/* 文字内容 */}
                     <YStack flex={1} gap="$0.5">
-                      <Text fontSize={15} fontWeight="700" color={neutralScale.neutral11}>
+                      <Text fontSize={15} fontWeight="700" color={colors.text as any}>
                         {step.title}
                       </Text>
-                      <Text fontSize={12} color={neutralScale.neutral7} fontWeight="500">
+                      <Text fontSize={12} color={colors.textSecondary as any} fontWeight="500">
                         {step.desc}
                       </Text>
                     </YStack>
@@ -233,7 +240,7 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
                           zIndex: 1,
                         }}
                       >
-                        <IconSymbol name="chevron.down" size={16} color={neutralScale.neutral5} />
+                        <IconSymbol name="chevron.down" size={16} color={colors.textTertiary} />
                       </View>
                     )}
                   </XStack>
@@ -244,7 +251,7 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
 
           {/* 提示信息 */}
           <XStack
-            backgroundColor={primaryScale.primary1}
+            backgroundColor={colors.selected as any}
             borderRadius="$4"
             paddingHorizontal="$3"
             paddingVertical="$2.5"
@@ -252,10 +259,10 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
             gap="$2"
             width="100%"
             borderWidth={1}
-            borderColor={primaryScale.primary3}
+            borderColor={colors.primaryLight as any}
           >
-            <IconSymbol name="lightbulb.fill" size={18} color={primaryScale.primary8} />
-            <Text fontSize={12} color={primaryScale.primary9} fontWeight="600" flex={1}>
+            <IconSymbol name="lightbulb.fill" size={18} color={colors.primary} />
+            <Text fontSize={12} color={colors.textSecondary as any} fontWeight="600" flex={1}>
               建议在光线充足的环境下拍摄，确保文字清晰可见
             </Text>
           </XStack>
@@ -264,7 +271,7 @@ export function InitialScreen({ insets, onStartScan }: InitialScreenProps) {
           <YStack width="100%" marginTop="$2">
             <TouchableOpacity onPress={onStartScan} activeOpacity={0.9} style={{ width: '100%' }}>
               <LinearGradient
-                colors={[primaryScale.primary6, primaryScale.primary7, primaryScale.primary8]}
+                colors={[colors.primaryLight, colors.primary, colors.primaryDark]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={{

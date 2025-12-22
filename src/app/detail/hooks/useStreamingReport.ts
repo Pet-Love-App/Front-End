@@ -176,7 +176,11 @@ export function useStreamingReport(): UseStreamingReportReturn {
               // Or handle it here.
               // The current code swallows it if it's an Error object, unless we check.
 
-              if (parseError instanceof Error && parseError.message && !parseError.message.includes('JSON')) {
+              if (
+                parseError instanceof Error &&
+                parseError.message &&
+                !parseError.message.includes('JSON')
+              ) {
                 // It might be the error we threw above.
                 // But wait, if JSON.parse fails, it throws SyntaxError.
                 // If we throw Error(parsed.error), it is an Error.

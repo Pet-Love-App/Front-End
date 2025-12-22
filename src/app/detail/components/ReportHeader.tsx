@@ -2,7 +2,7 @@
  * 详情页头部组件 - 显示猫粮图片、名称和标签
  * 采用现代购物App风格设计
  */
-import { Image } from 'react-native';
+import { Image, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
@@ -101,16 +101,18 @@ export function ReportHeader({ name, tags, imageUrl }: ReportHeaderProps) {
       {/* 底部信息区域 */}
       <YStack padding="$4" paddingTop="$2" gap="$3" alignItems="center">
         {/* 猫粮名称 */}
-        <Text
-          fontSize="$7"
-          fontWeight="800"
-          color={neutralScale.neutral12}
-          textAlign="center"
-          lineHeight={32}
-          letterSpacing={-0.5}
-        >
-          {name}
-        </Text>
+        <View testID="catfood-name">
+          <Text
+            fontSize="$7"
+            fontWeight="800"
+            color={neutralScale.neutral12}
+            textAlign="center"
+            lineHeight={32}
+            letterSpacing={-0.5}
+          >
+            {name}
+          </Text>
+        </View>
 
         {/* 标签 */}
         {tags && tags.length > 0 && (

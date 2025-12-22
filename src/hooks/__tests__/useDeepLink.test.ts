@@ -153,7 +153,7 @@ describe('useDeepLink', () => {
     renderHook(() => useDeepLink());
 
     // Act
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     // Assert
     expect(logger.info).toHaveBeenCalledWith('收到深度链接', { url: mockUrl });

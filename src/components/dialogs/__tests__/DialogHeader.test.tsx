@@ -7,9 +7,21 @@ import { TouchableOpacity, View, Text } from 'react-native';
 jest.mock('tamagui', () => {
   const { View, Text } = require('react-native');
   return {
-    Text: ({ children, ...props }: any) => <Text testID="header-text" {...props}>{children}</Text>,
-    XStack: ({ children, ...props }: any) => <View testID="header-xstack" {...props}>{children}</View>,
-    YStack: ({ children, ...props }: any) => <View testID="header-ystack" {...props}>{children}</View>,
+    Text: ({ children, ...props }: any) => (
+      <Text testID="header-text" {...props}>
+        {children}
+      </Text>
+    ),
+    XStack: ({ children, ...props }: any) => (
+      <View testID="header-xstack" {...props}>
+        {children}
+      </View>
+    ),
+    YStack: ({ children, ...props }: any) => (
+      <View testID="header-ystack" {...props}>
+        {children}
+      </View>
+    ),
   };
 });
 

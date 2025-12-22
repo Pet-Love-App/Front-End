@@ -1,3 +1,5 @@
+import * as Dialogs from '../index';
+
 jest.mock('tamagui', () => {
   const React = require('react');
   const Component = ({ children }: { children: any }) => children;
@@ -25,8 +27,6 @@ jest.mock('tamagui', () => {
     },
   };
 });
-
-import * as Dialogs from '../index';
 
 describe('Dialogs Index Export', () => {
   it('should export all dialog components', () => {

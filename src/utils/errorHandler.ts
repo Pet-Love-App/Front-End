@@ -263,9 +263,9 @@ export function logError(error: any, context?: string) {
  */
 export function isAuthError(error: any): boolean {
   const appError = parseApiError(error);
-  return ([ErrorCodes.AUTH_REQUIRED, ErrorCodes.AUTH_EXPIRED, ErrorCodes.AUTH_INVALID] as string[]).includes(
-    appError.code
-  );
+  return (
+    [ErrorCodes.AUTH_REQUIRED, ErrorCodes.AUTH_EXPIRED, ErrorCodes.AUTH_INVALID] as string[]
+  ).includes(appError.code);
 }
 
 /**
@@ -281,5 +281,7 @@ export function isNetworkError(error: any): boolean {
  */
 export function isServerError(error: any): boolean {
   const appError = parseApiError(error);
-  return ([ErrorCodes.SERVER_ERROR, ErrorCodes.SERVICE_UNAVAILABLE] as string[]).includes(appError.code);
+  return ([ErrorCodes.SERVER_ERROR, ErrorCodes.SERVICE_UNAVAILABLE] as string[]).includes(
+    appError.code
+  );
 }

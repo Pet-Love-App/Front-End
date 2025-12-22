@@ -20,9 +20,13 @@ describe('videoThumbnail', () => {
 
   describe('generateVideoThumbnail', () => {
     it('should return thumbnail uri when expo-video-thumbnails is available', async () => {
-      jest.doMock('expo-video-thumbnails', () => ({
-        getThumbnailAsync: jest.fn().mockResolvedValue({ uri: 'thumbnail-uri' }),
-      }), { virtual: true });
+      jest.doMock(
+        'expo-video-thumbnails',
+        () => ({
+          getThumbnailAsync: jest.fn().mockResolvedValue({ uri: 'thumbnail-uri' }),
+        }),
+        { virtual: true }
+      );
 
       const { generateVideoThumbnail } = require('../videoThumbnail');
       const uri = await generateVideoThumbnail('video-uri');
@@ -30,9 +34,13 @@ describe('videoThumbnail', () => {
     });
 
     it('should return null and warn when expo-video-thumbnails is not installed', async () => {
-      jest.doMock('expo-video-thumbnails', () => {
-        throw new Error('Cannot find module');
-      }, { virtual: true });
+      jest.doMock(
+        'expo-video-thumbnails',
+        () => {
+          throw new Error('Cannot find module');
+        },
+        { virtual: true }
+      );
 
       const { generateVideoThumbnail } = require('../videoThumbnail');
       const uri = await generateVideoThumbnail('video-uri');
@@ -42,9 +50,13 @@ describe('videoThumbnail', () => {
     });
 
     it('should return null and log error when getThumbnailAsync fails', async () => {
-      jest.doMock('expo-video-thumbnails', () => ({
-        getThumbnailAsync: jest.fn().mockRejectedValue(new Error('Generation failed')),
-      }), { virtual: true });
+      jest.doMock(
+        'expo-video-thumbnails',
+        () => ({
+          getThumbnailAsync: jest.fn().mockRejectedValue(new Error('Generation failed')),
+        }),
+        { virtual: true }
+      );
 
       const { generateVideoThumbnail } = require('../videoThumbnail');
       const uri = await generateVideoThumbnail('video-uri');
@@ -55,9 +67,13 @@ describe('videoThumbnail', () => {
 
   describe('generateVideoThumbnails', () => {
     it('should generate thumbnails for multiple videos', async () => {
-      jest.doMock('expo-video-thumbnails', () => ({
-        getThumbnailAsync: jest.fn().mockImplementation(async (uri) => ({ uri: `thumb-${uri}` })),
-      }), { virtual: true });
+      jest.doMock(
+        'expo-video-thumbnails',
+        () => ({
+          getThumbnailAsync: jest.fn().mockImplementation(async (uri) => ({ uri: `thumb-${uri}` })),
+        }),
+        { virtual: true }
+      );
 
       const { generateVideoThumbnails } = require('../videoThumbnail');
       const uris = ['video1', 'video2'];
@@ -69,12 +85,16 @@ describe('videoThumbnail', () => {
     });
 
     it('should handle partial failures', async () => {
-      jest.doMock('expo-video-thumbnails', () => ({
-        getThumbnailAsync: jest.fn().mockImplementation(async (uri) => {
+      jest.doMock(
+        'expo-video-thumbnails',
+        () => ({
+          getThumbnailAsync: jest.fn().mockImplementation(async (uri) => {
             if (uri === 'fail') throw new Error('fail');
             return { uri: `thumb-${uri}` };
+          }),
         }),
-      }), { virtual: true });
+        { virtual: true }
+      );
 
       const { generateVideoThumbnails } = require('../videoThumbnail');
       const uris = ['success', 'fail'];
@@ -86,9 +106,13 @@ describe('videoThumbnail', () => {
     });
 
     it('should handle empty input array', async () => {
-      jest.doMock('expo-video-thumbnails', () => ({
-        getThumbnailAsync: jest.fn(),
-      }), { virtual: true });
+      jest.doMock(
+        'expo-video-thumbnails',
+        () => ({
+          getThumbnailAsync: jest.fn(),
+        }),
+        { virtual: true }
+      );
 
       const { generateVideoThumbnails } = require('../videoThumbnail');
       const uris: string[] = [];

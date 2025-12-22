@@ -11,11 +11,19 @@ jest.mock('tamagui', () => {
       ({ children, open }: any) => (open ? <View testID="dialog-wrapper">{children}</View> : null),
       {
         Portal: ({ children }: any) => <View testID="dialog-portal">{children}</View>,
-        Overlay: ({ onPress, testID }: any) => <TouchableOpacity testID={testID || "dialog-overlay"} onPress={onPress} />,
-        Content: ({ children, testID }: any) => <View testID={testID || "dialog-content"}>{children}</View>,
+        Overlay: ({ onPress, testID }: any) => (
+          <TouchableOpacity testID={testID || 'dialog-overlay'} onPress={onPress} />
+        ),
+        Content: ({ children, testID }: any) => (
+          <View testID={testID || 'dialog-content'}>{children}</View>
+        ),
       }
     ),
-    YStack: ({ children, ...props }: any) => <View testID="ystack-mock" {...props}>{children}</View>,
+    YStack: ({ children, ...props }: any) => (
+      <View testID="ystack-mock" {...props}>
+        {children}
+      </View>
+    ),
   };
 });
 

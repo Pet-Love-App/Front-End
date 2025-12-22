@@ -17,6 +17,7 @@ import { Card, Text, XStack, YStack } from 'tamagui';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { RANK_COLORS } from '@/src/constants/colors';
 import { useResponsiveLayout } from '@/src/hooks/useResponsiveLayout';
+import { useThemeColors, useIsDarkMode } from '@/src/hooks/useThemeColors';
 import type { CatFood } from '@/src/types/catFood';
 
 interface TopRankingSwiperProps {
@@ -32,8 +33,13 @@ interface TopRankingSwiperProps {
 
 /**
  * 获取排名徽章样式（使用统一颜色系统）
+ * 深色模式适配版本
  */
-const getRankStyle = (index: number) => {
+const getRankStyle = (
+  index: number,
+  isDark: boolean,
+  colors: ReturnType<typeof useThemeColors>
+) => {
   switch (index) {
     case 0:
       return {
@@ -42,7 +48,9 @@ const getRankStyle = (index: number) => {
         icon: 'crown.fill' as const,
         iconColor: 'white' as const,
         shadowColor: '#FFD700',
-        cardGradient: ['#FFF9E6', '#FFF3CC'] as const,
+        cardGradient: isDark
+          ? (['#2D2510', '#1F1A08'] as const)
+          : (['#FFF9E6', '#FFF3CC'] as const),
         borderColor: '#FFD700',
       };
     case 1:
@@ -52,7 +60,9 @@ const getRankStyle = (index: number) => {
         icon: 'medal.fill' as const,
         iconColor: 'white' as const,
         shadowColor: '#C0C0C0',
-        cardGradient: ['#F8F8F8', '#F0F0F0'] as const,
+        cardGradient: isDark
+          ? (['#252525', '#1A1A1A'] as const)
+          : (['#F8F8F8', '#F0F0F0'] as const),
         borderColor: '#C0C0C0',
       };
     case 2:
@@ -62,7 +72,9 @@ const getRankStyle = (index: number) => {
         icon: 'medal.fill' as const,
         iconColor: 'white' as const,
         shadowColor: '#CD7F32',
-        cardGradient: ['#FDF5EE', '#FAE8D8'] as const,
+        cardGradient: isDark
+          ? (['#2D1F1A', '#1F1410'] as const)
+          : (['#FDF5EE', '#FAE8D8'] as const),
         borderColor: '#CD7F32',
       };
     default:
@@ -72,8 +84,10 @@ const getRankStyle = (index: number) => {
         icon: 'star.fill' as const,
         iconColor: 'white' as const,
         shadowColor: RANK_COLORS.normal[0],
-        cardGradient: ['#FFFFFF', '#F9FAFB'] as const,
-        borderColor: '#E5E7EB',
+        cardGradient: isDark
+          ? ([colors.cardBackground, colors.backgroundMuted] as const)
+          : (['#FFFFFF', '#F9FAFB'] as const),
+        borderColor: isDark ? colors.borderMuted : '#E5E7EB',
       };
   }
 };
@@ -88,6 +102,8 @@ export function TopRankingSwiper({
   showStats = true, // 默认显示统计信息
 }: TopRankingSwiperProps) {
   const { width, isExtraSmallScreen, isSmallScreen } = useResponsiveLayout();
+  const colors = useThemeColors();
+  const isDark = useIsDarkMode();
 
   // 动画值：跟踪滚动位置
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -207,7 +223,7 @@ export function TopRankingSwiper({
   // 渲染单个卡片
   const renderItem: ListRenderItem<CatFood> = useCallback(
     ({ item, index }) => {
-      const rankStyle = getRankStyle(index);
+      const rankStyle = getRankStyle(index, isDark, colors);
       const animatedStyle = getAnimatedStyle(index);
       const isTopThree = index < 3;
 
@@ -257,7 +273,7 @@ export function TopRankingSwiper({
                 borderRadius={12}
                 overflow="hidden"
                 // 添加微妙的阴影效果
-                shadowColor={rankStyle.shadowColor}
+                shadowColor={rankStyle.shadowColor as any}
                 shadowOffset={{ width: 0, height: 2 }}
                 shadowOpacity={0.4}
                 shadowRadius={4}
@@ -293,7 +309,11 @@ export function TopRankingSwiper({
                     />
                     {/* 底部渐变遮罩 */}
                     <LinearGradient
-                      colors={['transparent', 'rgba(255,255,255,0.8)']}
+                      colors={
+                        isDark
+                          ? ['transparent', 'rgba(0,0,0,0.6)']
+                          : ['transparent', 'rgba(255,255,255,0.8)']
+                      }
                       style={{
                         position: 'absolute',
                         bottom: 0,
@@ -324,7 +344,7 @@ export function TopRankingSwiper({
                   fontWeight="700"
                   numberOfLines={2}
                   lineHeight={18}
-                  color="$gray12"
+                  color={(isDark ? colors.text : '$gray12') as any}
                 >
                   {item.name}
                 </Text>
@@ -332,14 +352,14 @@ export function TopRankingSwiper({
                 {/* 品牌标签 */}
                 <XStack alignItems="center" gap="$1.5">
                   <YStack
-                    backgroundColor={isTopThree ? `${rankStyle.borderColor}20` : '$gray2'}
+                    backgroundColor={(isTopThree ? `${rankStyle.borderColor}20` : '$gray2') as any}
                     borderRadius={6}
                     paddingHorizontal="$1.5"
                     paddingVertical="$0.5"
                   >
                     <Text
                       fontSize={11}
-                      color={isTopThree ? rankStyle.borderColor : '$gray10'}
+                      color={(isTopThree ? rankStyle.borderColor : '$gray10') as any}
                       numberOfLines={1}
                       fontWeight="600"
                     >
@@ -389,7 +409,7 @@ export function TopRankingSwiper({
         </Animated.View>
       );
     },
-    [cardWidth, cardHeight, onPress, getAnimatedStyle, showStats, CARD_MARGIN]
+    [cardWidth, cardHeight, onPress, getAnimatedStyle, showStats, CARD_MARGIN, isDark, colors]
   );
 
   // 提取 key

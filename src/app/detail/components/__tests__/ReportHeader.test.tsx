@@ -36,22 +36,20 @@ describe('ReportHeader', () => {
     // But we can't easily query by source.
 
     // Let's check if the component renders without crashing.
-    expect(render(
-      <ReportHeader
-        name="Test Food"
-        tags={['Tag1', 'Tag2']}
-        imageUrl="http://example.com/image.jpg"
-      />
-    ).toJSON()).not.toBeNull();
+    expect(
+      render(
+        <ReportHeader
+          name="Test Food"
+          tags={['Tag1', 'Tag2']}
+          imageUrl="http://example.com/image.jpg"
+        />
+      ).toJSON()
+    ).not.toBeNull();
   });
 
   it('should render placeholder when no image', () => {
     const { getByText } = render(
-      <ReportHeader
-        name="Test Food"
-        tags={['Tag1', 'Tag2']}
-        imageUrl={null}
-      />
+      <ReportHeader name="Test Food" tags={['Tag1', 'Tag2']} imageUrl={null} />
     );
 
     expect(getByText('暂无图片')).toBeTruthy();

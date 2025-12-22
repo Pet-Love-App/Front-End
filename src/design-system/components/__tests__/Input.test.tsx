@@ -21,12 +21,7 @@ describe('Input Component', () => {
   });
 
   it('renders left and right icons', () => {
-    render(
-      <Input
-        leftIcon={<Text>Left</Text>}
-        rightIcon={<Text>Right</Text>}
-      />
-    );
+    render(<Input leftIcon={<Text>Left</Text>} rightIcon={<Text>Right</Text>} />);
     expect(screen.getByText('Left')).toBeTruthy();
     expect(screen.getByText('Right')).toBeTruthy();
   });

@@ -4,20 +4,20 @@
     "slug": "pet_love",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/appIcon.jpg",
+    "icon": "./assets/loading_cat.png",
     "scheme": "petlove",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": ".",
+      "bundleIdentifier": "com.yuanqh23.petlove",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/appIcon.jpg",
+        "foregroundImage": "./assets/loading_cat.png",
         "backgroundColor": "#E6F4FE"
       },
       "edgeToEdgeEnabled": true,
@@ -31,17 +31,13 @@
       "bundler": "metro"
     },
     "assetBundlePatterns": ["assets/**/*"],
-    "packagerOpts": {
-      "sourceExts": ["js", "json", "ts", "tsx"],
-      "assetExts": ["png", "jpg", "jpeg", "ttf", "woff", "woff2", "json"]
-    },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
           "exclude": ["**/_components/**/*", "**/*.ts", "**/*.d.ts"],
-          "image": "./assets/appIcon.jpg",
+          "image": "./assets/loading_cat.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -50,14 +46,7 @@
           }
         }
       ],
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "允许 $(PRODUCT_NAME) 访问你的相机，用于拍摄照片和视频。"
-        }
-      ],
-      "expo-font",
-      "expo-sqlite"
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,

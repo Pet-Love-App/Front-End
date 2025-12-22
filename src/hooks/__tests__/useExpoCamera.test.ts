@@ -28,7 +28,9 @@ describe('useExpoCamera', () => {
 
   it('should initialize with default state', async () => {
     // Arrange
-    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: PermissionStatus.UNDETERMINED });
+    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: PermissionStatus.UNDETERMINED,
+    });
 
     // Act
     const { result } = renderHook(() => useExpoCamera());
@@ -48,7 +50,9 @@ describe('useExpoCamera', () => {
 
   it('should check permissions on mount', async () => {
     // Arrange
-    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: PermissionStatus.GRANTED });
+    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: PermissionStatus.GRANTED,
+    });
 
     // Act
     const { result } = renderHook(() => useExpoCamera());
@@ -59,8 +63,12 @@ describe('useExpoCamera', () => {
 
   it('should request permissions successfully', async () => {
     // Arrange
-    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: PermissionStatus.UNDETERMINED });
-    (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: PermissionStatus.GRANTED });
+    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: PermissionStatus.UNDETERMINED,
+    });
+    (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: PermissionStatus.GRANTED,
+    });
 
     const { result } = renderHook(() => useExpoCamera());
     await waitFor(() => expect(result.current.state.hasPermission).toBe(false)); // Initial check
@@ -77,8 +85,12 @@ describe('useExpoCamera', () => {
 
   it('should handle permission denial', async () => {
     // Arrange
-    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: PermissionStatus.UNDETERMINED });
-    (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: PermissionStatus.DENIED });
+    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: PermissionStatus.UNDETERMINED,
+    });
+    (Camera.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: PermissionStatus.DENIED,
+    });
 
     const { result } = renderHook(() => useExpoCamera());
     await waitFor(() => expect(result.current.state.hasPermission).toBe(false));
@@ -94,7 +106,9 @@ describe('useExpoCamera', () => {
 
   it('should toggle camera facing', async () => {
     // Arrange
-    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: PermissionStatus.GRANTED });
+    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: PermissionStatus.GRANTED,
+    });
     const { result } = renderHook(() => useExpoCamera());
     await waitFor(() => expect(result.current.state.hasPermission).toBe(true));
 
@@ -117,7 +131,9 @@ describe('useExpoCamera', () => {
 
   it('should toggle scan type', async () => {
     // Arrange
-    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: PermissionStatus.GRANTED });
+    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: PermissionStatus.GRANTED,
+    });
     const { result } = renderHook(() => useExpoCamera());
     await waitFor(() => expect(result.current.state.hasPermission).toBe(true));
 
@@ -140,7 +156,9 @@ describe('useExpoCamera', () => {
 
   it('should set specific scan type', async () => {
     // Arrange
-    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: PermissionStatus.GRANTED });
+    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: PermissionStatus.GRANTED,
+    });
     const { result } = renderHook(() => useExpoCamera());
     await waitFor(() => expect(result.current.state.hasPermission).toBe(true));
 
@@ -155,7 +173,9 @@ describe('useExpoCamera', () => {
 
   it('should handle barcode scanned', async () => {
     // Arrange
-    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: PermissionStatus.GRANTED });
+    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: PermissionStatus.GRANTED,
+    });
     const { result } = renderHook(() => useExpoCamera());
     await waitFor(() => expect(result.current.state.hasPermission).toBe(true));
 
@@ -172,7 +192,9 @@ describe('useExpoCamera', () => {
 
   it('should ignore barcode scan if already scanned', async () => {
     // Arrange
-    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: PermissionStatus.GRANTED });
+    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: PermissionStatus.GRANTED,
+    });
     const { result } = renderHook(() => useExpoCamera());
     await waitFor(() => expect(result.current.state.hasPermission).toBe(true));
 
@@ -192,7 +214,9 @@ describe('useExpoCamera', () => {
 
   it('should ignore barcode scan if not in BARCODE mode', async () => {
     // Arrange
-    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: PermissionStatus.GRANTED });
+    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: PermissionStatus.GRANTED,
+    });
     const { result } = renderHook(() => useExpoCamera(ScanType.OCR));
     await waitFor(() => expect(result.current.state.hasPermission).toBe(true));
 
@@ -207,7 +231,9 @@ describe('useExpoCamera', () => {
 
   it('should reset barcode scan', async () => {
     // Arrange
-    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: PermissionStatus.GRANTED });
+    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: PermissionStatus.GRANTED,
+    });
     const { result } = renderHook(() => useExpoCamera());
     await waitFor(() => expect(result.current.state.hasPermission).toBe(true));
 
@@ -226,7 +252,9 @@ describe('useExpoCamera', () => {
 
   it('should set camera ready', async () => {
     // Arrange
-    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: PermissionStatus.GRANTED });
+    (Camera.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+      status: PermissionStatus.GRANTED,
+    });
     const { result } = renderHook(() => useExpoCamera());
     await waitFor(() => expect(result.current.state.hasPermission).toBe(true));
 

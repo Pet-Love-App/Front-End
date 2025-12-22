@@ -8,7 +8,7 @@ const StyledView = styled(YStack, {
       default: { backgroundColor: '$background' },
       subtle: { backgroundColor: '$backgroundSubtle' },
       muted: { backgroundColor: '$backgroundMuted' },
-      elevated: { backgroundColor: '$backgroundElevated' },
+      elevated: { backgroundColor: '$backgroundMuted' },
     },
     padded: {
       true: { padding: '$4' },
@@ -19,10 +19,6 @@ const StyledView = styled(YStack, {
       true: { alignItems: 'center', justifyContent: 'center' },
     },
   } as const,
-
-  defaultVariants: {
-    variant: 'default',
-  },
 });
 
 export type ThemedViewProps = GetProps<typeof StyledView>;

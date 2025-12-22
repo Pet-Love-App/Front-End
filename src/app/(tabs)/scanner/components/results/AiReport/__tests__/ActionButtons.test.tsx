@@ -40,45 +40,35 @@ describe('ActionButtons', () => {
   });
 
   it('renders both buttons when callbacks are provided', () => {
-    const { getByText } = render(
-      <ActionButtons onRetake={mockOnRetake} onClose={mockOnClose} />
-    );
+    const { getByText } = render(<ActionButtons onRetake={mockOnRetake} onClose={mockOnClose} />);
 
     expect(getByText('重新拍照')).toBeTruthy();
     expect(getByText('返回首页')).toBeTruthy();
   });
 
   it('renders only retake button', () => {
-    const { getByText, queryByText } = render(
-      <ActionButtons onRetake={mockOnRetake} />
-    );
+    const { getByText, queryByText } = render(<ActionButtons onRetake={mockOnRetake} />);
 
     expect(getByText('重新拍照')).toBeTruthy();
     expect(queryByText('返回首页')).toBeNull();
   });
 
   it('renders only close button', () => {
-    const { getByText, queryByText } = render(
-      <ActionButtons onClose={mockOnClose} />
-    );
+    const { getByText, queryByText } = render(<ActionButtons onClose={mockOnClose} />);
 
     expect(getByText('返回首页')).toBeTruthy();
     expect(queryByText('重新拍照')).toBeNull();
   });
 
   it('calls onRetake when retake button is pressed', () => {
-    const { getByText } = render(
-      <ActionButtons onRetake={mockOnRetake} />
-    );
+    const { getByText } = render(<ActionButtons onRetake={mockOnRetake} />);
 
     fireEvent.press(getByText('重新拍照'));
     expect(mockOnRetake).toHaveBeenCalled();
   });
 
   it('calls onClose when close button is pressed', () => {
-    const { getByText } = render(
-      <ActionButtons onClose={mockOnClose} />
-    );
+    const { getByText } = render(<ActionButtons onClose={mockOnClose} />);
 
     fireEvent.press(getByText('返回首页'));
     expect(mockOnClose).toHaveBeenCalled();

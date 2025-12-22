@@ -8,7 +8,9 @@ jest.mock('tamagui', () => {
   const { Text } = require('react-native');
   return {
     Text: ({ children, testID, ...props }: any) => (
-      <Text testID={testID} {...props}>{children}</Text>
+      <Text testID={testID} {...props}>
+        {children}
+      </Text>
     ),
     styled: (Component: any) => Component,
     GetProps: {},

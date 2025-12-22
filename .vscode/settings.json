@@ -39,5 +39,7 @@
 
   // ==================== 拼写检查 ====================
   // 禁用 cSpell 拼写检查（代码中有大量库名/API名会误报）
-  "cSpell.enabled": false
+  "cSpell.enabled": false,
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.configuration.updateBuildConfiguration": "interactive"
 }

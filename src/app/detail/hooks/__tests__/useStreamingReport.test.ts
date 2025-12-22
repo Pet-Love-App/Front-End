@@ -60,11 +60,12 @@ describe('useStreamingReport', () => {
     const mockStreamData = [
       'data: {"content": "Hello"}\n',
       'data: {"content": " World"}\n',
-      'data: [DONE]\n'
+      'data: [DONE]\n',
     ];
 
     const mockReader = {
-      read: jest.fn()
+      read: jest
+        .fn()
         .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode(mockStreamData[0]) })
         .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode(mockStreamData[1]) })
         .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode(mockStreamData[2]) })
@@ -121,8 +122,12 @@ describe('useStreamingReport', () => {
 
   it('should handle stream error (JSON parse error)', async () => {
     const mockReader = {
-      read: jest.fn()
-        .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode('data: {invalid json}\n') })
+      read: jest
+        .fn()
+        .mockResolvedValueOnce({
+          done: false,
+          value: new TextEncoder().encode('data: {invalid json}\n'),
+        })
         .mockResolvedValueOnce({ done: true, value: undefined }),
     };
 
@@ -151,8 +156,12 @@ describe('useStreamingReport', () => {
 
   it('should handle explicit error in stream', async () => {
     const mockReader = {
-      read: jest.fn()
-        .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode('data: {"error": "AI Error"}\n') })
+      read: jest
+        .fn()
+        .mockResolvedValueOnce({
+          done: false,
+          value: new TextEncoder().encode('data: {"error": "AI Error"}\n'),
+        })
         .mockResolvedValueOnce({ done: true, value: undefined }),
     };
 
@@ -213,19 +222,25 @@ describe('useStreamingReport', () => {
       // We can't easily set state directly, so we rely on startStreaming or just assume it works if we test the reset logic.
       // But let's try to simulate a state change via startStreaming mock if possible, or just trust the logic.
       // Better: Mock startStreaming to change state? No, we are testing the hook.
-
       // Let's just call reset and check if it goes back to initial.
       // To verify it actually does something, we should ideally have non-initial state.
     });
 
     // Let's simulate a state change by mocking a quick stream
-     const mockReader = {
-      read: jest.fn()
-        .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode('data: {"content": "Hi"}\n') })
+    const mockReader = {
+      read: jest
+        .fn()
+        .mockResolvedValueOnce({
+          done: false,
+          value: new TextEncoder().encode('data: {"content": "Hi"}\n'),
+        })
         // Pause here? No, just let it finish.
         .mockResolvedValueOnce({ done: true, value: undefined }),
     };
-    (global.fetch as jest.Mock).mockResolvedValue({ ok: true, body: { getReader: () => mockReader } });
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      body: { getReader: () => mockReader },
+    });
 
     // We can't await inside act easily for the whole flow if we want to interrupt.
     // But reset() is synchronous.

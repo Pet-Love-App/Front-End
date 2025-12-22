@@ -291,7 +291,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         );
       case 'sent':
         return (
-          <View style={[styles.friendButton, styles.friendButtonDisabled]} testID="user-profile-friend-button">
+          <View
+            style={[styles.friendButton, styles.friendButtonDisabled]}
+            testID="user-profile-friend-button"
+          >
             <Text style={styles.friendButtonTextDisabled}>已发送请求</Text>
           </View>
         );
@@ -350,7 +353,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         />
 
         {/* 关闭按钮 */}
-        <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.8} testID="user-profile-close-button">
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={onClose}
+          activeOpacity={0.8}
+          testID="user-profile-close-button"
+        >
           <BlurView intensity={40} tint="light" style={styles.closeButtonBlur}>
             <X size={20} color="#262626" strokeWidth={2.5} />
           </BlurView>
@@ -379,9 +387,15 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   )}
                 </View>
 
-                <Text style={styles.username} testID="user-profile-username">{profile.username || '未知用户'}</Text>
+                <Text style={styles.username} testID="user-profile-username">
+                  {profile.username || '未知用户'}
+                </Text>
 
-                {profile.bio && <Text style={styles.bio} testID="user-profile-bio">{profile.bio}</Text>}
+                {profile.bio && (
+                  <Text style={styles.bio} testID="user-profile-bio">
+                    {profile.bio}
+                  </Text>
+                )}
 
                 {/* 统计信息 */}
                 <View style={styles.statsContainer}>

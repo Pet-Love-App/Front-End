@@ -10,16 +10,8 @@ jest.mock('tamagui', () => {
     Card: ({ children }: any) => <View>{children}</View>,
     Spinner: () => <Text>Spinner</Text>,
     Text: ({ children }: any) => <Text>{children}</Text>,
-    XStack: ({ children, onPress, ...props }: any) => (
-      <View {...props}>
-        {children}
-      </View>
-    ),
-    YStack: ({ children, onPress, ...props }: any) => (
-      <View {...props}>
-        {children}
-      </View>
-    ),
+    XStack: ({ children, onPress, ...props }: any) => <View {...props}>{children}</View>,
+    YStack: ({ children, onPress, ...props }: any) => <View {...props}>{children}</View>,
   };
 });
 

@@ -2,7 +2,13 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { OcrResultView } from '../OcrResultView';
 import * as Clipboard from 'expo-clipboard';
-import { Alert, View, Text as RNText, TouchableOpacity, TextInput as RNTextInput } from 'react-native';
+import {
+  Alert,
+  View,
+  Text as RNText,
+  TouchableOpacity,
+  TextInput as RNTextInput,
+} from 'react-native';
 
 // Mock dependencies
 jest.mock('expo-clipboard', () => ({
@@ -49,16 +55,8 @@ jest.mock('tamagui', () => {
     ScrollView: ({ children }: any) => <View>{children}</View>,
     Spinner: () => <Text>Spinner</Text>,
     Text: ({ children }: any) => <Text>{children}</Text>,
-    XStack: ({ children, onPress, ...props }: any) => (
-      <View {...props}>
-        {children}
-      </View>
-    ),
-    YStack: ({ children, onPress, ...props }: any) => (
-      <View {...props}>
-        {children}
-      </View>
-    ),
+    XStack: ({ children, onPress, ...props }: any) => <View {...props}>{children}</View>,
+    YStack: ({ children, onPress, ...props }: any) => <View {...props}>{children}</View>,
     TextInput: (props: any) => <TextInput {...props} />,
   };
 });

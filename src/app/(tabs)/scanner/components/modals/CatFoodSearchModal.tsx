@@ -173,12 +173,14 @@ export function CatFoodSearchModal({ visible, onClose, onSelectCatFood }: CatFoo
       return (
         <YStack paddingBottom="$3">
           <YStack
+            testID={`cat-food-item-${item.id}`}
             backgroundColor="$background"
             borderRadius="$4"
             borderWidth={1}
             borderColor="$gray5"
             overflow="hidden"
             pressStyle={{ opacity: 0.9 }}
+            onPress={() => handleSelectCatFood(item)}
           >
             {/* 猫粮基本信息 */}
             <XStack padding="$3" gap="$3" alignItems="center">

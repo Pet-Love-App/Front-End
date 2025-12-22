@@ -230,7 +230,7 @@ export default function MyFriendsScreen() {
   );
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View testID="friends-screen" style={[styles.container, { paddingTop: insets.top }]}>
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* 自定义头部 */}

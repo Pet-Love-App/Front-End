@@ -38,6 +38,7 @@ export function LogoutButton() {
 
   return (
     <Button
+      testID="logout-button"
       size="$5"
       width="100%"
       height={56}

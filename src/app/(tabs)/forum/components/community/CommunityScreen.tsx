@@ -348,7 +348,7 @@ export function CommunityScreen() {
   }, []);
 
   return (
-    <ScreenContainer>
+    <ScreenContainer testID="forum-screen">
       <StatusBar barStyle="dark-content" />
 
       <ForumHeader

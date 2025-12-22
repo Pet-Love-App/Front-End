@@ -34,6 +34,7 @@ export default function TabLayout() {
         name="collect"
         options={{
           title: '收藏',
+          tabBarAccessibilityLabel: 'tab-collect',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="doc.text.fill" color={color} />,
         }}
       />
@@ -41,6 +42,7 @@ export default function TabLayout() {
         name="forum"
         options={{
           title: '论坛',
+          tabBarAccessibilityLabel: 'tab-forum',
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="bubble.left.and.bubble.right.fill" color={color} />
           ),
@@ -50,8 +52,10 @@ export default function TabLayout() {
         name="scanner"
         options={{
           title: '',
+          tabBarAccessibilityLabel: 'tab-scanner',
           tabBarIcon: ({ color: _color, focused: _focused }) => (
             <View
+              testID="tab-scanner"
               style={{
                 width: 60,
                 height: 60,
@@ -69,11 +73,6 @@ export default function TabLayout() {
                 name="viewfinder.circle.fill"
                 color={Colors[colorScheme ?? 'light'].scanButtonIcon}
               />
-              {/* <LottieAnimation
-                source={require('@/assets/animations/scan_face.json')}
-                width={80}
-                height={80}
-              /> */}
             </View>
           ),
         }}
@@ -82,6 +81,7 @@ export default function TabLayout() {
         name="ranking"
         options={{
           title: '榜单',
+          tabBarAccessibilityLabel: 'tab-ranking',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="cart.fill" color={color} />,
         }}
       />
@@ -89,6 +89,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: '我的',
+          tabBarAccessibilityLabel: 'tab-profile',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
         }}
       />

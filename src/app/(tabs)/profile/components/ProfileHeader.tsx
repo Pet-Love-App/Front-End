@@ -2,7 +2,7 @@
  * 个人资料头部 - 头像、用户名和简介
  */
 import { useState } from 'react';
-import { Alert, TouchableOpacity } from 'react-native';
+import { Alert, TouchableOpacity, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Avatar, Spinner, Text, YStack } from 'tamagui';
@@ -163,7 +163,7 @@ export function ProfileHeader({
 
       {/* 头像区域 */}
       <YStack position="absolute" top={70} alignItems="center" zIndex={10}>
-        <TouchableOpacity onPress={onPressAvatar} activeOpacity={0.85}>
+        <TouchableOpacity testID="user-avatar" onPress={onPressAvatar} activeOpacity={0.85}>
           <YStack position="relative" alignItems="center">
             <Avatar circular size={128} borderWidth={0} elevation={0}>
               {uploading ? (
@@ -213,15 +213,17 @@ export function ProfileHeader({
       <YStack width="100%" alignItems="center" gap="$2.5" paddingTop={40} paddingBottom="$1">
         {/* 用户名和勋章 */}
         <YStack alignItems="center" gap="$1.5">
-          <Text
-            fontSize={24}
-            fontWeight="700"
-            color="$foreground"
-            textAlign="center"
-            numberOfLines={1}
-          >
-            {username}
-          </Text>
+          <View testID="user-username">
+            <Text
+              fontSize={24}
+              fontWeight="700"
+              color={neutralScale.neutral12}
+              textAlign="center"
+              numberOfLines={1}
+            >
+              {username}
+            </Text>
+          </View>
 
           {/* 已装备的勋章 */}
           {equippedBadge && (
@@ -231,14 +233,14 @@ export function ProfileHeader({
               gap="$1.5"
               paddingHorizontal="$2.5"
               paddingVertical="$1"
-              backgroundColor={equippedBadge.color + '15'}
+              backgroundColor={(equippedBadge.color + '15') as any}
               borderRadius={12}
               borderWidth={1}
-              borderColor={equippedBadge.color + '30'}
+              borderColor={(equippedBadge.color + '30') as any}
             >
               {equippedBadge.gradient ? (
                 <LinearGradient
-                  colors={equippedBadge.gradient}
+                  colors={equippedBadge.gradient as [string, string]}
                   style={{
                     width: 18,
                     height: 18,
@@ -247,10 +249,14 @@ export function ProfileHeader({
                     justifyContent: 'center',
                   }}
                 >
-                  <IconSymbol name={equippedBadge.icon} size={12} color="white" />
+                  <IconSymbol name={equippedBadge.icon as any} size={12} color="white" />
                 </LinearGradient>
               ) : (
-                <IconSymbol name={equippedBadge.icon} size={16} color={equippedBadge.color} />
+                <IconSymbol
+                  name={equippedBadge.icon as any}
+                  size={16}
+                  color={equippedBadge.color}
+                />
               )}
             </YStack>
           )}

@@ -2,6 +2,7 @@
  * 设置页面 - 现代购物App风格
  */
 import { useState } from 'react';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -173,108 +174,114 @@ export default function SettingsScreen() {
   };
 
   return (
-    <YStack flex={1} backgroundColor={neutralScale.neutral1}>
-      {/* 背景渐变 */}
-      <YStack position="absolute" width="100%" height={200}>
-        <LinearGradient
-          colors={[primaryScale.primary2, neutralScale.neutral1]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={{ width: '100%', height: '100%' }}
-        />
-      </YStack>
-
-      {/* Header */}
-      <PageHeader title="设置" showBackButton insets={insets} variant="prominent" />
-
-      {/* Content */}
-      <ScrollView
-        flex={1}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: insets.bottom + 40,
-        }}
-      >
-        {/* 用户信息卡片 */}
-        <SectionTitle title="个人信息" />
-        <CardContainer>
-          <InfoRow label="用户名" value={user?.username ?? '未登录'} />
-          <InfoRow label="用户ID" value={user?.id ? `${user.id.slice(0, 8)}...` : '-'} isLast />
-        </CardContainer>
-
-        {/* 账号设置 */}
-        <SectionTitle title="账号设置" />
-        <CardContainer>
-          <SettingItemNew
-            icon="person.fill"
-            iconBgColor={primaryScale.primary2}
-            iconColor={primaryScale.primary8}
-            label="编辑个人资料"
-            value="用户名 / 密码 / 简介"
-            onPress={() => setIsEditProfileOpen(true)}
+    <View testID="settings-screen" style={{ flex: 1 }}>
+      <YStack flex={1} backgroundColor={neutralScale.neutral1}>
+        {/* 背景渐变 */}
+        <YStack position="absolute" width="100%" height={200}>
+          <LinearGradient
+            colors={[primaryScale.primary2, neutralScale.neutral1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={{ width: '100%', height: '100%' }}
           />
-        </CardContainer>
+        </YStack>
 
-        {/* 外观设置 */}
-        <SectionTitle title="外观设置" />
-        <YStack marginTop="$4" backgroundColor="white" borderRadius={16} overflow="hidden">
-          <SettingItemNew
-            icon="moon.fill"
-            iconBgColor="#F3E8FF"
-            iconColor="#9333EA"
-            label="深色模式"
-            value={themeMode === 'system' ? '跟随系统' : themeMode === 'dark' ? '已开启' : '已关闭'}
-            onPress={() => setIsThemeSelectorOpen(true)}
-          />
-          <SettingItemNew
-            icon="pawprint.fill"
-            iconBgColor="#FFF4E6"
-            iconColor="#FF9500"
-            label="桌面宠物"
-            showArrow={false}
-            rightElement={
-              <Switch
-                value={isVisible}
-                onValueChange={setVisible}
-                trackColor={{ false: neutralScale.neutral4, true: '#FF9500' }}
-                thumbColor={'white'}
+        {/* Header */}
+        <PageHeader title="设置" showBackButton insets={insets} variant="prominent" />
+
+        {/* Content */}
+        <ScrollView
+          flex={1}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingBottom: insets.bottom + 40,
+          }}
+        >
+          {/* 用户信息卡片 */}
+          <SectionTitle title="个人信息" />
+          <CardContainer>
+            <InfoRow label="用户名" value={user?.username ?? '未登录'} />
+            <InfoRow label="用户ID" value={user?.id ? `${user.id.slice(0, 8)}...` : '-'} isLast />
+          </CardContainer>
+
+          {/* 账号设置 */}
+          <SectionTitle title="账号设置" />
+          <CardContainer>
+            <SettingItemNew
+              icon="person.fill"
+              iconBgColor={primaryScale.primary2}
+              iconColor={primaryScale.primary8}
+              label="编辑个人资料"
+              value="用户名 / 密码 / 简介"
+              onPress={() => setIsEditProfileOpen(true)}
+            />
+          </CardContainer>
+
+          {/* 外观设置 */}
+          <SectionTitle title="外观设置" />
+          <YStack marginTop="$4" backgroundColor="white" borderRadius={16} overflow="hidden">
+            <View testID="theme-setting">
+              <SettingItemNew
+                icon="moon.fill"
+                iconBgColor="#F3E8FF"
+                iconColor="#9333EA"
+                label="深色模式"
+                value={
+                  themeMode === 'system' ? '跟随系统' : themeMode === 'dark' ? '已开启' : '已关闭'
+                }
+                onPress={() => setIsThemeSelectorOpen(true)}
               />
-            }
-          />
-        </YStack>
+            </View>
+            <SettingItemNew
+              icon="pawprint.fill"
+              iconBgColor="#FFF4E6"
+              iconColor="#FF9500"
+              label="桌面宠物"
+              showArrow={false}
+              rightElement={
+                <Switch
+                  value={isVisible}
+                  onValueChange={setVisible}
+                  trackColor={{ false: neutralScale.neutral4, true: '#FF9500' }}
+                  thumbColor={'white'}
+                />
+              }
+            />
+          </YStack>
 
-        {/* 关于与帮助 */}
-        <SectionTitle title="关于与帮助" />
-        <CardContainer>
-          <InfoRow label="应用版本" value="1.0.0" />
-          <InfoRow label="开发团队" value="Pet Love Team" isLast />
-        </CardContainer>
+          {/* 关于与帮助 */}
+          <SectionTitle title="关于与帮助" />
+          <CardContainer>
+            <InfoRow label="应用版本" value="1.0.0" />
+            <InfoRow label="开发团队" value="Pet Love Team" isLast />
+          </CardContainer>
 
-        {/* 退出登录 */}
-        <YStack marginTop="$6" paddingHorizontal="$4">
-          <LogoutButton />
-        </YStack>
+          {/* 退出登录 */}
+          <YStack marginTop="$6" paddingHorizontal="$4">
+            <LogoutButton />
+          </YStack>
 
-        {/* 底部说明 */}
-        <YStack alignItems="center" marginTop="$6" gap="$1">
-          <Text fontSize={12} color={neutralScale.neutral6}>
-            Made with ❤️ by Pet Love Team
-          </Text>
-          <Text fontSize={11} color={neutralScale.neutral5}>
-            © 2024 Pet Love. All rights reserved.
-          </Text>
-        </YStack>
-      </ScrollView>
+          {/* 底部说明 */}
+          <YStack alignItems="center" marginTop="$6" gap="$1">
+            <Text fontSize={12} color={neutralScale.neutral6}>
+              Made with ❤️ by Pet Love Team
+            </Text>
+            <Text fontSize={11} color={neutralScale.neutral5}>
+              © 2024 Pet Love. All rights reserved.
+            </Text>
+          </YStack>
+        </ScrollView>
 
-      {/* Modals */}
-      <ThemeSelectorModal
-        open={isThemeSelectorOpen}
-        onOpenChange={setIsThemeSelectorOpen}
-        currentTheme={themeMode}
-        onThemeChange={setThemeMode}
-      />
+        {/* Modals */}
+        <ThemeSelectorModal
+          open={isThemeSelectorOpen}
+          onOpenChange={setIsThemeSelectorOpen}
+          currentTheme={themeMode}
+          onThemeChange={setThemeMode}
+        />
 
-      <EditProfileModal open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen} />
-    </YStack>
+        <EditProfileModal open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen} />
+      </YStack>
+    </View>
   );
 }

@@ -88,6 +88,7 @@ export function ActionBar({ catfoodId }: ActionBarProps) {
         {/* 收藏按钮 */}
         <YStack flex={1}>
           <Button
+            testID="favorite-button"
             height={52}
             backgroundColor={favorited ? warningScale.warning8 : 'transparent'}
             borderWidth={2}

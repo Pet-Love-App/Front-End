@@ -12,6 +12,7 @@ interface SearchBoxProps {
   autoFocus?: boolean;
   disabled?: boolean;
   showSearchButton?: boolean; // 是否显示搜索按钮
+  testID?: string; // E2E 测试 ID
 }
 
 export default function SearchBox({
@@ -24,6 +25,7 @@ export default function SearchBox({
   autoFocus = false,
   disabled = false,
   showSearchButton = true,
+  testID,
 }: SearchBoxProps) {
   // 内部状态管理输入值（如果没有外部控制）
   const [internalValue, setInternalValue] = useState(value);
@@ -54,6 +56,7 @@ export default function SearchBox({
 
   return (
     <XStack
+      testID={testID || 'search-box'}
       alignItems="center"
       gap="$2"
       paddingLeft="$3"
@@ -68,6 +71,7 @@ export default function SearchBox({
       <IconSymbol name="magnifyingglass" size={20} color="$foregroundSubtle" />
 
       <Input
+        testID="search-input"
         flex={1}
         size={size}
         placeholder={placeholder}
@@ -107,6 +111,7 @@ export default function SearchBox({
       {/* 搜索按钮 */}
       {showSearchButton && (
         <XStack
+          testID="search-submit"
           onPress={handleSearch}
           paddingHorizontal="$3"
           paddingVertical="$2"

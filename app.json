@@ -7,7 +7,7 @@
     "icon": "./assets/appIcon.jpg",
     "scheme": "petlove",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": ".",

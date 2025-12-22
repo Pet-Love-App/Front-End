@@ -69,6 +69,7 @@ function CreatePostFABComponent({ onPress }: CreatePostFABProps) {
 
   return (
     <AnimatedPressable
+      testID="create-post-fab"
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       onPress={handlePress}

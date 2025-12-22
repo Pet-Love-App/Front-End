@@ -1,4 +1,4 @@
-import { RefreshControl, TouchableOpacity } from 'react-native';
+import { RefreshControl, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Input, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 
@@ -196,163 +196,167 @@ export function CollectScreen() {
   };
 
   return (
-    <YStack flex={1} backgroundColor={neutralScale.neutral1}>
-      {/* 整合的顶部区域 */}
-      <YStack backgroundColor="white">
-        {/* 标题栏 */}
-        <AppHeader
-          title="我的收藏"
-          insets={insets}
-          rightElement={
-            <YStack
-              backgroundColor={primaryScale.primary2}
-              paddingHorizontal={12}
-              paddingVertical={6}
-              borderRadius={16}
-              borderWidth={1.5}
-              borderColor={primaryScale.primary3}
-            >
-              <Text fontSize={13} fontWeight="700" color={primaryScale.primary8}>
-                {currentTab === 'catfood' ? favoritesCount : favoritePosts.length}
-              </Text>
-            </YStack>
-          }
-        />
+    <View testID="home-screen" style={{ flex: 1 }}>
+      <YStack flex={1} backgroundColor={neutralScale.neutral1}>
+        {/* 整合的顶部区域 */}
+        <YStack backgroundColor="white">
+          {/* 标题栏 */}
+          <AppHeader
+            title="我的收藏"
+            insets={insets}
+            rightElement={
+              <YStack
+                backgroundColor={primaryScale.primary2}
+                paddingHorizontal={12}
+                paddingVertical={6}
+                borderRadius={16}
+                borderWidth={1.5}
+                borderColor={primaryScale.primary3}
+              >
+                <Text fontSize={13} fontWeight="700" color={primaryScale.primary8}>
+                  {currentTab === 'catfood' ? favoritesCount : favoritePosts.length}
+                </Text>
+              </YStack>
+            }
+          />
 
-        {/* 搜索框 */}
-        <YStack paddingHorizontal={16} paddingBottom={12}>
-          <XStack
-            backgroundColor={neutralScale.neutral2}
-            borderRadius={12}
-            paddingHorizontal={14}
-            paddingVertical={10}
-            alignItems="center"
-            gap={10}
-            borderWidth={1.5}
-            borderColor={neutralScale.neutral3}
-          >
-            <IconSymbol name="magnifyingglass" size={18} color={neutralScale.neutral6} />
-            <Input
+          {/* 搜索框 */}
+          <YStack paddingHorizontal={16} paddingBottom={12}>
+            <XStack
+              backgroundColor={neutralScale.neutral2}
+              borderRadius={12}
+              paddingHorizontal={14}
+              paddingVertical={10}
+              alignItems="center"
+              gap={10}
+              borderWidth={1.5}
+              borderColor={neutralScale.neutral3}
+            >
+              <IconSymbol name="magnifyingglass" size={18} color={neutralScale.neutral6} />
+              <Input
+                flex={1}
+                placeholder="搜索收藏的内容..."
+                placeholderTextColor={neutralScale.neutral6}
+                value={searchText}
+                onChangeText={setSearchText}
+                backgroundColor="transparent"
+                borderWidth={0}
+                padding={0}
+                height={24}
+                fontSize={15}
+                color={neutralScale.neutral12}
+                focusStyle={{ borderWidth: 0 }}
+              />
+            </XStack>
+          </YStack>
+
+          {/* Tab 按钮 - 美化版本 */}
+          <XStack paddingHorizontal={16} gap={8} paddingBottom={12}>
+            {/* 猫粮收藏 Tab */}
+            <YStack
               flex={1}
-              placeholder="搜索收藏的内容..."
-              placeholderTextColor={neutralScale.neutral6}
-              value={searchText}
-              onChangeText={setSearchText}
-              backgroundColor="transparent"
-              borderWidth={0}
-              padding={0}
-              height={24}
-              fontSize={15}
-              color={neutralScale.neutral12}
-              focusStyle={{ borderWidth: 0 }}
-            />
+              paddingVertical={12}
+              alignItems="center"
+              backgroundColor={
+                currentTab === 'catfood' ? primaryScale.primary7 : neutralScale.neutral2
+              }
+              borderRadius={12}
+              borderWidth={1.5}
+              borderColor={currentTab === 'catfood' ? primaryScale.primary6 : neutralScale.neutral3}
+              pressStyle={{ scale: 0.97, opacity: 0.9 }}
+              animation="quick"
+              onPress={() => setCurrentTab('catfood')}
+            >
+              <XStack gap={8} alignItems="center">
+                <IconSymbol
+                  name="pawprint.fill"
+                  size={18}
+                  color={currentTab === 'catfood' ? 'white' : neutralScale.neutral7}
+                />
+                <Text
+                  fontSize={14}
+                  fontWeight="600"
+                  color={currentTab === 'catfood' ? 'white' : neutralScale.neutral7}
+                >
+                  猫粮收藏
+                </Text>
+              </XStack>
+            </YStack>
+
+            {/* 帖子收藏 Tab */}
+            <YStack
+              flex={1}
+              paddingVertical={12}
+              alignItems="center"
+              backgroundColor={
+                currentTab === 'post' ? primaryScale.primary7 : neutralScale.neutral2
+              }
+              borderRadius={12}
+              borderWidth={1.5}
+              borderColor={currentTab === 'post' ? primaryScale.primary6 : neutralScale.neutral3}
+              pressStyle={{ scale: 0.97, opacity: 0.9 }}
+              animation="quick"
+              onPress={() => setCurrentTab('post')}
+            >
+              <XStack gap={8} alignItems="center">
+                <IconSymbol
+                  name="doc.text.fill"
+                  size={18}
+                  color={currentTab === 'post' ? 'white' : neutralScale.neutral7}
+                />
+                <Text
+                  fontSize={14}
+                  fontWeight="600"
+                  color={currentTab === 'post' ? 'white' : neutralScale.neutral7}
+                >
+                  帖子收藏
+                </Text>
+              </XStack>
+            </YStack>
           </XStack>
         </YStack>
 
-        {/* Tab 按钮 - 美化版本 */}
-        <XStack paddingHorizontal={16} gap={8} paddingBottom={12}>
-          {/* 猫粮收藏 Tab */}
-          <YStack
-            flex={1}
-            paddingVertical={12}
-            alignItems="center"
-            backgroundColor={
-              currentTab === 'catfood' ? primaryScale.primary7 : neutralScale.neutral2
-            }
-            borderRadius={12}
-            borderWidth={1.5}
-            borderColor={currentTab === 'catfood' ? primaryScale.primary6 : neutralScale.neutral3}
-            pressStyle={{ scale: 0.97, opacity: 0.9 }}
-            animation="quick"
-            onPress={() => setCurrentTab('catfood')}
-          >
-            <XStack gap={8} alignItems="center">
-              <IconSymbol
-                name="pawprint.fill"
-                size={18}
-                color={currentTab === 'catfood' ? 'white' : neutralScale.neutral7}
-              />
-              <Text
-                fontSize={14}
-                fontWeight="600"
-                color={currentTab === 'catfood' ? 'white' : neutralScale.neutral7}
-              >
-                猫粮收藏
-              </Text>
-            </XStack>
-          </YStack>
+        {/* Tab 内容区域 */}
+        <YStack flex={1} backgroundColor={neutralScale.neutral1}>
+          {currentTab === 'catfood' ? (
+            <ScrollView
+              flex={1}
+              padding="$4"
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                  tintColor={primaryScale.primary7}
+                />
+              }
+            >
+              {renderCatFoodList()}
+            </ScrollView>
+          ) : (
+            <ScrollView
+              flex={1}
+              padding="$4"
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshingPosts}
+                  onRefresh={handleRefreshPosts}
+                  tintColor={primaryScale.primary7}
+                />
+              }
+            >
+              {renderPostList()}
+            </ScrollView>
+          )}
+        </YStack>
 
-          {/* 帖子收藏 Tab */}
-          <YStack
-            flex={1}
-            paddingVertical={12}
-            alignItems="center"
-            backgroundColor={currentTab === 'post' ? primaryScale.primary7 : neutralScale.neutral2}
-            borderRadius={12}
-            borderWidth={1.5}
-            borderColor={currentTab === 'post' ? primaryScale.primary6 : neutralScale.neutral3}
-            pressStyle={{ scale: 0.97, opacity: 0.9 }}
-            animation="quick"
-            onPress={() => setCurrentTab('post')}
-          >
-            <XStack gap={8} alignItems="center">
-              <IconSymbol
-                name="doc.text.fill"
-                size={18}
-                color={currentTab === 'post' ? 'white' : neutralScale.neutral7}
-              />
-              <Text
-                fontSize={14}
-                fontWeight="600"
-                color={currentTab === 'post' ? 'white' : neutralScale.neutral7}
-              >
-                帖子收藏
-              </Text>
-            </XStack>
-          </YStack>
-        </XStack>
+        {/* 帖子详情模态框 */}
+        <PostDetailScreen
+          visible={!!selectedPost}
+          post={selectedPost}
+          onClose={closePostDetail}
+          onPostDeleted={handlePostDeleted}
+        />
       </YStack>
-
-      {/* Tab 内容区域 */}
-      <YStack flex={1} backgroundColor={neutralScale.neutral1}>
-        {currentTab === 'catfood' ? (
-          <ScrollView
-            flex={1}
-            padding="$4"
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-                tintColor={primaryScale.primary7}
-              />
-            }
-          >
-            {renderCatFoodList()}
-          </ScrollView>
-        ) : (
-          <ScrollView
-            flex={1}
-            padding="$4"
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshingPosts}
-                onRefresh={handleRefreshPosts}
-                tintColor={primaryScale.primary7}
-              />
-            }
-          >
-            {renderPostList()}
-          </ScrollView>
-        )}
-      </YStack>
-
-      {/* 帖子详情模态框 */}
-      <PostDetailScreen
-        visible={!!selectedPost}
-        post={selectedPost}
-        onClose={closePostDetail}
-        onPostDeleted={handlePostDeleted}
-      />
-    </YStack>
+    </View>
   );
 }

@@ -87,9 +87,12 @@ const styles = StyleSheet.create({
 });
 
 export const Button = forwardRef<React.ElementRef<typeof StyledButton>, ButtonProps>(
-  ({ children, loading, disabled, leftIcon, rightIcon, variant, size, ...props }, ref) => {
+  ({ children, loading, disabled, leftIcon, rightIcon, variant, size, testID, ...props }, ref) => {
     const textColor = getTextColor(variant as string);
     const fontSize = FONT_SIZE_MAP[size as string] || 16;
+
+    // 同时设置 testID 和 accessibilityLabel 以支持 Detox E2E 测试
+    const a11yProps = testID ? { testID, accessibilityLabel: testID, nativeID: testID } : {};
 
     return (
       <StyledButton
@@ -98,6 +101,7 @@ export const Button = forwardRef<React.ElementRef<typeof StyledButton>, ButtonPr
         opacity={disabled ? 0.5 : 1}
         variant={variant}
         size={size}
+        {...a11yProps}
         {...props}
       >
         {loading ? (

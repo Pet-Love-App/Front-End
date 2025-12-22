@@ -6,7 +6,7 @@
 module.exports = {
   rootDir: '..',
   testMatch: ['<rootDir>/e2e/**/*.e2e.{js,ts,tsx}'],
-  testTimeout: 120000,
+  testTimeout: 300000, // 5 分钟超时，适配新架构
   maxWorkers: 1,
   globalSetup: 'detox/runners/jest/globalSetup',
   globalTeardown: 'detox/runners/jest/globalTeardown',

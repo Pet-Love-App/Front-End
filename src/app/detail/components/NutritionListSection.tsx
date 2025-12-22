@@ -1,6 +1,7 @@
 /**
  * 营养成分列表 - 显示各营养成分详情
  */
+import { View } from 'react-native';
 import { Card, Separator, Text, XStack, YStack } from 'tamagui';
 
 import type { Ingredient } from '@/src/lib/supabase/services/additive';
@@ -38,30 +39,32 @@ export function NutritionListSection({ ingredients }: NutritionListSectionProps)
   if (!ingredients || ingredients.length === 0) return null;
 
   return (
-    <Card
-      padding="$4"
-      marginHorizontal="$3"
-      marginBottom="$3"
-      backgroundColor="white"
-      borderRadius="$5"
-      bordered
-      borderColor={neutralScale.neutral3}
-    >
-      <YStack gap="$3">
-        <Text fontSize="$6" fontWeight="600" marginBottom="$2" color="$foreground">
-          营养成分详情
-        </Text>
-        <YStack marginTop="$2">
-          {ingredients.map((item, index) => (
-            <NutritionItem
-              key={item.id || index}
-              name={item.name}
-              label={item.label ?? undefined}
-              isLast={index === ingredients.length - 1}
-            />
-          ))}
+    <View testID="nutrition-section">
+      <Card
+        padding="$4"
+        marginHorizontal="$3"
+        marginBottom="$3"
+        backgroundColor="white"
+        borderRadius="$5"
+        bordered
+        borderColor={neutralScale.neutral3}
+      >
+        <YStack gap="$3">
+          <Text fontSize="$6" fontWeight="600" marginBottom="$2" color="$foreground">
+            营养成分详情
+          </Text>
+          <YStack marginTop="$2">
+            {ingredients.map((item, index) => (
+              <NutritionItem
+                key={item.id || index}
+                name={item.name}
+                label={item.label ?? undefined}
+                isLast={index === ingredients.length - 1}
+              />
+            ))}
+          </YStack>
         </YStack>
-      </YStack>
-    </Card>
+      </Card>
+    </View>
   );
 }

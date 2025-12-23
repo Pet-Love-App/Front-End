@@ -31,10 +31,10 @@ if (process.env.NODE_ENV === 'production') {
 // 优化资源解析
 config.resolver = {
   ...config.resolver,
-  // 指定支持的文件扩展名
-  sourceExts: [...config.resolver.sourceExts, 'mjs', 'cjs'],
-  // 资源文件扩展名
-  assetExts: [...config.resolver.assetExts.filter((ext) => ext !== 'svg'), 'lottie'],
+  // 指定支持的文件扩展名 - 合并默认值
+  sourceExts: [...new Set([...config.resolver.sourceExts, 'mjs', 'cjs'])],
+  // 资源文件扩展名 - 添加 lottie，移除 svg（由 react-native-svg 处理）
+  assetExts: [...new Set([...config.resolver.assetExts.filter((ext) => ext !== 'svg'), 'lottie'])],
   // 排除测试文件（所有环境）
   blockList: [
     // 排除所有测试文件和测试目录

@@ -3,8 +3,8 @@ import { BarcodeScanningResult } from 'expo-camera';
 /**
  * 相机相关的类型定义
  */
-export enum ScanType{
-  BARCODE = 'barcode',// 条形码
+export enum ScanType {
+  BARCODE = 'barcode', // 条形码
   OCR = 'ocr', // 光学字符识别
 }
 
@@ -36,5 +36,5 @@ export interface CameraState {
   isReady: boolean; // 相机是否准备好
   facing: CameraFacing; // 当前使用的摄像头
   scanType: ScanType | null; // 当前扫描类型
-  scannedBarcode: string |null;
+  scannedBarcode: string | null;
 }

@@ -1,0 +1,27 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+build
+android
+ios
+.expo
+.expo-shared
+
+# Assets (images, animations, fonts)
+assets
+
+# Coverage
+coverage
+.nyc_output
+
+# Logs
+*.log
+
+# Environment files
+.env*
+
+# OS files
+.DS_Store
+

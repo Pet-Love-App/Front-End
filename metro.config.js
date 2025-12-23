@@ -35,10 +35,11 @@ config.resolver = {
   sourceExts: [...config.resolver.sourceExts, 'mjs', 'cjs'],
   // 资源文件扩展名
   assetExts: [...config.resolver.assetExts.filter((ext) => ext !== 'svg'), 'lottie'],
-  // 排除测试文件和不必要的文件
+  // 排除测试文件（所有环境）
   blockList: [
-    // 排除所有测试文件
+    // 排除所有测试文件和测试目录
     /\/__tests__\/.*/,
+    /\/_tests_\/.*/,
     /\.test\.(ts|tsx|js|jsx)$/,
     /\.spec\.(ts|tsx|js|jsx)$/,
     /\.e2e\.(ts|tsx|js|jsx)$/,
@@ -49,7 +50,7 @@ config.resolver = {
     /\.md$/,
     /\.ipynb$/,
     // 排除 E2E 测试目录
-    /^.*\/e2e\/.*$/,
+    /\/e2e\//,
   ],
 };
 

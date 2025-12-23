@@ -2,74 +2,75 @@ name: CI
 
 on:
   push:
-    branches: [main, master, develop, fix/bugs]
+    branches: [main, develop, test/*, feat/*, fix/*]
   pull_request:
-    branches: [main, master, develop]
+    branches: [main, develop]
+  workflow_dispatch:
 
-# 防止同一分支的多个 workflow 同时运行
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # ==================== 快速检查 ====================
-  quick-check:
-    name: Quick Check
+  # ==================== 阶段 1: 代码质量检查 ====================
+  code-quality:
+    name: 🔍 Code Quality
+    uses: ./.github/workflows/code-quality.yml
+
+  # ==================== 阶段 2: 单元测试 ====================
+  unit-tests:
+    name: 🧪 Unit Tests
+    needs: code-quality
+    if: always()
+    uses: ./.github/workflows/unit-tests.yml
+    secrets: inherit
+
+  # ==================== 阶段 3: 构建检查 ====================
+  build-check:
+    name: 🏗️ Build Check
+    needs: code-quality
+    if: always()
+    uses: ./.github/workflows/build-check.yml
+    secrets: inherit
+
+  # ==================== 阶段 4: E2E 测试（仅主分支） ====================
+  e2e-tests:
+    name: 📱 E2E Tests
+    needs: [unit-tests, build-check]
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') && success()
+    uses: ./.github/workflows/e2e-tests.yml
+    secrets: inherit
+
+  # ==================== 总结报告 ====================
+  summary:
+    name: 📊 CI Summary
     runs-on: ubuntu-latest
+    needs: [code-quality, unit-tests, build-check]
+    if: always()
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: 📊 Check results
+        run: |
+          echo "## 🎯 CI Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Results:" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔍 Code Quality: ${{ needs.code-quality.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 🧪 Unit Tests: ${{ needs.unit-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏗️ Build Check: ${{ needs.build-check.result }}" >> $GITHUB_STEP_SUMMARY
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
+      - name: ✅ All checks passed
+        if: |
+          needs.code-quality.result == 'success' &&
+          needs.unit-tests.result == 'success' &&
+          needs.build-check.result == 'success'
+        run: |
+          echo "✅ All CI checks passed successfully!" >> $GITHUB_STEP_SUMMARY
 
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-
-      - name: Run ESLint
-        run: npm run lint || echo "ESLint warnings found, continuing..."
-        continue-on-error: true
-
-      - name: Run TypeScript type check
-        run: npm run typecheck || echo "Type check warnings found, continuing..."
-        continue-on-error: true
-
-      - name: Check code formatting
-        run: npm run format:check || echo "Formatting issues found, continuing..."
-        continue-on-error: true
-
-  # ==================== 完整测试 ====================
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    needs: quick-check
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-
-      - name: Run tests with coverage
-        run: npm test -- --coverage --ci --passWithNoTests
-        env:
-          CI: true
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage-report
-          path: coverage/
-          retention-days: 7
+      - name: ❌ Some checks failed
+        if: |
+          needs.code-quality.result == 'failure' ||
+          needs.unit-tests.result == 'failure' ||
+          needs.build-check.result == 'failure'
+        run: |
+          echo "❌ Some CI checks failed. Please review the logs." >> $GITHUB_STEP_SUMMARY
+          exit 1

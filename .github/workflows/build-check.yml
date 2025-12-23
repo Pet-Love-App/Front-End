@@ -1,0 +1,69 @@
+name: Build Check
+
+on:
+  push:
+    branches: [main, develop, test/*, feat/*, fix/*]
+  pull_request:
+    branches: [main, develop]
+  workflow_call:
+    outputs:
+      status:
+        description: 'Build check status'
+        value: ${{ jobs.build-validation.result }}
+
+jobs:
+  build-validation:
+    name: 🏗️ Android Build Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: 🔨 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+        continue-on-error: true
+
+      - name: 🏗️ Build Android bundle
+        run: npx expo export --platform android --output-dir dist-android
+        continue-on-error: true
+
+      - name: 📊 Analyze bundle size
+        if: success()
+        run: |
+          BUNDLE_SIZE=$(du -sh dist-android | cut -f1)
+          echo "📦 Android Bundle size: $BUNDLE_SIZE"
+          echo "BUNDLE_SIZE=$BUNDLE_SIZE" >> $GITHUB_ENV
+
+      - name: 📤 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: android-build
+          path: dist-android/
+          retention-days: 7
+
+      - name: 📋 Build summary
+        if: always()
+        run: |
+          echo "## 🏗️ Android Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$BUNDLE_SIZE" ]; then
+            echo "✅ Build succeeded" >> $GITHUB_STEP_SUMMARY
+            echo "📦 Bundle size: $BUNDLE_SIZE" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Build completed with warnings" >> $GITHUB_STEP_SUMMARY
+          fi

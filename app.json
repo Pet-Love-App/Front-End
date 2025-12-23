@@ -4,10 +4,10 @@
     "slug": "pet_love",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/loading_cat.png",
+    "icon": "./assets/appIcon.jpg",
     "scheme": "petlove",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.yuanqh23.petlove",
@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/loading_cat.png",
+        "foregroundImage": "./assets/appIcon.jpg",
         "backgroundColor": "#E6F4FE"
       },
       "edgeToEdgeEnabled": true,
@@ -37,7 +37,7 @@
         "expo-splash-screen",
         {
           "exclude": ["**/_components/**/*", "**/*.ts", "**/*.d.ts"],
-          "image": "./assets/loading_cat.png",
+          "image": "./assets/appIcon.jpg",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -49,8 +49,9 @@
       "expo-font"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      // "typedRoutes": true,
+      // "reactCompiler": true,
+      "typedRoutes": true
     },
     "extra": {
       "eas": {

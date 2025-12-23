@@ -36,8 +36,8 @@ Pet Love 是一个功能完整的宠物社区移动应用，集成了猫粮智�
 
 在开始之前，请确保你的开发环境已安装：
 
-- **Node.js** >= 18.0.0 ([下载](https://nodejs.org/))
-- **npm** >= 9.0.0 或 **yarn** >= 1.22.0
+- **Node.js** >= 24.0.0 ([下载](https://nodejs.org/))
+- **npm** >= 11.6.0
 - **Expo CLI** (安装命令: `npm install -g expo-cli`)
 - **iOS 模拟器** (macOS) 或 **Android Studio** (所有平台)
 
@@ -76,6 +76,7 @@ npm run prepare
 ```
 
 这会配置 Husky + lint-staged，确保每次提交前自动：
+
 - ✅ ESLint 检查并修复代码
 - ✅ Prettier 格式化代码
 - ✅ Commitlint 验证提交信息格式
@@ -93,6 +94,7 @@ npm run web       # Web 浏览器
 ```
 
 在终端输出中，你可以选择：
+
 - 📱 在 **iOS 模拟器** 中打开
 - 🤖 在 **Android 模拟器** 中打开
 - 🌐 在 **Web 浏览器** 中打开
@@ -104,17 +106,17 @@ npm run web       # Web 浏览器
 
 ### 📝 常用命令
 
-| 命令 | 说明 |
-|------|------|
-| `npm start` | 启动 Expo 开发服务器 |
-| `npm run lint` | 代码质量检查 |
-| `npm run lint:fix` | 自动修复代码问题 |
-| `npm run format` | 格式化所有文件 |
-| `npm run format:check` | 检查格式化（CI 用） |
-| `npm run typecheck` | TypeScript 类型检查 |
-| `npm test` | 运行测试 |
-| `npm run test:coverage` | 生成测试覆盖率报告 |
-| `npm run build:production` | 生产环境构建 |
+| 命令                       | 说明                 |
+| -------------------------- | -------------------- |
+| `npm start`                | 启动 Expo 开发服务器 |
+| `npm run lint`             | 代码质量检查         |
+| `npm run lint:fix`         | 自动修复代码问题     |
+| `npm run format`           | 格式化所有文件       |
+| `npm run format:check`     | 检查格式化（CI 用）  |
+| `npm run typecheck`        | TypeScript 类型检查  |
+| `npm test`                 | 运行测试             |
+| `npm run test:coverage`    | 生成测试覆盖率报告   |
+| `npm run build:production` | 生产环境构建         |
 
 ### 🎨 代码规范
 
@@ -142,6 +144,7 @@ git commit -m "perf(image): 优化图片加载性能"
 ```
 
 **Type 类型：**
+
 - `feat` - 新功能
 - `fix` - Bug 修复
 - `docs` - 文档更新
@@ -157,49 +160,49 @@ git commit -m "perf(image): 优化图片加载性能"
 
 ### 核心框架
 
-| 技术 | 版本 | 说明 |
-|------|------|------|
-| [React Native](https://reactnative.dev/) | 0.81.5 | 跨平台移动应用框架 |
-| [Expo](https://expo.dev/) | ~54.0 | React Native 开发工具链 |
-| [TypeScript](https://www.typescriptlang.org/) | ~5.9 | 静态类型系统 |
-| [Expo Router](https://expo.github.io/router/) | ~6.0 | 基于文件的路由系统 |
+| 技术                                          | 版本   | 说明                    |
+| --------------------------------------------- | ------ | ----------------------- |
+| [React Native](https://reactnative.dev/)      | 0.81.5 | 跨平台移动应用框架      |
+| [Expo](https://expo.dev/)                     | ~54.0  | React Native 开发工具链 |
+| [TypeScript](https://www.typescriptlang.org/) | ~5.9   | 静态类型系统            |
+| [Expo Router](https://expo.github.io/router/) | ~6.0   | 基于文件的路由系统      |
 
 ### UI & 样式
 
-| 技术 | 说明 |
-|------|------|
-| [Tamagui](https://tamagui.dev/) | 跨平台 UI 组件库（React Native + Web） |
-| [Expo Symbols](https://docs.expo.dev/guides/symbols/) | SF Symbols 图标库 |
-| [Lottie](https://airbnb.io/lottie/) | 动画库 |
-| [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/) | 高性能动画库 |
+| 技术                                                                           | 说明                                   |
+| ------------------------------------------------------------------------------ | -------------------------------------- |
+| [Tamagui](https://tamagui.dev/)                                                | 跨平台 UI 组件库（React Native + Web） |
+| [Expo Symbols](https://docs.expo.dev/guides/symbols/)                          | SF Symbols 图标库                      |
+| [Lottie](https://airbnb.io/lottie/)                                            | 动画库                                 |
+| [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/) | 高性能动画库                           |
 
 ### 状态管理 & 数据
 
-| 技术 | 说明 |
-|------|------|
-| [Zustand](https://zustand-demo.pmnd.rs/) | 轻量级状态管理库 |
-| [Supabase](https://supabase.com/) | 后端服务（认证、数据库、存储） |
-| [AsyncStorage](https://react-native-async-storage.github.io/async-storage/) | 本地持久化存储 |
+| 技术                                                                        | 说明                           |
+| --------------------------------------------------------------------------- | ------------------------------ |
+| [Zustand](https://zustand-demo.pmnd.rs/)                                    | 轻量级状态管理库               |
+| [Supabase](https://supabase.com/)                                           | 后端服务（认证、数据库、存储） |
+| [AsyncStorage](https://react-native-async-storage.github.io/async-storage/) | 本地持久化存储                 |
 
 ### 功能模块
 
-| 模块 | 技术 |
-|------|------|
+| 模块        | 技术                                                   |
+| ----------- | ------------------------------------------------------ |
 | 相机 & 图片 | Expo Camera, Expo Image Picker, Expo Image Manipulator |
-| 图表 | React Native Chart Kit, React Native SVG |
-| 网络请求 | Fetch API + 自定义 API Client |
-| 剪贴板 | Expo Clipboard |
+| 图表        | React Native Chart Kit, React Native SVG               |
+| 网络请求    | Fetch API + 自定义 API Client                          |
+| 剪贴板      | Expo Clipboard                                         |
 
 ### 开发工具
 
-| 工具 | 说明 |
-|------|------|
-| [ESLint](https://eslint.org/) | 代码质量检查 |
-| [Prettier](https://prettier.io/) | 代码格式化 |
-| [Husky](https://typicode.github.io/husky/) | Git Hooks 管理 |
-| [lint-staged](https://github.com/okonet/lint-staged) | 暂存文件检查 |
-| [Commitlint](https://commitlint.js.org/) | 提交信息规范 |
-| [Jest](https://jestjs.io/) | 测试框架 |
+| 工具                                                        | 说明                  |
+| ----------------------------------------------------------- | --------------------- |
+| [ESLint](https://eslint.org/)                               | 代码质量检查          |
+| [Prettier](https://prettier.io/)                            | 代码格式化            |
+| [Husky](https://typicode.github.io/husky/)                  | Git Hooks 管理        |
+| [lint-staged](https://github.com/okonet/lint-staged)        | 暂存文件检查          |
+| [Commitlint](https://commitlint.js.org/)                    | 提交信息规范          |
+| [Jest](https://jestjs.io/)                                  | 测试框架              |
 | [Testing Library](https://testing-library.com/react-native) | React Native 测试工具 |
 
 ---

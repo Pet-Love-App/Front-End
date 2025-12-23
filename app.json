@@ -24,8 +24,14 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.yuanqh23.pet_love",
-      "permissions": ["android.permission.CAMERA", "android.permission.RECORD_AUDIO"],
-      "softwareKeyboardLayoutMode": "resize"
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ],
+      "softwareKeyboardLayoutMode": "resize",
+      "usesCleartextTraffic": true
     },
     "web": {
       "output": "static",
@@ -53,7 +59,8 @@
         {
           "url": "https://sentry.io/",
           "project": "react-native",
-          "organization": "tsinghua-university-dp"
+          "organization": "tsinghua-university-dp",
+          "setCommits": false
         }
       ]
     ],

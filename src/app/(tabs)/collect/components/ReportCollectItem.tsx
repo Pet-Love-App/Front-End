@@ -109,14 +109,14 @@ export default function ReportCollectItem({
                 return (
                   <YStack
                     key={index}
-                    backgroundColor={tagColor + '15'}
+                    backgroundColor={(tagColor + '15') as any}
                     paddingHorizontal="$2.5"
                     paddingVertical="$1"
                     borderRadius="$2"
                     borderWidth={1}
-                    borderColor={tagColor + '40'}
+                    borderColor={(tagColor + '40') as any}
                   >
-                    <Text fontSize={12} fontWeight="600" color={tagColor}>
+                    <Text fontSize={12} fontWeight="600" color={tagColor as any}>
                       {tag}
                     </Text>
                   </YStack>

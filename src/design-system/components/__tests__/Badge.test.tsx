@@ -33,7 +33,7 @@ describe('Badge Component', () => {
 
   it('handles outline prop', () => {
     render(
-      <Badge outline={true} testID="badge-outline">
+      <Badge outline={true as any} testID="badge-outline">
         <Text>Outline</Text>
       </Badge>
     );

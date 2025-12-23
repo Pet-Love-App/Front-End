@@ -1,4 +1,4 @@
-import { Additive, Ingredient } from '../services/api';
+import type { Additive, Ingredient } from '../lib/supabase';
 
 /**
  * 标签

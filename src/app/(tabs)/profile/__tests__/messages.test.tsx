@@ -55,7 +55,7 @@ jest.mock('react-native-safe-area-context', () => ({
 
 describe('MessagesScreen', () => {
   const mockRouter = { push: jest.fn() };
-  const mockGetConversations = supabaseChatService.getConversations as jest.Mock;
+  const mockGetMyConversations = supabaseChatService.getMyConversations as jest.Mock;
   const mockGetUser = supabase.auth.getUser as jest.Mock;
 
   beforeEach(() => {

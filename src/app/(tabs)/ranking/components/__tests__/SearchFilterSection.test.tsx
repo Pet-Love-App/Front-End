@@ -34,7 +34,7 @@ jest.mock('../StatisticsBar', () => ({
 jest.mock('@/src/components/searchBox', () => {
   const React = require('react');
   const { View, TextInput, Button } = require('react-native');
-  return function SearchBox({ value, onChangeText, onSearch, onClear }) {
+  return function SearchBox({ value, onChangeText, onSearch, onClear }: any) {
     return (
       <View>
         <TextInput testID="search-input" value={value} onChangeText={onChangeText} />

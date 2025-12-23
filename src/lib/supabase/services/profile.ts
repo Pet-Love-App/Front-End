@@ -13,8 +13,6 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { supabase } from '../client';
 import { convertKeysToCamel, logger, wrapResponse, type SupabaseResponse } from '../helpers';
 
-import type { Pet } from './pet';
-
 // ==================== 类型定义 ====================
 
 /**
@@ -50,7 +48,7 @@ export interface Profile {
  */
 export interface UserWithPets extends Profile {
   email?: string;
-  pets?: Pet[];
+  pets?: any[];
 }
 
 /**

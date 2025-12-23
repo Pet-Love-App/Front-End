@@ -30,14 +30,14 @@ export default function Tag({ name, index, size = 'md' }: TagProps) {
 
   return (
     <XStack
-      backgroundColor={backgroundColor}
-      paddingHorizontal={styles.px}
-      paddingVertical={styles.py}
+      backgroundColor={backgroundColor as any}
+      paddingHorizontal={styles.px as any}
+      paddingVertical={styles.py as any}
       borderRadius="$full"
       marginRight="$1.5"
       marginBottom="$1.5"
     >
-      <Text fontSize={styles.fontSize} fontWeight="500" color={textColor}>
+      <Text fontSize={styles.fontSize} fontWeight="500" color={textColor as any}>
         {name}
       </Text>
     </XStack>

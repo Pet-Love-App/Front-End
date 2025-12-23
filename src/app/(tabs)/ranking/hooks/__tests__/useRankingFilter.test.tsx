@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react-native';
 import { useRankingFilter } from '../useRankingFilter';
 import type { CatFood } from '@/src/types/catFood';
 
-const mockCatFoods: CatFood[] = [
+const mockCatFoods = [
   {
     id: '1',
     name: 'Food A',
@@ -10,7 +10,7 @@ const mockCatFoods: CatFood[] = [
     score: 4.5,
     like_count: 10,
     tags: ['kitten'],
-  } as CatFood,
+  },
   {
     id: '2',
     name: 'Food B',
@@ -18,7 +18,7 @@ const mockCatFoods: CatFood[] = [
     score: 4.0,
     like_count: 20,
     tags: ['adult'],
-  } as CatFood,
+  },
   {
     id: '3',
     name: 'Food C',
@@ -26,11 +26,11 @@ const mockCatFoods: CatFood[] = [
     score: 4.8,
     like_count: 5,
     tags: ['senior'],
-  } as CatFood,
-  { id: '4', name: 'Food D', brand: 'Brand Z', score: 3.5, like_count: 15, tags: [] } as CatFood,
-  { id: '5', name: 'Food E', brand: 'Brand Y', score: 4.2, like_count: 8, tags: [] } as CatFood,
-  { id: '6', name: 'Food F', brand: 'Brand X', score: 4.1, like_count: 12, tags: [] } as CatFood,
-];
+  },
+  { id: '4', name: 'Food D', brand: 'Brand Z', score: 3.5, like_count: 15, tags: [] },
+  { id: '5', name: 'Food E', brand: 'Brand Y', score: 4.2, like_count: 8, tags: [] },
+  { id: '6', name: 'Food F', brand: 'Brand X', score: 4.1, like_count: 12, tags: [] },
+] as any;
 
 describe('useRankingFilter', () => {
   it('should return initial state correctly', () => {

@@ -26,6 +26,10 @@ module.exports = [
       'react/react-in-jsx-scope': 'off', // React 19 不需要导入 React
       'react/prop-types': 'off', // 使用 TypeScript
       'react/display-name': 'off', // 允许匿名组件
+      'react/no-unknown-property': [
+        'error',
+        { ignore: ['testID', 'accessibilityLabel', 'accessibilityHint', 'accessibilityRole'] },
+      ], // 允许 React Native 属性
 
       // ==================== 代码质量 ====================
       'no-console': 'off', // 允许 console

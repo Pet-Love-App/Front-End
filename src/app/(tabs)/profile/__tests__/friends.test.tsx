@@ -55,26 +55,14 @@ jest.mock('@/src/components/UserProfileModal', () => ({
 
 describe('MyFriendsScreen', () => {
   const mockRouter = { push: jest.fn(), back: jest.fn() };
-  const mockGetFriends = supabaseFriendsService.getFriends as jest.Mock;
-  const mockGetMyFriends = supabaseFriendsService.getMyFriends as jest.Mock; // Add this
-  const mockGetFriendRequests = supabaseFriendsService.getFriendRequests as jest.Mock;
+  const mockGetMyFriends = supabaseFriendsService.getMyFriends as jest.Mock;
+  const mockGetFriendRequestStatus = supabaseFriendsService.getFriendRequestStatus as jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue(mockRouter);
 
-    mockGetFriends.mockResolvedValue({
-      success: true,
-      data: [
-        {
-          id: 'friend1',
-          username: 'Friend 1',
-          avatar_url: 'avatar1.jpg',
-        },
-      ],
-    });
-
-    (supabaseFriendsService.getMyFriends as jest.Mock).mockResolvedValue({
+    mockGetMyFriends.mockResolvedValue({
       success: true,
       data: [
         {
@@ -86,7 +74,8 @@ describe('MyFriendsScreen', () => {
         },
       ],
     });
-    mockGetFriendRequests.mockResolvedValue({
+
+    mockGetFriendRequestStatus.mockResolvedValue({
       success: true,
       data: [],
     });

@@ -106,7 +106,7 @@ const NotificationPreview = styled(Text, {
 const NotificationTime = styled(Text, {
   name: 'NotificationTime',
   fontSize: 12,
-  color: '$colorSubtle',
+  color: '$color10' as any,
 });
 
 const IconContainer = styled(Stack, {
@@ -223,7 +223,7 @@ const NotificationItemComponent = React.memo(function NotificationItemComponent(
           </Avatar>
           {/* 通知类型图标 */}
           <IconContainer
-            backgroundColor={style.bgColor}
+            backgroundColor={style.bgColor as any}
             position="absolute"
             bottom={-4}
             right={-4}
@@ -233,7 +233,7 @@ const NotificationItemComponent = React.memo(function NotificationItemComponent(
             borderWidth={2}
             borderColor="$background"
           >
-            <Icon size={10} color={style.iconColor} />
+            <Icon size={10} color={style.iconColor as any} />
           </IconContainer>
         </YStack>
 

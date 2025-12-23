@@ -55,7 +55,7 @@ export function PhotoPreview({
 
   return (
     <Modal visible={visible} animationType="fade" statusBarTranslucent>
-      <YStack flex={1} backgroundColor="$black">
+      <YStack flex={1} backgroundColor="black">
         {/* 顶部操作栏 */}
         <XStack
           paddingTop={insets.top + 10}

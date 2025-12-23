@@ -48,14 +48,16 @@ export function IdentifiedItemsSection({
               size="$3"
               height={36}
               paddingHorizontal="$3"
-              backgroundColor={buttonColor}
-              color={textColor}
+              backgroundColor={buttonColor as any}
+              color={textColor as any}
               borderRadius="$3"
               onPress={() => onItemClick(item)}
               disabled={loadingItem === item}
-              icon={loadingItem === item ? <Spinner size="small" color={textColor} /> : undefined}
+              icon={
+                loadingItem === item ? <Spinner size="small" color={textColor as any} /> : undefined
+              }
             >
-              <Text fontSize="$3" fontWeight="500" color={textColor}>
+              <Text fontSize="$3" fontWeight="500" color={textColor as any}>
                 {item}
               </Text>
             </Button>

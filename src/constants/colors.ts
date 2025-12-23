@@ -186,6 +186,21 @@ export const LIGHT_THEME = {
     finishedOverlay: 'rgba(255,255,255,0.9)',
     closeButton: '#3B82F6',
   },
+
+  // 带透明度的颜色变体
+  tintAlpha10: withAlpha(PRIMARY_PALETTE.main, 0.1),
+  tintAlpha20: withAlpha(PRIMARY_PALETTE.main, 0.2),
+  tintAlpha30: withAlpha(PRIMARY_PALETTE.main, 0.3),
+  tintAlpha40: withAlpha(PRIMARY_PALETTE.main, 0.4),
+  tintAlpha50: withAlpha(PRIMARY_PALETTE.main, 0.5),
+  iconAlpha05: withAlpha('#687076', 0.05),
+  iconAlpha10: withAlpha('#687076', 0.1),
+  iconAlpha15: withAlpha('#687076', 0.15),
+  iconAlpha20: withAlpha('#687076', 0.2),
+  iconAlpha30: withAlpha('#687076', 0.3),
+  iconAlpha40: withAlpha('#687076', 0.4),
+  iconAlpha60: withAlpha('#687076', 0.6),
+  bg: '#fff',
 } as const;
 
 /**
@@ -266,6 +281,21 @@ export const DARK_THEME = {
     finishedOverlay: 'rgba(255,255,255,0.9)',
     closeButton: '#3B82F6',
   },
+
+  // 带透明度的颜色变体
+  tintAlpha10: withAlpha('#fff', 0.1),
+  tintAlpha20: withAlpha('#fff', 0.2),
+  tintAlpha30: withAlpha('#fff', 0.3),
+  tintAlpha40: withAlpha('#fff', 0.4),
+  tintAlpha50: withAlpha('#fff', 0.5),
+  iconAlpha05: withAlpha('#9BA1A6', 0.05),
+  iconAlpha10: withAlpha('#9BA1A6', 0.1),
+  iconAlpha15: withAlpha('#9BA1A6', 0.15),
+  iconAlpha20: withAlpha('#9BA1A6', 0.2),
+  iconAlpha30: withAlpha('#9BA1A6', 0.3),
+  iconAlpha40: withAlpha('#9BA1A6', 0.4),
+  iconAlpha60: withAlpha('#9BA1A6', 0.6),
+  bg: '#151718',
 } as const;
 
 // ==================== 主题系统 ====================

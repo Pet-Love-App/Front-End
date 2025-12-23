@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, waitFor, findByText } from '@testing-library/react-native';
+import { render, waitFor } from '@testing-library/react-native';
 
 if (typeof navigator === 'undefined') {
   // @ts-ignore

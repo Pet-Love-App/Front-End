@@ -7,7 +7,7 @@
 
 import { useMemo } from 'react';
 
-import { Colors } from '@/src/constants/colors';
+import { withAlpha } from '@/src/constants/colors';
 import {
   primaryScale,
   neutralScale,
@@ -89,6 +89,29 @@ export interface ThemeColors {
   // 原始 scale（用于需要特定阶梯的场景）
   neutralScale: typeof neutralScale;
   primaryScale: typeof primaryScale;
+
+  // 品牌色带透明度的变体
+  tint: string;
+  tintAlpha10: string;
+  tintAlpha20: string;
+  tintAlpha30: string;
+  tintAlpha40: string;
+  tintAlpha50: string;
+
+  // 图标色带透明度的变体
+  iconAlpha05: string;
+  iconAlpha10: string;
+  iconAlpha15: string;
+  iconAlpha20: string;
+  iconAlpha30: string;
+  iconAlpha40: string;
+  iconAlpha60: string;
+
+  // 背景变体
+  bg: string;
+
+  // 工具函数
+  withAlpha: (color: string, alpha: number) => string;
 }
 
 /**
@@ -159,6 +182,29 @@ const lightColors: ThemeColors = {
   // 原始 scale
   neutralScale,
   primaryScale,
+
+  // 品牌色及透明度变体
+  tint: primaryScale.primary7,
+  tintAlpha10: withAlpha(primaryScale.primary7, 0.1),
+  tintAlpha20: withAlpha(primaryScale.primary7, 0.2),
+  tintAlpha30: withAlpha(primaryScale.primary7, 0.3),
+  tintAlpha40: withAlpha(primaryScale.primary7, 0.4),
+  tintAlpha50: withAlpha(primaryScale.primary7, 0.5),
+
+  // 图标色及透明度变体
+  iconAlpha05: withAlpha(neutralScale.neutral9, 0.05),
+  iconAlpha10: withAlpha(neutralScale.neutral9, 0.1),
+  iconAlpha15: withAlpha(neutralScale.neutral9, 0.15),
+  iconAlpha20: withAlpha(neutralScale.neutral9, 0.2),
+  iconAlpha30: withAlpha(neutralScale.neutral9, 0.3),
+  iconAlpha40: withAlpha(neutralScale.neutral9, 0.4),
+  iconAlpha60: withAlpha(neutralScale.neutral9, 0.6),
+
+  // 背景变体
+  bg: '#FFFFFF',
+
+  // 工具函数
+  withAlpha,
 };
 
 /**
@@ -229,6 +275,29 @@ const darkColors: ThemeColors = {
   // 原始 scale
   neutralScale,
   primaryScale,
+
+  // 品牌色及透明度变体
+  tint: primaryScale.primary6,
+  tintAlpha10: withAlpha(primaryScale.primary6, 0.1),
+  tintAlpha20: withAlpha(primaryScale.primary6, 0.2),
+  tintAlpha30: withAlpha(primaryScale.primary6, 0.3),
+  tintAlpha40: withAlpha(primaryScale.primary6, 0.4),
+  tintAlpha50: withAlpha(primaryScale.primary6, 0.5),
+
+  // 图标色及透明度变体
+  iconAlpha05: withAlpha('#A1A1A1', 0.05),
+  iconAlpha10: withAlpha('#A1A1A1', 0.1),
+  iconAlpha15: withAlpha('#A1A1A1', 0.15),
+  iconAlpha20: withAlpha('#A1A1A1', 0.2),
+  iconAlpha30: withAlpha('#A1A1A1', 0.3),
+  iconAlpha40: withAlpha('#A1A1A1', 0.4),
+  iconAlpha60: withAlpha('#A1A1A1', 0.6),
+
+  // 背景变体
+  bg: '#1A1A1A',
+
+  // 工具函数
+  withAlpha,
 };
 
 /**

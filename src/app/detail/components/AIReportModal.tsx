@@ -216,11 +216,11 @@ function AnalysisSection({
         {icon} {title}
       </H5>
       <YStack
-        backgroundColor={bgColor}
+        backgroundColor={bgColor as any}
         padding="$3"
         borderRadius="$3"
         borderWidth={1}
-        borderColor={borderColor}
+        borderColor={borderColor as any}
       >
         <Text fontSize="$3" color="$gray12" lineHeight={22}>
           {content}
@@ -284,12 +284,12 @@ function ItemsSection({
               key={i}
               paddingHorizontal="$2.5"
               paddingVertical="$1.5"
-              backgroundColor={bgColor}
+              backgroundColor={bgColor as any}
               borderRadius="$2"
               borderWidth={1}
-              borderColor={borderColor}
+              borderColor={borderColor as any}
             >
-              <Text fontSize="$2" color={textColor}>
+              <Text fontSize="$2" color={textColor as any}>
                 {item}
               </Text>
             </YStack>

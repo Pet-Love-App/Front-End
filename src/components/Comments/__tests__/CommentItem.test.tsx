@@ -49,7 +49,7 @@ describe('CommentItem', () => {
     },
     likes: 5,
     isLiked: false,
-  };
+  } as any;
 
   const defaultProps = {
     comment: mockComment,

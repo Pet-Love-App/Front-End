@@ -64,8 +64,19 @@ const lightTheme = {
   primary: primaryScale.primary7,
   primaryLight: primaryScale.primary3,
   primaryDark: primaryScale.primary9,
+  primaryContrast: '#FFFFFF',
 
   // 语义色
+  success: successScale.success7,
+  success8: successScale.success8,
+  warning: warningScale.warning7,
+  warning8: warningScale.warning8,
+  error: errorScale.error7,
+  error8: errorScale.error8,
+  info: infoScale.info7,
+  info8: infoScale.info8,
+
+  // 传统语义色别名
   green: successScale.success7,
   greenLight: successScale.success3,
   yellow: warningScale.warning7,
@@ -74,6 +85,29 @@ const lightTheme = {
   redLight: errorScale.error3,
   blue: infoScale.info7,
   blueLight: infoScale.info3,
+
+  // 健康指示器色彩
+  safe: successScale.success7,
+  safeLight: successScale.success2,
+  safeText: successScale.success9,
+  caution: warningScale.warning7,
+  cautionLight: warningScale.warning2,
+  cautionText: warningScale.warning9,
+  risk: errorScale.error7,
+  riskLight: errorScale.error2,
+  riskText: errorScale.error9,
+
+  // 前景色变体
+  foreground: neutralScale.neutral12,
+  foregroundSubtle: neutralScale.neutral10,
+  foregroundMuted: neutralScale.neutral9,
+
+  // 边框变体
+  borderMuted: neutralScale.neutral3,
+
+  // 卡片背景
+  cardBackground: '#FFFFFF',
+  colorMuted: neutralScale.neutral9,
 } as const;
 
 // 暗色主题
@@ -117,7 +151,19 @@ const darkTheme = {
   primary: primaryScale.primary6,
   primaryLight: '#3D2A1F',
   primaryDark: primaryScale.primary8,
+  primaryContrast: '#FFFFFF',
 
+  // 语义色
+  success: successScale.success5,
+  success8: successScale.success7,
+  warning: warningScale.warning5,
+  warning8: warningScale.warning7,
+  error: errorScale.error5,
+  error8: errorScale.error7,
+  info: infoScale.info5,
+  info8: infoScale.info7,
+
+  // 传统语义色别名
   green: successScale.success5,
   greenLight: '#0D2818',
   yellow: warningScale.warning5,
@@ -126,6 +172,29 @@ const darkTheme = {
   redLight: '#2D0F0F',
   blue: infoScale.info5,
   blueLight: '#0F1A2D',
+
+  // 健康指示器色彩
+  safe: successScale.success5,
+  safeLight: '#0D2818',
+  safeText: successScale.success4,
+  caution: warningScale.warning5,
+  cautionLight: '#2D1F0A',
+  cautionText: warningScale.warning4,
+  risk: errorScale.error5,
+  riskLight: '#2D0F0F',
+  riskText: errorScale.error4,
+
+  // 前景色变体
+  foreground: '#FAFAFA',
+  foregroundSubtle: '#D4D4D4',
+  foregroundMuted: '#A1A1A1',
+
+  // 边框变体
+  borderMuted: '#1F1F1F',
+
+  // 卡片背景
+  cardBackground: '#141414',
+  colorMuted: '#A1A1A1',
 } as const;
 
 // 自定义 tokens
@@ -150,7 +219,10 @@ const tokens = createTokens({
   },
   radius: {
     ...defaultTokens.radius,
-    ...Object.fromEntries(Object.entries(radius).map(([k, v]) => [`$${k}`, v])),
+    ...Object.fromEntries(
+      Object.entries(radius).map(([k, v]) => [k === 'full' ? 'full' : `$${k}`, v])
+    ),
+    $full: 9999,
   },
   zIndex: defaultTokens.zIndex,
 });

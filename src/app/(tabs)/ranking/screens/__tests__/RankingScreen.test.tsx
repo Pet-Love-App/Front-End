@@ -59,8 +59,8 @@ jest.mock('react-native/Libraries/Lists/FlatList', () => {
           ListFooterComponent,
           ListEmptyComponent,
           ...props
-        },
-        ref
+        }: any,
+        ref: any
       ) => {
         const Header =
           typeof ListHeaderComponent === 'function'
@@ -79,7 +79,9 @@ jest.mock('react-native/Libraries/Lists/FlatList', () => {
           <View testID="flat-list" {...props}>
             <Header />
             {data &&
-              data.map((item, index) => <View key={index}>{renderItem({ item, index })}</View>)}
+              data.map((item: any, index: any) => (
+                <View key={index}>{renderItem({ item, index })}</View>
+              ))}
             <Footer />
             {(!data || data.length === 0) && <Empty />}
           </View>

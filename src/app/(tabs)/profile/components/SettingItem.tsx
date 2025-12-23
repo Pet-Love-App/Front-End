@@ -19,7 +19,7 @@ export function SettingItem({ icon, label, value, onPress }: SettingItemProps) {
     <Card
       padding="$4"
       borderWidth={1}
-      borderColor={colors.icon + '40'}
+      borderColor={colors.iconAlpha40 as any}
       backgroundColor={colors.background}
       pressStyle={{ scale: 0.98, opacity: 0.9 }}
       onPress={onPress}

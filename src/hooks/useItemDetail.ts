@@ -176,7 +176,7 @@ export function useItemDetail(): UseItemDetailReturn {
         // 处理数据库结果
         if (dbResult.status === 'fulfilled' && dbResult.value.data?.ingredient) {
           const { name: iName, type, desc } = dbResult.value.data.ingredient;
-          item = createPlaceholderAdditive(iName, type, desc);
+          item = createPlaceholderAdditive(iName, type ?? undefined, desc ?? undefined);
           hasData = true;
         }
 

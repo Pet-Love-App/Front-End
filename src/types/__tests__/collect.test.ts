@@ -38,6 +38,7 @@ describe('Collect Types', () => {
           catfoodName: 'Analyzed Food',
           createdAt: '2023-01-01',
         },
+        createdAt: '2023-01-01',
       };
 
       // Act & Assert

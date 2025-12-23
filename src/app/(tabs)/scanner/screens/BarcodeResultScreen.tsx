@@ -168,7 +168,7 @@ export function BarcodeResultScreen({ scannedCode, insets, onGoBack }: BarcodeRe
               </YStack>
               <Text
                 fontSize={22}
-                fontFamily="monospace"
+                fontFamily={'monospace' as any}
                 fontWeight="800"
                 color="#111827"
                 letterSpacing={1}

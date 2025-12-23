@@ -41,8 +41,8 @@ export function Skeleton({
 
   return (
     <YStack
-      width={width}
-      height={height}
+      width={width as any}
+      height={height as any}
       borderRadius={actualRadius}
       backgroundColor={neutralScale.neutral3}
       overflow="hidden"

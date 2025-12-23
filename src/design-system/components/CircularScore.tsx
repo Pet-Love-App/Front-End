@@ -207,9 +207,9 @@ export function CircularScore({
       </Stack>
 
       {showRating && (
-        <RatingBadge level={rating.level}>
+        <RatingBadge level={rating.level as any}>
           <Text fontSize="$2">{rating.emoji}</Text>
-          <RatingText level={rating.level}>{rating.label}</RatingText>
+          <RatingText level={rating.level as any}>{rating.label}</RatingText>
         </RatingBadge>
       )}
     </ScoreContainer>

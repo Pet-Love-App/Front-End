@@ -102,7 +102,11 @@ export default function PostCollectItem({ post, onDelete, onPress }: PostCollect
                   paddingVertical="$1"
                   borderRadius="$2"
                 >
-                  <Text fontSize={fs.xs} fontWeight="600" color={CATEGORY_COLORS[post.category]}>
+                  <Text
+                    fontSize={fs.xs}
+                    fontWeight="600"
+                    color={CATEGORY_COLORS[post.category] as any}
+                  >
                     {CATEGORY_LABELS[post.category] || post.category}
                   </Text>
                 </YStack>

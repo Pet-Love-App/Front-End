@@ -126,16 +126,20 @@ export function DetailScreen() {
    * 监听流式完成状态，完成后刷新报告数据
    */
   useEffect(() => {
-    // 检测从未完成变为已完成的状态变化
-    if (streamingState.isComplete && !streamingState.error && !prevCompleteRef.current) {
-      // 延迟刷新，确保数据已保存到数据库
+    const shouldRefetch =
+      streamingState.isComplete && !streamingState.error && !prevCompleteRef.current;
+
+    if (shouldRefetch) {
+      prevCompleteRef.current = true;
       const timer = setTimeout(() => {
         refetchReport();
         resetStreaming();
       }, 1500);
+
       return () => clearTimeout(timer);
     }
-    prevCompleteRef.current = streamingState.isComplete;
+
+    return undefined;
   }, [streamingState.isComplete, streamingState.error, refetchReport, resetStreaming]);
 
   // 渲染内容

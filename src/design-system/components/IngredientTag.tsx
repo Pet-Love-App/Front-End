@@ -211,18 +211,18 @@ export function IngredientTag({
   return (
     <AnimatedTagWrapper pressable={pressable} onPress={onPress}>
       <TagContainer
-        type={type}
-        size={size}
-        pressable={pressable}
+        type={type as any}
+        size={size as any}
+        pressable={pressable as any}
         onPress={pressable ? onPress : undefined}
         testID={testID}
       >
         {showIcon && (
-          <TagIcon type={type} size={size}>
+          <TagIcon type={type as any} size={size as any}>
             {icon}
           </TagIcon>
         )}
-        <TagText type={type} size={size}>
+        <TagText type={type as any} size={size as any}>
           {name}
         </TagText>
       </TagContainer>

@@ -12,7 +12,7 @@ import { PetWeightChart } from './PetWeightChart';
 import { PetWeightRecords } from './PetWeightRecords';
 
 /**
- * 宠物信息面板组件的 Props 接口
+ * 宠物信息面板组件�?Props 接口
  */
 interface PetInfoPanelProps {
   /** 宠物数据 */
@@ -31,11 +31,11 @@ const TABS = [
   { key: 'activity', label: '活动记录', icon: 'chart.bar.fill' },
 ] as const;
 
-/** Tab 键类型 */
+/** Tab 键类�?*/
 type TabKey = (typeof TABS)[number]['key'];
 
 /**
- * 信息行组件 - 用于显示键值对信息
+ * 信息行组�?- 用于显示键值对信息
  */
 interface InfoRowProps {
   label: string;
@@ -46,10 +46,10 @@ interface InfoRowProps {
 const InfoRow = memo(function InfoRow({ label, value, colors }: InfoRowProps) {
   return (
     <XStack justifyContent="space-between" paddingVertical="$2.5" paddingHorizontal="$1">
-      <Text fontSize={14} color={colors.icon}>
+      <Text fontSize={14} color={colors.icon as any}>
         {label}
       </Text>
-      <Text fontSize={14} fontWeight="600" color={colors.text}>
+      <Text fontSize={14} fontWeight="600" color={colors.text as any}>
         {value}
       </Text>
     </XStack>
@@ -59,9 +59,9 @@ const InfoRow = memo(function InfoRow({ label, value, colors }: InfoRowProps) {
 /**
  * 宠物信息面板组件
  *
- * 功能：
+ * 功能�?
  * - 展示宠物的头像和基本信息
- * - 提供多个 Tab 切换查看不同类型的信息
+ * - 提供多个 Tab 切换查看不同类型的信�?
  * - 支持主题切换
  *
  * @component
@@ -79,7 +79,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
 
   /**
    * 处理 Tab 切换
-   * 使用 useCallback 避免不必要的重渲染
+   * 使用 useCallback 避免不必要的重渲�?
    */
   const handleTabChange = useCallback((tab: TabKey) => {
     setActiveTab(tab);
@@ -98,7 +98,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
   const handleDelete = useCallback(() => {
     if (!onDelete) return;
 
-    Alert.alert('确认删除', `确定要删除 ${pet.name} 吗？此操作无法撤销。`, [
+    Alert.alert('确认删除', `确定要删�?${pet.name} 吗？此操作无法撤销。`, [
       {
         text: '取消',
         style: 'cancel',
@@ -111,7 +111,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
             setDeleting(true);
             await onDelete(pet.id);
           } catch (error) {
-            // 错误已在 Hook 中处理
+            // 错误已在 Hook 中处�?
           } finally {
             setDeleting(false);
           }
@@ -125,9 +125,9 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
       {/* Pet Header Card */}
       <Card
         padding="$4"
-        backgroundColor={colors.background}
+        backgroundColor={colors.background as any}
         borderWidth={1}
-        borderColor={colors.icon + '15'}
+        borderColor={colors.iconAlpha15 as any}
         borderRadius="$4"
       >
         <XStack gap="$4" alignItems="center">
@@ -156,7 +156,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
 
           {/* Pet Basic Info */}
           <YStack flex={1} gap="$1.5">
-            <Text fontSize={20} fontWeight="700" color={colors.text}>
+            <Text fontSize={20} fontWeight="700" color={colors.text as any}>
               {pet.name}
             </Text>
             <XStack gap="$2" alignItems="center" flexWrap="wrap">
@@ -171,17 +171,17 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
                 </Text>
               </XStack>
               {pet.breed && (
-                <Text fontSize={14} color={colors.icon}>
+                <Text fontSize={14} color={colors.icon as any}>
                   {pet.breed}
                 </Text>
               )}
               {pet.age != null && (
                 <>
-                  <Text fontSize={14} color={colors.icon + '60'}>
-                    •
+                  <Text fontSize={14} color={colors.iconAlpha60 as any}>
+                    �?
                   </Text>
-                  <Text fontSize={14} color={colors.icon}>
-                    {pet.age}岁
+                  <Text fontSize={14} color={colors.icon as any}>
+                    {pet.age}�?
                   </Text>
                 </>
               )}
@@ -192,7 +192,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
 
       {/* Divider */}
       <YStack width="100%" alignItems="center" paddingVertical="$2">
-        <YStack width="90%" height={1} backgroundColor={colors.icon + '15'} />
+        <YStack width="90%" height={1} backgroundColor={colors.iconAlpha15 as any} />
       </YStack>
 
       {/* Tab Navigation */}
@@ -230,9 +230,9 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
       {/* Tab Content */}
       <Card
         padding="$4"
-        backgroundColor={colors.background}
+        backgroundColor={colors.background as any}
         borderWidth={1}
-        borderColor={colors.icon + '20'}
+        borderColor={colors.iconAlpha20 as any}
         borderRadius="$4"
         minHeight={200}
       >
@@ -240,7 +240,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
           <YStack gap="$4">
             <XStack alignItems="center" gap="$2">
               <IconSymbol name="info.circle.fill" size={20} color="#FEBE98" />
-              <Text fontSize={16} fontWeight="700" color={colors.text}>
+              <Text fontSize={16} fontWeight="700" color={colors.text as any}>
                 基本信息
               </Text>
             </XStack>
@@ -248,7 +248,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
             {pet.description && (
               <>
                 <YStack gap="$2.5">
-                  <Text fontSize={14} fontWeight="600" color={colors.icon}>
+                  <Text fontSize={14} fontWeight="600" color={colors.icon as any}>
                     📝 描述
                   </Text>
                   <YStack
@@ -256,14 +256,18 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
                     backgroundColor="$gray2"
                     borderRadius="$3"
                     borderLeftWidth={3}
-                    borderLeftColor={colors.icon + '30'}
+                    borderLeftColor={colors.iconAlpha30 as any}
                   >
-                    <Text fontSize={14} color={colors.text} lineHeight={22}>
+                    <Text fontSize={14} color={colors.text as any} lineHeight={22}>
                       {pet.description}
                     </Text>
                   </YStack>
                 </YStack>
-                <YStack height={1} backgroundColor={colors.icon + '20'} marginVertical="$2" />
+                <YStack
+                  height={1}
+                  backgroundColor={colors.iconAlpha20 as any}
+                  marginVertical="$2"
+                />
               </>
             )}
 
@@ -273,12 +277,12 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
                 value={pet.species_display ?? pet.species}
                 colors={colors}
               />
-              <YStack height={1} backgroundColor={colors.icon + '15'} />
+              <YStack height={1} backgroundColor={colors.iconAlpha15 as any} />
 
               {pet.breed && (
                 <>
                   <InfoRow label="品种" value={pet.breed} colors={colors} />
-                  <YStack height={1} backgroundColor={colors.icon + '15'} />
+                  <YStack height={1} backgroundColor={colors.iconAlpha15 as any} />
                 </>
               )}
 
@@ -314,7 +318,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
       {/* 删除按钮 - 放在最下方 */}
       {onDelete && (
         <>
-          <YStack height={1} backgroundColor={colors.icon + '15'} marginVertical="$3" />
+          <YStack height={1} backgroundColor={colors.iconAlpha15 as any} marginVertical="$3" />
           <Button
             fullWidth
             variant="danger"

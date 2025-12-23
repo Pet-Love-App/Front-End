@@ -27,7 +27,7 @@ jest.mock('tamagui', () => ({
     />
   ),
   Separator: () => 'Separator',
-  Spinner: () => <span testID="loading-spinner">Spinner</span>,
+  Spinner: (props: any) => <span {...props}>Spinner</span>,
   Text: ({ children }: any) => <span>{children}</span>,
   XStack: ({ children, onPress, ...props }: any) => (
     <div onClick={onPress} {...props}>

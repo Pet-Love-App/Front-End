@@ -24,7 +24,7 @@ const TABS = [
 type TabKey = (typeof TABS)[number]['key'];
 
 /**
- * Profile Tabs 组件的 Props
+ * Profile Tabs 组件�?Props
  */
 interface ProfileTabsProps {
   /** 宠物列表 */
@@ -40,10 +40,10 @@ interface ProfileTabsProps {
 /**
  * Profile Tabs 组件
  *
- * 功能：
- * - 三个主要 Tab：宠物、评论、点赞
+ * 功能�?
+ * - 三个主要 Tab：宠物、评论、点�?
  * - 每个 Tab 有独立的内容区域
- * - 支持切换动画和状态管理
+ * - 支持切换动画和状态管�?
  *
  * @component
  * @example
@@ -74,7 +74,7 @@ export const ProfileTabs = memo(function ProfileTabs({
 
   return (
     <YStack width="100%" flex={1}>
-      {/* Tab 导航栏 */}
+      {/* Tab 导航�?*/}
       <XStack
         width="100%"
         paddingHorizontal="$4"
@@ -82,7 +82,7 @@ export const ProfileTabs = memo(function ProfileTabs({
         paddingBottom="$2"
         backgroundColor={colors.background}
         borderBottomWidth={1}
-        borderBottomColor={colors.icon + '10'}
+        borderBottomColor={colors.iconAlpha10 as any}
       >
         {TABS.map((tab) => {
           const isActive = activeTab === tab.key;

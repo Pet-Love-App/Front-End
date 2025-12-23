@@ -436,7 +436,7 @@ export function IngredientAnalysisCard({
                   <NutritionBarTrack>
                     <NutritionBarFill
                       width={`${Math.min(item.value, 100)}%`}
-                      backgroundColor={getNutritionColor(item.value, item.target)}
+                      backgroundColor={getNutritionColor(item.value, item.target) as any}
                     />
                   </NutritionBarTrack>
                   <NutritionValue>

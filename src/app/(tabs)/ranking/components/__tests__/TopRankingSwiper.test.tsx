@@ -71,7 +71,7 @@ describe('TopRankingSwiper', () => {
     { id: '1', name: 'Food 1', brand: 'Brand A', score: 5.0, image: 'img1.jpg' },
     { id: '2', name: 'Food 2', brand: 'Brand B', score: 4.5, image: 'img2.jpg' },
     { id: '3', name: 'Food 3', brand: 'Brand C', score: 4.0, image: 'img3.jpg' },
-  ];
+  ] as any;
 
   const mockOnPress = jest.fn();
 

@@ -131,7 +131,7 @@ class SupabaseAdditiveService {
         return {
           data: {
             matchType: 'exact',
-            additive: convertKeysToCamel(exactMatch),
+            additive: convertKeysToCamel(exactMatch) as Additive,
             query,
             notFound: false,
           },
@@ -173,7 +173,7 @@ class SupabaseAdditiveService {
         return {
           data: {
             matchType: 'fuzzy_single',
-            additive: convertKeysToCamel(fuzzyMatches[0]),
+            additive: convertKeysToCamel(fuzzyMatches[0]) as Additive,
             query,
             notFound: false,
           },
@@ -187,7 +187,7 @@ class SupabaseAdditiveService {
       return {
         data: {
           matchType: 'multiple',
-          additives: fuzzyMatches.map((item) => convertKeysToCamel(item)),
+          additives: fuzzyMatches.map((item) => convertKeysToCamel(item) as Additive),
           query,
           notFound: false,
         },
@@ -223,7 +223,7 @@ class SupabaseAdditiveService {
         logger.success('ingredients', 'search - exact match');
         return {
           data: {
-            ingredient: convertKeysToCamel(exactMatch),
+            ingredient: convertKeysToCamel(exactMatch) as Ingredient,
             query,
             notFound: false,
           },
@@ -255,7 +255,7 @@ class SupabaseAdditiveService {
       logger.success('ingredients', 'search - fuzzy match');
       return {
         data: {
-          ingredient: convertKeysToCamel(fuzzyMatch),
+          ingredient: convertKeysToCamel(fuzzyMatch) as Ingredient,
           query,
           notFound: false,
         },
@@ -297,7 +297,7 @@ class SupabaseAdditiveService {
 
       logger.success('additives', 'add');
       return {
-        data: convertKeysToCamel(data),
+        data: convertKeysToCamel(data) as Additive,
         error: null,
         success: true,
       };
@@ -336,7 +336,7 @@ class SupabaseAdditiveService {
 
       logger.success('ingredients', 'add');
       return {
-        data: convertKeysToCamel(data),
+        data: convertKeysToCamel(data) as Ingredient,
         error: null,
         success: true,
       };

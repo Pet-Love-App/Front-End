@@ -48,8 +48,7 @@ jest.mock('react-native-safe-area-context', () => ({
 describe('ChatScreen', () => {
   const mockRouter = { back: jest.fn() };
   const mockGetMessages = supabaseChatService.getMessages as jest.Mock;
-  const mockGetProfile = supabaseProfileService.getProfile as jest.Mock;
-  const mockGetProfileById = supabaseProfileService.getProfileById as jest.Mock; // Add this
+  const mockGetProfileById = supabaseProfileService.getProfileById as jest.Mock;
   const mockSendMessage = supabaseChatService.sendMessage as jest.Mock;
 
   beforeEach(() => {
@@ -74,17 +73,7 @@ describe('ChatScreen', () => {
       ],
     });
 
-    mockGetProfile.mockResolvedValue({
-      success: true,
-      data: {
-        id: 'user2',
-        username: 'Other User',
-        avatar_url: 'avatar.jpg',
-      },
-    });
-
     mockGetProfileById.mockResolvedValue({
-      // Add this
       success: true,
       data: {
         id: 'user2',

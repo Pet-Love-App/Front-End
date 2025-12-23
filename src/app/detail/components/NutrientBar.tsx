@@ -1,5 +1,5 @@
 /**
- * 营养成分进度条组件
+ * 营养成分进度条组�?
  */
 
 import { Text, XStack, YStack } from 'tamagui';
@@ -7,9 +7,9 @@ import { Text, XStack, YStack } from 'tamagui';
 interface NutrientBarProps {
   /** 营养成分名称 */
   label: string;
-  /** 百分比值 */
+  /** 百分比�?*/
   value: number;
-  /** 进度条颜色（Tamagui token） */
+  /** 进度条颜色（Tamagui token�?*/
   color: string;
 }
 
@@ -20,7 +20,7 @@ export function NutrientBar({ label, value, color }: NutrientBarProps) {
         <Text fontSize="$3" color="$gray11" fontWeight="600">
           {label}
         </Text>
-        <Text fontSize="$5" color={color} fontWeight="800" letterSpacing={-0.5}>
+        <Text fontSize="$5" color={color as any} fontWeight="800" letterSpacing={-0.5}>
           {value.toFixed(1)}%
         </Text>
       </XStack>
@@ -35,7 +35,7 @@ export function NutrientBar({ label, value, color }: NutrientBarProps) {
         <YStack
           height="100%"
           width={`${Math.min(value, 100)}%`}
-          backgroundColor={color}
+          backgroundColor={color as any}
           borderRadius="$3"
         />
       </YStack>

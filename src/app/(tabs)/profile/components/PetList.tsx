@@ -32,7 +32,7 @@ export function PetList({ pets = [], isLoading, onAddPet: _onAddPet, onPetPress 
           <Card
             padding="$6"
             borderWidth={1}
-            borderColor={colors.icon + '20'}
+            borderColor={colors.iconAlpha20 as any}
             backgroundColor={colors.background}
             borderRadius="$4"
           >
@@ -44,7 +44,7 @@ export function PetList({ pets = [], isLoading, onAddPet: _onAddPet, onPetPress 
           <Card
             padding="$6"
             borderWidth={1}
-            borderColor={colors.icon + '20'}
+            borderColor={colors.iconAlpha20 as any}
             backgroundColor={colors.background}
             borderRadius="$4"
           >

@@ -166,7 +166,7 @@ export const CommentSection = memo(function CommentSection({
             </Text>
             {totalCount > 0 && (
               <YStack
-                backgroundColor={colors.tint + '20'}
+                backgroundColor={colors.tintAlpha20 as any}
                 paddingHorizontal="$2"
                 paddingVertical="$0.5"
                 borderRadius="$3"
@@ -186,7 +186,7 @@ export const CommentSection = memo(function CommentSection({
           placeholder="说点什么..."
         />
 
-        <Separator borderColor={colors.icon + '20'} />
+        <Separator borderColor={colors.iconAlpha20 as any} />
 
         {/* 评论列表 */}
         <CommentList

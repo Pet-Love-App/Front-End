@@ -39,7 +39,7 @@ export function Toast({
   const colors = TYPE_COLORS[type];
   const defaultSfSymbol = SF_SYMBOLS[type];
 
-  // 动画值
+  // 动画�?
   const [translateY] = React.useState(new Animated.Value(100));
   const [opacity] = React.useState(new Animated.Value(0));
 
@@ -105,7 +105,7 @@ export function Toast({
       ]}
     >
       <XStack
-        backgroundColor={DIALOG_COLORS.background}
+        backgroundColor={DIALOG_COLORS.background as any}
         borderRadius={BORDER_RADIUS.medium}
         padding={SPACING.md}
         gap={SPACING.md}
@@ -113,7 +113,7 @@ export function Toast({
         minWidth={320}
         maxWidth={400}
         borderLeftWidth={4}
-        borderLeftColor={colors.border}
+        borderLeftColor={colors.border as any}
         {...SHADOWS.lg}
       >
         {/* 图标 */}
@@ -121,7 +121,7 @@ export function Toast({
           width={40}
           height={40}
           borderRadius={BORDER_RADIUS.medium}
-          backgroundColor={colors.bg}
+          backgroundColor={colors.bg as any}
           alignItems="center"
           justifyContent="center"
           flexShrink={0}
@@ -129,7 +129,7 @@ export function Toast({
           {icon ? (
             <Text fontSize={20}>{icon}</Text>
           ) : (
-            <IconSymbol name={defaultSfSymbol} size={20} color={colors.icon} />
+            <IconSymbol name={defaultSfSymbol} size={20} color={colors.icon as any} />
           )}
         </YStack>
 
@@ -138,13 +138,13 @@ export function Toast({
           <Text
             fontSize={FONT_SIZE.base}
             fontWeight="700"
-            color={DIALOG_COLORS.text}
+            color={DIALOG_COLORS.text as any}
             lineHeight={20}
           >
             {message}
           </Text>
           {description && (
-            <Text fontSize={FONT_SIZE.sm} color={DIALOG_COLORS.textLight} lineHeight={18}>
+            <Text fontSize={FONT_SIZE.sm} color={DIALOG_COLORS.textLight as any} lineHeight={18}>
               {description}
             </Text>
           )}
@@ -157,7 +157,7 @@ export function Toast({
               activeOpacity={0.7}
               style={{ marginTop: SPACING.xs }}
             >
-              <Text fontSize={FONT_SIZE.sm} fontWeight="700" color={colors.icon}>
+              <Text fontSize={FONT_SIZE.sm} fontWeight="700" color={colors.icon as any}>
                 {action.label}
               </Text>
             </TouchableOpacity>
@@ -170,11 +170,11 @@ export function Toast({
             width={24}
             height={24}
             borderRadius={BORDER_RADIUS.full}
-            backgroundColor={DIALOG_COLORS.neutral[100]}
+            backgroundColor={DIALOG_COLORS.neutral[100] as any}
             alignItems="center"
             justifyContent="center"
           >
-            <IconSymbol name="xmark" size={12} color={DIALOG_COLORS.neutral[600]} />
+            <IconSymbol name="xmark" size={12} color={DIALOG_COLORS.neutral[600] as any} />
           </YStack>
         </TouchableOpacity>
       </XStack>

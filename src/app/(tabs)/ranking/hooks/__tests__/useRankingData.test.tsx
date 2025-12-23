@@ -26,7 +26,7 @@ describe('useRankingData', () => {
       hasMore: true,
     });
 
-    (useCatFoodStore as jest.Mock).mockImplementation((selector) => {
+    (useCatFoodStore as unknown as jest.Mock).mockImplementation((selector) => {
       const state = {
         fetchCatFoods: mockFetchCatFoods,
         isRefreshing: false,

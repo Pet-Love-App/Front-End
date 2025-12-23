@@ -87,14 +87,14 @@ describe('CommentInput', () => {
     post_id: 'post-123',
     author_id: 'user-1',
     content: '被回复的评论',
-    author: { username: '评论用户' }, // 注意：源代码使用的是 comment.author.username
-    author_name: '评论用户', // 兼容旧数据结构
+    author: { username: '评论用户' },
+    author_name: '评论用户',
     created_at: '2024-01-01',
     updated_at: '2024-01-01',
     like_count: 5,
     is_liked: false,
     is_author: false,
-  };
+  } as any;
 
   const defaultProps = {
     value: '',

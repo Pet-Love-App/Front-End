@@ -39,7 +39,7 @@ export function Toast({
   const colors = TYPE_COLORS[type];
   const defaultSfSymbol = SF_SYMBOLS[type];
 
-  // 动画�?
+  // 动画值
   const [translateY] = React.useState(new Animated.Value(100));
   const [opacity] = React.useState(new Animated.Value(0));
 

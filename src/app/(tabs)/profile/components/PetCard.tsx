@@ -12,13 +12,13 @@ interface PetCardProps {
 
 /**
  * 宠物卡片组件
- * 展示单个宠物的基本信�?
+ * 展示单个宠物的基本信息
  */
 export function PetCard({ pet, onPress }: PetCardProps) {
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
 
-  // 防御性检查：如果没有 pet，则不渲染（�?hooks 之后检查）
+  // 防御性检查：如果没有 pet，则不渲染（在 hooks 之后检查）
   if (!pet) return null;
 
   return (

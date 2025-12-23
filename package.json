@@ -97,6 +97,7 @@
     "@tamagui/switch": "^1.138.0",
     "@tamagui/tabs": "^1.138.0",
     "@tamagui/text": "^1.138.0",
+    "@lottiefiles/dotlottie-react": "^0.9.0",
     "base64-arraybuffer": "^1.0.2",
     "expo": "~54.0.30",
     "expo-av": "^16.0.8",

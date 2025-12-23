@@ -1,5 +1,5 @@
 /**
- * 营养成分进度条组�?
+ * 营养成分进度条组件
  */
 
 import { Text, XStack, YStack } from 'tamagui';
@@ -7,9 +7,9 @@ import { Text, XStack, YStack } from 'tamagui';
 interface NutrientBarProps {
   /** 营养成分名称 */
   label: string;
-  /** 百分比�?*/
+  /** 百分比值 */
   value: number;
-  /** 进度条颜色（Tamagui token�?*/
+  /** 进度条颜色（Tamagui token） */
   color: string;
 }
 

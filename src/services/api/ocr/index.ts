@@ -1,11 +1,13 @@
 /**
  * OCR API 服务
+ * 集成 Sentry 错误追踪
  */
 
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import { logger } from '@/src/utils/logger';
 import { API_BASE_URL } from '@/src/config/env';
+import { captureException, addSentryBreadcrumb, Sentry } from '@/src/lib/sentry';
 
 import { apiClient } from '../core/httpClient';
 
@@ -33,6 +35,14 @@ class OcrService {
    * 识别图片中的文字
    */
   async recognize(imageUri: string): Promise<OcrResult> {
+    // 添加 Sentry 面包屑记录操作开始
+    addSentryBreadcrumb({
+      category: 'ocr',
+      message: 'OCR recognize started (FormData method)',
+      level: 'info',
+      data: { platform: Platform.OS, method: 'formdata' },
+    });
+
     try {
       const formData = new FormData();
       const filename = imageUri.split('/').pop() || 'image.jpg';
@@ -69,11 +79,29 @@ class OcrService {
 
       logger.info('OCR 识别成功', { textLength: text.length, confidence });
 
+      // 记录成功
+      addSentryBreadcrumb({
+        category: 'ocr',
+        message: 'OCR recognize succeeded',
+        level: 'info',
+        data: { textLength: text.length, confidence },
+      });
+
       return { text, confidence };
     } catch (error) {
       logger.error('OCR 识别失败', error as Error, {
         imageUri,
         platform: Platform.OS,
+      });
+
+      // 🔴 发送到 Sentry 进行错误追踪
+      captureException(error as Error, {
+        tags: { service: 'ocr', method: 'formdata' },
+        extra: {
+          imageUri: imageUri.substring(0, 100), // 截断避免敏感信息
+          platform: Platform.OS,
+          filename: imageUri.split('/').pop(),
+        },
       });
 
       // 提供更详细的错误信息
@@ -87,12 +115,26 @@ class OcrService {
    * 适用于所有平台的独立应用
    */
   async recognizeWithBase64(imageUri: string): Promise<OcrResult> {
+    addSentryBreadcrumb({
+      category: 'ocr',
+      message: 'OCR recognize started (Base64 method)',
+      level: 'info',
+      data: { platform: Platform.OS, method: 'base64' },
+    });
+
     try {
       logger.info('OCR 使用 base64 方法', { imageUri });
 
       // 读取文件为 base64
       const base64 = await FileSystem.readAsStringAsync(imageUri, {
         encoding: FileSystem.EncodingType.Base64,
+      });
+
+      addSentryBreadcrumb({
+        category: 'ocr',
+        message: 'Base64 encoding completed',
+        level: 'info',
+        data: { base64Length: base64.length },
       });
 
       // 使用 JSON 格式发送
@@ -106,9 +148,26 @@ class OcrService {
 
       logger.info('OCR 识别成功 (base64)', { textLength: text.length, confidence });
 
+      addSentryBreadcrumb({
+        category: 'ocr',
+        message: 'OCR recognize succeeded (base64)',
+        level: 'info',
+        data: { textLength: text.length, confidence },
+      });
+
       return { text, confidence };
     } catch (error) {
       logger.error('OCR 识别失败 (base64)', error as Error);
+
+      // 🔴 发送到 Sentry
+      captureException(error as Error, {
+        tags: { service: 'ocr', method: 'base64' },
+        extra: {
+          imageUri: imageUri.substring(0, 100),
+          platform: Platform.OS,
+        },
+      });
+
       throw new Error('识别失败，请重试');
     }
   }
@@ -118,6 +177,13 @@ class OcrService {
    * 修复独立应用中的文件上传问题
    */
   async recognizeWithFetch(imageUri: string): Promise<OcrResult> {
+    addSentryBreadcrumb({
+      category: 'ocr',
+      message: 'OCR recognize started (Fetch method)',
+      level: 'info',
+      data: { platform: Platform.OS, method: 'fetch' },
+    });
+
     try {
       logger.info('OCR 使用 fetch 方法', { imageUri, platform: Platform.OS });
 
@@ -150,11 +216,26 @@ class OcrService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        logger.error('OCR HTTP 错误', new Error(errorText), {
+        const httpError = new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+        logger.error('OCR HTTP 错误', httpError, {
           status: response.status,
           statusText: response.statusText,
+          responseBody: errorText.substring(0, 500), // 截断
         });
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+        // 🔴 发送 HTTP 错误到 Sentry
+        captureException(httpError, {
+          tags: { service: 'ocr', method: 'fetch', httpStatus: String(response.status) },
+          extra: {
+            status: response.status,
+            statusText: response.statusText,
+            responseBody: errorText.substring(0, 500),
+            platform: Platform.OS,
+          },
+        });
+
+        throw httpError;
       }
 
       const responseData = await response.json();
@@ -166,12 +247,30 @@ class OcrService {
 
       logger.info('OCR 识别成功 (fetch)', { textLength: text.length, confidence });
 
+      addSentryBreadcrumb({
+        category: 'ocr',
+        message: 'OCR recognize succeeded (fetch)',
+        level: 'info',
+        data: { textLength: text.length, confidence },
+      });
+
       return { text, confidence };
     } catch (error) {
       logger.error('OCR 识别失败 (fetch)', error as Error, {
         imageUri,
         platform: Platform.OS,
       });
+
+      // 🔴 发送到 Sentry（如果还没发送过）
+      if (!(error instanceof Error && error.message.startsWith('HTTP'))) {
+        captureException(error as Error, {
+          tags: { service: 'ocr', method: 'fetch' },
+          extra: {
+            imageUri: imageUri.substring(0, 100),
+            platform: Platform.OS,
+          },
+        });
+      }
 
       const errorMessage = error instanceof Error ? error.message : '未知错误';
       throw new Error(`识别失败: ${errorMessage}`);
@@ -191,35 +290,74 @@ export const ocrService = new OcrService();
  * 3. 最后尝试 base64 方法
  */
 export const recognizeImage = async (imageUri: string): Promise<OcrResult> => {
+  // 开始 Sentry 性能追踪
+  const transaction = Sentry.startSpan(
+    {
+      name: 'OCR Recognition',
+      op: 'ocr.recognize',
+    },
+    () => null
+  );
+
+  addSentryBreadcrumb({
+    category: 'ocr',
+    message: 'OCR smart recognition started',
+    level: 'info',
+    data: { platform: Platform.OS },
+  });
+
   logger.info('OCR 开始识别（智能模式）', {
     imageUri: imageUri.substring(0, 50) + '...',
     platform: Platform.OS,
   });
 
+  const errors: { method: string; error: string }[] = [];
+
   // 方法 1: 尝试标准 FormData 上传
   try {
     logger.debug('OCR 尝试方法 1: FormData');
-    return await ocrService.recognize(imageUri);
+    const result = await ocrService.recognize(imageUri);
+    return result;
   } catch (error1) {
+    errors.push({ method: 'formdata', error: String(error1) });
     logger.warn('OCR 方法 1 失败，尝试方法 2', { error: String(error1) });
 
     // 方法 2: 尝试 fetch 方法
     try {
       logger.debug('OCR 尝试方法 2: Fetch');
-      return await ocrService.recognizeWithFetch(imageUri);
+      const result = await ocrService.recognizeWithFetch(imageUri);
+      return result;
     } catch (error2) {
+      errors.push({ method: 'fetch', error: String(error2) });
       logger.warn('OCR 方法 2 失败，尝试方法 3', { error: String(error2) });
 
       // 方法 3: 尝试 base64 方法（最兼容）
       try {
         logger.debug('OCR 尝试方法 3: Base64');
-        return await ocrService.recognizeWithBase64(imageUri);
+        const result = await ocrService.recognizeWithBase64(imageUri);
+        return result;
       } catch (error3) {
+        errors.push({ method: 'base64', error: String(error3) });
         logger.error('OCR 所有方法都失败', error3 as Error, {
           error1: String(error1),
           error2: String(error2),
           error3: String(error3),
         });
+
+        // 🔴 所有方法失败时发送汇总报告到 Sentry
+        const allFailedError = new Error('OCR 所有方法都失败');
+        captureException(allFailedError, {
+          tags: { service: 'ocr', severity: 'critical' },
+          extra: {
+            platform: Platform.OS,
+            imageUri: imageUri.substring(0, 100),
+            attemptedMethods: errors,
+            error1: String(error1),
+            error2: String(error2),
+            error3: String(error3),
+          },
+        });
+
         throw new Error('识别失败，请检查网络连接后重试');
       }
     }

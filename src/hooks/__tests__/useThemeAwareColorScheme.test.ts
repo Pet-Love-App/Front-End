@@ -10,7 +10,7 @@ import { useColorScheme } from 'react-native';
 
 jest.mock('@/src/store/themeStore', () => ({
   useThemeStore: jest.fn((selector) => {
-    const state = { themeMode: 'system' };
+    const state = { themeMode: 'system', _hasHydrated: true };
     return selector ? selector(state) : state;
   }),
 }));
@@ -27,7 +27,9 @@ describe('useThemeAwareColorScheme', () => {
   describe('with system theme', () => {
     it('should return system color scheme when theme is system', () => {
       (useThemeStore as unknown as jest.Mock).mockImplementation((selector) => {
-        return selector ? selector({ themeMode: 'system' }) : { themeMode: 'system' };
+        return selector
+          ? selector({ themeMode: 'system', _hasHydrated: true })
+          : { themeMode: 'system', _hasHydrated: true };
       });
       (useColorScheme as jest.Mock).mockReturnValue('light');
 
@@ -38,7 +40,9 @@ describe('useThemeAwareColorScheme', () => {
 
     it('should return dark when system is dark', () => {
       (useThemeStore as unknown as jest.Mock).mockImplementation((selector) => {
-        return selector ? selector({ themeMode: 'system' }) : { themeMode: 'system' };
+        return selector
+          ? selector({ themeMode: 'system', _hasHydrated: true })
+          : { themeMode: 'system', _hasHydrated: true };
       });
       (useColorScheme as jest.Mock).mockReturnValue('dark');
 
@@ -51,7 +55,9 @@ describe('useThemeAwareColorScheme', () => {
   describe('with manual theme', () => {
     it('should return light when theme is light', () => {
       (useThemeStore as unknown as jest.Mock).mockImplementation((selector) => {
-        return selector ? selector({ themeMode: 'light' }) : { themeMode: 'light' };
+        return selector
+          ? selector({ themeMode: 'light', _hasHydrated: true })
+          : { themeMode: 'light', _hasHydrated: true };
       });
 
       const { result } = renderHook(() => useThemeAwareColorScheme());
@@ -61,7 +67,9 @@ describe('useThemeAwareColorScheme', () => {
 
     it('should return dark when theme is dark', () => {
       (useThemeStore as unknown as jest.Mock).mockImplementation((selector) => {
-        return selector ? selector({ themeMode: 'dark' }) : { themeMode: 'dark' };
+        return selector
+          ? selector({ themeMode: 'dark', _hasHydrated: true })
+          : { themeMode: 'dark', _hasHydrated: true };
       });
 
       const { result } = renderHook(() => useThemeAwareColorScheme());

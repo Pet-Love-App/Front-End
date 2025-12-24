@@ -90,7 +90,7 @@ export function CatFoodCard({
   const isTopThree = index < 3;
 
   return (
-    <Pressable onPress={handlePress}>
+    <Pressable onPress={handlePress} testID="cat-food-card">
       {({ pressed }) => (
         <YStack
           backgroundColor="$background"
@@ -132,7 +132,12 @@ export function CatFoodCard({
                   )}
                 </YStack>
                 {isTopThree && (
-                  <Text fontSize={10} fontWeight="800" color={rankConfig.borderColor as any}>
+                  <Text
+                    fontSize={10}
+                    fontWeight="800"
+                    color={rankConfig.borderColor as any}
+                    testID="cat-food-rank"
+                  >
                     {rankConfig.label}
                   </Text>
                 )}
@@ -140,7 +145,7 @@ export function CatFoodCard({
             )}
 
             {/* 中间：产品图片 */}
-            <Pressable onPress={handleImagePress}>
+            <Pressable onPress={handleImagePress} testID="cat-food-image-pressable">
               <YStack
                 width={90}
                 height={90}
@@ -155,6 +160,7 @@ export function CatFoodCard({
                     source={{ uri: catfood.imageUrl }}
                     style={{ width: '100%', height: '100%' }}
                     resizeMode="cover"
+                    testID="cat-food-image"
                   />
                 ) : (
                   <YStack flex={1} alignItems="center" justifyContent="center">
@@ -167,7 +173,14 @@ export function CatFoodCard({
             {/* 右侧：产品信息 */}
             <YStack flex={1} gap="$2" justifyContent="space-between">
               {/* 名称 */}
-              <Text fontSize="$4" fontWeight="700" color="$color" numberOfLines={2} lineHeight={22}>
+              <Text
+                fontSize="$4"
+                fontWeight="700"
+                color="$color"
+                numberOfLines={2}
+                lineHeight={22}
+                testID="cat-food-name"
+              >
                 {catfood.name}
               </Text>
 
@@ -181,7 +194,12 @@ export function CatFoodCard({
                   borderWidth={1}
                   borderColor={primaryScale.primary4}
                 >
-                  <Text fontSize={11} fontWeight="600" color={primaryScale.primary10}>
+                  <Text
+                    fontSize={11}
+                    fontWeight="600"
+                    color={primaryScale.primary10}
+                    testID="cat-food-brand"
+                  >
                     {catfood.brand || '未知品牌'}
                   </Text>
                 </YStack>

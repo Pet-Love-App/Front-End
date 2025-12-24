@@ -111,7 +111,7 @@ export function AppHeader({
       <XStack alignItems="center" justifyContent="space-between" height={HEADER_HEIGHT}>
         {/* 左侧：头像 */}
         {showAvatar ? (
-          <Pressable onPress={handleAvatarPress}>
+          <Pressable onPress={handleAvatarPress} testID="avatar-button">
             <YStack
               width={40}
               height={40}
@@ -147,7 +147,7 @@ export function AppHeader({
         {rightElement ? (
           rightElement
         ) : showNotification ? (
-          <Pressable onPress={handleNotificationPress}>
+          <Pressable onPress={handleNotificationPress} testID="notification-button">
             <YStack
               width={40}
               height={40}

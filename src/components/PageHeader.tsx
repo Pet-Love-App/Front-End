@@ -73,7 +73,11 @@ export function PageHeader({
       <XStack alignItems="center" gap="$2.5" paddingTop="$2.5">
         {/* 返回按钮 */}
         {showBackButton && (
-          <TouchableOpacity onPress={handleBackPress} activeOpacity={0.7}>
+          <TouchableOpacity
+            onPress={handleBackPress}
+            activeOpacity={0.7}
+            testID="page-header-back-button"
+          >
             <YStack
               padding="$2"
               borderRadius="$3"
@@ -115,6 +119,7 @@ export function PageHeader({
             fontWeight="700"
             color={colors.text as any}
             letterSpacing={0.3}
+            testID="page-header-title"
           >
             {title}
           </Text>
@@ -124,13 +129,14 @@ export function PageHeader({
               color={colors.textSecondary as any}
               fontWeight="500"
               marginTop="$0.5"
+              testID="page-header-subtitle"
             >
               {subtitle}
             </Text>
           )}
         </YStack>
 
-        {rightElement && <YStack>{rightElement}</YStack>}
+        {rightElement && <YStack testID="page-header-right-element">{rightElement}</YStack>}
       </XStack>
     </YStack>
   );

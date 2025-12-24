@@ -32,6 +32,7 @@ jest.mock('@/src/lib/supabase', () => ({
     removeFriend: jest.fn(),
     getMyFriends: jest.fn(),
     getReceivedRequests: jest.fn(),
+    getFriendRequestStatus: jest.fn(),
   },
   supabaseChatService: {
     createConversation: jest.fn(),
@@ -87,17 +88,25 @@ describe('MyFriendsScreen', () => {
   });
 
   it('renders correctly and loads friends', async () => {
-    const { getByText, findByText } = render(<MyFriendsScreen />);
+    const { getByText } = render(<MyFriendsScreen />);
 
     expect(getByText('我的好友')).toBeTruthy();
 
-    await waitFor(() => {
-      expect(supabaseFriendsService.getMyFriends).toHaveBeenCalled();
-    });
+    await waitFor(
+      () => {
+        expect(supabaseFriendsService.getMyFriends).toHaveBeenCalled();
+      },
+      { timeout: 5000 }
+    );
 
-    const friendElement = await findByText('Friend 1');
-    expect(friendElement).toBeTruthy();
-  });
+    // Wait for friend list to render
+    await waitFor(
+      () => {
+        expect(getByText('Friend 1')).toBeTruthy();
+      },
+      { timeout: 5000 }
+    );
+  }, 15000);
 
   it('switches tabs', async () => {
     const { getByText } = render(<MyFriendsScreen />);

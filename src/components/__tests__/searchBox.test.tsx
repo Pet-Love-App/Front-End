@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import SearchBox from '../searchBox';
 import { View, TextInput } from 'react-native';
 
@@ -47,15 +47,32 @@ describe('SearchBox', () => {
     expect(onChangeText).toHaveBeenCalledWith('cat food');
   });
 
-  it('should handle search submission', () => {
+  it('should handle search submission', async () => {
     // Arrange
     const onSearch = jest.fn();
-    const { getByPlaceholderText } = render(<SearchBox onSearch={onSearch} />);
-    const input = getByPlaceholderText('搜索...');
+    let searchValue = '';
+    const onChangeText = jest.fn((text) => {
+      searchValue = text;
+    });
 
-    // Act
-    fireEvent.changeText(input, 'test query');
-    fireEvent(input, 'submitEditing', { nativeEvent: { text: 'test query' } });
+    const { getByTestId, rerender } = render(
+      <SearchBox value={searchValue} onChangeText={onChangeText} onSearch={onSearch} />
+    );
+
+    // Act - update text
+    await act(async () => {
+      fireEvent.changeText(getByTestId('search-input'), 'test query');
+    });
+
+    // Rerender with updated value to simulate controlled component
+    await act(async () => {
+      rerender(<SearchBox value="test query" onChangeText={onChangeText} onSearch={onSearch} />);
+    });
+
+    // Submit
+    await act(async () => {
+      fireEvent(getByTestId('search-input'), 'submitEditing');
+    });
 
     // Assert
     expect(onSearch).toHaveBeenCalledWith('test query');

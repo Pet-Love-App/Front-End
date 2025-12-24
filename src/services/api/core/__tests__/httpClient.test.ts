@@ -9,6 +9,10 @@ import { AppError, ErrorCodes } from '@/src/utils/errorHandler';
 // Mock dependencies
 jest.mock('@/src/config/env', () => ({
   API_BASE_URL: 'http://test-api.com',
+  ENV: {
+    API_BASE_URL: 'http://test-api.com',
+    API_TIMEOUT: 10000,
+  },
 }));
 
 jest.mock('@/src/store/userStore', () => ({

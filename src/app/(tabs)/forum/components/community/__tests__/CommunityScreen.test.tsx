@@ -165,14 +165,14 @@ describe('CommunityScreen', () => {
       data: [],
       error: null,
     });
+    (supabaseForumService.toggleLike as jest.Mock).mockResolvedValue({
+      data: { action: 'liked', likesCount: 6 },
+      error: null,
+    });
   });
 
-  const renderComponent = () => {
-    return render(<CommunityScreen />);
-  };
-
   it('应该在加载时获取帖子', async () => {
-    renderComponent();
+    render(<CommunityScreen />);
 
     await waitFor(() => {
       expect(supabaseForumService.getPosts).toHaveBeenCalledWith({ order: 'latest' });
@@ -180,7 +180,7 @@ describe('CommunityScreen', () => {
   });
 
   it('切换分类应该重新获取帖子', async () => {
-    const { UNSAFE_getByType } = renderComponent();
+    const { UNSAFE_getByType } = render(<CommunityScreen />);
 
     await waitFor(() => {
       expect(supabaseForumService.getPosts).toHaveBeenCalled();
@@ -198,41 +198,45 @@ describe('CommunityScreen', () => {
   });
 
   it('点击点赞应该调用 toggleLike', async () => {
-    const { UNSAFE_getAllByType } = renderComponent();
+    const { UNSAFE_getAllByType } = render(<CommunityScreen />);
 
     await waitFor(() => {
       expect(UNSAFE_getAllByType('mock-post-card' as any)).toHaveLength(2);
     });
 
-    (supabaseForumService.toggleLike as jest.Mock).mockResolvedValue({
-      data: { action: 'liked', likesCount: 6 },
-      error: null,
-    });
-
     const firstCard = UNSAFE_getAllByType('mock-post-card' as any)[0];
     fireEvent(firstCard, 'onLikePress');
 
-    expect(supabaseForumService.toggleLike).toHaveBeenCalledWith(1);
+    await waitFor(() => {
+      expect(supabaseForumService.toggleLike).toHaveBeenCalledWith(1);
+    });
   });
 
   it('搜索应该调用 getPosts', async () => {
-    const { UNSAFE_getByType } = renderComponent();
+    const { UNSAFE_getByType } = render(<CommunityScreen />);
+
+    await waitFor(() => {
+      expect(supabaseForumService.getPosts).toHaveBeenCalled();
+    });
 
     const header = UNSAFE_getByType('mock-forum-header' as any);
     fireEvent(header, 'onSearch', '猫咪');
 
     await waitFor(() => {
-      // 搜索逻辑在代码中可能有所不同，这里假设它会调用 getPosts
       expect(supabaseForumService.getPosts).toHaveBeenCalled();
     });
   });
 
-  it('点击通知图标应该跳转到通知页面', () => {
-    const { UNSAFE_getByType } = renderComponent();
-    // 当前屏幕没有将 onNotificationPress 传入 ForumHeader
-    // 验证创建按钮跳转到发帖页面
+  it('点击通知图标应该跳转到通知页面', async () => {
+    const { UNSAFE_getByType } = render(<CommunityScreen />);
+
+    await waitFor(() => {
+      expect(supabaseForumService.getPosts).toHaveBeenCalled();
+    });
+
     const fab = UNSAFE_getByType('mock-fab' as any);
     fireEvent(fab, 'onPress');
+
     expect(router.push).toHaveBeenCalledWith('/(tabs)/forum/create-post');
   });
 });

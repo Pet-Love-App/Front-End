@@ -82,4 +82,37 @@ jest.mock('react-native-reanimated', () => {
 // Mock 'react-native-chart-kit' for PieChart
 jest.mock('react-native-chart-kit', () => ({
   PieChart: 'PieChart',
+  BarChart: 'BarChart',
+}));
+
+// Mock '@sentry/react-native' to avoid ESM issues
+jest.mock('@sentry/react-native', () => ({
+  init: jest.fn(),
+  wrap: jest.fn((component) => component),
+  captureException: jest.fn(),
+  captureMessage: jest.fn(),
+  addBreadcrumb: jest.fn(),
+  setUser: jest.fn(),
+  setTag: jest.fn(),
+  setTags: jest.fn(),
+  setExtra: jest.fn(),
+  setExtras: jest.fn(),
+  setContext: jest.fn(),
+  withScope: jest.fn((callback) => callback({ setTag: jest.fn(), setExtra: jest.fn() })),
+  startTransaction: jest.fn(() => ({ finish: jest.fn() })),
+  getCurrentHub: jest.fn(() => ({
+    getScope: jest.fn(() => ({
+      setUser: jest.fn(),
+      setTag: jest.fn(),
+    })),
+  })),
+  Severity: {
+    Fatal: 'fatal',
+    Error: 'error',
+    Warning: 'warning',
+    Info: 'info',
+    Debug: 'debug',
+  },
+  ReactNavigationInstrumentation: jest.fn(),
+  ReactNativeTracing: jest.fn(),
 }));

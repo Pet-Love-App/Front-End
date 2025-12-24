@@ -21,6 +21,11 @@ jest.mock('expo-router', () => ({
   router: {
     push: jest.fn(),
   },
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    back: jest.fn(),
+    replace: jest.fn(),
+  })),
 }));
 jest.mock('tamagui', () => {
   const { View, Text } = require('react-native');

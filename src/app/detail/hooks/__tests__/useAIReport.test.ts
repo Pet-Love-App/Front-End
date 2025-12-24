@@ -1,11 +1,10 @@
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { useAIReport } from '../useAIReport';
-import { aiReportService } from '@/src/services/api';
+import { supabaseAIReportService } from '@/src/lib/supabase/services/aiReport';
 
 // Mock dependencies
-jest.mock('@/src/services/api', () => ({
-  aiReportService: {
-    checkReportExists: jest.fn(),
+jest.mock('@/src/lib/supabase/services/aiReport', () => ({
+  supabaseAIReportService: {
     getReport: jest.fn(),
   },
 }));
@@ -44,13 +43,12 @@ describe('useAIReport', () => {
   it('should not load report if catfoodId is null', async () => {
     const { result } = renderHook(() => useAIReport(null));
 
-    expect(aiReportService.checkReportExists).not.toHaveBeenCalled();
+    expect(supabaseAIReportService.getReport).not.toHaveBeenCalled();
     expect(result.current.report).toBeNull();
   });
 
   it('should load report successfully when it exists', async () => {
-    (aiReportService.checkReportExists as jest.Mock).mockResolvedValue({ exists: true });
-    (aiReportService.getReport as jest.Mock).mockResolvedValue(mockReport);
+    (supabaseAIReportService.getReport as jest.Mock).mockResolvedValue(mockReport);
 
     const { result } = renderHook(() => useAIReport(123));
 
@@ -59,15 +57,14 @@ describe('useAIReport', () => {
       expect(result.current.isLoading).toBeFalsy();
     });
 
-    expect(aiReportService.checkReportExists).toHaveBeenCalledWith(123);
-    expect(aiReportService.getReport).toHaveBeenCalledWith(123);
+    expect(supabaseAIReportService.getReport).toHaveBeenCalledWith(123);
     expect(result.current.hasReport).toBeTruthy();
     expect(result.current.report).toEqual(mockReport);
     expect(result.current.error).toBeNull();
   });
 
   it('should handle case when report does not exist', async () => {
-    (aiReportService.checkReportExists as jest.Mock).mockResolvedValue({ exists: false });
+    (supabaseAIReportService.getReport as jest.Mock).mockResolvedValue(null);
 
     const { result } = renderHook(() => useAIReport(123));
 
@@ -75,14 +72,13 @@ describe('useAIReport', () => {
       expect(result.current.isLoading).toBeFalsy();
     });
 
-    expect(aiReportService.checkReportExists).toHaveBeenCalledWith(123);
-    expect(aiReportService.getReport).not.toHaveBeenCalled();
+    expect(supabaseAIReportService.getReport).toHaveBeenCalledWith(123);
     expect(result.current.hasReport).toBeFalsy();
     expect(result.current.report).toBeNull();
   });
 
   it('should handle error during checkReportExists', async () => {
-    (aiReportService.checkReportExists as jest.Mock).mockRejectedValue(new Error('Network error'));
+    (supabaseAIReportService.getReport as jest.Mock).mockRejectedValue(new Error('Network error'));
 
     const { result } = renderHook(() => useAIReport(123));
 
@@ -95,24 +91,8 @@ describe('useAIReport', () => {
     expect(result.current.report).toBeNull();
   });
 
-  it('should handle error during getReport', async () => {
-    (aiReportService.checkReportExists as jest.Mock).mockResolvedValue({ exists: true });
-    (aiReportService.getReport as jest.Mock).mockRejectedValue(new Error('Fetch error'));
-
-    const { result } = renderHook(() => useAIReport(123));
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBeFalsy();
-    });
-
-    expect(result.current.error).toBe('Fetch error');
-    expect(result.current.hasReport).toBeFalsy(); // Based on implementation, error sets hasReport to false
-    expect(result.current.report).toBeNull();
-  });
-
   it('should refetch report when refetch is called', async () => {
-    (aiReportService.checkReportExists as jest.Mock).mockResolvedValue({ exists: true });
-    (aiReportService.getReport as jest.Mock).mockResolvedValue(mockReport);
+    (supabaseAIReportService.getReport as jest.Mock).mockResolvedValue(mockReport);
 
     const { result } = renderHook(() => useAIReport(123));
 
@@ -122,14 +102,12 @@ describe('useAIReport', () => {
 
     // Clear mocks to verify second call
     jest.clearAllMocks();
-    (aiReportService.checkReportExists as jest.Mock).mockResolvedValue({ exists: true });
-    (aiReportService.getReport as jest.Mock).mockResolvedValue(mockReport);
+    (supabaseAIReportService.getReport as jest.Mock).mockResolvedValue(mockReport);
 
     await act(async () => {
       await result.current.refetch();
     });
 
-    expect(aiReportService.checkReportExists).toHaveBeenCalledWith(123);
-    expect(aiReportService.getReport).toHaveBeenCalledWith(123);
+    expect(supabaseAIReportService.getReport).toHaveBeenCalledWith(123);
   });
 });

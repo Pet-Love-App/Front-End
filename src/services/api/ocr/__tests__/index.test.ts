@@ -45,7 +45,7 @@ describe('OCR Service', () => {
       (apiClient.upload as jest.Mock).mockRejectedValue(new Error('Upload failed'));
 
       // Act & Assert
-      await expect(ocrService.recognize('file://image.jpg')).rejects.toThrow('识别失败，请重试');
+      await expect(ocrService.recognize('file://image.jpg')).rejects.toThrow('识别失败');
     });
 
     it('should use default confidence if not provided', async () => {

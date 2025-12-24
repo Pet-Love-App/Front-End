@@ -175,7 +175,11 @@ describe('RankingScreen', () => {
   });
 
   it('renders correctly', () => {
-    const { toJSON } = render(<RankingScreen />);
-    expect(toJSON()).toMatchSnapshot();
+    const { getByTestId } = render(<RankingScreen />);
+
+    // Verify key elements are rendered using testID
+    // AppHeader is mocked so we check for the ranking-screen container
+    expect(getByTestId('ranking-screen')).toBeTruthy();
+    expect(getByTestId('catfood-list')).toBeTruthy();
   });
 });

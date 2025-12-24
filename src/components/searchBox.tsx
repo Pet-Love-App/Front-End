@@ -29,14 +29,18 @@ export default function SearchBox({
 }: SearchBoxProps) {
   // 内部状态管理输入值（如果没有外部控制）
   const [internalValue, setInternalValue] = useState(value);
-  const currentValue = value !== undefined ? value : internalValue;
+  // 如果外部提供了 onChangeText 但没有提供 value，使用内部状态
+  const isControlled = value !== undefined;
+  const currentValue = isControlled ? value : internalValue;
 
   const handleTextChange = useCallback(
     (text: string) => {
-      setInternalValue(text);
+      if (!isControlled) {
+        setInternalValue(text);
+      }
       onChangeText?.(text);
     },
-    [onChangeText]
+    [onChangeText, isControlled]
   );
 
   const handleClear = useCallback(() => {
@@ -97,6 +101,7 @@ export default function SearchBox({
       {/* 清除按钮 */}
       {currentValue && currentValue.length > 0 && (
         <XStack
+          testID="clear-button"
           onPress={handleClear}
           padding="$1"
           borderRadius={9999}

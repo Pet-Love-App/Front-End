@@ -7,6 +7,12 @@ import { useThemeAwareColorScheme } from '../../hooks/useThemeAwareColorScheme';
 import { useDeepLink } from '../../hooks/useDeepLink';
 
 // Mock dependencies
+jest.mock('@/src/lib/sentry', () => ({
+  initSentry: jest.fn(),
+  captureException: jest.fn(),
+  addSentryBreadcrumb: jest.fn(),
+}));
+
 jest.mock('expo-splash-screen', () => ({
   preventAutoHideAsync: jest.fn(),
   hideAsync: jest.fn(),

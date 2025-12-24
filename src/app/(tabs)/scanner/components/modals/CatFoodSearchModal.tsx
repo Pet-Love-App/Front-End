@@ -386,7 +386,7 @@ export function CatFoodSearchModal({ visible, onClose, onSelectCatFood }: CatFoo
               }}
             >
               {loading ? (
-                <Spinner size="small" color="$gray10" />
+                <Spinner size="small" color="$gray10" testID="loading-spinner" />
               ) : (
                 <IconSymbol name="magnifyingglass" size={20} color="$gray10" />
               )}
@@ -402,6 +402,7 @@ export function CatFoodSearchModal({ visible, onClose, onSelectCatFood }: CatFoo
                 autoFocus
                 placeholderTextColor="$gray9"
                 accessibilityLabel="搜索猫粮输入框"
+                testID="search-input"
               />
               {searchText.length > 0 && (
                 <Button

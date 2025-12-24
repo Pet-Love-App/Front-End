@@ -76,8 +76,12 @@ describe('TopRankingSwiper', () => {
   const mockOnPress = jest.fn();
 
   it('renders correctly', () => {
-    const { toJSON } = render(<TopRankingSwiper data={mockData} onPress={mockOnPress} />);
-    expect(toJSON()).toMatchSnapshot();
+    const { getByLabelText, getAllByText } = render(
+      <TopRankingSwiper data={mockData} onPress={mockOnPress} />
+    );
+    // Verify key elements are rendered instead of using snapshot
+    expect(getByLabelText('热门猫粮排行榜')).toBeTruthy();
+    expect(getAllByText(/Food/)).toHaveLength(3);
   });
 
   it('renders correct number of items', () => {

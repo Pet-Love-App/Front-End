@@ -337,21 +337,17 @@ describe('Supabase Chat Service', () => {
       const mockUser = { id: 'user1' };
       (supabase.auth.getUser as jest.Mock).mockResolvedValue({ data: { user: mockUser } });
 
-      const mockUpdate = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockReturnThis();
-      const mockNeq = jest.fn().mockResolvedValue({ error: null });
-
-      (supabase.from as jest.Mock).mockReturnValue({
-        update: mockUpdate,
-        eq: mockEq,
-        neq: mockNeq,
-      });
+      const mockRpc = jest.fn().mockResolvedValue({ data: null, error: null });
+      (supabase.rpc as jest.Mock) = mockRpc;
 
       const result = await supabaseChatService.markMessagesAsRead(1);
 
       expect(result.success).toBe(true);
       expect(result.data).toBe(true);
-      expect(mockUpdate).toHaveBeenCalledWith({ is_read: true });
+      expect(mockRpc).toHaveBeenCalledWith('mark_conversation_messages_as_read', {
+        p_conversation_id: 1,
+        p_user_id: 'user1',
+      });
     });
 
     it('should return error if not authenticated', async () => {
@@ -367,15 +363,11 @@ describe('Supabase Chat Service', () => {
       const mockUser = { id: 'user1' };
       (supabase.auth.getUser as jest.Mock).mockResolvedValue({ data: { user: mockUser } });
 
-      const mockUpdate = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockReturnThis();
-      const mockNeq = jest.fn().mockResolvedValue({ error: { message: 'DB Error' } });
-
-      (supabase.from as jest.Mock).mockReturnValue({
-        update: mockUpdate,
-        eq: mockEq,
-        neq: mockNeq,
+      const mockRpc = jest.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'DB Error', code: 'DB_ERROR' },
       });
+      (supabase.rpc as jest.Mock) = mockRpc;
 
       const result = await supabaseChatService.markMessagesAsRead(1);
 

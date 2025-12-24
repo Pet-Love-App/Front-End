@@ -1,6 +1,6 @@
 /**
  * 评论列表组件
- * 职责：展示评论列表和空状�?
+ * 职责：展示评论列表和空状态
  */
 import { memo } from 'react';
 import { ActivityIndicator } from 'react-native';
@@ -35,28 +35,28 @@ export const CommentList = memo(function CommentList({
   const colorScheme = useThemeAwareColorScheme();
   const colors = Colors[colorScheme];
 
-  // 防御性编程：确保 comments 是数�?
+  // 防御性编程：确保 comments 是数组
   const safeComments = Array.isArray(comments) ? comments : [];
 
-  // 加载中状�?
+  // 加载中状态
   if (isLoading && safeComments.length === 0) {
     return (
       <YStack alignItems="center" paddingVertical="$6">
         <ActivityIndicator size="large" color={colors.tint as any} />
         <Text fontSize="$3" color={colors.icon as any} marginTop="$2">
-          加载�?..
+          加载中...
         </Text>
       </YStack>
     );
   }
 
-  // 空状�?
+  // 空状态
   if (safeComments.length === 0) {
     return (
       <YStack alignItems="center" paddingVertical="$6" gap="$2">
         <IconSymbol name="bubble.left" size={48} color={(colors.icon + '40') as any} />
         <Text fontSize="$4" color={colors.icon as any}>
-          还没有评�?
+          还没有评论
         </Text>
         <Text fontSize="$2" color={colors.icon as any}>
           快来发表第一条评论吧~
@@ -89,7 +89,7 @@ export const CommentList = memo(function CommentList({
           marginTop="$2"
           disabled={isLoading}
         >
-          {isLoading ? '加载�?..' : '加载更多'}
+          {isLoading ? '加载中...' : '加载更多'}
         </Button>
       )}
     </YStack>

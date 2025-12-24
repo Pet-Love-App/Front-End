@@ -12,7 +12,7 @@ import { PetWeightChart } from './PetWeightChart';
 import { PetWeightRecords } from './PetWeightRecords';
 
 /**
- * 宠物信息面板组件�?Props 接口
+ * 宠物信息面板组件的 Props 接口
  */
 interface PetInfoPanelProps {
   /** 宠物数据 */
@@ -31,11 +31,11 @@ const TABS = [
   { key: 'activity', label: '活动记录', icon: 'chart.bar.fill' },
 ] as const;
 
-/** Tab 键类�?*/
+/** Tab 键类型 */
 type TabKey = (typeof TABS)[number]['key'];
 
 /**
- * 信息行组�?- 用于显示键值对信息
+ * 信息行组件 - 用于显示键值对信息
  */
 interface InfoRowProps {
   label: string;
@@ -59,9 +59,9 @@ const InfoRow = memo(function InfoRow({ label, value, colors }: InfoRowProps) {
 /**
  * 宠物信息面板组件
  *
- * 功能�?
+ * 功能：
  * - 展示宠物的头像和基本信息
- * - 提供多个 Tab 切换查看不同类型的信�?
+ * - 提供多个 Tab 切换查看不同类型的信息
  * - 支持主题切换
  *
  * @component
@@ -79,7 +79,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
 
   /**
    * 处理 Tab 切换
-   * 使用 useCallback 避免不必要的重渲�?
+   * 使用 useCallback 避免不必要的重渲染
    */
   const handleTabChange = useCallback((tab: TabKey) => {
     setActiveTab(tab);
@@ -98,7 +98,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
   const handleDelete = useCallback(() => {
     if (!onDelete) return;
 
-    Alert.alert('确认删除', `确定要删�?${pet.name} 吗？此操作无法撤销。`, [
+    Alert.alert('确认删除', `确定要删除 ${pet.name} 吗？此操作无法撤销。`, [
       {
         text: '取消',
         style: 'cancel',
@@ -111,7 +111,7 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
             setDeleting(true);
             await onDelete(pet.id);
           } catch (error) {
-            // 错误已在 Hook 中处�?
+            // 错误已在 Hook 中处理
           } finally {
             setDeleting(false);
           }
@@ -178,10 +178,10 @@ export const PetInfoPanel = memo(function PetInfoPanel({ pet, onDelete }: PetInf
               {pet.age != null && (
                 <>
                   <Text fontSize={14} color={colors.iconAlpha60 as any}>
-                    �?
+                    ·
                   </Text>
                   <Text fontSize={14} color={colors.icon as any}>
-                    {pet.age}�?
+                    {pet.age}岁
                   </Text>
                 </>
               )}

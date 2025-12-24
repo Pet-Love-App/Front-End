@@ -16,6 +16,10 @@ import { DesktopPet } from '../components/DesktopPet';
 import { ToastManager, AlertManager } from '../components/dialogs';
 import { DismissKeyboardView } from '../components/DismissKeyboardView';
 import { useUserStore } from '../store/userStore';
+import { initSentry, SentryErrorBoundary } from '../lib/sentry';
+
+// 尽早初始化 Sentry
+initSentry();
 
 SplashScreen.preventAutoHideAsync();
 

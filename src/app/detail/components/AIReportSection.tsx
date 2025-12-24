@@ -1,9 +1,9 @@
 /**
- * AI 报告嵌入式展示组�?
+ * AI 报告嵌入式展示组件
  *
- * 支持两种模式�?
+ * 支持两种模式：
  * 1. 已有报告模式：显示保存的报告数据
- * 2. 流式生成模式：实时显�?AI 流式输出
+ * 2. 流式生成模式：实时显示 AI 流式输出
  */
 
 import { Dimensions } from 'react-native';
@@ -28,19 +28,19 @@ import { StreamingText } from './StreamingText';
 import type { StreamingState } from '../hooks/useStreamingReport';
 
 interface AIReportSectionProps {
-  /** 已有的报告数�?*/
+  /** 已有的报告数据 */
   report?: AIReportData | null;
   /** 是否正在加载已有报告 */
   isLoading?: boolean;
-  /** 流式状态（用于流式生成模式�?*/
+  /** 流式状态（用于流式生成模式） */
   streamingState?: StreamingState | null;
   /** 是否显示生成按钮 */
   showGenerateButton?: boolean;
-  /** 是否正在生成中（禁用按钮�?*/
+  /** 是否正在生成中（禁用按钮） */
   isGenerating?: boolean;
-  /** 点击生成按钮的回�?*/
+  /** 点击生成按钮的回调 */
   onGeneratePress?: () => void;
-  /** 点击停止按钮的回�?*/
+  /** 点击停止按钮的回调 */
   onStopPress?: () => void;
 }
 
@@ -79,7 +79,7 @@ export function AIReportSection({
   // 判断是否处于流式模式
   const isStreamingMode = streamingState?.isStreaming || streamingState?.isComplete;
 
-  // 加载状�?
+  // 加载状态
   if (isLoading && !isStreamingMode) {
     return (
       <Card
@@ -101,7 +101,7 @@ export function AIReportSection({
     );
   }
 
-  // 如果处于流式模式，显示流式内�?
+  // 如果处于流式模式，显示流式内容
   if (isStreamingMode && streamingState) {
     return (
       <Card
@@ -134,7 +134,7 @@ export function AIReportSection({
                 AI 智能分析报告
               </H4>
               <Text fontSize="$2" color="$gray10" marginTop="$1" fontWeight="500" numberOfLines={1}>
-                {streamingState.isStreaming ? '正在生成�?..' : '分析完成'}
+                {streamingState.isStreaming ? '正在生成中...' : '分析完成'}
               </Text>
             </YStack>
             {/* 停止按钮 */}
@@ -175,7 +175,7 @@ export function AIReportSection({
     );
   }
 
-  // 如果没有报告但显示生成按�?
+  // 如果没有报告但显示生成按钮
   if (!report && showGenerateButton) {
     return (
       <Card
@@ -225,7 +225,7 @@ export function AIReportSection({
                   <IconSymbol name="wand.and.stars" size={20} color="white" />
                 )}
                 <Text color="white" fontWeight="600" fontSize="$5">
-                  {isGenerating ? '生成�?..' : '生成分析报告'}
+                  {isGenerating ? '生成中...' : '生成分析报告'}
                 </Text>
               </XStack>
             </Button>
@@ -237,7 +237,7 @@ export function AIReportSection({
 
   if (!report) return null;
 
-  // 营养成分点击（暂时使�?Alert�?
+  // 营养成分点击（暂时使用 Alert）
   const handleIngredientPress = (name: string) => {
     toast.info(`${name}\n\n营养成分详情功能开发中`);
   };
@@ -288,7 +288,7 @@ export function AIReportSection({
         {/* 产品标签 */}
         <TagsSection tags={report.tags} tintColor={colors.tint} />
 
-        {/* 安全性分�?*/}
+        {/* 安全性分析 */}
         <AnalysisSection
           icon="shield.fill"
           iconColor="$green10"
@@ -328,7 +328,7 @@ export function AIReportSection({
           onItemPress={fetchAdditive}
         />
 
-        {/* 识别的营养成�?*/}
+        {/* 识别的营养成分 */}
         <ItemListSection
           icon="leaf.fill"
           iconColor="$green10"
@@ -340,7 +340,7 @@ export function AIReportSection({
           onItemPress={handleIngredientPress}
         />
 
-        {/* 时间�?*/}
+        {/* 时间戳 */}
         <TimestampFooter createdAt={report.created_at} updatedAt={report.updated_at} />
       </YStack>
 
@@ -355,7 +355,7 @@ export function AIReportSection({
   );
 }
 
-// ==================== 子组�?====================
+// ==================== 子组件 ====================
 
 /** 标签区域 */
 function TagsSection({ tags, tintColor }: { tags?: string[]; tintColor: string }) {
@@ -471,7 +471,7 @@ function NutritionChartSection({
           />
         </YStack>
 
-        {/* 进度�?*/}
+        {/* 进度条 */}
         {Object.entries(percentData).map(([key, value]) => {
           if (value === null || value === undefined) return null;
           return (
@@ -508,7 +508,7 @@ function NutritionDataMissingAlert() {
           borderColor="$orange6"
         >
           <Text fontSize="$3" color="$gray11" lineHeight={22} fontWeight="500">
-            该报告标记支持营养成分占比分析，但未包含具体数据�?
+            该报告标记支持营养成分占比分析，但未包含具体数据。
           </Text>
           <Text fontSize="$2" color="$gray10" marginTop="$2">
             提示：可以重新生成报告以获取最新的营养分析数据
@@ -578,14 +578,14 @@ function ItemListSection({
   );
 }
 
-/** 时间戳底�?*/
+/** 时间戳底部 */
 function TimestampFooter({ createdAt, updatedAt }: { createdAt: string; updatedAt: string }) {
   return (
     <YStack marginTop="$2" paddingTop="$3" borderTopWidth={1} borderTopColor="$borderColor">
       <XStack alignItems="center" gap="$2">
         <IconSymbol name="clock.fill" size={14} color="$gray10" />
         <Text fontSize="$1" color="$gray10">
-          报告生成�?{new Date(createdAt).toLocaleString('zh-CN')}
+          报告生成于 {new Date(createdAt).toLocaleString('zh-CN')}
         </Text>
       </XStack>
       {updatedAt !== createdAt && (

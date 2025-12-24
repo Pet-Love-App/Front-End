@@ -19,14 +19,19 @@
       "icon": "./assets/appIcon.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/appIcon.png",
-        "monochromeImage": "./assets/appIcon.png",
-        "backgroundColor": "#FFFFFF"
+        "backgroundColor": "#FFE5D9"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.yuanqh23.pet_love",
-      "permissions": ["android.permission.CAMERA", "android.permission.RECORD_AUDIO"],
-      "softwareKeyboardLayoutMode": "resize"
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ],
+      "softwareKeyboardLayoutMode": "resize",
+      "usesCleartextTraffic": true
     },
     "web": {
       "output": "static",
@@ -48,7 +53,17 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "react-native",
+          "organization": "tsinghua-university-dp",
+          "setCommits": false
+        }
+      ],
+      "./plugins/withNetworkSecurityConfig.js"
     ],
     "experiments": {
       "reactCompiler": true,

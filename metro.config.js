@@ -1,7 +1,6 @@
-// Metro 配置 - 优化包大小和构建性能
-const { getDefaultConfig } = require('expo/metro-config');
+const { getSentryExpoConfig } = require('@sentry/react-native/metro');
 
-const config = getDefaultConfig(__dirname);
+const config = getSentryExpoConfig(__dirname);
 
 // 生产环境优化
 if (process.env.NODE_ENV === 'production') {

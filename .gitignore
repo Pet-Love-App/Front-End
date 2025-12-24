@@ -61,3 +61,5 @@ yarn.lock
 pnpm-lock.yaml
 
 docs/
+
+.env.local

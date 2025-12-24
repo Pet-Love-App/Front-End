@@ -9,7 +9,8 @@
 
 import { AppError, ErrorCodes, logError } from '@/src/utils/errorHandler';
 import { logger } from '@/src/utils/logger';
-import { API_BASE_URL } from '@/src/config/env';
+import { API_BASE_URL, ENV } from '@/src/config/env';
+import { addSentryBreadcrumb, captureException } from '@/src/lib/sentry';
 
 import { createErrorDetail, toCamelCase, toSnakeCase, wrapError, wrapSuccess } from './helpers';
 
@@ -39,6 +40,36 @@ const defaultOptions: RequestOptions = {
  * 低级 API 客户端
  * 提供基础的 HTTP 请求功能，自动处理 token、错误等
  */
+/**
+ * 创建带超时的 fetch 请求
+ */
+function fetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeout: number = ENV.API_TIMEOUT
+): Promise<Response> {
+  return new Promise((resolve, reject) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+      reject(new Error(`Request timeout after ${timeout}ms`));
+    }, timeout);
+
+    fetch(url, {
+      ...options,
+      signal: controller.signal,
+    })
+      .then((response) => {
+        clearTimeout(timeoutId);
+        resolve(response);
+      })
+      .catch((error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      });
+  });
+}
+
 class LowLevelApiClient {
   private baseURL: string;
 
@@ -168,7 +199,15 @@ class LowLevelApiClient {
         tokenPreview: token ? `${token.substring(0, 20)}...` : 'none',
       });
 
-      const response = await fetch(fullUrl, config);
+      // 添加 Sentry 面包屑
+      addSentryBreadcrumb({
+        category: 'http',
+        message: `${config.method || 'GET'} ${endpoint}`,
+        level: 'info',
+        data: { url: fullUrl, hasToken: !!token },
+      });
+
+      const response = await fetchWithTimeout(fullUrl, config);
 
       // 处理 401 (token 过期)
       if (response.status === 401 && token) {
@@ -289,11 +328,46 @@ class LowLevelApiClient {
         throw error;
       }
 
+      // 详细记录网络错误以便调试
+      const errorDetails = {
+        message: error.message,
+        name: error.name,
+        endpoint,
+        method: config.method || 'GET',
+        baseURL: this.baseURL,
+      };
+
+      logger.error('API 网络请求失败', error, errorDetails);
+
+      // 发送到 Sentry 以便追踪
+      addSentryBreadcrumb({
+        category: 'http.error',
+        message: `Network error: ${error.message}`,
+        level: 'error',
+        data: errorDetails,
+      });
+
       if (error.message && error.message.includes('Network request failed')) {
+        // 捕获网络错误到 Sentry（带更多上下文）
+        captureException(error, {
+          tags: { errorType: 'network_failure', endpoint },
+          extra: {
+            ...errorDetails,
+            possibleCauses: [
+              'Android 网络安全策略阻止 HTTP 请求',
+              '服务器不可达',
+              'DNS 解析失败',
+              '网络连接中断',
+            ],
+          },
+        });
         throw new AppError('网络连接失败，请检查网络设置', ErrorCodes.NETWORK_ERROR);
       }
 
-      if (error.message && error.message.includes('timeout')) {
+      if (
+        error.message &&
+        (error.message.includes('timeout') || error.message.includes('aborted'))
+      ) {
         throw new AppError('请求超时，请稍后重试', ErrorCodes.TIMEOUT_ERROR);
       }
 
@@ -383,12 +457,17 @@ class LowLevelApiClient {
     }
 
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
-        method: options.method || 'POST',
-        headers,
-        body: formData,
-        ...options,
-      });
+      // 文件上传使用更长的超时时间（60秒）
+      const response = await fetchWithTimeout(
+        `${this.baseURL}${endpoint}`,
+        {
+          method: options.method || 'POST',
+          headers,
+          body: formData,
+          ...options,
+        },
+        60000 // 60秒超时
+      );
 
       if (!response.ok) {
         const errorPayload = await this.safeParseResponse(response).catch(() => ({}));

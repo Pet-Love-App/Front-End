@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Stack } from 'expo-router';
-import { ScrollView, YStack } from 'tamagui';
+import { Stack, useRouter } from 'expo-router';
+import { ScrollView, Text, YStack } from 'tamagui';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
 import { CommentSection } from '@/src/components/Comments';
 import { SkeletonAIReport } from '@/src/components/lazy';
 import { useUserStore } from '@/src/store/userStore';
@@ -35,6 +36,7 @@ import { useAdditiveModal, useAIReport, useCatFoodDetail, useStreamingReport } f
  */
 export function DetailScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   // 使用自定义 hooks
   const { catfoodId, catFood, isLoading } = useCatFoodDetail();
@@ -266,6 +268,24 @@ export function DetailScreen() {
             backgroundColor: '#fff',
           },
           headerShadowVisible: false,
+          headerLeft: () => (
+            <Pressable
+              onPress={() => router.back()}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingVertical: 8,
+                paddingRight: 16,
+                marginLeft: -4,
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <IconSymbol name="chevron.left" size={22} color="#FEBE98" />
+              <Text fontSize={16} color="#FEBE98" fontWeight="500">
+                返回
+              </Text>
+            </Pressable>
+          ),
         }}
       />
 

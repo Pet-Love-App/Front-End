@@ -75,7 +75,7 @@ export interface Post {
  */
 export interface NotificationItem {
   id: number;
-  actor: { id: string; username: string };
+  actor: { id: string; username: string; avatar?: string };
   verb: 'comment_post' | 'reply_comment';
   post?: Pick<Post, 'id' | 'content'>;
   comment?: { id: number; content: string };

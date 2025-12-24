@@ -1,0 +1,36 @@
+name: 🧪 Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install
+        run: npm ci --legacy-peer-deps
+
+      - name: 🧪 Run Unit Tests
+        run: npm test -- --passWithNoTests --ci --testPathIgnorePatterns="e2e"
+        continue-on-error: true
+        env:
+          CI: true

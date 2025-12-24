@@ -39,8 +39,8 @@ export function initSentry() {
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
 
-    // 调试模式（开发环境开启）
-    debug: isDevelopment,
+    // 调试模式（关闭以抑制控制台错误输出）
+    debug: false,
 
     // 集成配置
     integrations: [
@@ -52,9 +52,8 @@ export function initSentry() {
 
     // 在发送前过滤/修改事件
     beforeSend(event, hint) {
-      // 开发环境只打印不发送
+      // 开发环境不发送（也不打印，保持控制台干净）
       if (isDevelopment) {
-        console.log('[Sentry Debug]', event);
         return null;
       }
 

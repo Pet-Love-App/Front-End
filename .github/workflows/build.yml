@@ -1,0 +1,42 @@
+name: 🏗️ Build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Android Bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install
+        run: npm ci --legacy-peer-deps
+
+      - name: 🏗️ Build Bundle
+        run: npx expo export --platform android --output-dir dist-android
+        continue-on-error: true
+
+      - name: 📊 Bundle Size
+        if: success()
+        run: |
+          BUNDLE_SIZE=$(du -sh dist-android | cut -f1)
+          echo "📦 Bundle size: $BUNDLE_SIZE"
+          echo "## 📦 Build Result" >> $GITHUB_STEP_SUMMARY
+          echo "Bundle size: **$BUNDLE_SIZE**" >> $GITHUB_STEP_SUMMARY

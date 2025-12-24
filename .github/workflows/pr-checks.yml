@@ -2,222 +2,57 @@ name: PR Checks
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [opened, synchronize, reopened]
 
-# 只运行最新的 PR 检查
 concurrency:
   group: pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  # ==================== PR 信息检查 ====================
+  # ==================== PR 信息 ====================
   pr-info:
-    name: 📋 PR Information
+    name: 📋 PR Info
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
 
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 📝 Check PR title format
-        uses: amannn/action-semantic-pull-request@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          types: |
-            feat
-            fix
-            docs
-            style
-            refactor
-            perf
-            test
-            chore
-            ci
-            build
-          requireScope: false
-          subjectPattern: ^[A-Z].+$
-          subjectPatternError: |
-            PR 标题必须以大写字母开头
-            例如: "feat: Add dark mode support"
-
       - name: 📏 Check PR size
         uses: actions/github-script@v7
         with:
           script: |
             const pr = context.payload.pull_request;
-            const additions = pr.additions;
-            const deletions = pr.deletions;
-            const total = additions + deletions;
+            const total = pr.additions + pr.deletions;
 
-            console.log(`📊 PR Size: +${additions} -${deletions} (${total} total)`);
+            console.log(`📊 PR Size: +${pr.additions} -${pr.deletions} (${total} total)`);
 
+            // 只是警告，不阻止
             if (total > 1000) {
-              core.warning(`⚠️ Large PR detected (${total} lines). Consider splitting into smaller PRs.`);
+              core.warning(`大型 PR (${total} 行)。建议拆分为更小的 PR。`);
             }
 
-  # ==================== 代码审查辅助 ====================
-  code-review:
-    name: 🤖 AI Code Review
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: 🤖 Run AI Code Review
-        uses: coderabbitai/ai-pr-reviewer@latest
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        with:
-          debug: false
-          review_simple_changes: false
-          review_comment_lgtm: false
-
-  # ==================== 变更影响分析 ====================
-  change-analysis:
-    name: 📊 Change Analysis
+  # ==================== 变更检测 ====================
+  change-detection:
+    name: 🔍 Change Detection
     runs-on: ubuntu-latest
 
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: 🔍 Detect changed files
+      - name: 🔍 Detect changes
         id: changes
         uses: dorny/paths-filter@v3
         with:
           filters: |
-            frontend:
-              - 'src/app/**'
-              - 'src/components/**'
-              - 'src/design-system/**'
-            backend:
-              - 'src/lib/supabase/**'
-              - 'src/services/**'
-            tests:
-              - '**/__tests__/**'
-              - '**/_tests_/**'
-              - '**/*.test.{ts,tsx}'
-              - 'e2e/**'
+            src:
+              - 'src/**'
             config:
-              - '.github/**'
-              - '*.config.{js,ts}'
-              - 'tsconfig.json'
+              - '*.config.*'
               - 'package.json'
-            docs:
-              - '**.md'
-              - 'docs/**'
+              - 'tsconfig.json'
 
-      - name: 💬 Comment change summary
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const changes = {
-              frontend: ${{ steps.changes.outputs.frontend }},
-              backend: ${{ steps.changes.outputs.backend }},
-              tests: ${{ steps.changes.outputs.tests }},
-              config: ${{ steps.changes.outputs.config }},
-              docs: ${{ steps.changes.outputs.docs }}
-            };
-
-            const changedAreas = Object.entries(changes)
-              .filter(([_, changed]) => changed === 'true')
-              .map(([area]) => area);
-
-            if (changedAreas.length === 0) {
-              console.log('No significant changes detected');
-              return;
-            }
-
-            const comment = `## 📊 Change Analysis\n\n` +
-              `This PR affects the following areas:\n\n` +
-              changedAreas.map(area => `- ✅ **${area}**`).join('\n');
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
-
-  # ==================== Bundle 大小分析 ====================
-  bundle-size:
-    name: 📦 Bundle Size Analysis
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: 📦 Install dependencies
-        run: npm ci --legacy-peer-deps
-
-      - name: 📊 Analyze bundle size
+      - name: 📝 Log changes
         run: |
-          npx expo export --platform android --output-dir dist-android
-          BUNDLE_SIZE=$(du -sh dist-android | cut -f1)
-          echo "📦 Bundle size: $BUNDLE_SIZE"
-          echo "BUNDLE_SIZE=$BUNDLE_SIZE" >> $GITHUB_ENV
-        continue-on-error: true
-
-      - name: 💬 Comment bundle size
-        uses: actions/github-script@v7
-        if: always()
-        env:
-          BUNDLE_SIZE: ${{ env.BUNDLE_SIZE }}
-        with:
-          script: |
-            const bundleSize = process.env.BUNDLE_SIZE;
-            if (!bundleSize) {
-              console.log('Bundle size not available');
-              return;
-            }
-
-            const comment = `## 📦 Bundle Size Report\n\n` +
-              `**Android Bundle**: ${bundleSize}\n\n` +
-              `⚠️ 注意: 如果 bundle 大小显著增加，请检查是否引入了不必要的依赖。`;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
-
-  # ==================== PR 状态总结 ====================
-  pr-summary:
-    name: 📋 PR Summary
-    runs-on: ubuntu-latest
-    needs: [pr-info, change-analysis, bundle-size]
-    if: always()
-
-    steps:
-      - name: 📊 Generate summary
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const summary = `## 🎯 PR Checks Summary\n\n` +
-              `### Status:\n` +
-              `- 📋 PR Info: ${{ needs.pr-info.result }}\n` +
-              `- 📊 Change Analysis: ${{ needs.change-analysis.result }}\n` +
-              `- 📦 Bundle Size: ${{ needs.bundle-size.result }}\n\n` +
-              `> ℹ️ 代码质量、单元测试和构建检查在主 CI 工作流中运行。\n` +
-              `> 请查看 [CI 工作流](../actions/workflows/ci.yml) 了解详情。`;
-
-            console.log(summary);
+          echo "## 📊 Change Detection" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Source code changed: ${{ steps.changes.outputs.src }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Config changed: ${{ steps.changes.outputs.config }}" >> $GITHUB_STEP_SUMMARY

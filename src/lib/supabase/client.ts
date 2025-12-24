@@ -1,8 +1,9 @@
 /**
  * Supabase 客户端配置
+ *
+ * 支持 SSR 环境（Expo Web）
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 
 import { logger } from '@/src/utils/logger';
@@ -11,8 +12,11 @@ import { logger } from '@/src/utils/logger';
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
-// 配置验证
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+// 检查是否在服务端运行（SSR）
+const isServer = typeof window === 'undefined';
+
+// 配置验证（只在客户端环境打印）
+if (!isServer && (!SUPABASE_URL || !SUPABASE_ANON_KEY)) {
   console.error('❌ Supabase 配置缺失！');
   console.error('请在 .env 文件中添加：');
   console.error('EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co');
@@ -21,29 +25,73 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 }
 
 // URL 格式验证
-if (SUPABASE_URL && !SUPABASE_URL.startsWith('https://')) {
+if (!isServer && SUPABASE_URL && !SUPABASE_URL.startsWith('https://')) {
   console.error('❌ SUPABASE_URL 格式错误，应该以 https:// 开头');
 }
 
-/** Supabase 客户端实例 */
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    // 使用 AsyncStorage 持久化 Session
-    storage: AsyncStorage,
-    // 自动刷新 Token
-    autoRefreshToken: true,
-    // 持久化 Session（应用重启后保持登录）
-    persistSession: true,
-    // React Native 不需要检测 URL 中的 Session
-    detectSessionInUrl: false,
-  },
-  // 全局配置
-  global: {
-    headers: {
-      'X-Client-Type': 'pet-love-mobile',
+/**
+ * 内存存储 - 用于 SSR 环境（服务端没有 AsyncStorage）
+ */
+class MemoryStorage {
+  private storage: Map<string, string> = new Map();
+
+  getItem(key: string): string | null {
+    return this.storage.get(key) || null;
+  }
+
+  setItem(key: string, value: string): void {
+    this.storage.set(key, value);
+  }
+
+  removeItem(key: string): void {
+    this.storage.delete(key);
+  }
+}
+
+/**
+ * 创建 Supabase 客户端
+ * - 服务端：使用内存存储，禁用自动刷新
+ * - 客户端：使用 AsyncStorage，启用自动刷新
+ */
+const createSupabaseClient = () => {
+  if (isServer) {
+    // 服务端：使用简化配置，避免 AsyncStorage
+    return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        storage: new MemoryStorage(),
+        autoRefreshToken: false,
+        persistSession: false,
+        detectSessionInUrl: false,
+      },
+      global: {
+        headers: {
+          'X-Client-Type': 'pet-love-mobile',
+        },
+      },
+    });
+  }
+
+  // 客户端：使用 AsyncStorage
+
+  const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+
+  return createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      storage: AsyncStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
     },
-  },
-});
+    global: {
+      headers: {
+        'X-Client-Type': 'pet-love-mobile',
+      },
+    },
+  });
+};
+
+/** Supabase 客户端实例 */
+export const supabase = createSupabaseClient();
 
 /** 检查 Supabase 是否已正确配置 */
 export const isSupabaseConfigured = (): boolean => {

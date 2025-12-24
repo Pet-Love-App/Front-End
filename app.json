@@ -62,7 +62,8 @@
           "organization": "tsinghua-university-dp",
           "setCommits": false
         }
-      ]
+      ],
+      "./plugins/withNetworkSecurityConfig.js"
     ],
     "experiments": {
       "reactCompiler": true,

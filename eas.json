@@ -5,12 +5,18 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     },
     "production": {
@@ -23,7 +29,8 @@
       },
       "env": {
         "NODE_ENV": "production",
-        "EXPO_USE_FAST_RESOLVER": "1"
+        "EXPO_USE_FAST_RESOLVER": "1",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     }
   },

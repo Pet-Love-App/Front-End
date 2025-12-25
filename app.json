@@ -103,15 +103,14 @@
       "typedRoutes": true
     },
     "extra": {
+      "router": {},
       "eas": {
-        "projectId": "43384d9b-4264-479c-943c-1b866fe50fa8"
+        "projectId": "262e9319-0b93-4614-a21b-d008841a39c0"
       }
-    },
-    "updates": {
-      "url": "https://u.expo.dev/43384d9b-4264-479c-943c-1b866fe50fa8"
     },
     "runtimeVersion": {
       "policy": "sdkVersion"
-    }
+    },
+    "owner": "yuanqh233"
   }
 }

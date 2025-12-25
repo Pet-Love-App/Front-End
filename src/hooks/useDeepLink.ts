@@ -23,6 +23,7 @@ export function useDeepLink() {
   const router = useRouter();
   const { fetchCurrentUser, setSession, setUser } = useUserStore();
   const hasShownWelcome = useRef(false);
+  const isVerifyingEmail = useRef(false);
 
   useEffect(() => {
     // 1. 监听 Supabase Auth State 变化（最重要！）
@@ -39,15 +40,19 @@ export function useDeepLink() {
             try {
               await fetchCurrentUser();
 
-              // 只在邮箱验证时显示欢迎消息（避免普通登录也显示）
-              if (!hasShownWelcome.current && session.user.email_confirmed_at) {
+              // 只在邮箱验证时跳转到验证成功页面（避免普通登录也跳转）
+              if (
+                !hasShownWelcome.current &&
+                isVerifyingEmail.current &&
+                session.user.email_confirmed_at
+              ) {
                 hasShownWelcome.current = true;
-                Alert.alert('验证成功', '邮箱验证成功！欢迎使用 Pet Love！', [
-                  {
-                    text: '确定',
-                    onPress: () => router.replace('/onboarding'),
-                  },
-                ]);
+                isVerifyingEmail.current = false;
+                // 跳转到验证成功页面
+                router.replace({
+                  pathname: '/email-verify' as const,
+                  params: { status: 'success' },
+                } as any);
               }
             } catch (error) {
               logger.error('获取用户信息失败', error as Error);
@@ -91,13 +96,38 @@ export function useDeepLink() {
       logger.info('收到深度链接', { url });
 
       try {
-        // 解析 URL 中的认证参数
+        // 解析 URL - Supabase 验证回调可能使用 fragment (#) 或 query params (?)
         const parsedUrl = Linking.parse(url);
-        const { queryParams } = parsedUrl;
+        let { queryParams } = parsedUrl;
+
+        // 如果 URL 包含 fragment (#)，从 fragment 中解析参数
+        // Supabase 默认使用 implicit flow，token 放在 # 后面
+        if (url.includes('#')) {
+          const fragmentString = url.split('#')[1];
+          if (fragmentString) {
+            const fragmentParams = new URLSearchParams(fragmentString);
+            const fragmentObject: Record<string, string> = {};
+            fragmentParams.forEach((value, key) => {
+              fragmentObject[key] = value;
+            });
+            // 合并 fragment 参数到 queryParams
+            queryParams = { ...queryParams, ...fragmentObject };
+            logger.info('从 URL fragment 解析参数', { fragmentObject });
+          }
+        }
 
         // 检查是否包含 access_token（邮箱验证成功后的回调）
         if (queryParams?.access_token && queryParams?.refresh_token) {
           logger.info('检测到认证 token，设置 session');
+
+          // 标记正在进行邮箱验证流程
+          isVerifyingEmail.current = true;
+
+          // 先跳转到验证中页面
+          router.replace({
+            pathname: '/email-verify' as const,
+            params: { status: 'loading' },
+          } as any);
 
           const { data, error } = await supabase.auth.setSession({
             access_token: queryParams.access_token as string,
@@ -106,7 +136,15 @@ export function useDeepLink() {
 
           if (error) {
             logger.error('设置 session 失败', error);
-            Alert.alert('验证失败', '邮箱验证失败，请重试');
+            isVerifyingEmail.current = false;
+            // 跳转到验证失败页面
+            router.replace({
+              pathname: '/email-verify' as const,
+              params: {
+                status: 'error',
+                message: '邮箱验证失败，请重试',
+              },
+            } as any);
             return;
           }
 
@@ -114,6 +152,43 @@ export function useDeepLink() {
             logger.info('Session 设置成功，等待 Auth State 变化');
             // Auth State Change 会自动触发，不需要手动处理
           }
+          return;
+        }
+
+        // 检查是否包含 token_hash（PKCE flow 使用）
+        if (queryParams?.token_hash && queryParams?.type) {
+          logger.info('检测到 token_hash，验证 OTP');
+
+          isVerifyingEmail.current = true;
+
+          router.replace({
+            pathname: '/email-verify' as const,
+            params: { status: 'loading' },
+          } as any);
+
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: queryParams.token_hash as string,
+            type: queryParams.type as 'signup' | 'email' | 'recovery',
+          });
+
+          if (error) {
+            logger.error('验证 OTP 失败', error);
+            isVerifyingEmail.current = false;
+            router.replace({
+              pathname: '/email-verify' as const,
+              params: {
+                status: 'error',
+                message: error.message || '验证失败，链接可能已过期',
+              },
+            } as any);
+            return;
+          }
+
+          if (data.session) {
+            logger.info('OTP 验证成功');
+            // Auth State Change 会自动触发
+          }
+          return;
         }
 
         // 检查是否是密码重置回调
@@ -121,16 +196,37 @@ export function useDeepLink() {
           logger.info('检测到密码重置回调');
           // TODO: 跳转到密码重置页面
           Alert.alert('密码重置', '请设置新密码');
+          return;
         }
 
         // 检查是否有错误
         if (queryParams?.error) {
           const errorDescription = (queryParams.error_description as string) || '未知错误';
           logger.error('深度链接包含错误', new Error(errorDescription));
-          Alert.alert('验证失败', decodeURIComponent(errorDescription));
+          // 跳转到验证失败页面
+          router.replace({
+            pathname: '/email-verify' as const,
+            params: {
+              status: 'error',
+              message: decodeURIComponent(errorDescription),
+            },
+          } as any);
+          return;
         }
+
+        // 如果没有匹配任何验证参数，但 URL 是验证相关的路径
+        // 可能是用户直接访问了验证页面
+        logger.info('深度链接未包含认证参数', { queryParams });
       } catch (err) {
         logger.error('处理深度链接失败', err as Error);
+        // 跳转到验证失败页面
+        router.replace({
+          pathname: '/email-verify' as const,
+          params: {
+            status: 'error',
+            message: '验证过程发生错误',
+          },
+        } as any);
       }
     };
 

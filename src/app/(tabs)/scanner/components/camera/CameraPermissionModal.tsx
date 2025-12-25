@@ -1,10 +1,8 @@
-import { Modal, Pressable, StyleSheet } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text as RNText, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Text, XStack, YStack } from 'tamagui';
+import { YStack } from 'tamagui';
 import { Button } from '@/src/design-system/components';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
-import { Colors } from '@/src/constants/theme';
-import { useThemeAwareColorScheme } from '@/src/hooks/useThemeAwareColorScheme';
 
 interface CameraPermissionModalProps {
   visible: boolean;
@@ -21,9 +19,6 @@ export function CameraPermissionModal({
   onRequestPermission,
   onClose,
 }: CameraPermissionModalProps) {
-  const colorScheme = useThemeAwareColorScheme();
-  const _colors = Colors[colorScheme];
-
   return (
     <Modal
       visible={visible}
@@ -64,81 +59,34 @@ export function CameraPermissionModal({
               </YStack>
 
               {/* 标题 */}
-              <Text fontSize={22} fontWeight="900" color="#111827" textAlign="center">
-                需要相机权限
-              </Text>
+              <RNText style={styles.title}>需要相机权限</RNText>
 
               {/* 说明文字 */}
-              <Text
-                fontSize={15}
-                color="#6B7280"
-                textAlign="center"
-                lineHeight={22}
-                fontWeight="500"
-              >
+              <RNText style={styles.description}>
                 为了扫描猫粮成分表，需要访问您的相机。我们不会存储或上传您的照片。
-              </Text>
+              </RNText>
 
               {/* 权限说明列表 */}
-              <YStack
-                width="100%"
-                backgroundColor="#F9FAFB"
-                borderRadius="$4"
-                padding="$3"
-                gap="$2.5"
-              >
-                <XStack alignItems="center" gap="$2.5">
-                  <YStack
-                    width={20}
-                    height={20}
-                    borderRadius={10}
-                    backgroundColor="#10B981"
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <Text fontSize={14} color="white" fontWeight="900">
-                      ✓
-                    </Text>
-                  </YStack>
-                  <Text fontSize={13} color="#4B5563" fontWeight="600" flex={1}>
-                    拍摄猫粮成分表
-                  </Text>
-                </XStack>
-                <XStack alignItems="center" gap="$2.5">
-                  <YStack
-                    width={20}
-                    height={20}
-                    borderRadius={10}
-                    backgroundColor="#10B981"
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <Text fontSize={14} color="white" fontWeight="900">
-                      ✓
-                    </Text>
-                  </YStack>
-                  <Text fontSize={13} color="#4B5563" fontWeight="600" flex={1}>
-                    扫描条形码快速识别
-                  </Text>
-                </XStack>
-                <XStack alignItems="center" gap="$2.5">
-                  <YStack
-                    width={20}
-                    height={20}
-                    borderRadius={10}
-                    backgroundColor="#10B981"
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <Text fontSize={14} color="white" fontWeight="900">
-                      ✓
-                    </Text>
-                  </YStack>
-                  <Text fontSize={13} color="#4B5563" fontWeight="600" flex={1}>
-                    离线处理，保护隐私
-                  </Text>
-                </XStack>
-              </YStack>
+              <View style={styles.permissionList}>
+                <View style={styles.permissionItem}>
+                  <View style={styles.checkIcon}>
+                    <RNText style={styles.checkMark}>✓</RNText>
+                  </View>
+                  <RNText style={styles.permissionText}>拍摄猫粮成分表</RNText>
+                </View>
+                <View style={styles.permissionItem}>
+                  <View style={styles.checkIcon}>
+                    <RNText style={styles.checkMark}>✓</RNText>
+                  </View>
+                  <RNText style={styles.permissionText}>扫描条形码快速识别</RNText>
+                </View>
+                <View style={styles.permissionItem}>
+                  <View style={styles.checkIcon}>
+                    <RNText style={styles.checkMark}>✓</RNText>
+                  </View>
+                  <RNText style={styles.permissionText}>离线处理，保护隐私</RNText>
+                </View>
+              </View>
 
               {/* 按钮组 */}
               <YStack width="100%" gap="$3" marginTop="$2">
@@ -190,5 +138,49 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#111827',
+    textAlign: 'center',
+  },
+  description: {
+    fontSize: 15,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 22,
+    fontWeight: '500',
+  },
+  permissionList: {
+    width: '100%',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 16,
+    padding: 12,
+    gap: 10,
+  },
+  permissionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  checkIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#10B981',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkMark: {
+    fontSize: 14,
+    color: 'white',
+    fontWeight: '900',
+  },
+  permissionText: {
+    fontSize: 13,
+    color: '#4B5563',
+    fontWeight: '600',
+    flex: 1,
   },
 });

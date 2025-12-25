@@ -9,18 +9,14 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
-import { YStack, XStack, Text, Button } from 'tamagui';
+import { YStack, XStack, Text } from 'tamagui';
 import { LinearGradient } from 'expo-linear-gradient';
 import OnboardingSlide from './OnboardingSlide';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
 // 应用主题色
 const BRAND_COLOR = '#FEBE98';
 const BRAND_LIGHT = '#FFCCBC';
-
-// 当你改动引导内容时把版本号提升，已看过旧版的用户会再次看到新版
-const ONBOARDING_VERSION = 'v1';
 
 const SLIDES = [
   {
@@ -49,15 +45,13 @@ export function Onboarding() {
   const router = useRouter();
   const { width, height } = useWindowDimensions();
 
-  const storageKey = `hasSeenOnboarding:${ONBOARDING_VERSION}`;
-
-  const onSkip = async () => {
-    await AsyncStorage.setItem(storageKey, 'true');
+  // 每次登录都显示欢迎界面，跳过直接进入主页
+  const onSkip = () => {
     router.replace('/(tabs)/collect');
   };
 
-  const onStart = async () => {
-    await AsyncStorage.setItem(storageKey, 'true');
+  // 开始体验，进入主页
+  const onStart = () => {
     router.replace('/(tabs)/collect');
   };
 

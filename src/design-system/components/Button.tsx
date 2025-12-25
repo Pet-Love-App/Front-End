@@ -107,7 +107,7 @@ export const Button = forwardRef<React.ElementRef<typeof StyledButton>, ButtonPr
         {loading ? (
           <Spinner size="small" color={textColor} />
         ) : (
-          <View style={styles.row}>
+          <View style={[styles.row, { pointerEvents: 'none' }]}>
             {leftIcon ? <View style={styles.iconLeft}>{leftIcon}</View> : null}
             {typeof children === 'string' ? (
               <Text color={textColor} fontSize={fontSize} fontWeight="600">

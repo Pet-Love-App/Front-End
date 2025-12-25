@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { ZodError } from 'zod';
+import * as SecureStore from 'expo-secure-store';
 
 import { useUserStore } from '@/src/store/userStore';
 import { registerSchema } from '@/src/schemas/auth.schema';
 import { showAlert, toast } from '@/src/components/dialogs';
+
+// 临时存储密码的 key（用于验证等待页面）
+const TEMP_PASSWORD_KEY = 'temp_register_password';
 
 /**
  * 注册表单 Hook
@@ -55,18 +59,17 @@ export function useRegisterForm() {
           ],
         });
       } else {
-        // 需要邮箱验证
-        showAlert({
-          title: '注册成功',
-          message: '请查收验证邮件并完成邮箱验证后登录。',
-          type: 'success',
-          buttons: [
-            {
-              text: '确定',
-              onPress: () => router.back(), // 返回登录页
-            },
-          ],
-        });
+        // 需要邮箱验证，安全保存密码用于后续验证检查
+        try {
+          await SecureStore.setItemAsync(TEMP_PASSWORD_KEY, password);
+        } catch (e) {
+          // 忽略存储失败，不影响主流程
+        }
+        // 跳转到等待验证页面
+        router.replace({
+          pathname: '/email-verify/waiting' as const,
+          params: { email },
+        } as any);
       }
     } catch (error) {
       if (error instanceof ZodError) {

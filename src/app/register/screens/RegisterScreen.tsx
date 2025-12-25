@@ -1,7 +1,7 @@
 /**
  * 注册页面
  */
-import { View, TouchableOpacity } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, YStack } from 'tamagui';
 import { LottieAnimation } from '@/src/components/LottieAnimation';
@@ -101,11 +101,16 @@ export function RegisterScreen() {
           </Button>
 
           <YStack alignItems="center" marginTop="$2">
-            <TouchableOpacity onPress={navigateBack} testID="back-button">
-              <Text color={infoScale.info9} fontSize="$4" pressStyle={{ opacity: 0.7 }}>
+            <Pressable
+              onPress={navigateBack}
+              testID="back-button"
+              hitSlop={{ top: 10, bottom: 10, left: 20, right: 20 }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text color={infoScale.info9} fontSize="$4">
                 已有账号？返回登录
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </YStack>
         </YStack>
       </YStack>

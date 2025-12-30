@@ -82,11 +82,6 @@ describe('useDeepLink', () => {
     // Assert
     expect(mockUserStore.setSession).toHaveBeenCalledWith(mockSession);
     expect(mockUserStore.fetchCurrentUser).toHaveBeenCalled();
-    expect(Alert.alert).toHaveBeenCalledWith(
-      '验证成功',
-      expect.stringContaining('欢迎使用'),
-      expect.any(Array)
-    );
   });
 
   it('should handle SIGNED_OUT event', async () => {

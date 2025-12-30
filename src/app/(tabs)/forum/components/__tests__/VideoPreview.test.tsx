@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 
 if (typeof navigator === 'undefined') {
   // @ts-ignore
@@ -43,26 +43,78 @@ const { generateVideoThumbnail } = require('@/src/utils/videoThumbnail');
 const { VideoPreview } = require('../VideoPreview');
 
 describe('VideoPreview', () => {
-  it('加载中显示加载状态', () => {
-    (generateVideoThumbnail as jest.Mock).mockImplementation(() => new Promise(() => {}));
-    const { getByText } = render(<VideoPreview videoUri="v1" width={120} height={80} />);
-    expect(getByText('生成预览...')).toBeTruthy();
+  it('加载中显示加载状态', async () => {
+    let resolvePromise: any;
+    const promise = new Promise((resolve) => {
+      resolvePromise = resolve;
+    });
+    (generateVideoThumbnail as jest.Mock).mockImplementation(() => promise);
+    const { getByTestId, unmount } = render(<VideoPreview videoUri="v1" width={120} height={80} />);
+    expect(getByTestId('video-preview-loading')).toBeTruthy();
+    unmount();
+    resolvePromise(null); // Resolve to avoid unmounted component warning
   });
 
   it('缩略图生成失败显示默认提示', async () => {
     (generateVideoThumbnail as jest.Mock).mockResolvedValueOnce(null);
-    const { getByText } = render(<VideoPreview videoUri="v2" width={100} height={60} />);
+    const { getByTestId, findByTestId, unmount } = render(
+      <VideoPreview videoUri="v2" width={100} height={60} />
+    );
     // Component should eventually show "视频预览" when thumbnail fails
     // Initial state shows loading
-    expect(getByText('生成预览...')).toBeTruthy();
-    // Just verify component renders without error; state transitions handled by component
+    expect(getByTestId('video-preview-loading')).toBeTruthy();
+    // Wait for error state
+    await findByTestId('video-preview-error');
+    unmount();
   });
 
   it('缩略图生成异常显示默认提示', async () => {
     (generateVideoThumbnail as jest.Mock).mockRejectedValueOnce(new Error('boom'));
-    const { getByText } = render(<VideoPreview videoUri="v3" width={100} height={60} />);
+    const { getByTestId, findByTestId, unmount } = render(
+      <VideoPreview videoUri="v3" width={100} height={60} />
+    );
     // Initial state shows loading
-    expect(getByText('生成预览...')).toBeTruthy();
-    // Just verify component renders without error; state transitions handled by component
+    expect(getByTestId('video-preview-loading')).toBeTruthy();
+    // Wait for error state
+    await findByTestId('video-preview-error');
+    unmount();
+  });
+});
+
+describe('额外覆盖场景 - VideoPreview', () => {
+  it('当提供封面图时应优先渲染封面', async () => {
+    // Mock successful thumbnail generation
+    (generateVideoThumbnail as jest.Mock).mockResolvedValueOnce('thumbnail-uri');
+
+    const { findByTestId, unmount } = render(
+      <VideoPreview videoUri="https://example.com/video.mp4" width={100} height={100} />
+    );
+
+    const thumbnail = await findByTestId('video-preview-thumbnail');
+    expect(thumbnail).toBeTruthy();
+    unmount();
+  });
+
+  it('点击播放按钮应触发 onPress', async () => {
+    (generateVideoThumbnail as jest.Mock).mockResolvedValueOnce('thumbnail-uri');
+    const onPress = jest.fn();
+
+    const { findByTestId, unmount } = render(
+      <VideoPreview
+        videoUri="https://example.com/video.mp4"
+        width={100}
+        height={100}
+        onPress={onPress}
+        showPlayButton={true}
+      />
+    );
+
+    // Wait for loading to finish and play button to appear
+    await findByTestId('video-play-button');
+
+    // Press the container (since onPress is on the Stack)
+    fireEvent.press(await findByTestId('video-preview-container'));
+    expect(onPress).toHaveBeenCalled();
+    unmount();
   });
 });

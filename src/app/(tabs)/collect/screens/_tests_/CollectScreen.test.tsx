@@ -42,7 +42,7 @@ jest.mock('@/src/components/AppHeader', () => ({
   },
 }));
 jest.mock('@/src/components/ui/IconSymbol', () => ({ IconSymbol: 'IconSymbol' }));
-jest.mock('@/src/app/(tabs)/collect/components/collectItem', () => ({
+jest.mock('@/src/app/tabs/collect/components/collectItem', () => ({
   __esModule: true,
   default: ({ favorite }: any) => {
     const React = require('react');
@@ -55,7 +55,7 @@ jest.mock('@/src/app/(tabs)/collect/components/collectItem', () => ({
     );
   },
 }));
-jest.mock('@/src/app/(tabs)/collect/components/PostCollectItem', () => ({
+jest.mock('@/src/app/tabs/collect/components/PostCollectItem', () => ({
   __esModule: true,
   default: ({ post }: any) => {
     const React = require('react');
@@ -68,7 +68,7 @@ jest.mock('@/src/app/(tabs)/collect/components/PostCollectItem', () => ({
     );
   },
 }));
-jest.mock('@/src/app/(tabs)/forum/components/post-detail', () => ({
+jest.mock('@/src/app/tabs/forum/components/post-detail', () => ({
   __esModule: true,
   PostDetailScreen: ({ visible, post }: any) => {
     const React = require('react');

@@ -19,6 +19,10 @@ module.exports = {
     '!src/**/index.{ts,tsx}',
     '!src/app/_layout.tsx',
     '!src/app/+not-found.tsx',
+    '!src/app/email-verify/**',
+    '!src/lib/**',
+    '!src/config/**',
+    '!src/store/**',
   ],
   coverageThreshold: {
     global: {

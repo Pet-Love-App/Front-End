@@ -4,6 +4,27 @@ import 'react-native-gesture-handler/jestSetup';
 // Tamagui web components might need these, but in RN test env they might not be present.
 // If we are testing for React Native, we should mock Tamagui components to be simple Views.
 
+if (typeof window === 'undefined') {
+  // @ts-ignore
+  global.window = {
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    matchMedia: jest.fn(() => ({
+      matches: false,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      media: '',
+      onchange: null,
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  };
+} else if (!window.addEventListener) {
+  window.addEventListener = jest.fn();
+  window.removeEventListener = jest.fn();
+}
+
 // Mock Tamagui components globally to avoid "addEventListener" errors
 jest.mock('tamagui', () => {
   const { View, Text, TextInput } = require('react-native');
@@ -48,11 +69,38 @@ jest.mock('tamagui', () => {
     H6: Text,
     Paragraph: Text,
     SizableText: Text,
-    // Add other Tamagui components as needed
+    // Add styled mock
     styled: (Component: any) => Component,
-    createStyledContext: () => ({}),
-    useTheme: () => ({}),
-    useMedia: () => ({}),
+    // Add other missing exports that might be used
+    createTamagui: jest.fn(),
+    TamaguiProvider: ({ children }: any) => children,
+    Theme: ({ children }: any) => children,
+    useTheme: () => ({
+      color: '#000000',
+      background: '#ffffff',
+      borderColor: '#cccccc',
+      // Add other theme keys as needed
+      get: (key: string) => {
+        if (key === 'color') return '#000000';
+        if (key === 'background') return '#ffffff';
+        return '#cccccc';
+      },
+    }),
+    useMedia: () => ({
+      sm: true,
+      md: true,
+      lg: true,
+      xl: true,
+    }),
+    useToastController: () => ({
+      show: jest.fn(),
+      hide: jest.fn(),
+    }),
+    // Mock GetProps as a type helper (runtime it's undefined or object, but for jest it doesn't matter much if not called)
+    // If it's used as a value:
+    GetProps: {},
+    isTamaguiElement: jest.fn(),
+    spacer: View,
   };
 });
 
@@ -116,3 +164,42 @@ jest.mock('@sentry/react-native', () => ({
   ReactNavigationInstrumentation: jest.fn(),
   ReactNativeTracing: jest.fn(),
 }));
+
+// Mock @tamagui/toast
+jest.mock('@tamagui/toast', () => ({
+  ToastViewport: ({ children }: any) => children,
+  Toast: ({ children }: any) => children,
+  ToastTitle: ({ children }: any) => children,
+  ToastDescription: ({ children }: any) => children,
+  useToastController: () => ({
+    show: jest.fn(),
+    hide: jest.fn(),
+  }),
+  useToastState: () => null,
+}));
+
+// Mock @tamagui/core and @tamagui/web to prevent "Missing theme" errors
+const mockTamaguiCore = {
+  useTheme: () => ({
+    color: '#000000',
+    background: '#ffffff',
+    borderColor: '#cccccc',
+    get: (key: string) => {
+      if (key === 'color') return '#000000';
+      if (key === 'background') return '#ffffff';
+      return '#cccccc';
+    },
+  }),
+  useThemeName: () => 'light',
+  useMedia: () => ({ sm: true, md: true, lg: true, xl: true }),
+  styled: (Component: any) => Component,
+  createTamagui: jest.fn(),
+  TamaguiProvider: ({ children }: any) => children,
+  Theme: ({ children }: any) => children,
+  Stack: ({ children }: any) => children,
+  View: ({ children }: any) => children,
+  Text: ({ children }: any) => children,
+};
+
+jest.mock('@tamagui/core', () => mockTamaguiCore);
+jest.mock('@tamagui/web', () => mockTamaguiCore);

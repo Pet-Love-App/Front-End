@@ -99,6 +99,30 @@ describe('ForumHeader', () => {
     expect(images).toBeTruthy();
   });
 
+  it('输入搜索内容并提交', () => {
+    const { getByTestId } = renderComponent();
+    const input = getByTestId('forum-search-input');
+
+    fireEvent.changeText(input, 'test query');
+    fireEvent(input, 'submitEditing');
+
+    expect(mockOnSearch).toHaveBeenCalledWith('test query');
+  });
+
+  it('点击清除按钮清空搜索', () => {
+    const { getByTestId } = renderComponent();
+    const input = getByTestId('forum-search-input');
+
+    // First type something
+    fireEvent.changeText(input, 'test query');
+
+    // Find and press clear button
+    const clearBtn = getByTestId('forum-search-clear');
+    fireEvent.press(clearBtn);
+
+    expect(mockOnSearch).toHaveBeenCalledWith('');
+  });
+
   it('点击通知图标应该触发 onNotificationPress', () => {
     const { UNSAFE_getByType } = renderComponent();
     // Bell 图标在 Pressable 中
@@ -118,13 +142,13 @@ describe('ForumHeader', () => {
   });
 
   it('点击清除按钮应该清空搜索框', () => {
-    const { getByPlaceholderText, UNSAFE_getByType } = renderComponent();
+    const { getByPlaceholderText, getByTestId } = renderComponent();
     const input = getByPlaceholderText('搜索帖子、标签、用户...');
 
     fireEvent.changeText(input, '猫咪');
 
     // 查找清除按钮 (X 图标)
-    const clearButton = UNSAFE_getByType('X' as any);
+    const clearButton = getByTestId('forum-search-clear');
     fireEvent.press(clearButton);
 
     expect(mockOnSearch).toHaveBeenCalledWith('');
@@ -132,9 +156,24 @@ describe('ForumHeader', () => {
 
   it('点击头像应该跳转到个人主页', () => {
     const { UNSAFE_getByType } = renderComponent();
+    // The avatar is the first image
     const images = UNSAFE_getByType('Image' as any);
     fireEvent.press(images);
 
     expect(router.push).toHaveBeenCalledWith('/(tabs)/profile');
+  });
+});
+
+describe('额外覆盖场景 - ForumHeader', () => {
+  it('点击右侧操作按钮触发对应事件', () => {
+    // The component doesn't seem to support generic 'actions' prop based on the source code.
+    // It has specific props like onNotificationPress.
+    // We will test onNotificationPress instead.
+    const onNotificationPress = jest.fn();
+    const { UNSAFE_getByType } = render(<ForumHeader onNotificationPress={onNotificationPress} />);
+
+    const bellIcon = UNSAFE_getByType('Bell' as any);
+    fireEvent.press(bellIcon);
+    expect(onNotificationPress).toHaveBeenCalled();
   });
 });

@@ -33,12 +33,19 @@ jest.mock('tamagui', () => {
     styled: (Comp: any) => mk(Comp),
     XStack: mk(View),
     Stack: mk(View),
-    Input: (p: any) => React.createElement(TextInput, p),
+    Input: (p: any) => React.createElement(TextInput, { ...p, testID: 'search-input' }),
   };
 });
 
 // Icons
-jest.mock('@tamagui/lucide-icons', () => ({ Search: 'Search', X: 'X' }));
+jest.mock('@tamagui/lucide-icons', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    Search: () => React.createElement(View, { testID: 'search-icon' }),
+    X: () => React.createElement(View, { testID: 'clear-icon' }),
+  };
+});
 
 const { GlassSearchBar } = require('../GlassSearchBar');
 
@@ -58,16 +65,35 @@ describe('GlassSearchBar', () => {
     expect(onSubmit).toHaveBeenCalledWith('cat');
   });
 
-  it('清空按钮点击会清空内容并回调', () => {
+  it('显示清空按钮并响应点击', () => {
     const onChangeText = jest.fn();
-    const { getByPlaceholderText } = render(<GlassSearchBar onChangeText={onChangeText} />);
+    const { getByPlaceholderText, getByTestId, queryByTestId } = render(
+      <GlassSearchBar onChangeText={onChangeText} />
+    );
 
     const input = getByPlaceholderText('搜索话题、品种...');
+
+    // 初始状态不应显示清空按钮
+    expect(queryByTestId('clear-icon')).toBeNull();
+
+    // 输入文本
     fireEvent.changeText(input, 'hello');
     expect(onChangeText).toHaveBeenCalledWith('hello');
-    // 清空内容验证回调
-    fireEvent.changeText(input, '');
+
+    // 应该显示清空按钮
+    const clearBtn = getByTestId('clear-icon');
+    expect(clearBtn).toBeTruthy();
+
+    // 点击清空按钮
+    fireEvent.press(clearBtn);
+
     expect(onChangeText).toHaveBeenLastCalledWith('');
+
+    // 清空后按钮应消失 (需要重新获取或检查状态，但由于是同步更新，应该立即消失)
+    // 注意：fireEvent.press 触发状态更新后，React Testing Library 通常会重新渲染
+    // 但这里我们检查的是 mock 的调用。
+    // 如果要检查 UI 消失，可能需要 waitFor 或者直接检查 queryByTestId
+    expect(queryByTestId('clear-icon')).toBeNull();
   });
 
   it('focus/blur 会触发回调', () => {
@@ -76,8 +102,9 @@ describe('GlassSearchBar', () => {
     const { getByPlaceholderText } = render(<GlassSearchBar onFocus={onFocus} onBlur={onBlur} />);
     const input = getByPlaceholderText('搜索话题、品种...');
     fireEvent(input, 'focus');
-    fireEvent(input, 'blur');
     expect(onFocus).toHaveBeenCalled();
+
+    fireEvent(input, 'blur');
     expect(onBlur).toHaveBeenCalled();
   });
 });

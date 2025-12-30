@@ -85,7 +85,7 @@ export default function PostDetailPage() {
   // 加载中
   if (isLoading) {
     return (
-      <YStack flex={1} backgroundColor="white">
+      <YStack flex={1} backgroundColor="white" testID="loading-spinner">
         <XStack
           paddingTop={insets.top}
           paddingHorizontal={16}
@@ -94,7 +94,7 @@ export default function PostDetailPage() {
           borderBottomWidth={1}
           borderBottomColor={neutralScale.neutral3}
         >
-          <Pressable onPress={handleGoBack}>
+          <Pressable onPress={handleGoBack} testID="close-button">
             <Stack
               width={40}
               height={40}
@@ -126,7 +126,7 @@ export default function PostDetailPage() {
   // 错误状态
   if (error || !post) {
     return (
-      <YStack flex={1} backgroundColor="white">
+      <YStack flex={1} backgroundColor="white" testID="error-view">
         <XStack
           paddingTop={insets.top}
           paddingHorizontal={16}
@@ -135,7 +135,7 @@ export default function PostDetailPage() {
           borderBottomWidth={1}
           borderBottomColor={neutralScale.neutral3}
         >
-          <Pressable onPress={handleGoBack}>
+          <Pressable onPress={handleGoBack} testID="close-button">
             <Stack
               width={40}
               height={40}
@@ -180,13 +180,13 @@ export default function PostDetailPage() {
 
   // 复用 PostDetailScreen 组件显示帖子详情
   return (
-    <YStack flex={1} backgroundColor="white">
+    <YStack flex={1} backgroundColor="white" testID="post-detail-screen">
       <PostDetailScreen
-        visible={true}
         post={post}
-        onClose={handleGoBack}
-        onEditPost={handleEditPost}
-        onPostDeleted={handlePostDeleted}
+        onBack={handleGoBack}
+        onEdit={handleEditPost}
+        onDelete={handlePostDeleted}
+        initialCommentId={params.commentId ? parseInt(params.commentId, 10) : undefined}
       />
     </YStack>
   );

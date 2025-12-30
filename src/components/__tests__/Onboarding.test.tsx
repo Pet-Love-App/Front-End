@@ -1,14 +1,9 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { Onboarding } from '../Onboarding';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
 // Mock dependencies
-jest.mock('@react-native-async-storage/async-storage', () => ({
-  setItem: jest.fn(),
-}));
-
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
 }));
@@ -59,10 +54,11 @@ describe('Onboarding', () => {
 
     // Assert
     await waitFor(() => {
-      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        expect.stringContaining('hasSeenOnboarding'),
-        'true'
-      );
+      // AsyncStorage usage was removed from implementation
+      // expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+      //   expect.stringContaining('hasSeenOnboarding'),
+      //   'true'
+      // );
       expect(mockRouter.replace).toHaveBeenCalledWith('/(tabs)/collect');
     });
   });

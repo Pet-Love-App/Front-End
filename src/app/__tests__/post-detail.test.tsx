@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import PostDetailPage from '../post-detail';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, router } from 'expo-router';
 import { supabaseForumService } from '@/src/lib/supabase';
 
 // Mock dependencies
@@ -19,6 +19,7 @@ jest.mock('expo-router', () => ({
 }));
 
 jest.mock('tamagui', () => {
+  const React = require('react');
   const { View, Text } = require('react-native');
   return {
     YStack: ({ children, ...props }: any) => <View {...props}>{children}</View>,
@@ -30,6 +31,7 @@ jest.mock('tamagui', () => {
 });
 
 jest.mock('@tamagui/lucide-icons', () => {
+  const React = require('react');
   const { View } = require('react-native');
   return {
     ChevronLeft: () => <View testID="chevron-left" />,
@@ -42,29 +44,30 @@ jest.mock('@/src/lib/supabase', () => ({
   },
 }));
 
+// Mock the missing module
+jest.mock('../tabs/forum/components/post-detail', () => ({
+  __esModule: true,
+  PostDetailScreen: ({ onEdit, onDelete, onBack }: any) => {
+    const React = require('react');
+    const { View, Button } = require('react-native');
+    return (
+      <View testID="post-detail-screen-mock">
+        <Button testID="close-button" title="Back" onPress={onBack} />
+        <Button
+          testID="edit-button"
+          title="Edit"
+          onPress={() => onEdit({ id: 123, title: 'Test Post' })}
+        />
+        <Button testID="delete-button" title="Delete" onPress={() => onDelete()} />
+      </View>
+    );
+  },
+}));
+
 jest.mock('@/src/utils/logger', () => ({
   logger: {
     error: jest.fn(),
   },
-}));
-
-jest.mock('../(tabs)/forum/components/post-detail', () => {
-  const { View } = require('react-native');
-  return {
-    PostDetailScreen: ({ visible, onClose, onEditPost, onPostDeleted }: any) =>
-      visible ? (
-        <View testID="post-detail-screen">
-          <View testID="close-button" onTouchEnd={onClose} />
-          <View testID="edit-button" onTouchEnd={() => onEditPost({ id: 123 })} />
-          <View testID="delete-button" onTouchEnd={onPostDeleted} />
-        </View>
-      ) : null,
-  };
-});
-
-jest.mock('@/src/design-system/tokens', () => ({
-  neutralScale: { neutral3: '#eee', neutral12: '#000', neutral8: '#888' },
-  primaryScale: { primary7: '#blue' },
 }));
 
 describe('PostDetailPage (src/app/post-detail.tsx)', () => {
@@ -115,51 +118,54 @@ describe('PostDetailPage (src/app/post-detail.tsx)', () => {
     });
   });
 
+  const mockPost = { id: 123, title: 'Test Post' };
+
   it('renders post detail when fetch succeeds', async () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ postId: '123' });
     (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({
-      data: { id: 123, title: 'Test Post' },
+      data: mockPost,
       error: null,
     });
 
     render(<PostDetailPage />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('post-detail-screen')).toBeTruthy();
+      expect(screen.getByTestId('post-detail-screen-mock')).toBeTruthy();
     });
   });
 
   it('handles back navigation', async () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ postId: '123' });
     (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({
-      data: { id: 123, title: 'Test Post' },
+      data: mockPost,
       error: null,
     });
 
     render(<PostDetailPage />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('post-detail-screen')).toBeTruthy();
+      expect(screen.getByTestId('post-detail-screen-mock')).toBeTruthy();
     });
 
-    fireEvent(screen.getByTestId('close-button'), 'touchEnd');
+    // The close button is inside the mocked PostDetailScreen
+    fireEvent.press(screen.getByTestId('close-button'));
     expect(mockRouter.back).toHaveBeenCalled();
   });
 
   it('handles edit post navigation', async () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ postId: '123' });
     (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({
-      data: { id: 123, title: 'Test Post' },
+      data: mockPost,
       error: null,
     });
 
     render(<PostDetailPage />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('post-detail-screen')).toBeTruthy();
+      expect(screen.getByTestId('post-detail-screen-mock')).toBeTruthy();
     });
 
-    fireEvent(screen.getByTestId('edit-button'), 'touchEnd');
+    fireEvent.press(screen.getByTestId('edit-button'));
     expect(mockRouter.push).toHaveBeenCalledWith({
       pathname: '/(tabs)/forum/create-post',
       params: { editPostId: '123' },
@@ -169,17 +175,17 @@ describe('PostDetailPage (src/app/post-detail.tsx)', () => {
   it('handles post deleted', async () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ postId: '123' });
     (supabaseForumService.getPostDetail as jest.Mock).mockResolvedValue({
-      data: { id: 123, title: 'Test Post' },
+      data: mockPost,
       error: null,
     });
 
     render(<PostDetailPage />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('post-detail-screen')).toBeTruthy();
+      expect(screen.getByTestId('post-detail-screen-mock')).toBeTruthy();
     });
 
-    fireEvent(screen.getByTestId('delete-button'), 'touchEnd');
+    fireEvent.press(screen.getByTestId('delete-button'));
     expect(mockRouter.back).toHaveBeenCalled();
   });
 });

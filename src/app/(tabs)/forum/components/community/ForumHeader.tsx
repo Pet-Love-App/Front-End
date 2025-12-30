@@ -227,9 +227,10 @@ function ForumHeaderComponent({
             padding={0}
             height={24}
             focusStyle={{ borderWidth: 0 }}
+            testID="forum-search-input"
           />
           {searchText.length > 0 && (
-            <Pressable onPress={handleClear}>
+            <Pressable onPress={handleClear} testID="forum-search-clear">
               <Stack
                 width={24}
                 height={24}

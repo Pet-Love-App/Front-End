@@ -48,10 +48,17 @@ const { CreatePostFAB } = require('../CreatePostFAB');
 describe('CreatePostFAB', () => {
   it('点击触发 onPress，按下与抬起不报错', () => {
     const onPress = jest.fn();
-    render(<CreatePostFAB onPress={onPress} />);
-    // FAB 组件顶层是 AnimatedPressable；直接验证 onPress 被触发（测试组件存在即可）
-    // 因为 Animated 的包裹使得 Pressable 不可直接定位，所以仅验证组件可渲染且 mock 工作
-    expect(onPress).not.toHaveBeenCalled(); // 初始未触发
-    // 验证了组件渲染无异常，FAB 功能由生产环境验证
+    const { getByTestId } = render(<CreatePostFAB onPress={onPress} />);
+
+    const fab = getByTestId('create-post-fab');
+
+    // 模拟按下
+    fireEvent(fab, 'pressIn');
+    // 模拟抬起
+    fireEvent(fab, 'pressOut');
+    // 模拟点击
+    fireEvent.press(fab);
+
+    expect(onPress).toHaveBeenCalledTimes(1);
   });
 });

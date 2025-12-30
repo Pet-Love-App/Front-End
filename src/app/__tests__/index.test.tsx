@@ -3,11 +3,16 @@ import { render, screen, waitFor } from '@testing-library/react-native';
 import Index from '../index';
 import { useUserStore } from '@/src/store/userStore';
 import { useRouter } from 'expo-router';
+import { View } from 'react-native';
 
 // Mock dependencies
-jest.mock('expo-router', () => ({
-  useRouter: jest.fn(),
-}));
+jest.mock('expo-router', () => {
+  const { View } = require('react-native');
+  return {
+    useRouter: jest.fn(),
+    Redirect: jest.fn(({ href }) => <View testID="mock-redirect" accessibilityLabel={href} />),
+  };
+});
 
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0 }),
@@ -69,7 +74,8 @@ describe('Index Screen (src/app/index.tsx)', () => {
     render(<Index />);
 
     await waitFor(() => {
-      expect(mockRouter.replace).toHaveBeenCalledWith('/login');
+      expect(screen.getByTestId('mock-redirect')).toBeTruthy();
+      expect(screen.getByTestId('mock-redirect').props.accessibilityLabel).toBe('/login');
     });
   });
 
@@ -90,7 +96,8 @@ describe('Index Screen (src/app/index.tsx)', () => {
 
     await waitFor(() => {
       expect(mockFetchCurrentUser).toHaveBeenCalled();
-      expect(mockRouter.replace).toHaveBeenCalledWith('/(tabs)/collect');
+      expect(screen.getByTestId('mock-redirect')).toBeTruthy();
+      expect(screen.getByTestId('mock-redirect').props.accessibilityLabel).toBe('/(tabs)/collect');
     });
   });
 
@@ -112,7 +119,8 @@ describe('Index Screen (src/app/index.tsx)', () => {
     await waitFor(() => {
       expect(mockFetchCurrentUser).toHaveBeenCalled();
       expect(mockLogout).toHaveBeenCalled();
-      expect(mockRouter.replace).toHaveBeenCalledWith('/login');
+      expect(screen.getByTestId('mock-redirect')).toBeTruthy();
+      expect(screen.getByTestId('mock-redirect').props.accessibilityLabel).toBe('/login');
     });
   });
 });

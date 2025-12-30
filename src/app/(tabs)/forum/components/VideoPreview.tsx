@@ -80,10 +80,12 @@ export function VideoPreview({
       justifyContent="center"
       alignItems="center"
       position="relative"
+      testID="video-preview-container"
+      onPress={onPress}
     >
       {isGenerating ? (
         // 加载中
-        <Stack alignItems="center" gap="$2">
+        <Stack alignItems="center" gap="$2" testID="video-preview-loading">
           <ActivityIndicator size="small" color="#FFFFFF" />
           <Text color="#FFFFFF" fontSize={12} opacity={0.8}>
             生成预览...
@@ -91,7 +93,7 @@ export function VideoPreview({
         </Stack>
       ) : error || !thumbnail ? (
         // 加载失败 - 显示默认的视频图标
-        <Stack alignItems="center" gap="$2">
+        <Stack alignItems="center" gap="$2" testID="video-preview-error">
           <Play size={48} color="#FFFFFF" opacity={0.6} />
           <Text color="#FFFFFF" fontSize={12} opacity={0.6}>
             视频预览
@@ -107,6 +109,7 @@ export function VideoPreview({
               { width: numericWidth || '100%', height: numericHeight || '100%' },
             ]}
             resizeMode="cover"
+            testID="video-preview-thumbnail"
           />
           {showPlayButton && (
             <Stack
@@ -117,6 +120,7 @@ export function VideoPreview({
               backgroundColor="rgba(0, 0, 0, 0.6)"
               alignItems="center"
               justifyContent="center"
+              testID="video-play-button"
             >
               <Play size={28} color="#FFFFFF" fill="#FFFFFF" />
             </Stack>

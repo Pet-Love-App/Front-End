@@ -103,6 +103,7 @@
     "@tamagui/switch": "^1.138.0",
     "@tamagui/tabs": "^1.138.0",
     "@tamagui/text": "^1.138.0",
+    "@tamagui/toast": "^1.142.0",
     "babel-plugin-module-resolver": "^5.0.2",
     "base64-arraybuffer": "^1.0.2",
     "expo": "~54.0.30",

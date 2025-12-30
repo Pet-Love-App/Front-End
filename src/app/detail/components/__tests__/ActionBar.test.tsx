@@ -5,7 +5,7 @@ import { useActionStatus } from '@/src/app/(tabs)/collect/hooks/useActionStatus'
 import { toast } from '@/src/components/dialogs';
 
 // Mock dependencies
-jest.mock('@/src/app/(tabs)/collect/hooks/useActionStatus', () => ({
+jest.mock('@/src/app/tabs/collect/hooks/useActionStatus', () => ({
   useActionStatus: jest.fn(),
 }));
 
@@ -19,7 +19,7 @@ jest.mock('@/src/design-system/components', () => {
   const React = require('react');
   const { TouchableOpacity, View, Text } = require('react-native');
   return {
-    Button: jest.fn(({ children, onPress, testID, disabled, ...props }) =>
+    Button: jest.fn(({ children, onPress, testID, disabled }) =>
       React.createElement(
         TouchableOpacity,
         {
@@ -63,37 +63,46 @@ describe('ActionBar', () => {
     });
   });
 
-  it('should render correctly', () => {
+  it('should render favorite button', () => {
+    // Arrange
+    // Act
     const { getByTestId } = render(<ActionBar catfoodId={123} />);
-    // 组件只有一个带 testID 的按钮 (favorite-button)
+    // Assert
     expect(getByTestId('favorite-button')).toBeTruthy();
   });
 
-  it('should handle favorite toggle', async () => {
+  it('should handle favorite toggle (AAA)', async () => {
+    // Arrange
     mockToggleFavorite.mockResolvedValueOnce(undefined);
     const { getByTestId } = render(<ActionBar catfoodId={123} />);
     const favoriteButton = getByTestId('favorite-button');
 
+    // Act
     fireEvent.press(favoriteButton);
 
+    // Assert
     await waitFor(() => {
-      expect(mockToggleFavorite).toHaveBeenCalled();
+      expect(mockToggleFavorite).toHaveBeenCalledTimes(1);
     });
   });
 
-  it('should handle error during favorite toggle', async () => {
+  it('should handle error during favorite toggle (AAA)', async () => {
+    // Arrange
     mockToggleFavorite.mockRejectedValueOnce(new Error('Failed'));
     const { getByTestId } = render(<ActionBar catfoodId={123} />);
     const favoriteButton = getByTestId('favorite-button');
 
+    // Act
     fireEvent.press(favoriteButton);
 
+    // Assert
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('收藏操作失败，请稍后重试');
     });
   });
 
   it('should display favorited state correctly', () => {
+    // Arrange
     (useActionStatus as jest.Mock).mockReturnValue({
       liked: false,
       likeCount: 10,
@@ -102,20 +111,60 @@ describe('ActionBar', () => {
       toggleFavorite: mockToggleFavorite,
     });
 
+    // Act
     const { getByTestId } = render(<ActionBar catfoodId={123} />);
+
+    // Assert
     expect(getByTestId('favorite-button')).toBeTruthy();
   });
 
-  it('should display liked state correctly', () => {
+  it('should handle like toggle and error (AAA)', async () => {
+    // Arrange
     (useActionStatus as jest.Mock).mockReturnValue({
-      liked: true,
-      likeCount: 11,
+      liked: false,
+      likeCount: 0,
       favorited: false,
       toggleLike: mockToggleLike,
       toggleFavorite: mockToggleFavorite,
     });
+    const { getByText } = render(<ActionBar catfoodId={456} />);
+    const likeButton = getByText('点赞');
 
-    const { getByTestId } = render(<ActionBar catfoodId={123} />);
-    expect(getByTestId('favorite-button')).toBeTruthy();
+    // Act
+    mockToggleLike.mockResolvedValueOnce(undefined);
+    fireEvent.press(likeButton);
+
+    // Assert
+    await waitFor(() => expect(mockToggleLike).toHaveBeenCalledTimes(1));
+
+    // Arrange for error
+    mockToggleLike.mockRejectedValueOnce(new Error('Failed like'));
+
+    // Act
+    fireEvent.press(likeButton);
+
+    // Assert
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('点赞操作失败，请稍后重试'));
+  });
+
+  it('should not trigger when disabled/loading', async () => {
+    // Arrange
+    (useActionStatus as jest.Mock).mockReturnValue({
+      liked: false,
+      likeCount: 0,
+      favorited: false,
+      toggleLike: mockToggleLike,
+      toggleFavorite: mockToggleFavorite,
+    });
+    const { getByTestId } = render(<ActionBar catfoodId={789} />);
+    const favoriteButton = getByTestId('favorite-button');
+
+    // Act
+    // Simulate disabled by setting prop through rerender if needed, keep simple: ensure no multiple calls
+    fireEvent.press(favoriteButton);
+    fireEvent.press(favoriteButton);
+
+    // Assert
+    await waitFor(() => expect(mockToggleFavorite).toHaveBeenCalledTimes(1));
   });
 });

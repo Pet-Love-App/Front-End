@@ -38,6 +38,7 @@ export function PostImage({ uri, width, height, resizeMode = 'cover' }: PostImag
         backgroundColor="#f5f5f5"
         alignItems="center"
         justifyContent="center"
+        testID="post-image-placeholder"
       >
         <ImageOff size={32} color="#9ca3af" />
         <Text fontSize={12} color="#9ca3af" marginTop="$2">
@@ -57,6 +58,7 @@ export function PostImage({ uri, width, height, resizeMode = 'cover' }: PostImag
         backgroundColor="#f5f5f5"
         alignItems="center"
         justifyContent="center"
+        testID="post-image-error"
       >
         <ImageOff size={32} color="#9ca3af" />
         <Text fontSize={12} color="#9ca3af" marginTop="$2">
@@ -72,6 +74,7 @@ export function PostImage({ uri, width, height, resizeMode = 'cover' }: PostImag
       height={typeof height === 'string' ? undefined : height}
       flex={typeof width === 'string' ? 1 : undefined}
       position="relative"
+      testID="post-image-container"
     >
       {/* 加载占位符 */}
       {isLoading && (
@@ -85,6 +88,7 @@ export function PostImage({ uri, width, height, resizeMode = 'cover' }: PostImag
           alignItems="center"
           justifyContent="center"
           zIndex={1}
+          testID="post-image-loading"
         >
           <ActivityIndicator size="small" color="#9ca3af" />
         </Stack>
@@ -107,6 +111,7 @@ export function PostImage({ uri, width, height, resizeMode = 'cover' }: PostImag
           setHasError(true);
         }}
         priority="normal"
+        testID="post-image"
       />
     </Stack>
   );

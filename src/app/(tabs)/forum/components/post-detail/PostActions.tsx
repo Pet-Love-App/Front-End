@@ -156,7 +156,7 @@ function PostActionsComponent({
   return (
     <Container>
       {/* 点赞按钮 */}
-      <AnimatedActionItem onPress={handleLike} style={likeAnimatedStyle}>
+      <AnimatedActionItem onPress={handleLike} style={likeAnimatedStyle} testID="like-button">
         <AnimatedHeart style={heartAnimatedStyle}>
           <Heart
             size={22}
@@ -173,13 +173,17 @@ function PostActionsComponent({
       </AnimatedActionItem>
 
       {/* 评论按钮 */}
-      <ActionItem onPress={onComment}>
+      <ActionItem onPress={onComment} testID="comment-button">
         <MessageCircle size={22} color="#8e8e93" strokeWidth={1.8} />
         {commentCount > 0 && <ActionCount>{formatCount(commentCount)}</ActionCount>}
       </ActionItem>
 
       {/* 收藏按钮 */}
-      <AnimatedActionItem onPress={handleBookmark} style={bookmarkAnimatedStyle}>
+      <AnimatedActionItem
+        onPress={handleBookmark}
+        style={bookmarkAnimatedStyle}
+        testID="bookmark-button"
+      >
         <Bookmark
           size={22}
           color={isBookmarked ? '#007aff' : '#8e8e93'}
@@ -189,7 +193,7 @@ function PostActionsComponent({
       </AnimatedActionItem>
 
       {/* 分享按钮 */}
-      <ActionItem onPress={onShare}>
+      <ActionItem onPress={onShare} testID="share-button">
         <Share2 size={22} color="#8e8e93" strokeWidth={1.8} />
       </ActionItem>
     </Container>

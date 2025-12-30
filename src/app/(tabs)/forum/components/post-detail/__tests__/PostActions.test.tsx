@@ -127,9 +127,9 @@ describe('PostActions', () => {
 
   it('点击点赞按钮触发 onLike', () => {
     const onLike = jest.fn();
-    const { getByText } = render(<PostActions {...defaultProps} onLike={onLike} />);
+    const { getByTestId } = render(<PostActions {...defaultProps} onLike={onLike} />);
 
-    const likeBtn = getByText('Heart');
+    const likeBtn = getByTestId('like-button');
     fireEvent.press(likeBtn);
 
     expect(onLike).toHaveBeenCalled();
@@ -137,9 +137,9 @@ describe('PostActions', () => {
 
   it('点击评论按钮触发 onComment', () => {
     const onComment = jest.fn();
-    const { getByText } = render(<PostActions {...defaultProps} onComment={onComment} />);
+    const { getByTestId } = render(<PostActions {...defaultProps} onComment={onComment} />);
 
-    const commentBtn = getByText('MessageCircle');
+    const commentBtn = getByTestId('comment-button');
     fireEvent.press(commentBtn);
 
     expect(onComment).toHaveBeenCalled();
@@ -147,9 +147,9 @@ describe('PostActions', () => {
 
   it('点击分享按钮触发 onShare', () => {
     const onShare = jest.fn();
-    const { getByText } = render(<PostActions {...defaultProps} onShare={onShare} />);
+    const { getByTestId } = render(<PostActions {...defaultProps} onShare={onShare} />);
 
-    const shareBtn = getByText('Share2');
+    const shareBtn = getByTestId('share-button');
     fireEvent.press(shareBtn);
 
     expect(onShare).toHaveBeenCalled();
@@ -157,9 +157,9 @@ describe('PostActions', () => {
 
   it('点击收藏按钮触发 onBookmark', () => {
     const onBookmark = jest.fn();
-    const { getByText } = render(<PostActions {...defaultProps} onBookmark={onBookmark} />);
+    const { getByTestId } = render(<PostActions {...defaultProps} onBookmark={onBookmark} />);
 
-    const bookmarkBtn = getByText('Bookmark');
+    const bookmarkBtn = getByTestId('bookmark-button');
     fireEvent.press(bookmarkBtn);
 
     expect(onBookmark).toHaveBeenCalled();
@@ -206,19 +206,19 @@ describe('PostActions', () => {
   });
 
   it('无回调函数时点击不报错', () => {
-    const { getByText } = render(
+    const { getByTestId } = render(
       <PostActions likeCount={10} commentCount={5} isLiked={false} isBookmarked={false} />
     );
 
-    const likeBtn = getByText('Heart');
+    const likeBtn = getByTestId('like-button');
     expect(() => fireEvent.press(likeBtn)).not.toThrow();
   });
 
   it('快速连续点击点赞按钮', () => {
     const onLike = jest.fn();
-    const { getByText } = render(<PostActions {...defaultProps} onLike={onLike} />);
+    const { getByTestId } = render(<PostActions {...defaultProps} onLike={onLike} />);
 
-    const likeBtn = getByText('Heart');
+    const likeBtn = getByTestId('like-button');
     fireEvent.press(likeBtn);
     fireEvent.press(likeBtn);
     fireEvent.press(likeBtn);
@@ -233,5 +233,36 @@ describe('PostActions', () => {
     expect(getByText('MessageCircle')).toBeTruthy();
     expect(getByText('Share2')).toBeTruthy();
     expect(getByText('Bookmark')).toBeTruthy();
+  });
+});
+
+describe('额外覆盖场景 - PostActions', () => {
+  const defaultProps = {
+    likeCount: 10,
+    commentCount: 5,
+    isLiked: false,
+    isBookmarked: false,
+    onLike: jest.fn(),
+    onComment: jest.fn(),
+    onShare: jest.fn(),
+    onBookmark: jest.fn(),
+  };
+
+  it('点击点赞按钮切换状态并回调', () => {
+    const onLike = jest.fn();
+    const { getByTestId } = render(
+      <PostActions {...defaultProps} isLiked={false} likeCount={10} onLike={onLike} />
+    );
+    fireEvent.press(getByTestId('like-button'));
+    expect(onLike).toHaveBeenCalled();
+  });
+
+  it('点击评论按钮触发 onComment', () => {
+    const onComment = jest.fn();
+    const { getByTestId } = render(
+      <PostActions {...defaultProps} onComment={onComment} commentCount={3} />
+    );
+    fireEvent.press(getByTestId('comment-button'));
+    expect(onComment).toHaveBeenCalled();
   });
 });

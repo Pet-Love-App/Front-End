@@ -1,0 +1,226 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FilterChips renders correctly 1`] = `
+<RCTScrollView
+  contentContainerStyle={
+    {
+      "gap": 10,
+      "paddingBottom": 16,
+      "paddingHorizontal": 16,
+    }
+  }
+  horizontal={true}
+  showsHorizontalScrollIndicator={false}
+>
+  <View>
+    <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+    >
+      <XStack
+        alignItems="center"
+        backgroundColor="#FFF1EB"
+        borderColor="#FEBE98"
+        borderRadius="$12"
+        borderWidth={2}
+        paddingHorizontal="$4"
+        paddingVertical="$2.5"
+      >
+        <Text
+          color="#FEBE98"
+          fontSize={14}
+          fontWeight="700"
+          letterSpacing={0.3}
+        >
+          综合推荐
+        </Text>
+      </XStack>
+    </View>
+    <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+    >
+      <XStack
+        alignItems="center"
+        backgroundColor="#FEF3C7"
+        borderColor="#D97706"
+        borderRadius="$12"
+        borderWidth={2}
+        paddingHorizontal="$4"
+        paddingVertical="$2.5"
+      >
+        <Text
+          color="#D97706"
+          fontSize={14}
+          fontWeight="700"
+          letterSpacing={0.3}
+        >
+          高评分
+        </Text>
+      </XStack>
+    </View>
+    <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+    >
+      <XStack
+        alignItems="center"
+        backgroundColor="#FFFFFF"
+        borderColor="#E8E6E4"
+        borderRadius="$12"
+        borderWidth={2}
+        paddingHorizontal="$4"
+        paddingVertical="$2.5"
+      >
+        <Text
+          color="#6B6864"
+          fontSize={14}
+          fontWeight="700"
+          letterSpacing={0.3}
+        >
+          最受欢迎
+        </Text>
+      </XStack>
+    </View>
+    <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+    >
+      <XStack
+        alignItems="center"
+        backgroundColor="#FFFFFF"
+        borderColor="#E8E6E4"
+        borderRadius="$12"
+        borderWidth={2}
+        gap="$2"
+        paddingHorizontal="$4"
+        paddingVertical="$2.5"
+      >
+        <Text
+          color="#6B6864"
+          fontSize={14}
+          fontWeight="700"
+          letterSpacing={0.3}
+          maxWidth={120}
+          numberOfLines={1}
+        >
+          品牌
+        </Text>
+        <IconSymbol
+          color="#A8A4A0"
+          name="chevron.down"
+          size={14}
+        />
+      </XStack>
+    </View>
+  </View>
+</RCTScrollView>
+`;

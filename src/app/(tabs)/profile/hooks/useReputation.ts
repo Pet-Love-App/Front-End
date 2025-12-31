@@ -30,13 +30,26 @@ export function useReputation(userId?: string) {
       const { data, error: reputationError } = await getUserReputation(userId);
 
       if (reputationError) {
+        // 如果是 NOT_FOUND 错误，说明用户还没有声望数据（新用户），这是正常的
+        if (reputationError.code === 'NOT_FOUND' || reputationError.message?.includes('不存在')) {
+          setReputation(null);
+          setError(null); // 不设置错误，因为这是正常情况
+          return;
+        }
         throw new Error(reputationError.message);
       }
 
       setReputation(data);
+      setError(null);
     } catch (err) {
-      console.error('加载信誉分失败:', err);
-      setError(err instanceof Error ? err.message : '加载失败');
+      const errorMessage = err instanceof Error ? err.message : '加载失败';
+      // 如果是数据不存在错误，不显示错误提示（可能是新用户）
+      if (errorMessage.includes('不存在') || errorMessage.includes('NOT_FOUND')) {
+        setReputation(null);
+        setError(null);
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -65,7 +78,8 @@ export function useReputation(userId?: string) {
       const convertedBadges = data.map((item) => convertKeysToCamel(item)) as DbUserBadge[];
       setBadges(convertedBadges);
     } catch (err) {
-      console.error('加载勋章失败:', err);
+      // 静默处理勋章加载失败，不影响主流程
+      setBadges([]);
     }
   }, [userId]);
 
@@ -96,7 +110,6 @@ export function useReputation(userId?: string) {
         Alert.alert('成功', '勋章已装备');
         await loadBadges();
       } catch (err) {
-        console.error('装备勋章失败:', err);
         Alert.alert('失败', '装备勋章失败，请稍后再试');
       }
     },
@@ -122,7 +135,6 @@ export function useReputation(userId?: string) {
         Alert.alert('成功', '已取消装备');
         await loadBadges();
       } catch (err) {
-        console.error('取消装备失败:', err);
         Alert.alert('失败', '取消装备失败，请稍后再试');
       }
     },

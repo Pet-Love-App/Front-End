@@ -65,25 +65,20 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
   useEffect(() => {
     const loadMyRating = async () => {
       try {
-        console.log('🔍 开始加载用户评分...');
         const { data: rating, error } = await supabaseCatfoodService.getUserRating(
           String(catfoodId)
         );
         if (error) {
-          console.log('ℹ️ 用户尚未评分（正常）');
           return;
         }
         if (rating) {
-          console.log('✅ 加载到已有评分:', rating);
           setMyRating(rating.score);
           setMyComment(rating.comment || '');
           setMyRatingId(rating.id);
           setHasRated(true);
-        } else {
-          console.log('ℹ️ 用户尚未评分');
         }
       } catch (error: any) {
-        console.error('⚠️ 加载评分时出错:', error);
+        // 静默处理错误
       }
     };
     loadMyRating();
@@ -92,10 +87,7 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
   // 处理评分（无弹窗，静默更新）
   const handleRate = useCallback(
     async (score: number) => {
-      console.log('🌟 点击评分:', score);
-
       if (loading) {
-        console.log('⏳ 正在加载中，忽略点击');
         return;
       }
 
@@ -110,7 +102,6 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
         setMyRating(score);
         setHasRated(true);
 
-        console.log('📡 开始提交评分...');
         const { error } = await supabaseCatfoodService.createRating(
           String(catfoodId),
           score,
@@ -121,9 +112,7 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
           throw new Error(error.message);
         }
 
-        console.log('✅ 评分提交成功');
-
-        // 🚀 乐观更新：立即更新评分统计，无需刷新整个页面
+        // 乐观更新：立即更新评分统计，无需刷新整个页面
         const currentCatFood = getCatFoodById(catfoodId);
         if (currentCatFood) {
           let newScore: number;
@@ -144,18 +133,10 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
             score: Number(newScore.toFixed(2)),
             countNum: newCountNum,
           });
-
-          console.log('✨ 乐观更新完成:', {
-            type: wasRated ? '更新评分' : '首次评分',
-            newScore: newScore.toFixed(2),
-            newCountNum,
-          });
         }
 
         // Realtime 订阅会自动同步服务器的最终数据
       } catch (error: any) {
-        console.error('❌ 评分失败:', error);
-
         // 回滚UI
         setMyRating(oldScore);
         setHasRated(wasRated);
@@ -212,10 +193,9 @@ export function RatingSection({ catfoodId }: RatingSectionProps) {
             content: `⭐ ${myRating}星评价：${myComment}`,
           });
           if (commentError) {
-            console.warn('创建评论失败，但评分已成功:', commentError);
+            // 评论创建失败不影响评分成功
           }
         } catch (commentError) {
-          console.warn('创建评论失败，但评分已成功:', commentError);
           // 评论创建失败不影响评分成功
         }
       }

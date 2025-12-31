@@ -13,7 +13,6 @@ import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/src/lib/supabase/client';
 import { useUserStore } from '@/src/store/userStore';
-import { Alert } from 'react-native';
 import { logger } from '@/src/utils/logger';
 
 /**
@@ -75,9 +74,19 @@ export function useDeepLink() {
 
         case 'USER_UPDATED':
           // 用户信息更新
+          // 注意：在密码重置流程中，updatePassword 成功后我们会立即清除 session
+          // 所以这里需要检查 session 是否存在，以及用户是否仍然认证
           if (session) {
-            setSession(session);
-            await fetchCurrentUser();
+            const isAuthenticated = useUserStore.getState().isAuthenticated;
+            // 只有在用户仍然认证时才更新 session 和获取用户信息
+            // 如果是在密码重置流程中，isAuthenticated 可能已经被设置为 false
+            if (isAuthenticated) {
+              setSession(session);
+              // 异步获取用户信息，不阻塞事件处理
+              fetchCurrentUser().catch((err) => {
+                logger.error('USER_UPDATED 获取用户信息失败', err);
+              });
+            }
           }
           break;
       }
@@ -191,11 +200,11 @@ export function useDeepLink() {
           return;
         }
 
-        // 检查是否是密码重置回调
+        // 密码重置现在使用 OTP 流程，不再需要深度链接处理
+        // 如果用户点击了旧的邮件链接，引导他们使用新的 OTP 流程
         if (queryParams?.type === 'recovery') {
-          logger.info('检测到密码重置回调');
-          // TODO: 跳转到密码重置页面
-          Alert.alert('密码重置', '请设置新密码');
+          logger.info('检测到旧的密码重置链接，引导用户使用 OTP 流程');
+          router.replace('/forgot-password');
           return;
         }
 

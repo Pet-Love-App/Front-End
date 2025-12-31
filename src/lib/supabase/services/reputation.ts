@@ -78,14 +78,14 @@ export const getUserReputation = async (
       .from('reputation_summaries')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .limit(1);
 
     if (error) {
       logger.error('reputation', 'get_user', error);
       return wrapResponse<ReputationSummary>(null, error);
     }
 
-    if (!data) {
+    if (!data || data.length === 0) {
       logger.error('reputation', 'get_user', 'not_found');
       return wrapResponse<ReputationSummary>(null, {
         message: '声望数据不存在',
@@ -95,8 +95,10 @@ export const getUserReputation = async (
       } as PostgrestError);
     }
 
-    const reputation = convertKeysToCamel(data) as ReputationSummary;
-    logger.success('reputation', 'get_user', data.score);
+    // 如果有多条记录，取第一条
+    const reputationData = data[0];
+    const reputation = convertKeysToCamel(reputationData) as ReputationSummary;
+    logger.success('reputation', 'get_user', reputationData.score);
     return wrapResponse<ReputationSummary>(reputation, null);
   } catch (err) {
     logger.error('reputation', 'get_user', err);

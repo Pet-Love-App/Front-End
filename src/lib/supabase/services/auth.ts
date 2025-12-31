@@ -230,7 +230,7 @@ class SupabaseAuthService {
         ? 'exp://127.0.0.1:8081/--/email-verify'
         : 'petlove://email-verify';
 
-      logger.info('auth', 'register - 使用重定向 URL', { redirectUrl });
+      logger.query('auth', 'register', { redirectUrl });
 
       const { data, error } = await supabase.auth.signUp({
         email: params.email,
@@ -386,19 +386,16 @@ class SupabaseAuthService {
   }
 
   /**
-   * 发送密码重置邮件
+   * 发送密码重置 OTP 验证码到邮箱
    */
   async resetPassword(params: ResetPasswordParams): Promise<AuthResponse<void>> {
     logger.query('auth', 'resetPassword', { email: params.email });
 
     try {
-      // 构造重定向 URL
-      const redirectUrl = __DEV__
-        ? 'exp://127.0.0.1:8081/--/password-reset'
-        : 'petlove://password-reset';
-
+      // 使用 resetPasswordForEmail，它会发送 recovery 类型的邮件
+      // 邮件模板需要配置为显示 {{ .Token }} 而不是 {{ .ConfirmationURL }}
       const { error } = await supabase.auth.resetPasswordForEmail(params.email, {
-        redirectTo: redirectUrl,
+        redirectTo: undefined, // 不需要重定向，因为我们使用 OTP
       });
 
       if (error) {
@@ -410,6 +407,49 @@ class SupabaseAuthService {
       return { data: undefined, error: null, success: true };
     } catch (err) {
       logger.error('auth', 'resetPassword', err);
+      return {
+        data: null,
+        error: { message: String(err) },
+        success: false,
+      };
+    }
+  }
+
+  /**
+   * 验证密码重置 OTP 验证码
+   * 验证成功后，用户会获得一个 session，可以用于更新密码
+   *
+   * @param email - 邮箱地址
+   * @param token - OTP 验证码
+   * @returns AuthResponse<AuthSuccessData>
+   */
+  async verifyRecoveryOtp(email: string, token: string): Promise<AuthResponse<AuthSuccessData>> {
+    logger.query('auth', 'verifyRecoveryOtp', { email });
+
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'recovery', // 使用 recovery 类型
+      });
+
+      if (error) {
+        logger.error('auth', 'verifyRecoveryOtp', error);
+        return wrapAuthResponse<AuthSuccessData>(null, error);
+      }
+
+      if (!data.user || !data.session) {
+        return {
+          data: null,
+          error: { message: '验证码无效或已过期' },
+          success: false,
+        };
+      }
+
+      logger.success('auth', 'verifyRecoveryOtp');
+      return wrapAuthResponse({ user: data.user, session: data.session }, null);
+    } catch (err) {
+      logger.error('auth', 'verifyRecoveryOtp', err);
       return {
         data: null,
         error: { message: String(err) },
@@ -455,9 +495,9 @@ class SupabaseAuthService {
    * @example
    * const unsubscribe = supabaseAuthService.onAuthStateChange((event, session) => {
    *   if (event === 'SIGNED_IN') {
-   *     console.log('用户已登录', session?.user);
+   *     // 处理登录成功
    *   } else if (event === 'SIGNED_OUT') {
-   *     console.log('用户已登出');
+   *     // 处理登出
    *   }
    * });
    *

@@ -8,6 +8,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { UserWithPets } from '@/src/lib/supabase';
 import { supabaseAuthService, supabaseProfileService } from '@/src/lib/supabase';
+import { supabase } from '@/src/lib/supabase/client';
 import { logger } from '@/src/utils/logger';
 import { loginSchema, registerSchema } from '@/src/schemas/auth.schema';
 
@@ -302,18 +303,46 @@ export const useUserStore = create<UserState>()(
       updatePassword: async (newPassword: string) => {
         try {
           set({ isLoading: true });
+          logger.info('开始更新密码');
 
-          const { error } = await supabaseAuthService.updatePassword({ newPassword });
+          const result = await supabaseAuthService.updatePassword({
+            newPassword,
+          });
 
-          if (error) {
-            throw new Error(error.message || '修改密码失败');
+          logger.info('updatePassword 返回结果', {
+            hasError: !!result.error,
+            success: result.success,
+            hasData: !!result.data,
+          });
+
+          if (result.error || !result.success) {
+            const errorMessage = result.error?.message || '修改密码失败';
+            logger.error('密码更新失败', new Error(errorMessage));
+            throw new Error(errorMessage);
           }
 
-          set({ isLoading: false });
+          // 密码更新成功后，清除 session 和用户信息（因为 Supabase 可能会使当前 session 失效）
+          // 用户需要重新登录
+          logger.info('密码更新成功，清除 session 和用户信息');
+
+          // 先清除 store 中的状态（立即执行，不等待）
+          set({
+            session: null,
+            isAuthenticated: false,
+            user: null,
+            accessToken: null,
+          });
+
+          // 异步清除 Supabase 的 session（不等待完成，避免阻塞）
+          supabase.auth.signOut().catch((err) => {
+            logger.error('signOut 失败', err);
+          });
         } catch (error) {
-          set({ isLoading: false });
-          logger.error('修改密码失败', error as Error);
+          logger.error('修改密码异常', error as Error);
           throw error;
+        } finally {
+          // 确保 isLoading 始终被重置，无论成功还是失败
+          set({ isLoading: false });
         }
       },
 

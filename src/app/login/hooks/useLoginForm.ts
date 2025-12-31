@@ -46,7 +46,6 @@ export function useLoginForm() {
       } else if (error instanceof Error) {
         // 处理 API 错误
         toast.error('登录失败', error.message);
-        console.error('登录错误:', error);
       }
     }
   };
@@ -65,6 +64,10 @@ export function useLoginForm() {
     router.push('/register' as any);
   };
 
+  const navigateToForgotPassword = () => {
+    router.push('/forgot-password' as any);
+  };
+
   return {
     email,
     password,
@@ -74,5 +77,6 @@ export function useLoginForm() {
     handlePasswordChange,
     handleLogin,
     navigateToRegister,
+    navigateToForgotPassword,
   };
 }

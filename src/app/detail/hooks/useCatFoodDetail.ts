@@ -28,23 +28,19 @@ export function useCatFoodDetail() {
   );
   const catFood = useCatFoodStore(catFoodSelector);
 
-  // 🔥 启用实时订阅 - 监听当前猫粮的评分、点赞变化
+  // 启用实时订阅 - 监听当前猫粮的评分、点赞变化
   useCatfoodRealtime({
-    enabled: !!catfoodId, // 只在有猫粮ID时启用
+    enabled: !!catfoodId,
     catfoodId: catfoodId || undefined,
-    onUpdate: (updatedCatfood) => {
-      console.log('🔔 详情页收到实时更新:', updatedCatfood.name, {
-        score: updatedCatfood.score,
-        countNum: updatedCatfood.countNum,
-      });
+    onUpdate: () => {
+      // 实时更新已由 store 处理
     },
   });
 
   useEffect(() => {
     if (catfoodId && !catFood) {
       // 如果缓存中没有数据，则从服务器加载
-      fetchCatFoodById(catfoodId).catch((error) => {
-        console.error('加载猫粮详情失败:', error);
+      fetchCatFoodById(catfoodId).catch(() => {
         Alert.alert('加载失败', '无法获取猫粮详情，请稍后重试');
       });
     }

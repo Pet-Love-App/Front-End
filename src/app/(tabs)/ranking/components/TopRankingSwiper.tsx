@@ -239,7 +239,6 @@ export function TopRankingSwiper({
         >
           <Pressable
             onPress={() => {
-              console.log('Pressed card:', item.name);
               onPress(item);
             }}
             style={{ width: '100%', height: '100%' }}

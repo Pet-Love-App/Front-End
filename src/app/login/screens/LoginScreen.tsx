@@ -21,6 +21,7 @@ export function LoginScreen() {
     handlePasswordChange,
     handleLogin,
     navigateToRegister,
+    navigateToForgotPassword,
   } = useLoginForm();
 
   return (
@@ -29,25 +30,28 @@ export function LoginScreen() {
         flex={1}
         justifyContent="center"
         alignItems="center"
-        paddingHorizontal="$8"
+        paddingHorizontal="$6"
         paddingTop={insets.top + 16}
         paddingBottom={insets.bottom + 80}
         backgroundColor="$background"
+        width="100%"
       >
-        <LottieAnimation
-          source={require('@/assets/animations/cat_playing.json')}
-          width={300}
-          height={200}
-        />
+        <YStack alignItems="center" width="100%" maxWidth={500} gap="$4">
+          <LottieAnimation
+            source={require('@/assets/animations/cat_playing.json')}
+            width={320}
+            height={220}
+          />
 
-        <Text fontSize="$9" fontWeight="bold" marginBottom="$3" textAlign="center">
-          欢迎来到Pet Love!
-        </Text>
-        <Text fontSize="$5" color={neutralScale.neutral9} marginBottom="$6" textAlign="center">
-          为你的小猫量身定做的健康app
-        </Text>
+          <Text fontSize="$10" fontWeight="bold" marginBottom="$2" textAlign="center">
+            欢迎来到Pet Love!
+          </Text>
+          <Text fontSize="$6" color={neutralScale.neutral9} marginBottom="$6" textAlign="center">
+            为你的小猫量身定做的健康app
+          </Text>
+        </YStack>
 
-        <YStack width="100%" maxWidth={400} gap="$3">
+        <YStack width="100%" maxWidth={400} gap="$3" marginTop="$2">
           <Input
             size="lg"
             placeholder="邮箱地址"
@@ -73,6 +77,19 @@ export function LoginScreen() {
             errorMessage={errors.password}
             testID="login-password-input"
           />
+
+          <YStack alignItems="flex-end" marginTop="$1">
+            <Pressable
+              onPress={navigateToForgotPassword}
+              testID="forgot-password-link"
+              hitSlop={{ top: 10, bottom: 10, left: 20, right: 20 }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text color={infoScale.info9} fontSize="$3">
+                忘记密码？
+              </Text>
+            </Pressable>
+          </YStack>
 
           <Button
             size="lg"

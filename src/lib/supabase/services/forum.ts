@@ -331,19 +331,13 @@ class SupabaseForumService {
    */
   async createPost(params: CreatePostParams): Promise<SupabaseResponse<Post>> {
     logger.query('posts', 'create', params);
-    console.log('[ForumService] createPost called with:', {
-      ...params,
-      mediaFiles: params.mediaFiles?.length || 0,
-    });
 
     try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      console.log('[ForumService] current user:', user?.id);
 
       if (!user) {
-        console.error('[ForumService] No authenticated user');
         return {
           data: null,
           error: { message: '未登录', code: 'NOT_AUTHENTICATED', details: '', hint: '' } as any,
@@ -352,7 +346,6 @@ class SupabaseForumService {
       }
 
       // 1. 创建帖子记录
-      console.log('[ForumService] Inserting post with author_id:', user.id);
       const { data, error } = await supabase
         .from('posts')
         .insert({
@@ -373,11 +366,8 @@ class SupabaseForumService {
         )
         .single();
 
-      console.log('[ForumService] Insert result:', { data, error });
-
       if (error) {
         logger.error('posts', 'create', error);
-        console.error('[ForumService] Insert error:', error);
         return wrapResponse(null, error) as unknown as SupabaseResponse<Post>;
       }
 
@@ -386,20 +376,15 @@ class SupabaseForumService {
       // 2. 上传媒体文件（如果有）
       const uploadedMedia: PostMedia[] = [];
       if (params.mediaFiles && params.mediaFiles.length > 0) {
-        console.log('[ForumService] Uploading', params.mediaFiles.length, 'media files...');
-
         for (let i = 0; i < params.mediaFiles.length; i++) {
           const file = params.mediaFiles[i];
           try {
             const mediaResult = await this.uploadPostMedia(postId, file, user.id);
             if (mediaResult.data) {
               uploadedMedia.push(mediaResult.data);
-              console.log('[ForumService] Uploaded media', i + 1, ':', mediaResult.data.fileUrl);
-            } else {
-              console.error('[ForumService] Failed to upload media', i + 1, ':', mediaResult.error);
             }
           } catch (uploadErr) {
-            console.error('[ForumService] Media upload error:', uploadErr);
+            logger.error('posts', 'uploadMedia', uploadErr);
           }
         }
       }
@@ -444,16 +429,7 @@ class SupabaseForumService {
       const fileName = `${userId}/${postId}/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
       const mediaType: 'image' | 'video' = file.type.startsWith('video/') ? 'video' : 'image';
 
-      console.log('[ForumService] Uploading file:', {
-        fileName,
-        mediaType,
-        fileUri: file.uri.substring(0, 100),
-        contentType: file.type,
-      });
-
       // 使用 expo-file-system 读取文件为 base64
-      console.log('[ForumService] Reading file as base64 using FileSystem...');
-
       // 处理 file:// URI
       let fileUri = file.uri;
       if (!fileUri.startsWith('file://') && !fileUri.startsWith('content://')) {
@@ -461,20 +437,18 @@ class SupabaseForumService {
       }
 
       const base64Data = await FileSystem.readAsStringAsync(fileUri, {
-        encoding: 'base64', // 直接使用字符串值
+        encoding: 'base64',
       });
 
-      console.log('[ForumService] Base64 data length:', base64Data.length); // 检查文件大小（base64 大约是原始大小的 1.37 倍，所以 50MB 原始 ≈ 68MB base64）
+      // 检查文件大小（base64 大约是原始大小的 1.37 倍，所以 50MB 原始 ≈ 68MB base64）
       if (base64Data.length > 68 * 1024 * 1024) {
         throw new Error('文件大小超过 50MB 限制');
       }
 
       // 将 base64 转换为 ArrayBuffer
       const arrayBuffer = decode(base64Data);
-      console.log('[ForumService] ArrayBuffer created, size:', arrayBuffer.byteLength, 'bytes');
 
       // 上传到 Storage
-      console.log('[ForumService] Uploading to Supabase Storage...');
       const { error: uploadError } = await supabase.storage
         .from('post-media')
         .upload(fileName, arrayBuffer, {
@@ -483,8 +457,7 @@ class SupabaseForumService {
         });
 
       if (uploadError) {
-        console.error('[ForumService] Storage upload error:', uploadError);
-        console.error('[ForumService] Error details:', JSON.stringify(uploadError, null, 2));
+        logger.error('posts', 'uploadStorage', uploadError);
         return {
           data: null,
           error: uploadError as any,
@@ -492,27 +465,21 @@ class SupabaseForumService {
         };
       }
 
-      console.log('[ForumService] Upload successful!');
-
       // 获取公开 URL
       const {
         data: { publicUrl },
       } = supabase.storage.from('post-media').getPublicUrl(fileName);
 
-      console.log('[ForumService] Public URL:', publicUrl);
-
       // 如果是视频，生成并上传缩略图
       let thumbnailUrl: string | null = null;
       if (mediaType === 'video') {
         try {
-          console.log('[ForumService] Generating video thumbnail...');
           const thumbnailResult = await this.generateAndUploadThumbnail(fileUri, postId, userId);
           if (thumbnailResult) {
             thumbnailUrl = thumbnailResult;
-            console.log('[ForumService] Thumbnail URL:', thumbnailUrl);
           }
         } catch (thumbErr) {
-          console.warn('[ForumService] Failed to generate thumbnail:', thumbErr);
+          logger.warn('posts', 'generateThumbnail', thumbErr);
           // 缩略图生成失败不影响视频上传
         }
       }
@@ -530,7 +497,7 @@ class SupabaseForumService {
         .single();
 
       if (mediaError) {
-        console.error('[ForumService] Insert post_media error:', mediaError);
+        logger.error('posts', 'insertMedia', mediaError);
         return {
           data: null,
           error: mediaError as any,
@@ -544,7 +511,7 @@ class SupabaseForumService {
         success: true,
       };
     } catch (err) {
-      console.error('[ForumService] uploadPostMedia error:', err);
+      logger.error('posts', 'uploadPostMedia', err);
       return {
         data: null,
         error: { message: String(err), code: 'UNKNOWN', details: '', hint: '' } as any,
@@ -568,8 +535,6 @@ class SupabaseForumService {
         quality: 0.8,
       });
 
-      console.log('[ForumService] Thumbnail generated:', thumbnailUri);
-
       // 读取缩略图为 base64
       const thumbnailBase64 = await FileSystem.readAsStringAsync(thumbnailUri, {
         encoding: 'base64',
@@ -588,7 +553,7 @@ class SupabaseForumService {
         });
 
       if (thumbUploadError) {
-        console.error('[ForumService] Thumbnail upload error:', thumbUploadError);
+        logger.error('posts', 'uploadThumbnail', thumbUploadError);
         return null;
       }
 
@@ -599,7 +564,7 @@ class SupabaseForumService {
 
       return thumbnailPublicUrl;
     } catch (err) {
-      console.error('[ForumService] generateAndUploadThumbnail error:', err);
+      logger.error('posts', 'generateThumbnail', err);
       return null;
     }
   }

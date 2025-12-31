@@ -9,7 +9,7 @@
  */
 
 import React, { memo, useCallback, useEffect, useState, useRef } from 'react';
-import { BackHandler, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
+import { BackHandler, KeyboardAvoidingView, Platform, Dimensions, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styled, YStack, ScrollView } from 'tamagui';
 import Animated, {
@@ -26,6 +26,7 @@ import { supabaseForumService, type Post, type PostMedia } from '@/src/lib/supab
 
 import { UserProfileModal } from '@/src/components/UserProfileModal';
 import { VideoPlayer } from '@/src/components/VideoPlayer';
+import { toast } from '@/src/components/dialogs';
 import { CommentSection } from './CommentSection';
 import { CommentInput } from './CommentInput';
 import { PostActions } from './PostActions';
@@ -190,9 +191,56 @@ function PostDetailScreenComponent({
   /**
    * 分享帖子
    */
-  const handleShare = useCallback(() => {
-    // TODO: 实现分享功能
-  }, []);
+  const handleShare = useCallback(async () => {
+    if (!localPost) return;
+
+    try {
+      const content = localPost.content || '';
+      const author = localPost.author?.username || '用户';
+      const hasMedia = localPost.media && localPost.media.length > 0;
+      const mediaInfo =
+        hasMedia && localPost.media
+          ? `\n📷 包含 ${localPost.media.length} 张${localPost.media[0]?.mediaType === 'video' ? '视频' : '图片'}`
+          : '';
+
+      // 构建分享内容
+      const shareMessage = `🐱 Pet Love - 来自 ${author} 的分享\n\n${content.substring(0, 300)}${content.length > 300 ? '...' : ''}${mediaInfo}\n\n来自 Pet Love 社区`;
+
+      const result = await Share.share(
+        Platform.select({
+          ios: {
+            message: shareMessage,
+          },
+          android: {
+            message: shareMessage,
+            title: '分享帖子',
+          },
+          default: {
+            message: shareMessage,
+            title: '分享帖子',
+          },
+        })
+      );
+
+      // 处理分享结果
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          // iOS 特定分享方式
+          toast.success('分享成功', '帖子已成功分享');
+        } else {
+          // 通用分享成功
+          toast.success('分享成功', '帖子已成功分享');
+        }
+      } else if (result.action === Share.dismissedAction) {
+        // 用户取消分享，不显示提示
+      }
+    } catch (error) {
+      // 分享失败时显示错误提示
+      if (error instanceof Error && !error.message.includes('User did not share')) {
+        toast.error('分享失败', '无法分享帖子，请稍后重试');
+      }
+    }
+  }, [localPost]);
 
   /**
    * 点赞帖子

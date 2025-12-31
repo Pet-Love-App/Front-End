@@ -91,7 +91,6 @@ export function useRegisterForm() {
       } else if (error instanceof Error) {
         // 处理 API 错误
         toast.error('注册失败', error.message);
-        console.error('注册错误:', error);
       }
     }
   };

@@ -130,7 +130,6 @@ export function CollectScreen() {
               key={favoriteRecordId || index}
               activeOpacity={0.7}
               onPress={() => {
-                console.log('点击收藏项', { catfoodId, rawData });
                 handlePress(catfoodId?.toString() || '');
               }}
             >

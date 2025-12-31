@@ -108,7 +108,6 @@ class Logger {
         break;
       case 'error':
         console.error(...args);
-        // 🔥 TODO: 集成 Sentry 或其他错误追踪服务
         // if (!this.isDev) {
         //   Sentry.captureException(error || new Error(message), {
         //     level: 'error',
